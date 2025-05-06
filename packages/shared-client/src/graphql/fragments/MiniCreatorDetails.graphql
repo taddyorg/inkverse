@@ -1,0 +1,10 @@
+fragment miniCreatorDetails on Creator {
+    uuid
+    name
+    shortUrl
+    avatarImageAsString
+    links {
+        url
+        type
+    }
+} 

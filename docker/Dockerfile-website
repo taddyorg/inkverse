@@ -1,0 +1,40 @@
+FROM node:20.17
+
+# Create and use /app
+WORKDIR /app
+
+# Update and install system dependencies
+RUN apt-get update -y && apt-get upgrade -y && \
+    apt-get install -y apt-utils apt-transport-https ca-certificates
+
+# Install Yarn
+RUN curl -o- -L https://yarnpkg.com/install.sh | bash
+
+# Add Yarn to PATH
+ENV PATH="/root/.yarn/bin:$PATH"
+
+# Copy package manifests
+COPY package.json ./
+COPY packages/public/package.json ./packages/public/package.json
+COPY packages/shared-client/package.json ./packages/shared-client/package.json
+COPY website/package.json ./website/package.json
+
+# Install root dependencies
+RUN yarn install
+
+# Copy the rest of the source code
+COPY packages/public/ ./packages/public/
+COPY packages/shared-client/ ./packages/shared-client/
+COPY website/ ./website/
+
+# Build packages
+WORKDIR /app/website
+RUN yarn build
+
+# Set environment
+ENV NODE_ENV=production
+
+EXPOSE 3000
+
+# Run the server
+CMD ["yarn", "start"]

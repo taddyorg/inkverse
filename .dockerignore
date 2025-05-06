@@ -1,0 +1,11 @@
+copilot
+
+.react-router
+build
+dist
+node_modules
+
+.DS_Store
+.env
+.idea
+.vscode

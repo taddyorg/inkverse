@@ -1,0 +1,7 @@
+# import miniComicSeriesDetails from '../fragments/MiniComicSeriesDetails.graphql'
+
+query GetMiniComicSeries($uuid: ID, $shortUrl: String) {
+	getComicSeries(uuid: $uuid, shortUrl: $shortUrl) {
+		...miniComicSeriesDetails
+	}
+}

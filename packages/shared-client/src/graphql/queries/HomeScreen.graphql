@@ -1,0 +1,39 @@
+# import miniComicSeriesDetails from '../fragments/MiniComicSeriesDetails.graphql'
+
+query HomeScreen{
+	getFeaturedComicSeries {
+		id
+		comicSeries {
+			...miniComicSeriesDetails
+		}
+	}
+	getCuratedLists {
+		id
+		lists{
+			id
+			name
+			description
+			bannerImageUrl
+			type
+			privacyType
+		}
+	}
+	getMostPopularComicSeries {
+		id
+		comicSeries {
+			...miniComicSeriesDetails
+		}
+	}
+	getRecentlyAddedComicSeries {
+		id
+		comicSeries {
+			...miniComicSeriesDetails
+		}
+	}
+	getRecentlyUpdatedComicSeries {
+		id
+		comicSeries {
+			...miniComicSeriesDetails
+		}
+	}
+}

@@ -1,0 +1,7 @@
+# import listDetails from '../fragments/ListDetails.graphql'
+
+query GetList($id: ID!) {
+	getList(id: $id) {
+        ...listDetails
+    }
+}

@@ -1,0 +1,129 @@
+---
+description: Platform detection and command adaptation for isolation-focused Memory Bank
+globs: platform-awareness.mdc
+alwaysApply: false
+---
+# PLATFORM AWARENESS SYSTEM FOR MONOREPO
+
+> **TL;DR:** This system detects the operating system, path format, and shell environment, then adapts commands for use across multiple applications in the Inkverse monorepo to ensure cross-platform compatibility.
+
+## 🔍 PLATFORM DETECTION PROCESS
+
+```mermaid
+graph TD
+    Start["Start Platform<br>Detection"] --> DetectOS["Detect OS<br>Environment"]
+    DetectOS --> Windows["Windows<br>Detection"]
+    DetectOS --> Mac["macOS<br>Detection"]
+    DetectOS --> Linux["Linux<br>Detection"]
+    
+    Windows & Mac & Linux --> PathCheck["Path Separator<br>Detection"]
+    PathCheck --> CmdAdapt["Command<br>Adaptation"]
+    CmdAdapt --> ShellCheck["Shell Type<br>Detection"]
+    ShellCheck --> MonorepoCheck["Monorepo<br>Structure Check"]
+    MonorepoCheck --> Complete["Platform Detection<br>Complete"]
+```
+
+## 📋 PLATFORM DETECTION IMPLEMENTATION
+
+For reliable platform detection:
+
+```
+## Platform Detection Results
+Operating System: [Windows/macOS/Linux]
+Path Separator: [\ or /]
+Shell Environment: [PowerShell/Bash/Zsh/Cmd]
+Command Adaptation: [Required/Not Required]
+Monorepo Root: [/absolute/path/to/inkverse]
+
+Adapting commands for [detected platform]...
+```
+
+## 🔍 MONOREPO APPLICATION PATHS
+
+When working with the monorepo structure:
+
+```mermaid
+graph TD
+    Root["Monorepo Root"] --> Website["Website<br>(/website)"]
+    Root --> Mobile["Mobile App<br>(/react-native)"]
+    Root --> GraphQL["GraphQL Server<br>(/graphql-server)"]
+    Root --> Worker["Worker<br>(/worker)"]
+    Root --> Cloud["Cloud Services<br>(/cloud)"]
+    
+    Website --> WebDirs["App<br>Components<br>Routes<br>Assets<br>Client Shared<br>Public"]
+    Mobile --> MobileDirs["App<br>Components<br>Screens<br>Assets<br>Client Shared<br>Public"]
+    GraphQL --> GraphQLDirs["GraphQL<br>Routes<br>Server Shared<br>Public"]
+    Worker --> WorkerDirs["Scripts<br>Server Shared<br>Public"]
+
+
+    Website --> SharedClientDirs["Shared Client Utilities<br>(GraphQL Queries, etc.)"]
+    Website --> PublicUtils["Public Utilities<br>(Helper Functions, etc.)"]
+    Mobile --> SharedClientUtils["Shared Client Utilities<br>(GraphQL Queries, etc.)"]
+    GraphQL --> SharedServerUtils["Shared Server Utilities<br>(Database Models, Message Queue, etc.)"]
+    Worker --> SharedServerUtils["Shared Server Utilities<br>(Database Models, Message Queue, etc.)"]
+
+    Mobile --> PublicUtils["Public Utilities<br>(Helper Functions, etc.)"]
+    GraphQL --> PublicUtils["Public Utilities<br>(Helper Functions, etc.)"]
+    Worker --> PublicUtils["Public Utilities<br>(Helper Functions, etc.)"]
+
+```
+
+## 📋 APPLICATION-SPECIFIC COMMAND ADAPTATION
+
+For each application in the monorepo:
+
+```
+## Website Commands (React)
+- Development: cd website && yarn dev
+- Build: cd website && yarn build
+- Test: cd website && yarn typecheck
+
+## Mobile App Commands (React Native)
+- Development: cd react-native && yarn start
+- Android: cd react-native && yarn android
+- iOS: cd react-native && yarn ios
+- Build: cd react-native && yarn build
+
+## GraphQL Server Commands
+- Development: cd graphql-server && yarn dev
+- Build: cd graphql-server && yarn build
+- Migration: cd graphql-server && yarn migrate
+
+## Worker Commands
+- Build: cd worker && yarn build
+- Execute Scripts: cd worker && yarn [script-name]
+```
+
+## 🔍 PATH FORMAT CONVERSION
+
+When converting paths between formats:
+
+```mermaid
+sequenceDiagram
+    participant Input as Path Input
+    participant Detector as Format Detector
+    participant Converter as Format Converter
+    participant Output as Adapted Path
+    
+    Input->>Detector: Raw Path
+    Detector->>Detector: Detect Current Format
+    Detector->>Converter: Path + Current Format
+    Converter->>Converter: Apply Target Format
+    Converter->>Output: Platform-Specific Path
+```
+
+## 📝 PLATFORM VERIFICATION CHECKLIST
+
+```
+✓ PLATFORM VERIFICATION
+- Operating system correctly identified? [YES/NO]
+- Path separator format detected? [YES/NO]
+- Shell environment identified? [YES/NO]
+- Command set adapted appropriately? [YES/NO]
+- Path format handling configured? [YES/NO]
+- Monorepo structure validated? [YES/NO]
+- Target application identified? [YES/NO]
+
+→ If all YES: Platform adaptation complete
+→ If any NO: Run additional detection steps
+``` 

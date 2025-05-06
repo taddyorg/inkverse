@@ -1,0 +1,91 @@
+---
+description: Utility for VAN QA common validation fixes
+globs: van-qa-utils/common-fixes.mdc
+alwaysApply: false
+---
+# VAN QA: COMMON VALIDATION FIXES
+
+> **TL;DR:** This component provides common fixes for issues that may arise during the QA validation process.
+
+## 🧪 COMMON QA VALIDATION FIXES BY CATEGORY
+
+### Dependency Issues
+
+| Issue | Fix |
+|-------|-----|
+| **Missing Node.js** | Download and install Node.js from https://nodejs.org/ |
+| **Outdated yarn** | Run `npm install -g yarn@latest` to update |
+| **Missing packages** | Run `yarn install` or `yarn add [package-name]` |
+| **Package version conflicts** | Adjust versions in package.json and run `yarn install` |
+| **Dependency resolution issues** | Run `yarn cache clean` and try installing again |
+
+### Configuration Issues
+
+| Issue | Fix |
+|-------|-----|
+| **Invalid JSON** | Use a JSON validator (e.g., jsonlint) to check syntax |
+| **TypeScript Errors (`tsc --noEmit` fails)** | Check `tsconfig.json` for correct `include`/`exclude` paths and compiler options. Fix errors reported by `tsc`. |
+| **Missing React plugin** | Add `import react from '@vitejs/plugin-react'` and `plugins: [react()]` to `vite.config.ts` (or `.js`) |
+| **Incompatible TypeScript config** | Update `tsconfig.json` with correct settings (e.g., `"jsx": "react-jsx"` for React) |
+| **Mismatched version references** | Ensure consistent versions across configuration files |
+| **Missing entries in config files** | Add required fields to configuration files |
+
+### Environment Issues
+
+| Issue | Fix |
+|-------|-----|
+| **Permission denied** | Run terminal as administrator (Windows) or use sudo (Mac/Linux) |
+| **Port already in use** | Kill process using the port: `netstat -ano \| findstr :PORT` then `taskkill /F /PID PID` (Windows) or `lsof -i :PORT` then `kill -9 PID` (Mac/Linux) |
+| **Missing build tools** | Install required command-line tools (git, node, etc.) |
+| **Environment variable issues** | Set required environment variables: `$env:VAR_NAME = "value"` (PowerShell) or `export VAR_NAME="value"` (Bash) |
+| **Disk space issues** | Free up disk space, clean yarn/package cache files |
+
+### Build Test Issues
+
+| Issue | Fix |
+|-------|-----|
+| **Build fails** | Check console for specific error messages |
+| **Test fails** | Verify minimal configuration is correct |
+| **Path issues** | Ensure paths use correct separators for the platform (`\` for Windows, `/` for Mac/Linux) |
+| **Missing dependencies** | Make sure all required dependencies are installed |
+| **Script permissions** | Ensure script files have execution permissions (chmod +x on Unix) |
+
+## 📝 ISSUE DIAGNOSIS PROCEDURES
+
+### 1. Dependency Diagnosis
+```powershell
+# Find conflicting dependencies
+yarn why [package-name]
+
+# Check for outdated packages
+yarn outdated
+
+# Check for vulnerabilities
+yarn audit
+```
+
+### 2. Configuration Diagnosis
+```powershell
+# List common configuration files
+Get-ChildItem -Recurse -Include "*.json","*.config.js","*.config.ts" | Select-Object FullName
+
+# Check tsconfig.json for JSX setting (example)
+if (Test-Path "tsconfig.json") { 
+    try {
+        $tsconfig = Get-Content "tsconfig.json" -Raw | ConvertFrom-Json
+        if (-not $tsconfig.compilerOptions.jsx) {
+            Write-Output "Missing or incorrect jsx setting in tsconfig.json compilerOptions"
+        }
+        # Run tsc --noEmit for detailed type checking
+        Write-Output "Running tsc --noEmit for detailed TypeScript check..."
+        tsc --noEmit
+    } catch {
+        Write-Output "Error reading or parsing tsconfig.json: $($_.Exception.Message)"
+    }
+} else {
+    Write-Output "tsconfig.json not found."
+}
+```
+
+### 3. Environment Diagnosis
+```

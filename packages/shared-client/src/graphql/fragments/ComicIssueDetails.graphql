@@ -1,0 +1,18 @@
+#import "./MiniComicIssueDetails.graphql"
+
+fragment comicIssueDetails on ComicIssue {
+    ...miniComicIssueDetails
+    bannerImageAsString
+    creatorNote
+    stories{
+        uuid
+        issueUuid
+        seriesUuid
+        storyImageAsString
+        width
+        height
+    }
+    nextIssue{
+        ...miniComicIssueDetails
+    }
+}

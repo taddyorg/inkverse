@@ -1,0 +1,11 @@
+fragment creatorDetails on Creator {
+    uuid
+    name
+    shortUrl
+    bio
+    avatarImageAsString
+    links {
+        url
+        type
+    }
+}

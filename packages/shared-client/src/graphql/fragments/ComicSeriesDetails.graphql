@@ -1,0 +1,22 @@
+fragment comicSeriesDetails on ComicSeries {
+    uuid
+    name
+    description
+    datePublished
+    hash
+    issuesHash
+    shortUrl
+    coverImageAsString
+    bannerImageAsString
+    thumbnailImageAsString
+    tags
+    genre0
+    genre1
+    genre2
+    language
+    status
+    contentRating
+    seriesType
+    isCompleted
+    issueCount
+} 

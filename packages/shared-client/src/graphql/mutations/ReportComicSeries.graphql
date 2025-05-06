@@ -1,0 +1,3 @@
+mutation ReportComicSeries($uuid: ID!, $reportType: String) {
+  reportComicSeries(uuid: $uuid, reportType: $reportType)
+} 

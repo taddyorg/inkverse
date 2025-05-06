@@ -1,0 +1,6 @@
+query GetDocumentation($id: ID!) {
+	getDocumentation(id: $id) {
+			id
+			text
+	}
+}

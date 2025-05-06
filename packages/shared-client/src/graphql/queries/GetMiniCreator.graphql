@@ -1,0 +1,7 @@
+# import miniCreatorDetails from '../fragments/MiniCreatorDetails.graphql'
+
+query GetMiniCreator($uuid: ID, $shortUrl: String) {
+	getCreator(uuid: $uuid, shortUrl: $shortUrl) {
+		...miniCreatorDetails
+	}
+}

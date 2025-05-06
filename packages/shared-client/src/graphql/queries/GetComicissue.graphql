@@ -1,0 +1,22 @@
+# import comicIssueDetails from '../fragments/ComicIssueDetails.graphql'
+# import comicSeriesDetails from '../fragments/ComicSeriesDetails.graphql'
+# import miniCreatorDetails from '../fragments/MiniCreatorDetails.graphql'
+# import miniComicIssueDetails from '../fragments/MiniComicIssueDetails.graphql'
+
+query GetComicIssue($issueUuid: ID!, $seriesUuid: ID!, $sortOrderForIssues: SortOrder, $limitPerPageForIssues: Int, $pageForIssues: Int) {
+	getComicIssue(uuid: $issueUuid, seriesUuid: $seriesUuid) {
+        ...comicIssueDetails
+    }
+	getComicSeries(uuid: $seriesUuid) {
+		...comicSeriesDetails
+		creators {
+			...miniCreatorDetails
+		}
+	}
+	getIssuesForComicSeries(seriesUuid:$seriesUuid, sortOrder:$sortOrderForIssues, limitPerPage:$limitPerPageForIssues, page:$pageForIssues) {
+		seriesUuid
+		issues {
+      		...miniComicIssueDetails
+		}
+    }
+}

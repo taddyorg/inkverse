@@ -1,0 +1,15 @@
+# import miniComicSeriesDetails from '../fragments/MiniComicSeriesDetails.graphql'
+
+fragment listDetails on List {
+    id
+    name
+    description
+    bannerImageUrl
+    type
+    privacyType
+    userId
+    comicSeries {
+        ...miniComicSeriesDetails
+        description
+    }
+}

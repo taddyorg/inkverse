@@ -1,0 +1,50 @@
+{
+  "name": "worker",
+  "version": "1.0.0",
+  "main": "dist/server.js",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rm -rf dist tsconfig.tsbuildinfo && tsc -b",
+    "create-new-queue": "tsx src/shared/queues/create-new-queue.ts",
+    "receive-messages": "tsx src/shared/queues/receive-messages.ts",
+    "add-new-feed-by-uuid": "tsx src/scripts/feeds/add-new-feed-by-uuid.ts",
+    "mock-webhook-event": "tsx src/scripts/feeds/mock-webhook-event.ts",
+    "import-all-comics": "tsx src/scripts/feeds/import-all-comics.ts",
+    "audit-comic": "tsx src/scripts/feeds/audit-comic.ts",
+    "purge-cache": "tsx src/scripts/cache/delete.ts",
+    "purge-cache-production": "NODE_ENV=production tsx src/scripts/cache/delete.ts everything",
+    "pre-download-comic-stories-height-and-width": "tsx src/scripts/images/start.ts",
+    "build-sitemap": "tsx src/scripts/sitemap/start.ts"
+  },
+  "author": "Inkverse",
+  "license": "AGPL-3.0",
+  "description": "Worker Script for Inkverse",
+  "dependencies": {
+    "@inkverse/shared-server": "*",
+    "@inkverse/public": "*",
+    "axios": "^1.7.9",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "graphql": "^16.10.0",
+    "lodash-es": "^4.17.21",
+    "pg": "^8.13.1",
+    "pg-query-stream": "^4.7.1",
+    "uuid": "^11.0.3"
+  },
+  "devDependencies": {
+    "@graphql-codegen/cli": "5.0.3",
+    "@graphql-codegen/introspection": "4.0.3",
+    "@graphql-codegen/typescript": "4.1.2",
+    "@graphql-codegen/typescript-resolvers": "4.4.1",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/lodash-es": "^4.17.12",
+    "@types/node": "^22.10.2",
+    "@types/uuid": "^10.0.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

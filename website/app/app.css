@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base styles for light/dark mode */
+html,
+body {
+  @apply bg-paper-pink dark:bg-inkverse-black;
+}
+
+/* Theme classes */
+.dark {
+  @apply bg-inkverse-black text-white;
+}
+
+.light {
+  @apply bg-paper-pink text-inkverse-black;
+}

@@ -1,0 +1,10 @@
+# import miniComicSeriesDetails from '../fragments/MiniComicSeriesDetails.graphql'
+
+query Search($term: String, $page: Int, $limitPerPage: Int, $filterForTypes: [String], $filterForTags: [String], $filterForGenres: [Genre]) {
+	search(term: $term, page: $page, limitPerPage: $limitPerPage, filterForTypes: $filterForTypes, filterForTags: $filterForTags, filterForGenres: $filterForGenres) {
+        searchId
+        comicSeries {
+            ...miniComicSeriesDetails
+        }
+    }
+}

@@ -1,0 +1,43 @@
+{
+  "name": "graphql-server",
+  "private": true,
+  "version": "1.0.0",
+  "main": "dist/src/server.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rm -rf dist tsconfig.tsbuildinfo && tsc -b",
+    "dev": "tsx watch src/server.ts",
+    "dev:build": "yarn build && yarn dev",
+    "start": "yarn build && node dist/server.js"
+  },
+  "type": "module",
+  "author": "Inkverse",
+  "license": "AGPL-3.0",
+  "description": "GraphQL Server for Inkverse",
+  "dependencies": {
+    "@apollo/server": "^4.11.2",
+    "@inkverse/shared-server": "*",
+    "@inkverse/public": "*",
+    "axios": "^1.7.9",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "graphql": "^16.10.0",
+    "graphql-tag": "^2.12.6",
+    "lodash-es": "^4.17.21",
+    "notion-client": "^7.1.5",
+    "uuid": "^11.0.3"
+  },
+  "devDependencies": {
+    "@graphql-codegen/cli": "5.0.3",
+    "@graphql-codegen/introspection": "4.0.3",
+    "@graphql-codegen/typescript": "4.1.2",
+    "@graphql-codegen/typescript-resolvers": "4.4.1",
+    "@types/cors": "^2.8.17",
+    "@types/lodash-es": "^4.17.12",
+    "@types/node": "^22.10.2",
+    "@types/uuid": "^10.0.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
