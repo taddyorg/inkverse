@@ -1,0 +1,24 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "declaration": true,
+    "composite": true,
+    "declarationMap": true,
+    "paths": {
+      "@/*": [
+        "./*"
+      ],
+      "@inkverse/shared-client/*": ["../node_modules/@inkverse/shared-client/dist/*"],
+      "@inkverse/public/*": ["../node_modules/@inkverse/public/dist/*"]
+    }
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx"
+  ],
+  "references": [
+    { "path": "../packages/shared-client" },
+    { "path": "../packages/public" }
+  ]
+}

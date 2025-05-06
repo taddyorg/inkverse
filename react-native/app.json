@@ -1,0 +1,96 @@
+{
+  "expo": {
+    "name": "Inkverse",
+    "slug": "inkverse",
+    "version": "3.0",
+    "orientation": "portrait",
+    "icon": "./assets/icons/ios-light.png",
+    "scheme": "inkverse",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "jsEngine": "hermes",
+    "ios": {
+      "bundleIdentifier": "art.bamcomics.taddy",
+      "buildNumber": "2",
+      "supportsTablet": false,
+      "infoPlist": {
+        "LSApplicationQueriesSchemes": [
+          "https",
+          "mailto",
+          "itms-apps"
+        ],
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "associatedDomains": [
+        "applinks:inkverse.co"
+      ]
+    },
+    "android": {
+      "package": "com.bamtoons",
+      "versionCode": 73,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icons/adaptive-icon.png",
+        "backgroundColor": "#FFE9E4"
+      },
+      "permissions": [
+        "android.permission.INTERNET"
+      ],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "inkverse.co"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
+    },
+    "plugins": [
+      [
+        "@sentry/react-native/expo",
+        {
+          "organization": "inkverse",
+          "project": "react-native",
+          "url": "https://sentry.io/"
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#FFE9E4",
+          "image": "./assets/images/inkverse-logo.png",
+          "imageWidth": 200
+        }
+      ],
+      "expo-localization",
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "assets/fonts/SourceSans3-Regular.ttf",
+            "assets/fonts/SourceSans3-SemiBold.ttf",
+            "assets/fonts/SourceSans3-Bold.ttf"
+          ]
+        }
+      ],
+      [
+        "react-native-edge-to-edge",
+        {
+          "android": {
+            "parentTheme": "Light",
+            "enforceNavigationBarContrast": false
+          }
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "149ba335-e117-4b21-8359-41b61b059885"
+      }
+    }
+  }
+}

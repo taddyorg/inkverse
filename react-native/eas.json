@@ -1,0 +1,40 @@
+{
+  "cli": {
+    "version": ">= 15.0.14",
+    "appVersionSource": "local"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "SENTRY_AUTH_TOKEN": "SENTRY_AUTH_TOKEN"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "env": {
+        "SENTRY_AUTH_TOKEN": "SENTRY_AUTH_TOKEN"
+      }
+    },
+    "production": {
+      "autoIncrement": false,
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "env": {
+        "SENTRY_AUTH_TOKEN": "SENTRY_AUTH_TOKEN"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "android": {
+        "track": "production"
+      },
+      "ios": {
+        "ascAppId": "1667961953"
+      }
+    }
+  }
+}
