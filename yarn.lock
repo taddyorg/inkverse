@@ -10934,10 +10934,10 @@ posthog-js@^1.240.0:
     preact "^10.19.3"
     web-vitals "^4.2.4"
 
-posthog-react-native-session-replay@^0.1.9:
-  version "0.1.9"
-  resolved "https://registry.yarnpkg.com/posthog-react-native-session-replay/-/posthog-react-native-session-replay-0.1.9.tgz#f7c9ba81440c484063d15270c977f11ab98ec784"
-  integrity sha512-/JQAVcVv8rPKVFurq/QFZ2Hw8c66hTqPo/2LOanQDGtfyVKG4/CEtxcihf+vwLHZi4YdY7PahrhR9S49Q4KVcA==
+posthog-react-native-session-replay@^1.0.6:
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/posthog-react-native-session-replay/-/posthog-react-native-session-replay-1.0.6.tgz#8f80589f63dc6df644690e3323c1032bb1045a65"
+  integrity sha512-IOVFaMpdpyMsemnpKNKrIdU2XI7Qfb6Ctp1hOc4gsHKDctGWgwbgZu4a6Sn1viChlSBlTBUCj8BqgUSlkgK2Zg==
 
 posthog-react-native@^3.15.1:
   version "3.15.1"

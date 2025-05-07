@@ -25,7 +25,7 @@ export const PressableOpacity = ({ children, fadeLevel = 0.5,  ...props }: Press
   return (
     <Pressable onPressIn={fadeIn} onPressOut={fadeOut} {...props}>
       <Animated.View style={{ opacity: animated }}>
-        {typeof children === 'function' ? children({ pressed: false, hovered: false }) : children}
+        {typeof children === 'function' ? children({ pressed: false }) : children}
       </Animated.View>
     </Pressable>
   );

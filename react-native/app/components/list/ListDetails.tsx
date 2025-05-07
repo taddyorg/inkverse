@@ -43,7 +43,7 @@ export function ListDetails({ list, pageType, imagePriority }: ListDetailsProps)
       <ThemedView style={styles.listContainer}>
         <View style={styles.bannerContainer}>
           <Image
-            source={{ uri: list.bannerImageUrl }}
+            source={{ uri: list.bannerImageUrl ?? '' }}
             style={styles.bannerFullWidth}
             contentFit="cover"
             recyclingKey={list.id}

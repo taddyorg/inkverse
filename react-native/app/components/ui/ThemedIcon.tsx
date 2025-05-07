@@ -35,7 +35,7 @@ export function ThemedIcon({
       return React.cloneElement(child, {
         color,
         size: styles[size].size,
-        ...child.props,
+        ...(child.props as any),
       });
     }
     return child;
