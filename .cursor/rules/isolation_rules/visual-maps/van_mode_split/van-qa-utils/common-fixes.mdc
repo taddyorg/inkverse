@@ -14,19 +14,18 @@ alwaysApply: false
 | Issue | Fix |
 |-------|-----|
 | **Missing Node.js** | Download and install Node.js from https://nodejs.org/ |
-| **Outdated yarn** | Run `npm install -g yarn@latest` to update |
-| **Missing packages** | Run `yarn install` or `yarn add [package-name]` |
-| **Package version conflicts** | Adjust versions in package.json and run `yarn install` |
-| **Dependency resolution issues** | Run `yarn cache clean` and try installing again |
+| **Outdated npm** | Run `npm install -g npm@latest` to update |
+| **Missing packages** | Run `npm install` or `npm install [package-name]` |
+| **Package version conflicts** | Adjust versions in package.json and run `npm install` |
+| **Dependency resolution issues** | Run `npm cache clean -f` and try installing again |
 
 ### Configuration Issues
 
 | Issue | Fix |
 |-------|-----|
 | **Invalid JSON** | Use a JSON validator (e.g., jsonlint) to check syntax |
-| **TypeScript Errors (`tsc --noEmit` fails)** | Check `tsconfig.json` for correct `include`/`exclude` paths and compiler options. Fix errors reported by `tsc`. |
-| **Missing React plugin** | Add `import react from '@vitejs/plugin-react'` and `plugins: [react()]` to `vite.config.ts` (or `.js`) |
-| **Incompatible TypeScript config** | Update `tsconfig.json` with correct settings (e.g., `"jsx": "react-jsx"` for React) |
+| **Missing React plugin** | Add `import react from '@vitejs/plugin-react'` and `plugins: [react()]` to vite.config.js |
+| **Incompatible TypeScript config** | Update `tsconfig.json` with correct React settings |
 | **Mismatched version references** | Ensure consistent versions across configuration files |
 | **Missing entries in config files** | Add required fields to configuration files |
 
@@ -38,7 +37,7 @@ alwaysApply: false
 | **Port already in use** | Kill process using the port: `netstat -ano \| findstr :PORT` then `taskkill /F /PID PID` (Windows) or `lsof -i :PORT` then `kill -9 PID` (Mac/Linux) |
 | **Missing build tools** | Install required command-line tools (git, node, etc.) |
 | **Environment variable issues** | Set required environment variables: `$env:VAR_NAME = "value"` (PowerShell) or `export VAR_NAME="value"` (Bash) |
-| **Disk space issues** | Free up disk space, clean yarn/package cache files |
+| **Disk space issues** | Free up disk space, clean npm/package cache files |
 
 ### Build Test Issues
 
@@ -55,37 +54,39 @@ alwaysApply: false
 ### 1. Dependency Diagnosis
 ```powershell
 # Find conflicting dependencies
-yarn why [package-name]
+npm ls [package-name]
 
 # Check for outdated packages
-yarn outdated
+npm outdated
 
 # Check for vulnerabilities
-yarn audit
+npm audit
 ```
 
 ### 2. Configuration Diagnosis
 ```powershell
-# List common configuration files
-Get-ChildItem -Recurse -Include "*.json","*.config.js","*.config.ts" | Select-Object FullName
+# List all configuration files
+Get-ChildItem -Recurse -Include "*.json","*.config.js" | Select-Object FullName
 
-# Check tsconfig.json for JSX setting (example)
+# Find missing references in tsconfig.json
 if (Test-Path "tsconfig.json") { 
-    try {
-        $tsconfig = Get-Content "tsconfig.json" -Raw | ConvertFrom-Json
-        if (-not $tsconfig.compilerOptions.jsx) {
-            Write-Output "Missing or incorrect jsx setting in tsconfig.json compilerOptions"
-        }
-        # Run tsc --noEmit for detailed type checking
-        Write-Output "Running tsc --noEmit for detailed TypeScript check..."
-        tsc --noEmit
-    } catch {
-        Write-Output "Error reading or parsing tsconfig.json: $($_.Exception.Message)"
+    $tsconfig = Get-Content "tsconfig.json" -Raw | ConvertFrom-Json
+    if (-not $tsconfig.compilerOptions.jsx) {
+        Write-Output "Missing jsx setting in tsconfig.json"
     }
-} else {
-    Write-Output "tsconfig.json not found."
 }
 ```
 
 ### 3. Environment Diagnosis
+```powershell
+# Check process using a port (Windows)
+netstat -ano | findstr ":3000"
+
+# List environment variables
+Get-ChildItem Env:
+
+# Check disk space
+Get-PSDrive C | Select-Object Used,Free
 ```
+
+**Next Step:** Return to the validation process or follow the specific fix recommendations provided above. 

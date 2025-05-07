@@ -3,9 +3,10 @@ description: Visual process map for BUILD mode (Code Implementation)
 globs: implementation-mode-map.mdc
 alwaysApply: false
 ---
+
 # BUILD MODE: CODE EXECUTION PROCESS MAP
 
-> **TL;DR:** This visual map guides the BUILD mode process, focusing on efficient code implementation across multiple applications in the Inkverse monorepo, based on the planning and creative phases, with proper command execution and progress tracking.
+> **TL;DR:** This visual map guides the BUILD mode process, focusing on efficient code implementation based on the planning and creative phases, with proper command execution and progress tracking.
 
 ## 🧭 BUILD MODE PROCESS FLOW
 
@@ -16,18 +17,8 @@ graph TD
     %% Initialization
     ReadDocs --> CheckLevel{"Determine<br>Complexity Level<br>from tasks.md"}
     
-    %% Application Selection
-    CheckLevel --> SelectApp["Select Target<br>Application"]
-    SelectApp --> AppType{"Application<br>Type?"}
-    
-    AppType -->|"Website"| WebsiteImpl["Website<br>Implementation"]
-    AppType -->|"React Native"| MobileImpl["Mobile App<br>Implementation"]
-    AppType -->|"GraphQL Server"| GraphQLImpl["GraphQL Server<br>Implementation"]
-    AppType -->|"Worker"| WorkerImpl["Worker<br>Implementation"]
-    AppType -->|"Cross-App"| CrossImpl["Cross-App<br>Implementation"]
-    
     %% Level 1 Implementation
-    WebsiteImpl & MobileImpl & GraphQLImpl & WorkerImpl & CrossImpl -->|"Level 1<br>Quick Bug Fix"| L1Process["LEVEL 1 PROCESS<br>Level1/quick-bug-workflow.md"]
+    CheckLevel -->|"Level 1<br>Quick Bug Fix"| L1Process["LEVEL 1 PROCESS<br>Level1/quick-bug-workflow.md"]
     L1Process --> L1Review["Review Bug<br>Report"]
     L1Review --> L1Examine["Examine<br>Relevant Code"]
     L1Examine --> L1Fix["Implement<br>Targeted Fix"]
@@ -35,7 +26,7 @@ graph TD
     L1Test --> L1Update["Update<br>tasks.md"]
     
     %% Level 2 Implementation
-    WebsiteImpl & MobileImpl & GraphQLImpl & WorkerImpl & CrossImpl -->|"Level 2<br>Simple Enhancement"| L2Process["LEVEL 2 PROCESS<br>Level2/enhancement-workflow.md"]
+    CheckLevel -->|"Level 2<br>Simple Enhancement"| L2Process["LEVEL 2 PROCESS<br>Level2/enhancement-workflow.md"]
     L2Process --> L2Review["Review Build<br>Plan"]
     L2Review --> L2Examine["Examine Relevant<br>Code Areas"]
     L2Examine --> L2Implement["Implement Changes<br>Sequentially"]
@@ -43,7 +34,7 @@ graph TD
     L2Test --> L2Update["Update<br>tasks.md"]
     
     %% Level 3-4 Implementation
-    WebsiteImpl & MobileImpl & GraphQLImpl & WorkerImpl & CrossImpl -->|"Level 3-4<br>Feature/System"| L34Process["LEVEL 3-4 PROCESS<br>Level3/feature-workflow.md<br>Level4/system-workflow.md"]
+    CheckLevel -->|"Level 3-4<br>Feature/System"| L34Process["LEVEL 3-4 PROCESS<br>Level3/feature-workflow.md<br>Level4/system-workflow.md"]
     L34Process --> L34Review["Review Plan &<br>Creative Decisions"]
     L34Review --> L34Phase{"Creative Phase<br>Documents<br>Complete?"}
     
@@ -74,36 +65,6 @@ graph TD
     UpdateProgress --> Transition["NEXT MODE:<br>REFLECT MODE"]
 ```
 
-## 📋 APPLICATION-SPECIFIC BUILD COMMANDS
-
-```mermaid
-graph TD
-    subgraph "Application Build Commands"
-        Website["Website<br>(React)"]
-        Mobile["Mobile App<br>(React Native)"]
-        GraphQL["GraphQL Server<br>(Node.js)"]
-        Worker["Worker<br>(Node.js)"]
-    end
-    
-    Website -->|"Setup"| WebSetup["cd website && yarn"]
-    Website -->|"Dev"| WebDev["cd website && yarn dev"]
-    Website -->|"Build"| WebBuild["cd website && yarn build"]
-    Website -->|"Test"| WebTest["cd website && yarn typecheck"]
-    
-    Mobile -->|"Setup"| MobileSetup["cd react-native && yarn"]
-    Mobile -->|"Dev"| MobileDev["cd react-native && yarn start"]
-    Mobile -->|"Build"| MobileBuild["cd react-native && yarn build"]
-    Mobile -->|"Test"| MobileTest["cd react-native && yarn test"]
-    
-    GraphQL -->|"Setup"| GraphQLSetup["cd graphql-server && yarn"]
-    GraphQL -->|"Dev"| GraphQLDev["cd graphql-server && yarn dev"]
-    GraphQL -->|"Build"| GraphQLBuild["cd graphql-server && yarn build"]
-    
-    Worker -->|"Setup"| WorkerSetup["cd worker && yarn"]
-    Worker -->|"Build"| WorkerBuild["cd worker && yarn build"]
-    Worker -->|"Scripts"| WorkerScripts["cd worker && yarn [script-name]"]
-```
-
 ## 📋 REQUIRED FILE STATE VERIFICATION
 
 Before implementation can begin, verify file state:
@@ -125,18 +86,14 @@ graph TD
     CheckCreative -->|"Yes"| VerifyCreative{"Creative phases<br>completed?"}
     
     VerifyCreative -->|"No"| ErrorCreative["ERROR:<br>Return to CREATIVE Mode"]
-    VerifyCreative -->|"Yes"| AppVerification["Verify Target<br>Application"]
-    
-    AppVerification -->|"Verified"| L34Ready
+    VerifyCreative -->|"Yes"| L34Ready
 ```
 
 ## 🔄 FILE SYSTEM VERIFICATION PROCESS
 
 ```mermaid
 graph TD
-    Start["Start File<br>Verification"] --> TargetApp["Identify Target<br>Application"]
-    TargetApp --> AppPath["Determine Correct<br>Application Path"]
-    AppPath --> CheckDir["Check Directory<br>Structure"]
+    Start["Start File<br>Verification"] --> CheckDir["Check Directory<br>Structure"]
     CheckDir --> DirResult{"Directories<br>Exist?"}
     
     DirResult -->|"No"| ErrorDir["❌ ERROR:<br>Missing Directories"]
@@ -159,18 +116,13 @@ Before beginning any file creation:
 
 ```
 ✓ DIRECTORY VERIFICATION PROCEDURE
-1. Identify target application in the monorepo:
-   - website/
-   - react-native/
-   - graphql-server/
-   - worker/
-2. Create all directories first before any files
-3. Use ABSOLUTE paths: /full/path/to/application/directory
-4. Verify each directory after creation:
-   ls -la /full/path/to/application/directory     # Linux/Mac
-   dir "C:\full\path\to\application\directory"    # Windows
-5. Document directory structure in progress.md
-6. Only proceed to file creation AFTER verifying ALL directories exist
+1. Create all directories first before any files
+2. Use ABSOLUTE paths: /full/path/to/directory
+3. Verify each directory after creation:
+   ls -la /full/path/to/directory     # Linux/Mac
+   dir "C:\full\path\to\directory"    # Windows
+4. Document directory structure in progress.md
+5. Only proceed to file creation AFTER verifying ALL directories exist
 ```
 
 ## 📋 FILE CREATION VERIFICATION
@@ -179,10 +131,10 @@ After creating files:
 
 ```
 ✓ FILE VERIFICATION PROCEDURE
-1. Use ABSOLUTE paths for all file operations: /full/path/to/application/file.ext
+1. Use ABSOLUTE paths for all file operations: /full/path/to/file.ext
 2. Verify each file creation was successful:
-   ls -la /full/path/to/application/file.ext     # Linux/Mac
-   dir "C:\full\path\to\application\file.ext"    # Windows 
+   ls -la /full/path/to/file.ext     # Linux/Mac
+   dir "C:\full\path\to\file.ext"    # Windows 
 3. If verification fails:
    a. Check for path resolution issues
    b. Verify directory exists
@@ -195,9 +147,7 @@ After creating files:
 
 ```mermaid
 graph TD
-    Start["Command<br>Execution"] --> AppSelect["Select Target<br>Application"]
-    AppSelect --> NavApp["Navigate to<br>Application Directory"]
-    NavApp --> Analyze["Analyze Command<br>Requirements"]
+    Start["Command<br>Execution"] --> Analyze["Analyze Command<br>Requirements"]
     Analyze --> Complexity{"Command<br>Complexity?"}
     
     Complexity -->|"Simple"| Simple["Execute<br>Single Command"]
@@ -209,42 +159,36 @@ graph TD
     Document --> Next["Next<br>Command"]
 ```
 
-## 📋 APPLICATION-SPECIFIC BUILD APPROACHES
+## 📋 LEVEL-SPECIFIC BUILD APPROACHES
 
 ```mermaid
 graph TD
-    subgraph "Website (React)"
-        W1["Component<br>Development"]
-        W2["Route<br>Configuration"]
-        W3["API<br>Integration"]
-        W4["UI/UX<br>Implementation"]
+    subgraph "Level 1: Quick Bug Fix"
+        L1A["Targeted Code<br>Examination"]
+        L1B["Minimal<br>Change Scope"]
+        L1C["Direct<br>Fix"]
+        L1D["Verify<br>Fix"]
     end
     
-    subgraph "Mobile App (React Native)"
-        RN1["Screen<br>Development"]
-        RN2["Navigation<br>Setup"]
-        RN3["API<br>Integration"]
-        RN4["Native<br>Functionality"]
+    subgraph "Level 2: Enhancement"
+        L2A["Sequential<br>Build"]
+        L2B["Contained<br>Changes"]
+        L2C["Standard<br>Testing"]
+        L2D["Component<br>Documentation"]
     end
     
-    subgraph "GraphQL Server"
-        GQL1["Schema<br>Definition"]
-        GQL2["Resolver<br>Implementation"]
-        GQL3["Data Source<br>Integration"]
-        GQL4["Authentication<br>& Authorization"]
+    subgraph "Level 3-4: Feature/System"
+        L3A["Directory<br>Structure First"]
+        L3B["Verify Dirs<br>Before Files"]
+        L3C["Phased<br>Build"]
+        L3D["Verify Files<br>After Creation"]
+        L3E["Integration<br>Testing"]
+        L3F["Detailed<br>Documentation"]
     end
     
-    subgraph "Worker"
-        WK1["Job<br>Creation"]
-        WK2["Queue<br>Setup"]
-        WK3["Event<br>Handling"]
-        WK4["Notification<br>Services"]
-    end
-    
-    W1 --> W2 --> W3 --> W4
-    RN1 --> RN2 --> RN3 --> RN4
-    GQL1 --> GQL2 --> GQL3 --> GQL4
-    WK1 --> WK2 --> WK3 --> WK4
+    L1A --> L1B --> L1C --> L1D
+    L2A --> L2B --> L2C --> L2D
+    L3A --> L3B --> L3C --> L3D --> L3E --> L3F
 ```
 
 ## 📝 BUILD DOCUMENTATION FORMAT
@@ -254,22 +198,18 @@ Document builds with:
 ```
 ## Build: [Component/Feature]
 
-### Target Application
-[Specify which application in the monorepo]
-
 ### Approach
 [Brief description of build approach]
 
 ### Directory Structure
-- [/absolute/path/to/application/dir1/]: [Purpose]
-- [/absolute/path/to/application/dir2/]: [Purpose]
+- [/absolute/path/to/dir1/]: [Purpose]
+- [/absolute/path/to/dir2/]: [Purpose]
 
 ### Code Changes
-- [/absolute/path/to/application/file1.ext]: [Description of changes]
-- [/absolute/path/to/application/file2.ext]: [Description of changes]
+- [/absolute/path/to/file1.ext]: [Description of changes]
+- [/absolute/path/to/file2.ext]: [Description of changes]
 
 ### Verification Steps
-- [✓] Target application identified
 - [✓] Directory structure created and verified
 - [✓] All files created in correct locations
 - [✓] File content verified
@@ -306,7 +246,6 @@ During the build process, update tasks.md with progress:
 - [x] Planning complete
 [For Level 3-4:]
 - [x] Creative phases complete
-- [x] Target application identified: [Website/Mobile/GraphQL Server/Worker/Cross-App]
 - [x] Directory structure created and verified
 - [x] [Built component 1]
 - [x] [Built component 2]
@@ -314,6 +253,13 @@ During the build process, update tasks.md with progress:
 
 ## Build Progress
 - [Component 1]: Complete
+  - Files: [/absolute/path/to/files]
+  - [Details about implementation]
+- [Component 2]: Complete
+  - Files: [/absolute/path/to/files]
+  - [Details about implementation]
+- [Component 3]: In Progress
+  - [Current status]
 ```
 
 ## 📋 PROGRESS.MD UPDATE FORMAT

@@ -39,7 +39,7 @@ function Validate-Environment {
     $requiredTools = @(
         @{Name = "git"; Command = "git --version"},
         @{Name = "node"; Command = "node --version"},
-        @{Name = "yarn"; Command = "yarn --version"}
+        @{Name = "npm"; Command = "npm --version"}
     )
     
     $missingTools = @()

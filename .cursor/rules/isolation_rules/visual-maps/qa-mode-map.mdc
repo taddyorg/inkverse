@@ -284,13 +284,13 @@ This validation point ensures all required packages are correctly installed.
 
 ```bash
 # Check if packages are installed
-yarn list react react-dom tailwindcss postcss autoprefixer
+npm list react react-dom tailwindcss postcss autoprefixer
 
 # Verify package versions match requirements
-yarn list | grep -E "react|tailwind|postcss"
+npm list | grep -E "react|tailwind|postcss"
 
 # Check for peer dependency warnings
-yarn list --depth=0
+npm ls --depth=0
 ```
 
 ### Validation Criteria:
@@ -300,9 +300,9 @@ yarn list --depth=0
 - Required dev dependencies must be present
 
 ### Common Fixes:
-- `yarn add [missing-package]` - Install missing packages
-- `yarn add [package]@[version]` - Fix version mismatches
-- `yarn add --dev [dev-dependency]` - Add development dependencies
+- `npm install [missing-package]` - Install missing packages
+- `npm install [package]@[version]` - Fix version mismatches
+- `npm install --save-dev [dev-dependency]` - Add development dependencies
 
 ## 📝 2️⃣ CONFIGURATION VALIDATION PROCESS (Original)
 
@@ -314,27 +314,21 @@ This validation point ensures configuration files are in the correct format for 
 # Check package.json for module type
 grep "\"type\":" package.json
 
-# Verify common configuration file extensions (.js, .cjs, .mjs, .ts, .tsx, .json)
-find . -name "*.config.*" -o -name "tsconfig.json" -o -name "package.json" | grep -E "\.(js|cjs|mjs|ts|tsx|json)$"
+# Verify configuration file extensions match module type
+find . -name "*.config.*" | grep -E "\.(js|cjs|mjs)$"
 
-# Test configuration syntax (using tsc for TS/JS files)
-# Note: This assumes tsconfig.json is set up correctly.
-# It checks all .ts/.tsx/.js/.jsx files included by the tsconfig.
-tsc --noEmit
-# Check JSON syntax separately if needed
-# find . -name '*.json' -exec node -c {} \;
+# Test configuration syntax
+node -c *.config.js || node -c *.config.cjs || node -c *.config.mjs
 ```
 
 ### Validation Criteria:
-- Configuration file extensions must match module type in package.json (for JS files)
-- File syntax must be valid (`tsc --noEmit` should pass)
-- `tsconfig.json` should be present and correctly configured.
+- Configuration file extensions must match module type in package.json
+- File syntax must be valid
 - Configuration must reference installed packages
 
 ### Common Fixes:
-- Rename `.js` to `.cjs` for CommonJS in ES module projects (if applicable)
-- Update `tsconfig.json` to correctly include/exclude files and set compiler options.
-- Fix syntax errors reported by `tsc`
+- Rename `.js` to `.cjs` for CommonJS in ES module projects
+- Fix syntax errors in configuration files
 - Adjust configuration to reference installed packages
 
 ## 🌐 3️⃣ ENVIRONMENT VALIDATION PROCESS (Original)
@@ -345,7 +339,7 @@ This validation point ensures the development environment is correctly set up.
 
 ```bash
 # Check build tools 
-yarn run --help
+npm run --help
 
 # Verify node version compatibility
 node -v
@@ -377,7 +371,7 @@ This validation point tests a minimal build to ensure basic functionality works.
 
 ```bash
 # Run a minimal build
-yarn build --dry-run || yarn dev --dry-run
+npm run build -- --dry-run || npm run dev -- --dry-run
 
 # Test entry point file existence
 find src -name "main.*" -o -name "index.*"

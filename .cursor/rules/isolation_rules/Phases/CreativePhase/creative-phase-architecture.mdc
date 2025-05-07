@@ -3,57 +3,29 @@ description: creative phase architecture
 globs: creative-phase-architecture.md
 alwaysApply: false
 ---
+
 # CREATIVE PHASE: ARCHITECTURE DESIGN
 
-> **TL;DR:** This document provides structured guidance for architectural design decisions during creative phases for the Inkverse monorepo, ensuring comprehensive evaluation of options and clear documentation of architectural choices across multiple applications.
+> **TL;DR:** This document provides structured guidance for architectural design decisions during creative phases, ensuring comprehensive evaluation of options and clear documentation of architectural choices.
 
 ## 🏗️ ARCHITECTURE DESIGN WORKFLOW
 
 ```mermaid
 graph TD
     Start["Architecture<br>Design Start"] --> Req["1. Requirements<br>Analysis"]
-    Req --> Target["2. Target<br>Application"]
-    Target --> Comp["3. Component<br>Identification"]
-    Comp --> Options["4. Architecture<br>Options"]
-    Options --> Eval["5. Option<br>Evaluation"]
-    Eval --> Decision["6. Decision &<br>Documentation"]
-    Decision --> Valid["7. Validation &<br>Verification"]
+    Req --> Comp["2. Component<br>Identification"]
+    Comp --> Options["3. Architecture<br>Options"]
+    Options --> Eval["4. Option<br>Evaluation"]
+    Eval --> Decision["5. Decision &<br>Documentation"]
+    Decision --> Valid["6. Validation &<br>Verification"]
     
     style Start fill:#4da6ff,stroke:#0066cc,color:white
     style Req fill:#ffa64d,stroke:#cc7a30,color:white
     style Comp fill:#4dbb5f,stroke:#36873f,color:white
-    style Target fill:#bb4d5f,stroke:#873f36,color:white
     style Options fill:#d94dbb,stroke:#a3378a,color:white
     style Eval fill:#4dbbbb,stroke:#368787,color:white
     style Decision fill:#d971ff,stroke:#a33bc2,color:white
     style Valid fill:#ff71c2,stroke:#c23b8a,color:white
-```
-
-## 🏗️ MONOREPO APPLICATION SELECTION
-
-```mermaid
-graph TD
-    Architecture["Architecture<br>Decision"] --> AppSelect{"Target<br>Application?"}
-    
-    AppSelect -->|"Website"| Website["React Website<br>Considerations"]
-    AppSelect -->|"Mobile"| Mobile["React Native<br>Considerations"]
-    AppSelect -->|"Backend"| Backend["GraphQL Server<br>Considerations"]
-    AppSelect -->|"Worker"| Worker["Worker Services<br>Considerations"]
-    AppSelect -->|"Cross-App"| Cross["Cross-Application<br>Architecture"]
-    
-    Website --> WebStack["React Router<br>Apollo Client<br>TailwindCSS"]
-    Mobile --> MobileStack["Expo<br>React Navigation<br>Apollo Client"]
-    Backend --> BackendStack["Apollo Server<br>Express<br>Database Integrations"]
-    Worker --> WorkerStack["Event-driven<br>Background Jobs<br>Messaging"]
-    Cross --> CrossStack["Shared Queries<br>Shared Utility Functions<br>Constants"]
-    
-    style Architecture fill:#4da6ff,stroke:#0066cc,color:white
-    style AppSelect fill:#ffa64d,stroke:#cc7a30,color:white
-    style Website fill:#4dbb5f,stroke:#36873f,color:white
-    style Mobile fill:#d94dbb,stroke:#a3378a,color:white
-    style Backend fill:#4dbbbb,stroke:#368787,color:white
-    style Worker fill:#d971ff,stroke:#a33bc2,color:white
-    style Cross fill:#ff71c2,stroke:#c23b8a,color:white
 ```
 
 ## 📋 ARCHITECTURE DECISION TEMPLATE
@@ -62,23 +34,12 @@ graph TD
 # Architecture Decision Record
 
 ## Context
-- Target Application: [Website/Mobile/GraphQL Server/Worker]
 - System Requirements:
   - [Requirement 1]
   - [Requirement 2]
 - Technical Constraints:
   - [Constraint 1]
   - [Constraint 2]
-- Cross-Application Impacts:
-  - [Impact on Website]
-  - [Impact on Mobile]
-  - [Impact on GraphQL Server]
-  - [Impact on Worker]
-- Shared or Public Utilies Impact: 
-  - [Impact from using Shared or Public Utilies on Website]
-  - [Impact from using Shared or Public Utilies on Mobile]
-  - [Impact from using Shared or Public Utilies on GraphQL Server]
-  - [Impact from using Shared or Public Utilies on Worker]
 
 ## Component Analysis
 - Core Components:
@@ -110,15 +71,6 @@ graph TD
 - Implementation Considerations:
   - [Consideration 1]
   - [Consideration 2]
-- Cross-Application Implementation:
-  - Website: [Implementation details]
-  - Mobile: [Implementation details]
-  - GraphQL Server: [Implementation details]
-  - Worker: [Implementation details]
-- Shared or Public Utilies Impact: 
-  - [Impact from using Shared Server Utilites]
-  - [Impact from using Shared Client Utilites]
-  - [Impact from using Public Utilites]
 
 ## Validation
 - Requirements Met:
@@ -139,8 +91,6 @@ graph TD
     C4["Security"]
     C5["Cost"]
     C6["Time to Market"]
-    C7["Cross-App Impact"]
-    C8["Shared or Public Utilies Impact"]
     end
     
     style C1 fill:#4dbb5f,stroke:#36873f,color:white
@@ -149,8 +99,6 @@ graph TD
     style C4 fill:#4dbbbb,stroke:#368787,color:white
     style C5 fill:#d971ff,stroke:#a33bc2,color:white
     style C6 fill:#ff71c2,stroke:#c23b8a,color:white
-    style C7 fill:#4da6ff,stroke:#0066cc,color:white
-    style C8 fill:#6da6ff,stroke:#668787,color:white
 ```
 
 ## 📊 ARCHITECTURE VISUALIZATION TEMPLATES
@@ -172,25 +120,17 @@ graph TD
     style C3 fill:#d94dbb,stroke:#a3378a,color:white
 ```
 
-### Monorepo Integration Template
+### Data Flow Template
 ```mermaid
-graph TD
-    subgraph "Application Integration"
-    Website["Website<br>React"]
-    Mobile["Mobile<br>React Native"]
-    GraphQL["GraphQL Server<br>Apollo Server"]
-    Worker["Worker<br>Event Services"]
+sequenceDiagram
+    participant C1 as Component 1
+    participant C2 as Component 2
+    participant C3 as Component 3
     
-    Website -->|"Make API Requests"| GraphQL
-    Mobile -->|"Make API Requests"| GraphQL
-    GraphQL -->|"Run Background Jobs or Send Events"| Worker
-    Worker -->|"Data Updates"| GraphQL
-    end
-    
-    style Website fill:#4dbb5f,stroke:#36873f,color:white
-    style Mobile fill:#ffa64d,stroke:#cc7a30,color:white
-    style GraphQL fill:#d94dbb,stroke:#a3378a,color:white
-    style Worker fill:#4dbbbb,stroke:#368787,color:white
+    C1->>C2: Request
+    C2->>C3: Process
+    C3-->>C2: Response
+    C2-->>C1: Result
 ```
 
 ## ✅ VERIFICATION CHECKLIST
@@ -205,8 +145,6 @@ graph TD
 - [ ] Scalability requirements met
 - [ ] Performance requirements met
 - [ ] Maintenance approach defined
-- [ ] Cross-application impacts considered
-- [ ] Shared or Public Utilities considered
 
 ## Implementation Readiness
 - [ ] All components identified
@@ -215,8 +153,6 @@ graph TD
 - [ ] Risk assessment completed
 - [ ] Resource requirements defined
 - [ ] Timeline estimates provided
-- [ ] Target application(s) clearly identified
-- [ ] If should be part of shared or public utilities identified
 ```
 
 ## 🔄 ARCHITECTURE REVIEW PROCESS
@@ -227,19 +163,15 @@ graph TD
     R1["Technical<br>Review"]
     R2["Security<br>Review"]
     R3["Performance<br>Review"]
-    R4["Cross-App<br>Impact Review"]
-    R5["Shared or Public Utilities<br>Impact Review"]
-    R6["Final<br>Approval"]
+    R4["Final<br>Approval"]
     end
     
-    R1 --> R2 --> R3 --> R4 --> R5 --> R6
+    R1 --> R2 --> R3 --> R4
     
     style R1 fill:#4dbb5f,stroke:#36873f,color:white
     style R2 fill:#ffa64d,stroke:#cc7a30,color:white
     style R3 fill:#d94dbb,stroke:#a3378a,color:white
-    style R4 fill:#4da6ff,stroke:#0066cc,color:white
-    style R5 fill:#4dbbbb,stroke:#368787,color:white
-    style R6 fill:#f94dbb,stroke:#c3378a,color:white
+    style R4 fill:#4dbbbb,stroke:#368787,color:white
 ```
 
 ## 🔄 DOCUMENT MANAGEMENT

@@ -73,7 +73,7 @@ Use these indicators to help determine task complexity:
 
 ### Level 3: Intermediate Feature
 - **Keywords**: "implement", "create", "develop", "build", "feature"
-- **Scope**: Multiple components, complete feature that can touch the Frontend and the Backend
+- **Scope**: Multiple components, complete feature
 - **Duration**: Days to 1-2 weeks
 - **Risk**: Significant, affects multiple areas
 - **Examples**:
@@ -103,7 +103,6 @@ Answer these questions to determine complexity:
 
 1. **Scope Impact**
    - Does it affect a single component or multiple?
-   - Are frontend and backend updates required?
    - Are there system-wide implications?
    - How many files will need to be modified?
 

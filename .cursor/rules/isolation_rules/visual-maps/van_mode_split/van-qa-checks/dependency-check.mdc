@@ -35,7 +35,7 @@ graph TD
 ```powershell
 # Example: Verify Node.js dependencies for a React project
 function Verify-Dependencies {
-    $requiredDeps = @{ "node" = ">=14.0.0"; "yarn" = ">=1.0.0" }
+    $requiredDeps = @{ "node" = ">=14.0.0"; "npm" = ">=6.0.0" }
     $missingDeps = @(); $incompatibleDeps = @()
     
     # Check Node.js version
@@ -51,17 +51,17 @@ function Verify-Dependencies {
         $missingDeps += "node"
     }
     
-    # Check yarn version
+    # Check npm version
     try { 
-        $yarnVersion = yarn -v
-        if ($yarnVersion -match "(\d+)\.(\d+)\.(\d+)") {
+        $npmVersion = npm -v
+        if ($npmVersion -match "(\d+)\.(\d+)\.(\d+)") {
             $major = [int]$Matches[1]
-            if ($major -lt 1) {
-                $incompatibleDeps += "yarn (found $yarnVersion, required >=1.0.0)"
+            if ($major -lt 6) {
+                $incompatibleDeps += "npm (found $npmVersion, required >=6.0.0)"
             }
         }
     } catch {
-        $missingDeps += "yarn"
+        $missingDeps += "npm"
     }
     
     # Display results
@@ -102,17 +102,17 @@ verify_dependencies() {
         missing_deps+=("node")
     fi
     
-    # Check yarn version
-    if command -v yarn &> /dev/null; then
-        local yarn_version=$(yarn -v)
-        if [[ $yarn_version =~ ([0-9]+)\.([0-9]+)\.([0-9]+) ]]; then
+    # Check npm version
+    if command -v npm &> /dev/null; then
+        local npm_version=$(npm -v)
+        if [[ $npm_version =~ ([0-9]+)\.([0-9]+)\.([0-9]+) ]]; then
             local major=${BASH_REMATCH[1]}
-            if (( major < 1 )); then
-                incompatible_deps+=("yarn (found $yarn_version, required >=1.0.0)")
+            if (( major < 6 )); then
+                incompatible_deps+=("npm (found $npm_version, required >=6.0.0)")
             fi
         fi
     else
-        missing_deps+=("yarn")
+        missing_deps+=("npm")
     fi
     
     # Display results
