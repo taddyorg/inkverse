@@ -18,7 +18,9 @@
     "@graphql-codegen/typescript": "4.1.6",
     "@graphql-codegen/typescript-document-nodes": "4.0.16",
     "@graphql-codegen/typescript-operations": "4.6.1",
-    "@graphql-codegen/typescript-resolvers": "4.5.1"
+    "@graphql-codegen/typescript-resolvers": "4.5.1",
+    "@types/react": "~19.0.10",
+    "typescript": "^5.3.3"
   },
   "scripts": {
     "graphql-codegen": "graphql-codegen --config packages/public/src/graphql/codegen.ts && graphql-codegen --config packages/shared-client/src/graphql/codegen.ts && graphql-codegen --config packages/shared-server/src/graphql/codegen.ts"
