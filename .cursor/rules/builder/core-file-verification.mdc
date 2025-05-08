@@ -1,6 +1,6 @@
 ---
 description: Optimized file verification
-globs: file-verification.mdc
+globs: core-file-verification.mdc
 alwaysApply: false
 ---
 # OPTIMIZED FILE VERIFICATION SYSTEM

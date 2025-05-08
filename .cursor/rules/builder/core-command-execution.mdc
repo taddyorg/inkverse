@@ -1,6 +1,6 @@
 ---
 description: Command execution guidelines for isolation-focused Memory Bank
-globs: command-execution.mdc
+globs: core-command-execution.mdc
 alwaysApply: false
 ---
 
@@ -64,11 +64,11 @@ graph TD
 
 Before executing any npm or build command:
 
-| Step | Windows (PowerShell) | Unix/Linux/Mac | Purpose |
-|------|----------------------|----------------|---------|
-| **Check package.json** | `Test-Path package.json` | `ls package.json` | Verify current directory is project root |
-| **Check for parent directory** | `Test-Path "*/package.json"` | `find . -maxdepth 2 -name package.json` | Find potential project directories |
-| **Navigate to project root** | `cd [project-dir]` | `cd [project-dir]` | Move to correct directory before executing commands |
+| Step | Command | Purpose |
+|------|----------------|---------|
+| **Check package.json** | `ls package.json` | Verify current directory is project root |
+| **Check for parent directory** | `find . -maxdepth 2 -name package.json` | Find potential project directories |
+| **Navigate to project root** | `cd [project-dir]` | Move to correct directory before executing commands |
 
 ## 🔄 COMMAND CHAINING PATTERNS
 
@@ -209,5 +209,5 @@ graph TD
     W2 --> S2["Include error handling<br>in command chains"]
     W3 --> S3["Prefer built-in<br>command capabilities"]
     W4 --> S4["Show confirmation<br>before destructive actions"]
-    W5 --> S5["Verify directory before<br>npm/build commands"]
+    W5 --> S5["Verify directory before<br>yarn install or yarn build commands"]
 ``` 

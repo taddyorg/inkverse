@@ -1,9 +1,8 @@
 ---
 description: Visual process map for PLAN mode (Code Implementation)
-globs: plan-mode-map.mdc
+globs: visual-mode-map-plan.mdc
 alwaysApply: false
 ---
-
 # PLAN MODE: TASK PLANNING PROCESS MAP
 
 > **TL;DR:** This visual map guides the PLAN mode process, focusing on creating detailed implementation plans based on the complexity level determined during initialization, with mandatory technology validation before implementation.
@@ -12,7 +11,7 @@ alwaysApply: false
 
 ```mermaid
 graph TD
-    Start["START PLANNING"] --> ReadTasks["Read tasks.md<br>Core/task-tracking.md"]
+    Start["START PLANNING"] --> ReadTasks["Read tasks.md"]
     
     %% Complexity Level Determination
     ReadTasks --> CheckLevel{"Determine<br>Complexity Level"}
@@ -143,10 +142,10 @@ Before planning can begin, verify the file state:
 graph TD
     Start["File State<br>Verification"] --> CheckTasks{"tasks.md<br>initialized?"}
     
-    CheckTasks -->|"No"| ErrorTasks["ERROR:<br>Return to VAN Mode"]
+    CheckTasks -->|"No"| ErrorTasks["ERROR:<br>tasks.md is missing. Please create it before proceeding with PLAN mode."]
     CheckTasks -->|"Yes"| CheckActive{"activeContext.md<br>exists?"}
     
-    CheckActive -->|"No"| ErrorActive["ERROR:<br>Return to VAN Mode"]
+    CheckActive -->|"No"| ErrorActive["ERROR:<br>active.md is missing. Please create it before proceeding with PLAN mode."]
     CheckActive -->|"Yes"| ReadyPlan["Ready for<br>Planning"]
 ```
 

@@ -3,7 +3,6 @@ description: Hierarchical rule loading system for optimized token usage
 globs: "**/rule-loading*/**", "**/optimization*/**"
 alwaysApply: false
 ---
-
 # HIERARCHICAL RULE LOADING SYSTEM
 
 > **TL;DR:** This rule implements an optimized loading system that only loads necessary rules based on context, complexity level, and current phase to maximize token efficiency.
@@ -17,11 +16,9 @@ graph TD
     Root --> Mode["Mode-Specific<br>Rules"]
     Root --> Level["Complexity Level<br>Rules"]
     
-    Core --> Platform["Platform<br>Detection"]
     Core --> File["File<br>Operations"]
     Core --> Transition["Mode<br>Transitions"]
     
-    Mode --> VAN["VAN Mode<br>Rules"]
     Mode --> PLAN["PLAN Mode<br>Rules"]
     Mode --> CREATIVE["CREATIVE Mode<br>Rules"]
     Mode --> IMPLEMENT["IMPLEMENT Mode<br>Rules"]
@@ -150,15 +147,8 @@ class RuleLoadManager {
 
 ```mermaid
 graph TD
-    Main["main.mdc"] --> Core1["platform-awareness.mdc"]
-    Main --> Core2["file-verification.mdc"]
+    Main["main.mdc"] --> Core2["file-verification.mdc"]
     Main --> Core3["command-execution.mdc"]
-    
-    subgraph "VAN Mode"
-        VanMap["van-mode-map.mdc"] --> Van1["van-complexity-determination.mdc"]
-        VanMap --> Van2["van-file-verification.mdc"]
-        VanMap --> Van3["van-platform-detection.mdc"]
-    end
     
     subgraph "PLAN Mode"
         PlanMap["plan-mode-map.mdc"] --> Plan1["task-tracking-basic.mdc"]
@@ -181,14 +171,6 @@ graph TD
 ```
 
 ## 🔍 MODE-SPECIFIC RULE LOADING
-
-### VAN Mode Essential Rules
-```markdown
-- main.mdc (Core)
-- platform-awareness.mdc (Core)
-- file-verification.mdc (Core)
-- van-mode-map.mdc (Mode)
-```
 
 ### PLAN Mode Essential Rules
 ```markdown

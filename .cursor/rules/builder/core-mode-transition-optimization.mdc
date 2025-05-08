@@ -3,7 +3,6 @@ description: Optimized mode transition protocol
 globs: "**/mode-transition*/**", "**/context-preservation*/**"
 alwaysApply: false
 ---
-
 # MODE TRANSITION OPTIMIZATION
 
 > **TL;DR:** This file implements optimized mode transitions to preserve context efficiently between different phases of the Memory Bank system.
@@ -64,15 +63,6 @@ Create a standardized transition document when switching modes:
 
 ## 🔍 MODE-SPECIFIC TRANSITION HANDLERS
 
-### VAN → PLAN Transition
-
-```markdown
-### VAN → PLAN
-- Context preserved: Complexity level, platform detection, file structure
-- Files transferred: tasks.md (initialized), activeContext.md (initialized)
-- Rule optimization: Pre-load planning rules based on complexity level
-```
-
 ### PLAN → CREATIVE Transition
 
 ```markdown
@@ -108,7 +98,6 @@ Implement rule caching to avoid redundant loading:
 // Pseudocode for rule caching
 const ruleCache = {
   core: {}, // Core rules shared across modes
-  van: {},
   plan: {},
   creative: {},
   implement: {},

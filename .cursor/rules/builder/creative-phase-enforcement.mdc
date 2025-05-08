@@ -1,6 +1,6 @@
 ---
-description: creative phase enforcement 
-globs: creative-phase-enforcement.md
+description: creative phase enforcement
+globs: creative-phase-enforcement.mdc
 alwaysApply: false
 ---
 
@@ -136,7 +136,7 @@ Next Steps: [Implementation plan]
 
 ```mermaid
 graph TD
-    Current["Current Document"] --> Active["Active:<br>- creative-phase-enforcement.md"]
+    Current["Current Document"] --> Active["Active:<br>- creative-phase-enforcement.mdc"]
     Current --> Related["Related:<br>- creative-phase-architecture.md<br>- task-tracking-intermediate.md"]
     
     style Current fill:#4da6ff,stroke:#0066cc,color:white

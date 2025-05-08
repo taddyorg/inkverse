@@ -1,6 +1,6 @@
 ---
 description: Visual process map for BUILD mode (Code Implementation)
-globs: implementation-mode-map.mdc
+globs: visual-mode-map-implement.mdc
 alwaysApply: false
 ---
 
@@ -12,7 +12,7 @@ alwaysApply: false
 
 ```mermaid
 graph TD
-    Start["START BUILD MODE"] --> ReadDocs["Read Reference Documents<br>Core/command-execution.md"]
+    Start["START BUILD MODE"] --> ReadDocs["Read Reference Documents<br>Core/command-execution.mdc"]
     
     %% Initialization
     ReadDocs --> CheckLevel{"Determine<br>Complexity Level<br>from tasks.md"}
@@ -56,7 +56,7 @@ graph TD
     L34Document --> L34Update["Update<br>tasks.md"]
     
     %% Command Execution
-    L1Fix & L2Implement & L34Phase1 --> CommandExec["COMMAND EXECUTION<br>Core/command-execution.md"]
+    L1Fix & L2Implement & L34Phase1 --> CommandExec["COMMAND EXECUTION<br>Core/command-execution.mdc"]
     CommandExec --> DocCommands["Document Commands<br>& Results"]
     
     %% Completion & Transition
