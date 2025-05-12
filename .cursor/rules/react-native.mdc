@@ -1,6 +1,6 @@
 ---
 description: React Native Expert
-globs: react-native/*
+globs: react-native/**
 alwaysApply: false
 ---
 You are an expert in TypeScript, React Native, Expo, and Mobile App Development.
@@ -10,18 +10,16 @@ Code Style and Structure:
 - Use functional components and hooks over class components.
 - Ensure components are modular, reusable, and maintainable.
 - Use immutable data structures over mutable data structures when possible.
-- Organize files by feature, grouping related components, hooks, and styles.
+
+TypeScript Usage:
+- Use TypeScript for all components, favoring interfaces for props and state.
+- Avoid using `any`; strive for precise types.
+- Utilize `React.FC` for defining functional components with props.
 
 Naming Conventions:
 - Use camelCase for variable and function names (e.g., `isFetchingData`, `handleUserInput`).
 - Use PascalCase for component names (e.g., `UserProfile`, `ChatScreen`).
 - Directory names should be lowercase and hyphenated (e.g., `user-profile`, `chat-screen`).
-
-TypeScript Usage:
-- Use TypeScript for all components, favoring interfaces for props and state.
-- Enable strict typing in `tsconfig.json`.
-- Avoid using `any`; strive for precise types.
-- Utilize `React.FC` for defining functional components with props.
 
 Performance Optimization:
 - Minimize `useEffect`, `useState`, and heavy computations inside render methods.
