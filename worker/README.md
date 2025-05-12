@@ -3,26 +3,7 @@ The Worker repo is a collection of scripts and useful commands for running vario
 
 ### Setup Database and Queues
 
-If you haven't already, follow the steps in the [graphql-server](https://github.com/taddyorg/inkverse-graphql-server) README to setup the database and queues locally.
-
-### Create a .env file
-
-- You will find a `.env.copy` file in the [graphql-server](https://github.com/taddyorg/inkverse-graphql-server) project. Create a `.env` file in the `worker` project and copy the contents of `.env.copy` into it.
-
-### Setup submodules
-- shared: contains shared code for backend Inkverse repos. ex) CRUD for Database.
-- public: contains constants used on both frontend & backend.
-
-```
-git submodule init
-git submodule update
-```
-
-to check that it installed properly
-```
-ls src/shared // make sure there are files inside here
-ls src/public // make sure there are files inside here
-```
+If you haven't already, follow the steps in the [root README](../README.md) to setup the database and queues locally.
 
 ## Useful Commands
 

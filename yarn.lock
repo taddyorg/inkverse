@@ -4259,10 +4259,10 @@
   dependencies:
     nanoid "^3.3.11"
 
-"@react-router/dev@^7.5.3":
-  version "7.5.3"
-  resolved "https://registry.yarnpkg.com/@react-router/dev/-/dev-7.5.3.tgz#33e5c494a87225ccf7d28b404b52ae4a0fc1685c"
-  integrity sha512-U+n8JYAREKg6eHIAXCjazsYlwPo/vcAbShpqePnDBUdDnePBwZ2JmoqhWV+7tIhyHvvHGQKlw6BcrSZtF549WQ==
+"@react-router/dev@^7.6.0":
+  version "7.6.0"
+  resolved "https://registry.yarnpkg.com/@react-router/dev/-/dev-7.6.0.tgz#9974e608be0398ee22282405992d0a62a3cc26ba"
+  integrity sha512-XSxEslex0ddJPxNNgdU1Eqmc9lsY/lhcLNCcRLAtlrOPyOz3Y8kIPpAf5T/U2AG3HGXFVBa9f8aQ7wXU3wTJSw==
   dependencies:
     "@babel/core" "^7.21.8"
     "@babel/generator" "^7.21.5"
@@ -4273,7 +4273,7 @@
     "@babel/traverse" "^7.23.2"
     "@babel/types" "^7.22.5"
     "@npmcli/package-json" "^4.0.1"
-    "@react-router/node" "7.5.3"
+    "@react-router/node" "7.6.0"
     arg "^5.0.1"
     babel-dead-code-elimination "^1.0.6"
     chokidar "^4.0.0"
@@ -4292,30 +4292,30 @@
     valibot "^0.41.0"
     vite-node "3.0.0-beta.2"
 
-"@react-router/express@7.5.3":
-  version "7.5.3"
-  resolved "https://registry.yarnpkg.com/@react-router/express/-/express-7.5.3.tgz#a4d901f47fe3fdd0d10a97649fd5f514795aabd3"
-  integrity sha512-/fPrmeJQME7nL71FyUAMRGZk1PsrW1+hPMs7caIATmHKvE8hArd2BrpdsHEbGNvirnyO+qABQJmRFdNtCU/axQ==
+"@react-router/express@7.6.0":
+  version "7.6.0"
+  resolved "https://registry.yarnpkg.com/@react-router/express/-/express-7.6.0.tgz#1c9686e9154aab7b9411d4d1bcf4cc14145ebc94"
+  integrity sha512-nxSTCcTsVx94bXOI9JjG7Cg338myi8EdQWTOjA97v2ApX35wZm/ZDYos5MbrvZiMi0aB4KgAD62o4byNqF9Z1A==
   dependencies:
-    "@react-router/node" "7.5.3"
+    "@react-router/node" "7.6.0"
 
-"@react-router/node@7.5.3", "@react-router/node@^7.5.3":
-  version "7.5.3"
-  resolved "https://registry.yarnpkg.com/@react-router/node/-/node-7.5.3.tgz#6219a570f2d847e8bbd48582a5a7806580aac2cb"
-  integrity sha512-w85YL6UngvhxGmgTBL3qwlVLFiA1EzNyG5S55qGcnhDikfb9z84gqMlTU4UqlZm8PjQ021HPTTN6I3kd7QE5sg==
+"@react-router/node@7.6.0", "@react-router/node@^7.6.0":
+  version "7.6.0"
+  resolved "https://registry.yarnpkg.com/@react-router/node/-/node-7.6.0.tgz#18c31c502f8004f2b8a1ca6ceebd0ac1e9307e12"
+  integrity sha512-agjDPUzisLdGJ7Q2lx/Z3OfdS2t1k6qv/nTvA45iahGsQJCMDvMqVoIi7iIULKQJwrn4HWjM9jqEp75+WsMOXg==
   dependencies:
     "@mjackson/node-fetch-server" "^0.2.0"
     source-map-support "^0.5.21"
     stream-slice "^0.1.2"
     undici "^6.19.2"
 
-"@react-router/serve@^7.5.3":
-  version "7.5.3"
-  resolved "https://registry.yarnpkg.com/@react-router/serve/-/serve-7.5.3.tgz#febd8fdd93e4a5feb7df3ad93a84ec84ce3c91cb"
-  integrity sha512-0YkoVAJWAMtYPKQVXKb1RoSfy3EbjyzEeaFCL4twB4eB5Rj4MSE9uH0Zb9caNQXpq/8MDzjbe3SuvQ8uqwyqkQ==
+"@react-router/serve@^7.6.0":
+  version "7.6.0"
+  resolved "https://registry.yarnpkg.com/@react-router/serve/-/serve-7.6.0.tgz#ab0ff21cf80b3dbbb746fad1110d9d2903b24439"
+  integrity sha512-2O8ALEYgJfimvEdNRqMpnZb2N+DQ5UK/SKo9Xo3mTkt3no0rNTcNxzmhzD2tm92Q/HI7kHmMY1nBegNB2i1abA==
   dependencies:
-    "@react-router/express" "7.5.3"
-    "@react-router/node" "7.5.3"
+    "@react-router/express" "7.6.0"
+    "@react-router/node" "7.6.0"
     compression "^1.7.4"
     express "^4.19.2"
     get-port "5.1.1"
@@ -11443,21 +11443,20 @@ react-refresh@^0.14.0, react-refresh@^0.14.2:
   resolved "https://registry.yarnpkg.com/react-refresh/-/react-refresh-0.14.2.tgz#3833da01ce32da470f1f936b9d477da5c7028bf9"
   integrity sha512-jCvmsr+1IUSMUyzOkRcvnVbX3ZYC6g9TDrDbFuFmRDq7PD4yaGbLKNQL6k2jnArV8hjYxh7hVhAZB6s9HDGpZA==
 
-react-router-dom@^7.5.3:
-  version "7.5.3"
-  resolved "https://registry.yarnpkg.com/react-router-dom/-/react-router-dom-7.5.3.tgz#496e9f6d90f731703c7772668b41747028e0a2d5"
-  integrity sha512-cK0jSaTyW4jV9SRKAItMIQfWZ/D6WEZafgHuuCb9g+SjhLolY78qc+De4w/Cz9ybjvLzShAmaIMEXt8iF1Cm+A==
+react-router-dom@^7.6.0:
+  version "7.6.0"
+  resolved "https://registry.yarnpkg.com/react-router-dom/-/react-router-dom-7.6.0.tgz#eadcede43856dc714fa3572a946fd7502775c017"
+  integrity sha512-DYgm6RDEuKdopSyGOWZGtDfSm7Aofb8CCzgkliTjtu/eDuB0gcsv6qdFhhi8HdtmA+KHkt5MfZ5K2PdzjugYsA==
   dependencies:
-    react-router "7.5.3"
+    react-router "7.6.0"
 
-react-router@7.5.3, react-router@^7.5.3:
-  version "7.5.3"
-  resolved "https://registry.yarnpkg.com/react-router/-/react-router-7.5.3.tgz#9e5420832af8c3690740c1797d4fa54613fea06d"
-  integrity sha512-3iUDM4/fZCQ89SXlDa+Ph3MevBrozBAI655OAfWQlTm9nBR0IKlrmNwFow5lPHttbwvITZfkeeeZFP6zt3F7pw==
+react-router@7.6.0, react-router@^7.6.0:
+  version "7.6.0"
+  resolved "https://registry.yarnpkg.com/react-router/-/react-router-7.6.0.tgz#e2d0872d7bea8df79465a8bba9a20c87c32ce995"
+  integrity sha512-GGufuHIVCJDbnIAXP3P9Sxzq3UUsddG3rrI3ut1q6m0FI6vxVBF3JoPQ38+W/blslLH4a5Yutp8drkEpXoddGQ==
   dependencies:
     cookie "^1.0.1"
     set-cookie-parser "^2.6.0"
-    turbo-stream "2.4.0"
 
 react-server-dom-webpack@~19.0.0:
   version "19.0.0"
@@ -12784,11 +12783,6 @@ tunnel-agent@^0.6.0:
   dependencies:
     safe-buffer "^5.0.1"
 
-turbo-stream@2.4.0:
-  version "2.4.0"
-  resolved "https://registry.yarnpkg.com/turbo-stream/-/turbo-stream-2.4.0.tgz#1e4fca6725e90fa14ac4adb782f2d3759a5695f0"
-  integrity sha512-FHncC10WpBd2eOmGwpmQsWLDoK4cqsA/UT/GqNoaKOQnT8uzhtCbg3EoUDMvqpOSAI0S26mr0rkjzbOO6S3v1g==
-
 type-detect@4.0.8:
   version "4.0.8"
   resolved "https://registry.yarnpkg.com/type-detect/-/type-detect-4.0.8.tgz#7646fb5f18871cfbb7749e69bd39a6388eb7450c"
@@ -12812,7 +12806,7 @@ type-is@~1.6.18:
     media-typer "0.3.0"
     mime-types "~2.1.24"
 
-typescript@^5.3.3, typescript@^5.7.2:
+typescript@^5.7.2:
   version "5.8.3"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.8.3.tgz#92f8a3e5e3cf497356f4178c34cd65a7f5e8440e"
   integrity sha512-p1diW6TqL9L07nNxvRMM7hMMw4c5XOo/1ibL4aAIGmSAt9slTE1Xgw5KWuof2uTOvCg9BY7ZRi+GaF+7sfgPeQ==

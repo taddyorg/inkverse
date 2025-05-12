@@ -19,9 +19,12 @@
     "@graphql-codegen/typescript-document-nodes": "4.0.16",
     "@graphql-codegen/typescript-operations": "4.6.1",
     "@graphql-codegen/typescript-resolvers": "4.5.1",
-    "typescript": "^5.3.3"
+    "typescript": "^5.7.2"
   },
   "scripts": {
-    "graphql-codegen": "graphql-codegen --config packages/public/src/graphql/codegen.ts && graphql-codegen --config packages/shared-client/src/graphql/codegen.ts && graphql-codegen --config packages/shared-server/src/graphql/codegen.ts"
+    "graphql-codegen": "graphql-codegen --config packages/public/src/graphql/codegen.ts && graphql-codegen --config packages/shared-client/src/graphql/codegen.ts && graphql-codegen --config packages/shared-server/src/graphql/codegen.ts",
+    "migrate": "tsx ./node_modules/.bin/knex --knexfile ./packages/shared-server/src/database/config.ts migrate:latest",
+    "migrate:rollback": "tsx ./packages/shared-server/src/database/list-last-batch-migrations.ts",
+    "migrate:list": "tsx ./node_modules/.bin/knex --knexfile ./packages/shared-server/src/database/config.ts migrate:list"
   }
 }

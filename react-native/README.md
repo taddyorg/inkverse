@@ -1,41 +1,21 @@
 # Inkverse React Native App
 
+This is the main React Native app for Inkverse, a comic reading platform. It creates a native app that can be run on iOS and Android.
+
+## Steps to Setup
+
+If you haven't already, follow the steps in the [root README](../README.md) to setup the database, queues and install dependencies.
+
 ## Quick Setup (Using Production Inkverse API)
 
-1. Install dependencies
-
-```
-yarn install - W
-```
-
-We use yarn workspaces to install packages for the whole project, including the shared modules.
-
-This project contains 2 shared modules: shared & public:
-- shared: contains shared code for both the Web & React Native apps. ex) GraphQL Queries and Mutations needed for the app.
-- public: contains constants used for all Inkverse repos.
-
-Using -W installs dependencies for the whole project, including the shared modules.
-
-2.Setup config file
+1. Setup config file
 
 Inside `config.ts`, change developmentConfig to developmentConfigButProductionData. This will use Inkverse's production API.
 
-3. Localhost vs inkverse.test
-
-We use custom localhost (inkverse.test) vs localhost, the benefit is that on your local machine you dont mix up cookies and other brower data between different localhost projects.
-
-To set it up, add this to your hosts file, by `sudo vim /etc/hosts` on Mac/Linux.
+2. Start the app
 
 ```
-127.0.0.1               localhost
-127.0.0.1               inkverse.test
-```
-
-Now you can use `inkverse.test` as an alias for `localhost`, like we do in the config file.
-
-4. Start the app
-
-```
+cd react-native
 yarn dev
 ```
 
@@ -43,7 +23,7 @@ You can now select `i` to run the app on the iOS Simulator or `a` to run the app
 
 ## Local Development Setup (Using your own local server)
 
-If you want to build new features or fix bugs, you will need to setup your own local server. See [graphql-server/README.md](https://github.com/taddyorg/inkverse-graphql-server) for instructions on how to setup a local server.
+If you want to build new features or fix bugs, you will need to setup your own local server. See [../graphql-server/README.md](../graphql-server/README.md) for instructions on how to setup a local server.
 
 1. Reset config file back to developmentConfig.
 
@@ -56,3 +36,7 @@ yarn dev
 ```
 
 If you get an Apollo error, your local server is not running or your config is not pointing to the correct url.
+
+### Docs
+
+Documentation for this application is in the [docs](./docs) folder. In particular, the [architecture.md](./docs/architecture.md) file contains a high-level overview of the application.
