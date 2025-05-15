@@ -1,116 +1,146 @@
-# Jobs To Be Done (JTBD) - Inkverse Authentication
+# Jobs To Be Done: Authentication
 
 ## Overview
-This document defines the core authentication tasks Inkverse users need to accomplish, focusing on signup, login, and account management across platforms. Users can use the app without logging in for basic reading functionality, with authentication only required for specific personalized features such as recommending comics, tracking reading progress, and creating lists.
+
+This JTBD document outlines the core tasks, problems, and desired outcomes around authentication for Inkverse users across our web and mobile platforms. It focuses on the user needs driving our authentication feature rather than its technical implementation.
 
 ---
 
-### JTBD #1: Cross-Platform Account Creation
+### JTBD 1: Frictionless Account Creation
 
 **Job Statement**  
-As a new Inkverse user, I want to quickly create an account with minimal friction, so that I can start tracking my reading progress and accessing personalized features.
+As a new Inkverse user, I want to create an account quickly and easily, so that I can access personalized features without disrupting my reading experience.
 
 **Context**  
-- During first app launch or when attempting to access personalized features (like recommending comics)
-- When discovering Inkverse through social media or recommendations
-- When encountering specific CTAs that require authentication
+- During first-time usage or when attempting to access features that require authentication
+- When discovering content they want to save or track
 
 **Motivation (Why this matters)**  
-- Frustrated by complex signup processes that interrupt the discovery experience
-- Want to preserve reading history and preferences across sessions
-- Need a personalized experience that remembers comics I've read
+- Users abandon platforms with complex or time-consuming signup processes
+- Many readers want to try core features before committing to account creation
 
 **Current Alternatives (if any)**  
-- Using the app in a logged-out state with limited functionality (basic reading only)
-- Creating new accounts on each device, leading to fragmented experiences
+- Using the app in logged-out mode with limited functionality
+- Using other comic platforms with simpler authentication
 
 **Desired Outcome / Success Criteria**  
-- Create an account in under 30 seconds using existing credentials (Google/Apple)
-- Immediately access personalized features after signup
-- Feel confident that personal information is secure
-- Clearly understand which features require authentication vs. which can be used without an account
+- User can create an account in under 30 seconds
+- Users can choose familiar authentication methods they already trust (social login)
+- No password to remember or manage
 
 **Priority Level**  
 - High
 
 ---
 
-### JTBD #2: Seamless Cross-Device Authentication
+### JTBD 2: Cross-Device Reading Continuity
 
 **Job Statement**  
-As an existing Inkverse reader, I want to easily sign in on any device (mobile or web), so that I can continue my reading experience wherever I am.
+As an engaged reader, I want my reading progress and preferences to follow me across devices, so that I can seamlessly continue my reading experience wherever I am.
 
 **Context**  
-- When switching between phone and desktop during the day
-- When getting a new device or using a friend's device temporarily
+- When switching between mobile and web platforms
+- During commutes, breaks, or different times of day when device preferences change
 
-**Motivation**  
-- Frustrated by having to remember which episodes I've read across devices
-- Want consistent access to my lists, favorites, and reading history
+**Motivation (Why this matters)**  
+- Frustrating to lose track of reading progress when changing devices
+- Time wasted searching for where the reader left off
+- Risk of accidentally re-reading or missing content
 
-**Current Alternatives**  
-- Manually remembering read status across devices
-- Starting over on each new device
+**Current Alternatives (if any)**  
+- Manually remembering which episodes were read and where they stopped
+- Using browser bookmarks or screenshots to mark progress
 
-**Desired Outcome**  
-- One-click login with existing social accounts or saved credentials
-- Immediate sync of all reading progress, lists, and preferences
-- Consistent experience across mobile and web platforms
+**Desired Outcome / Success Criteria**  
+- Reading progress automatically syncs between all devices
+- Personalized lists, preferences, and interactions persist across platforms
+- Immediate recognition of the user across sessions and devices
 
 **Priority Level**  
 - High
 
 ---
 
-### JTBD #3: Personalized Onboarding
+### JTBD 3: Privacy and Account Control
 
 **Job Statement**  
-As a new user who just created an account, I want to personalize my profile with relevant information, so that I can get content recommendations that match my interests and connect with the community.
+As a privacy-conscious user, I want complete control over my account information and activity, so that I can manage my digital presence and data according to my preferences.
 
 **Context**  
-- Immediately after account creation
-- When exploring app features for the first time
+- When users want to update their preferences
+- When users want to remove their data from the platform
+- When using shared or public devices
 
-**Motivation**  
-- Want content recommendations that match my age group and interests
-- Desire to establish an identity within the Inkverse community
-- Need to comply with age-appropriate content requirements
+**Motivation (Why this matters)**  
+- Growing concern about data privacy and security
+- Need for autonomy over personal information
+- Building trust with the platform
 
-**Current Alternatives**  
-- Manually searching for content without personalized recommendations
-- Using generic experience not tailored to preferences
+**Current Alternatives (if any)**  
+- Creating disposable accounts with minimal information
+- Avoiding certain features to prevent data collection
+- Manual deletion of browsing history and cookies
 
-**Desired Outcome**  
-- Complete profile setup (username, age) within 1 minute
-- Receive immediately relevant content recommendations
-- Feel part of the community with a personalized profile
+**Desired Outcome / Success Criteria**  
+- Ability to log out from any device
+- Simple account deletion with clear explanation of what data is removed
+- Transparent authentication processes that prioritize privacy
 
 **Priority Level**  
 - Medium
 
 ---
 
-### JTBD #4: Account Security Management
+### JTBD 4: Accessing Premium or Personalized Features
 
 **Job Statement**  
-As an Inkverse user, I want to manage my account security and preferences, so that I can protect my data and control my experience.
+As an invested reader, I want secure access to premium or personalized features, so that I can enhance my reading experience and support creators I enjoy.
 
 **Context**  
-- After creating an account
-- When concerned about privacy or security
+- When discovering features like custom lists, comments, or early access content
+- When becoming more engaged with specific series or creators
 
-**Motivation**  
-- Need control over personal data shared with the platform
-- Want to ensure account isn't compromised
+**Motivation (Why this matters)**  
+- Desire to participate more deeply in the community aspects of the platform
+- Interest in supporting favorite creators
+- Looking for ways to enhance the core reading experience
 
-**Current Alternatives**  
-- Creating throwaway accounts with fake information
-- Avoiding signing up altogether due to security concerns
+**Current Alternatives (if any)**  
+- Using third-party tools to track reading or organize content
+- Having no reliable way to support creators directly
 
-**Desired Outcome**  
-- Easily update email and see your connected accounts
-- Clear visibility into what data is collected and how it's used
-- Options to delete account or export personal data
+**Desired Outcome / Success Criteria**  
+- Seamless transition from free browsing to authenticated features
+- Clear indication of which features require authentication
+- Feeling of security when accessing premium content or making transactions
 
 **Priority Level**  
-- Medium 
+- Medium
+
+---
+
+### JTBD 5: Low-Friction Return Experience
+
+**Job Statement**  
+As a returning user, I want to access my account with minimal effort, so that I can immediately continue where I left off without authentication becoming a barrier.
+
+**Context**  
+- When returning to the app after periods of inactivity
+- After logging out for privacy or security reasons
+- When using a new device for the first time
+
+**Motivation (Why this matters)**  
+- Frequent login requirements create friction and reduce engagement
+- Password-based systems create additional cognitive load
+
+**Current Alternatives (if any)**  
+- Staying permanently logged in (security risk)
+- Using browser password managers or device keychain
+
+**Desired Outcome / Success Criteria**  
+- Fast, secure re-authentication using biometrics, social login, or magic links
+- Extended session durations to minimize re-authentication needs
+- Immediate restoration of reading context upon authentication
+
+**Priority Level**  
+- High

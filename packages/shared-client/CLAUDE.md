@@ -1,0 +1,142 @@
+# CLAUDE.md - Shared Client
+
+This file provides guidance to Claude Code when working with the Shared Client package in this repository.
+
+## Package Overview
+
+The Shared Client package (`@inkverse/shared-client`) provides common functionality shared between client applications, including the website and mobile app. It centralizes GraphQL operations, dispatch functions, and utility methods to ensure consistency across different client platforms.
+
+## Development Commands
+
+```bash
+# Build the package
+yarn build
+
+# Install dependencies
+yarn install
+```
+
+## Core Components
+
+### 1. GraphQL Operations
+
+The `src/graphql` directory contains shared GraphQL operations used across client applications:
+
+- **Fragments** (`src/graphql/fragments/`): Reusable GraphQL fragments that define common data structures like `ComicIssueDetails`, `ComicSeriesDetails`, `CreatorDetails`, etc.
+- **Queries** (`src/graphql/queries/`): GraphQL queries for data fetching (e.g., `GetComicIssue.graphql`, `GetCreator.graphql`)
+- **Mutations** (`src/graphql/mutations/`): GraphQL mutations for data modification (e.g., `ReportComicSeries.graphql`)
+- **Operations** (`src/graphql/operations.ts`): Auto-generated file containing GraphQL operations and TypeScript types
+- **Types** (`src/graphql/types.ts`): Auto-generated TypeScript types from the GraphQL schema
+
+### 2. Dispatch Functions
+
+The `src/dispatch` directory contains client-side data management functions:
+
+- **Action Creators**: Functions that create and dispatch actions to fetch/update data
+- **Reducers**: Functions that handle state updates based on dispatched actions
+- **Data Processing**: Utilities to parse and normalize data from API responses
+- **Error Handling**: Standardized error handling for API operations
+
+Example dispatch pattern:
+```typescript
+// Action types
+export const GET_COMICISSUE = asyncAction(ActionTypes.GET_COMICISSUE);
+
+// Action creator
+export async function loadComicIssue({ publicClient, issueUuid, seriesUuid }, dispatch) {
+  dispatch(GET_COMICISSUE.request());
+  
+  try {
+    const result = await publicClient.query({
+      query: GetComicIssue,
+      variables: { issueUuid, seriesUuid }
+    });
+    
+    dispatch(GET_COMICISSUE.success(parseData(result.data)));
+  } catch (error) {
+    errorHandlerFactory(dispatch, GET_COMICISSUE)(error);
+  }
+}
+
+// Reducer
+export function comicIssueReducer(state, action) {
+  switch (action.type) {
+    case GET_COMICISSUE.REQUEST:
+      return { ...state, isLoading: true };
+    case GET_COMICISSUE.SUCCESS:
+      return { ...state, ...action.payload, isLoading: false };
+    default:
+      return state;
+  }
+}
+```
+
+### 3. Utilities
+
+The `src/utils` directory contains shared utility functions:
+
+- **Date Formatting** (`date.ts`): Functions for formatting dates consistently across the application
+- **Link Icons** (`link-icons.ts`): Utilities for managing social and external link icons
+
+## Integration Pattern
+
+The shared client package is imported by client applications (website and mobile) and used as follows:
+
+1. **Import Dispatch Functions**:
+   ```typescript
+   import { loadComicIssue, comicIssueReducer } from '@inkverse/shared-client/dispatch/comicissue';
+   ```
+
+2. **Use GraphQL Operations**:
+   ```typescript
+   import { GetComicIssue, GetComicSeriesQuery } from '@inkverse/shared-client/graphql/operations';
+   ```
+
+3. **Use Utility Functions**:
+   ```typescript
+   import { prettyFormattedDate } from '@inkverse/shared-client/utils/date';
+   ```
+
+## Key TypeScript Types
+
+The package provides many TypeScript types for consistent type checking across applications:
+
+- GraphQL query and mutation types (e.g., `GetComicIssueQuery`, `ReportComicSeriesMutation`)
+- GraphQL fragment types (e.g., `ComicIssueDetailsFragment`)
+- Enum types (e.g., `ContentRating`, `Genre`, `Language`, `LinkType`)
+- State types for reducers (e.g., `ComicIssueLoaderData`)
+
+## Best Practices
+
+1. **Type Safety**:
+   - Always leverage TypeScript types for better static analysis
+   - Use GraphQL generated types for API interactions
+
+2. **Code Organization**:
+   - Keep GraphQL fragments modular and reusable
+   - Follow the established pattern for dispatch functions
+   - Keep utilities focused and well-tested
+
+3. **Changes and Updates**:
+   - When updating GraphQL operations, be mindful that multiple clients depend on them
+   - When changing dispatch patterns, update all consumers
+   - Consider backward compatibility when modifying APIs
+
+4. **Performance**:
+   - Be mindful of bundle size impacts when adding new dependencies
+   - Optimize GraphQL queries to request only needed fields
+   - Consider memoization for expensive operations
+
+## Common Issues and Solutions
+
+1. **GraphQL Type Generation**:
+   - If GraphQL types are out of date, ensure the GraphQL code generator has been run
+   - Check for schema changes that might affect type generation
+
+2. **Dispatch Function Errors**:
+   - Ensure Apollo Client is properly initialized in the consuming application
+   - Check error handling pattern implementation
+
+3. **Build Issues**:
+   - Run `yarn build` to regenerate the dist folder
+   - Check for TypeScript errors in the source files

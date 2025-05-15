@@ -180,3 +180,10 @@ If you make changes to the GraphQL schema, run the following command to generate
 ```
 yarn run graphql-codegen
 ```
+
+### Docs
+
+Documentation for the project are in the [docs](./docs) folder. 
+
+- [CLAUDE.md](./CLAUDE.md) - Claude AI instructions for working with the project.
+- [architecture.md](./docs/architecture.md) - High-level overview of the application.

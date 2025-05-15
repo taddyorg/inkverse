@@ -22,9 +22,9 @@ graph TD
     %% Navigation Structure
     subgraph "Navigation"
         TabNav["Tab Navigator"]
-        TabNav --> HomeStack["Home Stack"]
-        TabNav --> SearchStack["Search Stack"]
-        TabNav --> ProfileStack["Profile Stack"]
+        TabNav --> HomeStack["Home Tab"]
+        TabNav --> SearchStack["Search Tab"]
+        TabNav --> ProfileStack["Profile Tab"]
         
         HomeStack --> HomeScreen["Home Screen"]
         HomeStack --> SharedScreens["Shared Screens"]

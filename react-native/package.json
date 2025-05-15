@@ -9,8 +9,7 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "test": "jest --watchAll",
-    "lint": "expo lint"
+    "test": "jest --watchAll"
   },
   "jest": {
     "preset": "jest-expo"

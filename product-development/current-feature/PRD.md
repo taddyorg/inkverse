@@ -1,8 +1,8 @@
-# Inkverse Authentication System – PRD
+# Inkverse Authentication – PRD
 
 ### TL;DR
 
-A cross-platform authentication system for Inkverse that enables users to create accounts and sign in seamlessly across web and mobile platforms using social logins (Google, Apple) and email. Authentication is optional for basic app functionality - users can read comics without signing up. Account creation is only required for specific features like recommending comics, creating lists, or tracking reading progress. Add signup onboarding to collect username and age data.
+Inkverse authentication will provide a seamless, low-friction way for users to create accounts, sign in across devices, and access personalized features without disrupting their reading experience. The system will support social login (Google, Apple) and passwordless email login via magic links, with a focus on maintaining the app's minimalist, reader-friendly approach while enabling greater personalization and cross-device continuity.
 
 ---
 
@@ -10,65 +10,85 @@ A cross-platform authentication system for Inkverse that enables users to create
 
 ### Business Goals
 
-- Increase user retention by enabling cross-device reading experiences
-- Gather more accurate user demographic data to inform content recommendations and show age-appropriate content
-- Improve conversion from anonymous readers to registered users
-- Enable future personalization features that require user accounts
+- Increase user retention by enabling cross-device reading progress sync
+- Enable personalized features that drive deeper engagement with content
+- Support future monetization options through authenticated user accounts
+- Build a foundation for community features that align with Inkverse's focus on discovery and engagement
 
 ### User Goals
 
-- Access personalized reading experience across multiple devices
-- Save reading progress, lists, and preferences in one account
-- Create an account quickly without interrupting the reading flow
-- Feel confident that personal data is secure and properly used
+- Access personalized features like reading progress, custom lists, and recommendations
+- Maintain a consistent reading experience across multiple devices
+- Control personal data and privacy preferences easily
+- Sign up and sign in with minimal friction or interruption to reading
 
 ### Non-Goals
 
-- Complex profile creation with excessive personal information
-- Manual account verification processes that add friction
-- Offline login capabilities when network connectivity is limited
-- Handling account merging when users create multiple accounts
+- Implementing a password-based authentication system
+- Creating a complicated profile system with extensive user information
+- Requiring authentication for basic reading functionality
+- Developing social networking features beyond the core authentication scope
+- Converting all existing anonymous users to registered users
 
 ---
 
 ## User Stories
 
-### Primary Persona – "Comic Fan Across Devices"
+### Primary Persona – "Casual Comic Reader"
 
-- As a mobile reader, I want to sign in with my Google or Apple account so I can create an account without typing.
-- As a web reader using Chrome, I want one-click Google sign-in so I can quickly access my account.
-- As a web reader not using Chrome, I want to use Google or Apple or email to sign up or sign in.
-- As a new user, I want to set my username and age during onboarding so I get age-appropriate content.
-- As a mobile or web reader, I want to be able to continue as a guest so I can browse and read without creating an account.
-- As a security-conscious user, I want to understand what data is collected so I can feel comfortable creating an account.
-- As a returning user, I want to stay logged in across sessions so I don't have to authenticate repeatedly.
+- As a new user, I want to browse and read comics without being forced to create an account, so I can explore content before committing.
+- As a mobile user using Chrome, I want sign in with one click using Google.
+- As a reader, I want to save my reading progress, so I can continue reading where I left off on any device.
+- As a returning user, I want to log in quickly without typing passwords, so I can get back to reading immediately.
+- As a privacy-conscious user, I want to control my account data, so I can manage what information is stored about me.
+- As a reader using multiple devices, I want my lists and preferences to sync automatically, so I don't have to recreate them on each device.
+- As an engaged reader, I want to access premium features like early episode access, so I can support creators I enjoy.
 
 ---
 
 ## Functional Requirements
 
-- **Authentication Methods** (Priority: High)
-  - Social login with Google (Mobile and Web)
-  - Social login with Apple (Mobile and Web)
-  - Email with magic link registration/login (Mobile and Web)
-  - "Continue as Guest" option with clear messaging about which features remain accessible
+- **Account Creation** (Priority: High)
+  - Social login integration (Google, Apple) on both web and mobile
+  - Email-based passwordless authentication with magic links
+  - Minimal required profile information (email only)
+  - Optional display name selection
+  - Clear opt-in/opt-out options for communications
+  - Support for anonymous browsing
 
-- **Authentication Triggers** (Priority: High)
-  - Strategic CTAs requiring authentication (recommending comics, creating lists, etc.)
-  - Clear messaging about why authentication is needed for specific features
-  - Non-disruptive prompts that don't interrupt the core reading experience
+- **Authentication Flow** (Priority: High)
+  - Mobile-optimized login screens
+  - Web-responsive login interface
+  - Persistent login with secure refresh tokens
+  - Biometric authentication on supported devices
+  - Clear visual indicators of logged-in state
 
-- **User Profile** (Priority: Medium)
-  - Username creation with availability check
-  - Age verification (bucketed by age group: Under 18, 18-24, 25-34, 35+). If the user is under 18, get them to pick the year they were born.
+- **Data Synchronization** (Priority: High)
+  - Reading progress synced across devices
+  - Custom lists and library content synced across devices
+  - Liked and bookmarked content synced across devices
+  - Real-time synchronization when online
+  - Offline capability with sync on reconnection
 
-- **Web Signup Experience** (Priority: Medium)
-  - Login state persistence with secure cookies (JWT tokens)
+- **Account Management** (Priority: Medium)
+  - Account settings accessible from profile section
+  - Email address update functionality
+  - Connected social accounts management
+  - Account deletion with clear data removal explanation
+  - Logout functionality on all platforms
 
-- **Account Management** (Priority: Low)
-  - Update email address (confirm via magic link)
-  - Logout option
-  - Delete account option
+- **Authentication-Gated Features** (Priority: Medium)
+  - Clear indication of which features require authentication
+  - Smooth prompting for authentication when needed
+  - Graceful degradation for users who choose not to authenticate
+  - Ability to maintain some personalization in local storage for non-authenticated users
+
+- **Security Measures** (Priority: High)
+  - Secure token storage
+  - Token refresh mechanism
+  - Session management
+  - Rate limiting for authentication attempts
+  - Security notifications for unusual login activity
 
 ---
 
@@ -76,34 +96,53 @@ A cross-platform authentication system for Inkverse that enables users to create
 
 ### Entry Point & Onboarding
 
-- User discovers Inkverse through web or app stores
-- First-time users can browse and read all content without an account
-- Strategic signup prompts appear only when accessing personalized features (recommending comics, creating lists, marking favorites)
-- One-tap social login or simplified email registration
-- Two-screen onboarding for username and age selection
+- Users can access and read most content without authentication
+- Authentication prompts appear when users attempt to:
+  - Create a custom list
+  - Save reading progress across devices
+  - Access premium/early content
+  - Comment or engage socially
+- Soft prompts for authentication appear occasionally on the home screen or after completing multiple episodes
+- First-time authentication includes minimal onboarding that highlights the benefits
 
 ### Core Experience
 
-**Step 1:** User installs app or visits website
-**Step 2:** User browses and reads content as guest with no login required
-**Step 3:** When user attempts to use a feature requiring authentication (e.g., recommending a comic), a signup prompt appears
-**Step 4:** User selects authentication method (Google, Apple, Email)
-**Step 5:** After authentication, user enters age, then on a new screen enters username
-**Step 6:** User returns to the feature they were attempting to use, now with full access
-**Step 7:** When switching devices, user logs in with same credentials
-**Step 8:** All preferences, reading history, and lists are immediately available
+- **Step 1:** User is reading comics in anonymous mode
+- **Step 2:** User attempts to save progress or create a list, triggering authentication prompt
+- **Step 3:** User selects preferred authentication method (Apple, Google, or Email)
+- **Step 4:** For social login, standard OAuth flow appears
+- **Step 5:** For email, user enters email and receives magic link
+- **Step 6:** Upon successful authentication, user returns to previous activity with new capabilities
+- **Step 7:** Reading progress and preferences now automatically sync across devices when the user logs in elsewhere
 
 ### Advanced Features & Edge Cases
 
-- Magic link login flow for email accounts for returning users
-- Simple / Graceful handling of authentication provider outages
+- Offline authentication support with cached tokens
+- Session recovery if connection is interrupted during authentication
+- Automatic token refresh when expired
+- Account merging process if a user has used multiple auth methods
+- Recovery options if user loses access to authentication method
 
 ### UI/UX Highlights
 
-- Clean, minimal login screens that don't distract from content
-- Persistent login state across app restarts
-- Clear indicators of logged-in state
-- Accessibility considerations for all authentication flows
+- Authentication modals are minimal, non-intrusive, and on-brand
+- Clear visual indicators of authenticated state (subtle profile icon)
+- Authentication forms follow accessibility best practices
+- Responsive design ensures consistent experience across all device sizes
+- Error messages are clear, helpful, and jargon-free
+- Authentication UI maintains the minimalist aesthetic of the main app
+
+---
+
+## Narrative
+
+Alex is a college student who discovers Inkverse while searching for new indie comics. They start by casually browsing some popular series without creating an account. After reading a few episodes of "Moonlight Creatures," they're hooked and want to save their progress.
+
+When Alex taps the "Track Progress" button, a simple modal appears offering Google, Apple, or email sign-in options. Alex chooses Google, and with two taps, their account is created. A brief welcome message highlights that their reading progress will now be saved and synced across devices.
+
+Later that week, Alex opens Inkverse on their laptop between classes. They're automatically prompted to log in with Google, and after doing so, they're right back at the exact panel where they left off in "Moonlight Creatures." Alex creates a custom list called "Fantasy Favorites" to organize the series they've discovered.
+
+That weekend, back on their phone, all of Alex's lists and progress have seamlessly synced. When they discover a premium episode is available early with FastPass, they feel confident making the purchase because they're already securely logged in. The entire experience feels fluid, with authentication enhancing rather than interrupting their reading experience.
 
 ---
 
@@ -111,29 +150,35 @@ A cross-platform authentication system for Inkverse that enables users to create
 
 ### User-Centric Metrics
 
-- % of new users who complete account creation
-- % of users with accounts on both mobile and web
-- Average time to complete signup process
-- User retention rate for logged-in vs. anonymous users
+- Authentication conversion rate: % of users who create accounts after using the app
+- Authentication abandonment rate: % of users who start but don't complete authentication
+- Cross-device usage: % of authenticated users who use multiple devices
+- Feature adoption: % increase in use of authenticated-only features
+- Session frequency: Average number of reading sessions per week for authenticated vs. non-authenticated users
 
 ### Business Metrics
 
-- Increase in cross-platform usage
-- Growth in registered user base
-- Improvement in content engagement metrics
+- User retention: 7-day, 30-day, and 90-day retention rates before and after authentication implementation
+- Engagement depth: Average reading time and episodes completed for authenticated vs. non-authenticated users
+- Premium conversion: % of authenticated users who access premium content
+- Feature utilization: % of authenticated users who create lists, like content, or use other personalization features
 
 ### Technical Metrics
 
-- Authentication success rate
-- Sync reliability across platforms
-- Login load time performance
+- Authentication success rate: % of authentication attempts that succeed
+- Authentication response time: Average time to complete authentication process
+- Token refresh success rate: % of successful token refreshes
+- Error rates: % of users experiencing authentication errors
+- Magic link delivery success rate: % of magic links successfully delivered and used
 
 ### Tracking Plan
 
-- Account creation events by source
-- Social login provider distribution
-- Onboarding completion rate
-- Cross-device authentication events
+- Track authentication method usage (Google vs. Apple vs. Email)
+- Track time to complete authentication
+- Track screens where authentication is initiated
+- Track authentication error types and frequency
+- Track user retention correlation with authentication
+- Track feature usage differences between authenticated and non-authenticated users
 
 ---
 
@@ -141,28 +186,39 @@ A cross-platform authentication system for Inkverse that enables users to create
 
 ### Technical Needs
 
-- Authentication service with support for multiple providers
-- Secure user data storage
-- Cross-platform identity management
-- JWT token-based authentication system
+- JWT-based authentication system
+- OAuth integration for Google and Apple
+- Email service integration for magic links
+- Secure token storage mechanism
+- Cross-platform implementation (web, iOS, Android)
 
 ### Integration Points
 
-- Google Identity Services API
-- Apple Sign In API
-- Use email as the unique identifier for Google, Apple, and email (Same that the same user does not have multiple accounts if they use the same email on multiple authentication providers)
-- JWT token system for authentication
-- Backend user database
+- Google Sign-In API
+- Apple Sign-In API
+- Email delivery service
+- Push notification services for authentication alerts
+- Existing user data stores
 
 ### Data Storage & Privacy
 
-- Save Username and Age
-- Authentication tokens only stored on frontend device
-- Compliance with COPPA and other relevant privacy regulations
+- Minimal user data collection (email address plus optional display name)
+- Clear user data deletion process upon account termination
+- Compliance with GDPR, CCPA, and other privacy regulations
+- Transparency about data usage in privacy policy
+- No sharing of authentication data with third parties
 
 ### Scalability & Performance
 
-- Efficient token refresh mechanisms. Refresh tokens (180 days) and access tokens (2 hours) are stored on the frontend device. You can use the refresh token to get a new access token when it expires. 
+- Authentication services must handle peak traffic periods
+- Caching mechanisms for authentication state
+- Performance target: < 2 second authentication completion time
+- Bandwidth optimization for mobile users
 
-### Potential Challenges + Solutions
-- Maintaining security while preserving convenience
+### Potential Challenges
+
+- Social login provider changes to their APIs
+- Email deliverability issues for magic links
+- Cross-device sync conflicts
+- Supporting offline mode while maintaining security
+- Migration path for any existing user data
