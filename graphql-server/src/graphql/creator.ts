@@ -1,7 +1,7 @@
 import { isNumber } from 'lodash-es';
 
 import { validateAndTrimUuid, UserInputError } from './error.js';
-import type { GraphQLContext } from './utils.js';
+import type { GraphQLContext } from '../middleware/auth.js';
 
 import type { 
   QueryResolvers,
@@ -12,7 +12,7 @@ import type {
 } from '@inkverse/shared-server/graphql/types';
 import { LinkType, SortOrder, TaddyType } from '@inkverse/shared-server/graphql/types';
 
-import type { ComicSeriesModel, CreatorModel } from '@inkverse/shared-server/database/types';
+import type { ComicSeriesModel, CreatorContentModel, CreatorModel } from '@inkverse/shared-server/database/types';
 import { ComicSeries, Creator, CreatorContent } from '@inkverse/shared-server/models/index';
 import { getBaseLinkForSchema } from '@inkverse/public/links';
 import { arrayToObject } from '@inkverse/public/utils';
@@ -157,8 +157,8 @@ type CreatorLinkDetails {
 }
 `
 
-const CreatorQueries: QueryResolvers<CreatorModel> = {
-  async getCreator(root: any, { uuid, shortUrl }, context: GraphQLContext){
+const CreatorQueries: QueryResolvers = {
+  async getCreator(root: any, { uuid, shortUrl }, context: GraphQLContext): Promise<CreatorModel | null> {
     if (uuid){
       const trimmedUuid = validateAndTrimUuid(uuid)
       return await Creator.getCreatorByUuid(trimmedUuid)
@@ -193,13 +193,13 @@ const CreatorQueries: QueryResolvers<CreatorModel> = {
   }
 }
 
-const CreatorFieldResolvers: CreatorResolvers<CreatorModel> = {
+const CreatorFieldResolvers: CreatorResolvers = {
   Creator: {
-    avatarImageAsString({ avatarImage }: CreatorModel, _: any, context: GraphQLContext){
+    avatarImageAsString({ avatarImage }: CreatorModel, _: any, context: GraphQLContext): string | null {
       return avatarImage && JSON.stringify(avatarImage);
     },
 
-    sssUrl({ sssUrl, isBlocked }: CreatorModel, _: any, context: GraphQLContext) {
+    sssUrl({ sssUrl, isBlocked }: CreatorModel, _: any, context: GraphQLContext): string | null {
       return isBlocked ? null : sssUrl;
     },
 
@@ -220,7 +220,7 @@ const CreatorFieldResolvers: CreatorResolvers<CreatorModel> = {
       }) as LinkDetails[];
     },
 
-    async content({ uuid }: CreatorModel, args: CreatorContentArgs, context: GraphQLContext) {
+    async content({ uuid }: CreatorModel, args: CreatorContentArgs, context: GraphQLContext): Promise<CreatorContentModel[]> {
       const { sortOrder, page = 1, limitPerPage = 10 } = args;
       if (!isNumber(page) || page < 1 || page > 1000) { throw new UserInputError('page must be between 1 and 1000') }
       if (!isNumber(limitPerPage) || limitPerPage < 1 || limitPerPage > 25) { throw new UserInputError('limitPerPage must be between 1 and 25') }

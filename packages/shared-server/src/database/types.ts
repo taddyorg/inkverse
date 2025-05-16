@@ -142,3 +142,20 @@ export type ListModel = {
   uuids: string[];
   comicSeries?: (ComicSeriesModel | null)[] | null | undefined;
 }
+
+export type UserModel = {
+  id: number;
+  uuid: string;
+  createdAt: Date;
+  updatedAt: Date | null;
+  name: string | null;
+  email: string | null;
+  username: string | null;
+  isEmailVerified: boolean;
+  resetPasswordToken: string | null;
+  resetPasswordExpiry: Date | null;
+  googleId: string | null;
+  appleId: string | null;
+  ageRange: string | null;
+  birthYear: number | null;
+}

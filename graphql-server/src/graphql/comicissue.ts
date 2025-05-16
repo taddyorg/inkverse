@@ -1,7 +1,7 @@
 import { isNumber } from 'lodash-es';
 
 import { validateAndTrimUuid, UserInputError } from './error.js';
-import type { GraphQLContext } from './utils.js';
+import type { GraphQLContext } from '../middleware/auth.js';
 
 import type { 
   QueryResolvers, 
@@ -108,7 +108,7 @@ const ComicIssueQueriesDefinitions = `
   ):ComicIssueForSeries
 `
 
-const ComicIssueQueries: QueryResolvers<ComicIssueModel> = {
+const ComicIssueQueries: QueryResolvers = {
   async getComicIssue(root, { uuid }, context: GraphQLContext): Promise<ComicIssueModel | null> {
     if (uuid) {
       const trimmedUuid = validateAndTrimUuid(uuid);
@@ -118,7 +118,7 @@ const ComicIssueQueries: QueryResolvers<ComicIssueModel> = {
     }
   },
 
-  async getIssuesForComicSeries(root, { seriesUuid, sortOrder, limitPerPage = 10, page = 1, includeRemovedIssues = false }, context): Promise<{ seriesUuid: string; issues: ComicIssueModel[] | null }> {
+  async getIssuesForComicSeries(root, { seriesUuid, sortOrder, limitPerPage = 10, page = 1, includeRemovedIssues = false }, context: GraphQLContext): Promise<{ seriesUuid: string; issues: ComicIssueModel[] | null }> {
     if (!isNumber(page) || page < 1 || page > 1000) { throw new UserInputError('page must be between 1 and 1000') }
     if (!isNumber(limitPerPage) || limitPerPage < 1 || limitPerPage > 1000) { throw new UserInputError('limitPerPage must be between 1 and 1000') }
 
@@ -142,7 +142,7 @@ const ComicIssueQueries: QueryResolvers<ComicIssueModel> = {
   },
 }
 
-const ComicIssueFieldResolvers: ComicIssueResolvers<ComicIssueModel> = {
+const ComicIssueFieldResolvers: ComicIssueResolvers = {
   ComicIssue: {
     bannerImageAsString({ bannerImage }: ComicIssueModel, input:{}, context: GraphQLContext) {
       return bannerImage ? JSON.stringify(bannerImage) : null;

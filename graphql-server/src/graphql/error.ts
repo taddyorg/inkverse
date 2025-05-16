@@ -1,7 +1,7 @@
 import { GraphQLError } from 'graphql';
 import type { Response } from 'express';
 import type { GraphQLFormattedError } from 'graphql';
-import type { GraphQLContext } from './utils';
+import type { GraphQLContext } from '../middleware/auth.js';
 
 import { validate as validateUuid } from 'uuid';
 import { captureRemoteError } from '@inkverse/shared-server/utils/errors';

@@ -1127,6 +1127,10 @@ export type MiniComicSeriesDetailsFragment = { __typename?: 'ComicSeries', uuid:
 
 export type MiniCreatorDetailsFragment = { __typename?: 'Creator', uuid: string, name?: string | null, shortUrl?: string | null, avatarImageAsString?: string | null, links?: Array<{ __typename?: 'LinkDetails', url?: string | null, type?: LinkType | null } | null> | null };
 
+export type MiniUserDetailsFragment = { __typename?: 'User', id: string, username: string };
+
+export type UserDetailsFragment = { __typename?: 'User', id: string, username: string, email: string, name?: string | null, isEmailVerified: boolean, createdAt: number, ageRange?: UserAgeRange | null, birthYear?: number | null };
+
 export type ReportComicSeriesMutationVariables = Exact<{
   uuid: Scalars['ID']['input'];
   reportType?: InputMaybe<Scalars['String']['input']>;
@@ -1162,6 +1166,16 @@ export type GetCreatorQueryVariables = Exact<{
 
 
 export type GetCreatorQuery = { __typename?: 'Query', getCreator?: { __typename?: 'Creator', uuid: string, name?: string | null, shortUrl?: string | null, bio?: string | null, avatarImageAsString?: string | null, comics?: Array<{ __typename?: 'ComicSeries', uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null } | null> | null, links?: Array<{ __typename?: 'LinkDetails', url?: string | null, type?: LinkType | null } | null> | null } | null };
+
+export type GetCurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetCurrentUserQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, username: string, email: string, name?: string | null, isEmailVerified: boolean, createdAt: number, ageRange?: UserAgeRange | null, birthYear?: number | null } | null };
+
+export type GetMiniCurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetMiniCurrentUserQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, username: string } | null };
 
 export type GetDocumentationQueryVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -1317,6 +1331,24 @@ export const MiniCreatorDetails = gql`
   }
 }
     `;
+export const MiniUserDetails = gql`
+    fragment MiniUserDetails on User {
+  id
+  username
+}
+    `;
+export const UserDetails = gql`
+    fragment UserDetails on User {
+  id
+  username
+  email
+  name
+  isEmailVerified
+  createdAt
+  ageRange
+  birthYear
+}
+    `;
 export const ReportComicSeries = gql`
     mutation ReportComicSeries($uuid: ID!, $reportType: String) {
   reportComicSeries(uuid: $uuid, reportType: $reportType)
@@ -1383,6 +1415,20 @@ export const GetCreator = gql`
 }
     ${CreatorDetails}
 ${MiniComicSeriesDetails}`;
+export const GetCurrentUser = gql`
+    query GetCurrentUser {
+  me {
+    ...UserDetails
+  }
+}
+    ${UserDetails}`;
+export const GetMiniCurrentUser = gql`
+    query GetMiniCurrentUser {
+  me {
+    ...MiniUserDetails
+  }
+}
+    ${MiniUserDetails}`;
 export const GetDocumentation = gql`
     query GetDocumentation($id: ID!) {
   getDocumentation(id: $id) {

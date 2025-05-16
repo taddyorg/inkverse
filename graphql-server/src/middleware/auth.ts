@@ -3,10 +3,15 @@
  * 
  * Verifies JWT tokens and attaches user data to the request context
  */
-
 import { verifyToken } from '@inkverse/shared-server/utils/authentication';
-import type { GraphQLContext } from '../graphql/utils';
 import type { User } from '@inkverse/public/graphql/types';
+
+/**
+ * GraphQL context type for authentication
+ */
+export type GraphQLContext = {
+  user?: User | null;
+}
 
 /**
  * Get user data from database by ID
@@ -41,7 +46,7 @@ export const createAuthContext = async (req: Request): Promise<GraphQLContext> =
     }
     
     // Valid token, get the user data
-    const userId = tokenPayload.sub;
+    const userId = tokenPayload.sub.toString();
     const user = await getUserById(userId);
     
     // Return context with user data (or null if user not found)

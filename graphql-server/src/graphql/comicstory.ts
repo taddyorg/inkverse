@@ -1,12 +1,12 @@
 import { validateAndTrimUuid } from './error.js';
-import type { GraphQLContext } from './utils.js';
+import type { GraphQLContext } from '../middleware/auth.js';
 
 import type { 
   QueryResolvers, 
   ComicStoryResolvers,
 } from '@inkverse/shared-server/graphql/types';
 
-import type { ComicStoryModel } from '@inkverse/shared-server/database/types';
+import type { ComicIssueModel, ComicSeriesModel, ComicStoryModel } from '@inkverse/shared-server/database/types';
 import { ComicStory, ComicIssue, ComicSeries } from '@inkverse/shared-server/models/index';
 
 const ComicStoryDefinitions = `
@@ -53,7 +53,7 @@ getComicStory(
 ):ComicStory
 `
 
-const ComicStoryQueries: QueryResolvers<ComicStoryModel> = {
+const ComicStoryQueries: QueryResolvers = {
   async getComicStory(root, { uuid }, context: GraphQLContext): Promise<ComicStoryModel | null>{
     if (uuid) {
       const trimmedUuid = validateAndTrimUuid(uuid);
@@ -64,18 +64,18 @@ const ComicStoryQueries: QueryResolvers<ComicStoryModel> = {
   },
 }
 
-const ComicStoryFieldResolvers: ComicStoryResolvers<ComicStoryModel> = {
+const ComicStoryFieldResolvers: ComicStoryResolvers = {
   ComicStory: {
-    storyImageAsString({ storyImage }: ComicStoryModel, args: any, context: GraphQLContext) {
+    storyImageAsString({ storyImage }: ComicStoryModel, args: any, context: GraphQLContext): string | null {
       return storyImage && JSON.stringify(storyImage);
     },
 
-    async comicIssue({ issueUuid }: ComicStoryModel, args: any, context: GraphQLContext) {
+    async comicIssue({ issueUuid }: ComicStoryModel, args: any, context: GraphQLContext): Promise<ComicIssueModel | null> {
       const trimmedIssueUuid = validateAndTrimUuid(issueUuid, 'issueUuid');
       return await ComicIssue.getComicIssueByUuid(trimmedIssueUuid);
     },
 
-    async comicSeries({ seriesUuid }: ComicStoryModel, args: any, context: GraphQLContext) {
+    async comicSeries({ seriesUuid }: ComicStoryModel, args: any, context: GraphQLContext): Promise<ComicSeriesModel | null> {
       const trimmedSeriesUuid = validateAndTrimUuid(seriesUuid, 'seriesUuid');
       return await ComicSeries.getComicSeriesByUuid(trimmedSeriesUuid);
     },

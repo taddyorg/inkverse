@@ -1,6 +1,6 @@
-import type { GraphQLContext } from './utils.js';
+import type { GraphQLContext } from '../middleware/auth.js';
 import { curatedListsData } from '@inkverse/shared-server/utils/hardcoded';
-import { ListType } from '@inkverse/shared-server/database/types';
+import { ListType, type ListModel } from '@inkverse/shared-server/database/types';
 
 import type { 
   QueryResolvers, 
@@ -83,7 +83,7 @@ const ListQueriesDefinitions = `
 `
 
 const ListQueries: QueryResolvers = {
-  async getList(root: any, { id }: QueryGetListArgs, context: GraphQLContext) {    
+  async getList(root: any, { id }: QueryGetListArgs, context: GraphQLContext): Promise<ListModel | null> {    
     const list = curatedListsData[id];
     if (!list || list.type !== ListType.COMICSERIES) { return null; }
 

@@ -1,9 +1,9 @@
 import { validateAndTrimUuid } from './error.js';
-import type { GraphQLContext } from './utils.js';
+import type { GraphQLContext } from '../middleware/auth.js';
 
 import { TaddyType } from '@inkverse/shared-server/graphql/types';
 import type { CreatorContentResolvers, QueryResolvers } from '@inkverse/shared-server/graphql/types';
-import type { CreatorContentModel } from '@inkverse/shared-server/database/types';
+import type { ComicSeriesModel, CreatorContentModel } from '@inkverse/shared-server/database/types';
 
 import { CreatorContent, ComicSeries } from '@inkverse/shared-server/models/index';
 
@@ -53,7 +53,7 @@ getCreatorContent(
 ):CreatorContent
 `
 
-const CreatorContentQueries: QueryResolvers<CreatorContentModel> = {
+const CreatorContentQueries: QueryResolvers = {
   async getCreatorContent(root, { creatorUuid, contentUuid }, context): Promise<CreatorContentModel | null> {    
     if (creatorUuid && contentUuid){
       const safeCreatorUuid = validateAndTrimUuid(creatorUuid);
@@ -65,13 +65,13 @@ const CreatorContentQueries: QueryResolvers<CreatorContentModel> = {
   },
 }
 
-const CreatorContentFieldResolvers: CreatorContentResolvers<CreatorContentModel> = {
+const CreatorContentFieldResolvers: CreatorContentResolvers = {
   CreatorContent: {
-    comicseries({ contentUuid, contentType }: CreatorContentModel, _: any, context: GraphQLContext) {
+    async comicseries({ contentUuid, contentType }: CreatorContentModel, _: any, context: GraphQLContext): Promise<ComicSeriesModel | null> {
       if (contentType !== TaddyType.COMICSERIES) return null
       if (!contentUuid) return null
 
-      return ComicSeries.getComicSeriesByUuid(contentUuid)
+      return await ComicSeries.getComicSeriesByUuid(contentUuid)
     }
   }
 }

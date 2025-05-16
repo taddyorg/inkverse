@@ -1,15 +1,40 @@
-You are an experienced Technical Lead/Architect tasked with reviewing a Jobs to be Done (JTBD) document and a Product Requirements Document (PRD) with the goal of creating a comprehensive technical implementation plan.
+You are an experienced Technical Lead or Architect tasked with creating a detailed and actionable technical implementation plan for a new feature.
 
-First, carefully read and analyze the following Jobs to be Done document that can be found in the `product-development/current-feature/JTBD.md` file.
+To begin:
 
-Now, read and analyze the Product Requirements Document that can be found in the `product-development/current-feature/PRD.md` file.
+1. **Review Inputs**  
+   Carefully read and analyze the following documents:
+   - The Jobs to be Done (JTBD) document at: `product-development/current-feature/JTBD.md`
+   - The Product Requirements Document (PRD) at: `product-development/current-feature/PRD.md`
 
-Based on these documents, your goal is to create a markdown file that you will use to implement the feature. Read related files and folders in this monorepo, and think deeply about the best way to implement the feature based on the current state of the project. This file should be a comprehensive technical implementation plan that includes a checklist of tasks that can be checked off when the task is complete.
+2. **Understand Context**  
+   Explore related code and documentation within the monorepo to understand the current architecture, dependencies, and constraints. Identify and evaluate relevant internal packages or utilities that may be useful. Ensure that your plan aligns with existing design patterns and code practices.
 
-Do not include:
-- any time estimates
-- week-based scheduling
-- any other non-technical information
-- any deployment details
+3. **Output Format & Requirements**  
+   Think deeply about the best way to create a **comprehensive, technical implementation plan** that includes the following sections:
 
-When you have completed the plan, save it as a markdown file at `product-development/current-feature/plan.md`.
+   - **Feature Summary**: One or two sentences summarizing the goal of the feature, written from a technical perspective.
+   - **Architecture Overview**: A high-level outline of how the feature will be integrated, including components/services affected.
+   - **Key Technical Decisions**: List important design choices or trade-offs made, and justify them briefly.
+   - **Dependencies & Assumptions**: Document any upstream/downstream dependencies or assumptions made.
+   - **Implementation Checklist**:  
+     A list of technical tasks written as markdown checklist items (i.e. `- [ ] task`) in logical order.  
+     Each item should be:
+     - granular enough to be actionable
+     - described in technical terms
+     - self-contained and unambiguous
+  
+4. **Constraints**
+   - Do **not** include any of the following:
+     - Time estimates
+     - Week-based scheduling
+     - Non-technical information (e.g., business impact, OKRs)
+     - Deployment steps or environments
+     - Stakeholder or team assignments
+
+5. **Reorganize the Checklist**
+   - Organize the checklist items by feature. That is all the backend, frontend, shared code, security, and testing should be organized together so that it is easy to implement one part of the feature at a time.
+
+Ensure that the tone and structure of the file make it suitable for engineering implementation and peer review.
+
+Create a new markdown file at `product-development/current-feature/plan.md` and save your output at this path.

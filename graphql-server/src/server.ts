@@ -10,7 +10,6 @@ import { requiredFields } from './graphql/validators/required-fields.js';
 import { createComplexityLimitRule } from './graphql/validators/complexity-cost/index.js';
 import { ApolloServerPluginLandingPageDisabled } from "@apollo/server/plugin/disabled";
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
-import type { GraphQLContext } from './graphql/utils.js';
 
 import { typeDefs, resolvers } from './graphql/index.js';
 import { errorMessageToJsonError, graphqlFormatError } from './graphql/error.js';
@@ -72,7 +71,7 @@ async function startServer() {
     expressMiddleware(server, {
       context: async ({ req }) => {
         // Use the auth middleware to create context with user if authenticated
-        return createAuthContext(req);
+        return createAuthContext(req as unknown as Request);
       },
     }),
   );

@@ -1,7 +1,7 @@
 import { isNumber } from 'lodash-es';
 
 import { validateAndTrimUuid } from './error.js';
-import type { GraphQLContext } from './utils.js';
+import type { GraphQLContext } from '../middleware/auth.js';
 
 import type { 
   QueryResolvers, 
@@ -10,9 +10,10 @@ import type {
 } from '@inkverse/shared-server/graphql/types';
 import { SeriesStatus, TaddyType } from '@inkverse/shared-server/graphql/types';
 
-import type { ComicSeriesModel } from '@inkverse/shared-server/database/types';
 import { ComicSeries, Creator } from '@inkverse/shared-server/models/index';
 import { sendSlackNotification } from '@inkverse/shared-server/messaging/slack';
+
+import type { ComicSeriesModel } from '@inkverse/shared-server/database/types';
 
 const ComicSeriesDefinitions = `
   " Comic Series Details "
@@ -128,8 +129,8 @@ const ComicSeriesQueriesDefinitions = `
   ):ComicSeries
 `
 
-const ComicSeriesQueries: QueryResolvers<ComicSeriesModel> = {
-  async getComicSeries(root, { uuid, shortUrl }, context: GraphQLContext){
+const ComicSeriesQueries: QueryResolvers = {
+  async getComicSeries(root, { uuid, shortUrl }, context: GraphQLContext): Promise<ComicSeriesModel | null> {
     if (uuid) {
       const trimmedUuid = validateAndTrimUuid(uuid);
       return await ComicSeries.getComicSeriesByUuid(trimmedUuid);
@@ -141,8 +142,8 @@ const ComicSeriesQueries: QueryResolvers<ComicSeriesModel> = {
   },
 };
 
-const ComicSeriesMutations: MutationResolvers<GraphQLContext> = {
-  async reportComicSeries(root, { uuid, reportType }, context: GraphQLContext) {
+const ComicSeriesMutations: MutationResolvers = {
+  async reportComicSeries(root, { uuid, reportType }, context: GraphQLContext): Promise<boolean> {
     const trimmedUuid = validateAndTrimUuid(uuid);
     const comicSeries = await ComicSeries.getComicSeriesByUuid(trimmedUuid);
     if (!comicSeries) {
@@ -157,9 +158,9 @@ const ComicSeriesMutations: MutationResolvers<GraphQLContext> = {
   },
 };
 
-const ComicSeriesFieldResolvers: ComicSeriesResolvers<ComicSeriesModel> = {
+const ComicSeriesFieldResolvers: ComicSeriesResolvers = {
   ComicSeries: {
-    status({ status }: ComicSeriesModel, input:{}, context: GraphQLContext) {
+    status({ status }: ComicSeriesModel, input:{}, context: GraphQLContext): SeriesStatus {
       if (!status) {
         return SeriesStatus.ONGOING;
       }
@@ -167,7 +168,7 @@ const ComicSeriesFieldResolvers: ComicSeriesResolvers<ComicSeriesModel> = {
       return status;
     },
 
-    sssUrl({ sssUrl, isBlocked }: ComicSeriesModel, input:{}, context: GraphQLContext) {
+    sssUrl({ sssUrl, isBlocked }: ComicSeriesModel, input:{}, context: GraphQLContext): string | null {
       return isBlocked ? null : sssUrl;
     },
 
@@ -183,11 +184,11 @@ const ComicSeriesFieldResolvers: ComicSeriesResolvers<ComicSeriesModel> = {
       return thumbnailImage ? JSON.stringify(thumbnailImage) : null;
     },
 
-    async creators({ uuid }: ComicSeriesModel, _: Record<string, unknown>, context: GraphQLContext) {
+    async creators({ uuid }: ComicSeriesModel, _: Record<string, unknown>, context: GraphQLContext): Promise<Creator[]> {
       return await Creator.getCreatorsForContent(uuid, TaddyType.COMICSERIES);
     },
 
-    async issueCount({ uuid }: ComicSeriesModel, _: Record<string, unknown>, context: GraphQLContext) {
+    async issueCount({ uuid }: ComicSeriesModel, _: Record<string, unknown>, context: GraphQLContext): Promise<number> {
       return await ComicSeries.getIssueCount(uuid);
     },
   },

@@ -1,9 +1,10 @@
-import type { GraphQLContext } from './utils.js';
+import type { GraphQLContext } from '../middleware/auth.js';
 import { SEARCH_QUERY, taddyGraphqlRequest } from '@inkverse/shared-server/taddy/index';
 import { ComicSeries } from '@inkverse/shared-server/models/index';
 
 import type { QueryResolvers, QuerySearchArgs } from '@inkverse/shared-server/graphql/types';
 import { arrayToObject } from '@inkverse/public/utils';
+import type { ComicSeriesModel } from '@inkverse/shared-server/database/types';
 
 const SearchDefinitions = `
 " A search result "
@@ -49,7 +50,7 @@ const SearchQueries: QueryResolvers = {
 
 const SearchResolvers = {
   SearchResults: {
-    async comicSeries({ comicSeries }: any, _: any, context: GraphQLContext) {
+    async comicSeries({ comicSeries }: any, _: any, context: GraphQLContext): Promise<ComicSeriesModel[]> {
       const uuids = comicSeries.map((series: any) => series.uuid);
       const data = await ComicSeries.getComicSeriesByUuids(uuids);
       const dataByUuid = arrayToObject(data, 'uuid');

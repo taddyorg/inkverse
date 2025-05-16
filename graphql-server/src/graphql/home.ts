@@ -1,7 +1,7 @@
 import { isNumber, shuffle } from 'lodash-es';
 
 import { UserInputError } from './error.js';
-import type { GraphQLContext } from './utils.js';
+import type { GraphQLContext } from '../middleware/auth.js';
 import { curatedListsData, featuredComicSeriesUuids, mostPopularComicSeriesUuids } from '@inkverse/shared-server/utils/hardcoded';
 import type { ListModel } from '@inkverse/shared-server/database/types';
 
