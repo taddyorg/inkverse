@@ -15,6 +15,21 @@ export type Scalars = {
   Float: { input: number; output: number; }
 };
 
+/** Authentication provider types */
+export enum AuthProvider {
+  APPLE = 'APPLE',
+  EMAIL = 'EMAIL',
+  GOOGLE = 'GOOGLE'
+}
+
+/** Authentication response with user data */
+export type AuthResponse = {
+  __typename?: 'AuthResponse';
+  accessToken: Scalars['String']['output'];
+  refreshToken: Scalars['String']['output'];
+  user: User;
+};
+
 /**  Comic Issue Details  */
 export type ComicIssue = {
   __typename?: 'ComicIssue';
@@ -851,14 +866,56 @@ export enum ListType {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  /** Exchange refresh token for new access token */
+  exchangeRefreshForAccessToken: Scalars['String']['output'];
+  /** Exchange refresh token for new refresh token */
+  exchangeRefreshForRefreshToken: Scalars['String']['output'];
+  /** Log in an existing user */
+  login: AuthResponse;
+  /** Logout user */
+  logout: Scalars['Boolean']['output'];
   /**  Report a comic series  */
   reportComicSeries?: Maybe<Scalars['Boolean']['output']>;
+  /** Send a magic link for passwordless authentication */
+  sendMagicLink: Scalars['Boolean']['output'];
+  /** Register a new user */
+  signUp: AuthResponse;
+  /** Verify email address */
+  verifyEmail: Scalars['Boolean']['output'];
+};
+
+
+export type MutationExchangeRefreshForAccessTokenArgs = {
+  refreshToken: Scalars['String']['input'];
+};
+
+
+export type MutationExchangeRefreshForRefreshTokenArgs = {
+  refreshToken: Scalars['String']['input'];
+};
+
+
+export type MutationLoginArgs = {
+  appleId?: InputMaybe<Scalars['String']['input']>;
+  email?: InputMaybe<Scalars['String']['input']>;
+  googleId?: InputMaybe<Scalars['String']['input']>;
+  provider: AuthProvider;
 };
 
 
 export type MutationReportComicSeriesArgs = {
   reportType?: InputMaybe<Scalars['String']['input']>;
   uuid: Scalars['ID']['input'];
+};
+
+
+export type MutationSignUpArgs = {
+  ageRange?: InputMaybe<UserAgeRange>;
+  birthYear?: InputMaybe<Scalars['Int']['input']>;
+  email: Scalars['String']['input'];
+  name?: InputMaybe<Scalars['String']['input']>;
+  provider: AuthProvider;
+  username?: InputMaybe<Scalars['String']['input']>;
 };
 
 /**  The privacy types for a list  */
@@ -899,6 +956,8 @@ export type Query = {
   getRecentlyAddedComicSeries?: Maybe<HomeScreenComicSeries>;
   /**  Get a list of recently updated comics  */
   getRecentlyUpdatedComicSeries?: Maybe<HomeScreenComicSeries>;
+  /** Get the current authenticated user */
+  me?: Maybe<User>;
   /**  Search for a term  */
   search?: Maybe<SearchResults>;
 };
@@ -1030,6 +1089,28 @@ export enum TaddyType {
   COMICSERIES = 'COMICSERIES',
   CREATOR = 'CREATOR',
   CREATORCONTENT = 'CREATORCONTENT'
+}
+
+/** User Type */
+export type User = {
+  __typename?: 'User';
+  ageRange?: Maybe<UserAgeRange>;
+  birthYear?: Maybe<Scalars['Int']['output']>;
+  createdAt: Scalars['Int']['output'];
+  email: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  isEmailVerified: Scalars['Boolean']['output'];
+  name?: Maybe<Scalars['String']['output']>;
+  updatedAt?: Maybe<Scalars['Int']['output']>;
+  username: Scalars['String']['output'];
+};
+
+/** Age range buckets for users */
+export enum UserAgeRange {
+  AGE_18_24 = 'AGE_18_24',
+  AGE_25_34 = 'AGE_25_34',
+  AGE_35_PLUS = 'AGE_35_PLUS',
+  UNDER_18 = 'UNDER_18'
 }
 
 export type ComicIssueDetailsFragment = { __typename?: 'ComicIssue', bannerImageAsString?: string | null, creatorNote?: string | null, uuid: string, seriesUuid: string, name?: string | null, position?: number | null, thumbnailImageAsString?: string | null, datePublished?: number | null, scopesForExclusiveContent?: Array<string | null> | null, dateExclusiveContentAvailable?: number | null, stories?: Array<{ __typename?: 'ComicStory', uuid: string, issueUuid: string, seriesUuid: string, storyImageAsString?: string | null, width?: number | null, height?: number | null } | null> | null, nextIssue?: { __typename?: 'ComicIssue', uuid: string, seriesUuid: string, name?: string | null, position?: number | null, thumbnailImageAsString?: string | null, datePublished?: number | null, scopesForExclusiveContent?: Array<string | null> | null, dateExclusiveContentAvailable?: number | null } | null };

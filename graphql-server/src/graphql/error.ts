@@ -1,6 +1,7 @@
 import { GraphQLError } from 'graphql';
 import type { Response } from 'express';
 import type { GraphQLFormattedError } from 'graphql';
+import type { GraphQLContext } from './utils';
 
 import { validate as validateUuid } from 'uuid';
 import { captureRemoteError } from '@inkverse/shared-server/utils/errors';
@@ -144,6 +145,17 @@ class ValidationError extends GraphQLError {
     Object.defineProperty(this, 'name', { value: 'ValidationError' });
   }
 }
+
+/**
+ * Authentication guard for resolvers
+ * 
+ * @throws AuthenticationError if user is not authenticated
+ */
+export const requireAuth = (context: GraphQLContext): void => {
+  if (!context.user) {
+    throw new AuthenticationError('Authentication required');
+  }
+};
 
 export {
   ApiKeyInvalidError,

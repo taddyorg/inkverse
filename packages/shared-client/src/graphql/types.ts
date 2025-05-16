@@ -16,6 +16,21 @@ export type Scalars = {
   Float: { input: number; output: number; }
 };
 
+/** Authentication provider types */
+export enum AuthProvider {
+  APPLE = 'APPLE',
+  EMAIL = 'EMAIL',
+  GOOGLE = 'GOOGLE'
+}
+
+/** Authentication response with user data */
+export type AuthResponse = {
+  __typename?: 'AuthResponse';
+  accessToken: Scalars['String']['output'];
+  refreshToken: Scalars['String']['output'];
+  user: User;
+};
+
 /**  Comic Issue Details  */
 export type ComicIssue = {
   __typename?: 'ComicIssue';
@@ -852,14 +867,56 @@ export enum ListType {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  /** Exchange refresh token for new access token */
+  exchangeRefreshForAccessToken: Scalars['String']['output'];
+  /** Exchange refresh token for new refresh token */
+  exchangeRefreshForRefreshToken: Scalars['String']['output'];
+  /** Log in an existing user */
+  login: AuthResponse;
+  /** Logout user */
+  logout: Scalars['Boolean']['output'];
   /**  Report a comic series  */
   reportComicSeries?: Maybe<Scalars['Boolean']['output']>;
+  /** Send a magic link for passwordless authentication */
+  sendMagicLink: Scalars['Boolean']['output'];
+  /** Register a new user */
+  signUp: AuthResponse;
+  /** Verify email address */
+  verifyEmail: Scalars['Boolean']['output'];
+};
+
+
+export type MutationExchangeRefreshForAccessTokenArgs = {
+  refreshToken: Scalars['String']['input'];
+};
+
+
+export type MutationExchangeRefreshForRefreshTokenArgs = {
+  refreshToken: Scalars['String']['input'];
+};
+
+
+export type MutationLoginArgs = {
+  appleId?: InputMaybe<Scalars['String']['input']>;
+  email?: InputMaybe<Scalars['String']['input']>;
+  googleId?: InputMaybe<Scalars['String']['input']>;
+  provider: AuthProvider;
 };
 
 
 export type MutationReportComicSeriesArgs = {
   reportType?: InputMaybe<Scalars['String']['input']>;
   uuid: Scalars['ID']['input'];
+};
+
+
+export type MutationSignUpArgs = {
+  ageRange?: InputMaybe<UserAgeRange>;
+  birthYear?: InputMaybe<Scalars['Int']['input']>;
+  email: Scalars['String']['input'];
+  name?: InputMaybe<Scalars['String']['input']>;
+  provider: AuthProvider;
+  username?: InputMaybe<Scalars['String']['input']>;
 };
 
 /**  The privacy types for a list  */
@@ -900,6 +957,8 @@ export type Query = {
   getRecentlyAddedComicSeries?: Maybe<HomeScreenComicSeries>;
   /**  Get a list of recently updated comics  */
   getRecentlyUpdatedComicSeries?: Maybe<HomeScreenComicSeries>;
+  /** Get the current authenticated user */
+  me?: Maybe<User>;
   /**  Search for a term  */
   search?: Maybe<SearchResults>;
 };
@@ -1033,6 +1092,28 @@ export enum TaddyType {
   CREATORCONTENT = 'CREATORCONTENT'
 }
 
+/** User Type */
+export type User = {
+  __typename?: 'User';
+  ageRange?: Maybe<UserAgeRange>;
+  birthYear?: Maybe<Scalars['Int']['output']>;
+  createdAt: Scalars['Int']['output'];
+  email: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  isEmailVerified: Scalars['Boolean']['output'];
+  name?: Maybe<Scalars['String']['output']>;
+  updatedAt?: Maybe<Scalars['Int']['output']>;
+  username: Scalars['String']['output'];
+};
+
+/** Age range buckets for users */
+export enum UserAgeRange {
+  AGE_18_24 = 'AGE_18_24',
+  AGE_25_34 = 'AGE_25_34',
+  AGE_35_PLUS = 'AGE_35_PLUS',
+  UNDER_18 = 'UNDER_18'
+}
+
 export type WithIndex<TObject> = TObject & Record<string, any>;
 export type ResolversObject<TObject> = WithIndex<TObject>;
 
@@ -1105,6 +1186,8 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = ResolversObject<{
+  AuthProvider: AuthProvider;
+  AuthResponse: ResolverTypeWrapper<AuthResponse>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
   ComicIssue: ResolverTypeWrapper<ComicIssue>;
   ComicIssueForSeries: ResolverTypeWrapper<ComicIssueForSeries>;
@@ -1137,10 +1220,13 @@ export type ResolversTypes = ResolversObject<{
   SortOrder: SortOrder;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
   TaddyType: TaddyType;
+  User: ResolverTypeWrapper<User>;
+  UserAgeRange: UserAgeRange;
 }>;
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = ResolversObject<{
+  AuthResponse: AuthResponse;
   Boolean: Scalars['Boolean']['output'];
   ComicIssue: ComicIssue;
   ComicIssueForSeries: ComicIssueForSeries;
@@ -1160,6 +1246,14 @@ export type ResolversParentTypes = ResolversObject<{
   Query: {};
   SearchResults: SearchResults;
   String: Scalars['String']['output'];
+  User: User;
+}>;
+
+export type AuthResponseResolvers<ContextType = any, ParentType extends ResolversParentTypes['AuthResponse'] = ResolversParentTypes['AuthResponse']> = ResolversObject<{
+  accessToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  refreshToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ComicIssueResolvers<ContextType = any, ParentType extends ResolversParentTypes['ComicIssue'] = ResolversParentTypes['ComicIssue']> = ResolversObject<{
@@ -1322,7 +1416,14 @@ export type ListResolvers<ContextType = any, ParentType extends ResolversParentT
 }>;
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
+  exchangeRefreshForAccessToken?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationExchangeRefreshForAccessTokenArgs, 'refreshToken'>>;
+  exchangeRefreshForRefreshToken?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationExchangeRefreshForRefreshTokenArgs, 'refreshToken'>>;
+  login?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationLoginArgs, 'provider'>>;
+  logout?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   reportComicSeries?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationReportComicSeriesArgs, 'uuid'>>;
+  sendMagicLink?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  signUp?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationSignUpArgs, 'email' | 'provider'>>;
+  verifyEmail?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
 }>;
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
@@ -1340,6 +1441,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getMostPopularComicSeries?: Resolver<Maybe<ResolversTypes['HomeScreenComicSeries']>, ParentType, ContextType, Partial<QueryGetMostPopularComicSeriesArgs>>;
   getRecentlyAddedComicSeries?: Resolver<Maybe<ResolversTypes['HomeScreenComicSeries']>, ParentType, ContextType, Partial<QueryGetRecentlyAddedComicSeriesArgs>>;
   getRecentlyUpdatedComicSeries?: Resolver<Maybe<ResolversTypes['HomeScreenComicSeries']>, ParentType, ContextType, Partial<QueryGetRecentlyUpdatedComicSeriesArgs>>;
+  me?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   search?: Resolver<Maybe<ResolversTypes['SearchResults']>, ParentType, ContextType, Partial<QuerySearchArgs>>;
 }>;
 
@@ -1350,7 +1452,21 @@ export type SearchResultsResolvers<ContextType = any, ParentType extends Resolve
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = ResolversObject<{
+  ageRange?: Resolver<Maybe<ResolversTypes['UserAgeRange']>, ParentType, ContextType>;
+  birthYear?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  createdAt?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  isEmailVerified?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  updatedAt?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  username?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type Resolvers<ContextType = any> = ResolversObject<{
+  AuthResponse?: AuthResponseResolvers<ContextType>;
   ComicIssue?: ComicIssueResolvers<ContextType>;
   ComicIssueForSeries?: ComicIssueForSeriesResolvers<ContextType>;
   ComicSeries?: ComicSeriesResolvers<ContextType>;
@@ -1366,5 +1482,6 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Mutation?: MutationResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   SearchResults?: SearchResultsResolvers<ContextType>;
+  User?: UserResolvers<ContextType>;
 }>;
 

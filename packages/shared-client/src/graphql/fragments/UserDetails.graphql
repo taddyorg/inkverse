@@ -1,0 +1,11 @@
+# Complete user details fragment with all user information
+fragment UserDetails on User {
+  id
+  username
+  email
+  name
+  isEmailVerified
+  createdAt
+  ageRange
+  birthYear
+}

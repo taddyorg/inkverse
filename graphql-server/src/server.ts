@@ -15,6 +15,7 @@ import type { GraphQLContext } from './graphql/utils.js';
 import { typeDefs, resolvers } from './graphql/index.js';
 import { errorMessageToJsonError, graphqlFormatError } from './graphql/error.js';
 import workerRouter from './routes/worker.js';
+import { createAuthContext } from './middleware/auth.js';
 
 const PORT = 3010;
 const QUERY_MAX_DEPTH = 4;
@@ -69,23 +70,9 @@ async function startServer() {
     express.urlencoded({ extended: false }),
     express.json(),
     expressMiddleware(server, {
-      context: async ({ req, res }) => {
-        const context: GraphQLContext = {
-          
-        };
-        // const decodeToken = verifyToken({ req, res });
-
-        // // if token, return user
-        // if (decodeToken) {
-        //   const userId = decodeToken.sub;
-        //   const user = await User.getLogInInfoForUserId(userId)
-        //   return { user }
-        // }
-
-        // // if no token, return empty object
-        // else {
-          return context;
-        // }
+      context: async ({ req }) => {
+        // Use the auth middleware to create context with user if authenticated
+        return createAuthContext(req);
       },
     }),
   );

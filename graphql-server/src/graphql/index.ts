@@ -66,6 +66,15 @@ import {
   SearchResolvers
 } from './search.js';
 
+import {
+  UserDefinitions,
+  UserQueries,
+  UserMutations,
+  UserFieldResolvers,
+  UserQueriesDefinitions,
+  UserMutationsDefinitions,
+} from './user.js';
+
 export const typeDefs = gql`#graphql
   ${CommonDefinitions}
   ${ComicSeriesDefinitions}
@@ -79,6 +88,7 @@ export const typeDefs = gql`#graphql
   ${HomeScreenDefinitions}
   ${ListDefinitions}
   ${SearchDefinitions}
+  ${UserDefinitions}
 
   type Query {
     ${ComicSeriesQueriesDefinitions}
@@ -90,10 +100,12 @@ export const typeDefs = gql`#graphql
     ${HomeScreenQueriesDefinitions}
     ${ListQueriesDefinitions}
     ${SearchQueriesDefinitions}
+    ${UserQueriesDefinitions}
   }
 
   type Mutation {
     ${ComicSeriesMutationsDefinitions}
+    ${UserMutationsDefinitions}
   }
 `;
 
@@ -109,9 +121,11 @@ export const resolvers: Resolvers = {
     ...HomeScreenQueries,
     ...ListQueries,
     ...SearchQueries,
+    ...UserQueries,
   },
   Mutation: {
     ...ComicSeriesMutations,
+    ...UserMutations,
   },
   ...ComicSeriesFieldResolvers,
   ...ComicIssueFieldResolvers,
@@ -119,4 +133,5 @@ export const resolvers: Resolvers = {
   ...CreatorFieldResolvers,
   ...CreatorContentFieldResolvers,
   ...SearchResolvers,
+  ...UserFieldResolvers,
 };
