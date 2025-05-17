@@ -17,6 +17,7 @@ const config: CodegenConfig = {
           Creator: "../database/types.js#CreatorModel",
           CreatorContent: "../database/types.js#CreatorContentModel",
           List: "../database/types.js#ListModel",
+          User: "../database/types.js#UserModel",
         },
         useIndexSignature: true,
         useTypeImports: true,

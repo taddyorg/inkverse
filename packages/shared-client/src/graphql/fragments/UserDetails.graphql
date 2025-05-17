@@ -3,9 +3,7 @@ fragment UserDetails on User {
   id
   username
   email
-  name
   isEmailVerified
-  createdAt
   ageRange
   birthYear
 }

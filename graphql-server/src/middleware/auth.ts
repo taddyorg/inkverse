@@ -4,32 +4,36 @@
  * Verifies JWT tokens and attaches user data to the request context
  */
 import { verifyToken } from '@inkverse/shared-server/utils/authentication';
-import type { User } from '@inkverse/public/graphql/types';
+import type { User as UserType } from '@inkverse/public/graphql/types';
+import { User } from '@inkverse/shared-server/models/index';
+import type { UserModel } from '@inkverse/shared-server/database/types';
 
 /**
  * GraphQL context type for authentication
  */
 export type GraphQLContext = {
-  user?: User | null;
+  user?: UserType | null;
 }
 
 /**
  * Get user data from database by ID
  */
-const getUserById = async (userId: string): Promise<User | null> => {
-  // TODO: Implement user retrieval from database
-  // For now, return a placeholder user
-  // In a real implementation, this would query the database
-  console.log(`Getting user data for ID: ${userId}`);
-  
-  // Placeholder implementation
-  return {
-    id: userId,
-    createdAt: Math.floor(Date.now() / 1000),
-    email: 'user@example.com',
-    username: 'testuser',
-    isEmailVerified: true
-  } as User;
+const getUserById = async (userId: string): Promise<UserType | null> => {
+  try {
+    // Use the User model to retrieve user by ID
+    const user = await User.getUserById(userId);
+    
+    if (!user) {
+      console.log(`User not found for ID: ${userId}`);
+      return null;
+    }
+    
+    // Convert UserModel to GraphQL User type
+    return user as unknown as UserType;
+  } catch (error) {
+    console.error(`Error retrieving user with ID ${userId}:`, error);
+    return null;
+  }
 };
 
 /**

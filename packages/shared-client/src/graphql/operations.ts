@@ -866,22 +866,27 @@ export enum ListType {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  /** Exchange OTP token for authentication tokens */
+  exchangeOTPForTokens: AuthResponse;
   /** Exchange refresh token for new access token */
   exchangeRefreshForAccessToken: Scalars['String']['output'];
   /** Exchange refresh token for new refresh token */
   exchangeRefreshForRefreshToken: Scalars['String']['output'];
+  /** Log in with Apple */
+  loginWithApple?: Maybe<Scalars['Boolean']['output']>;
   /** Log in an existing user */
-  login: AuthResponse;
-  /** Logout user */
-  logout: Scalars['Boolean']['output'];
+  loginWithEmail?: Maybe<Scalars['Boolean']['output']>;
+  /** Log in with Google */
+  loginWithGoogle?: Maybe<Scalars['Boolean']['output']>;
   /**  Report a comic series  */
   reportComicSeries?: Maybe<Scalars['Boolean']['output']>;
-  /** Send a magic link for passwordless authentication */
-  sendMagicLink: Scalars['Boolean']['output'];
   /** Register a new user */
   signUp: AuthResponse;
-  /** Verify email address */
-  verifyEmail: Scalars['Boolean']['output'];
+};
+
+
+export type MutationExchangeOtpForTokensArgs = {
+  otp: Scalars['String']['input'];
 };
 
 
@@ -895,11 +900,20 @@ export type MutationExchangeRefreshForRefreshTokenArgs = {
 };
 
 
-export type MutationLoginArgs = {
-  appleId?: InputMaybe<Scalars['String']['input']>;
-  email?: InputMaybe<Scalars['String']['input']>;
-  googleId?: InputMaybe<Scalars['String']['input']>;
-  provider: AuthProvider;
+export type MutationLoginWithAppleArgs = {
+  appleId: Scalars['String']['input'];
+  appleIdToken: Scalars['String']['input'];
+};
+
+
+export type MutationLoginWithEmailArgs = {
+  email: Scalars['String']['input'];
+};
+
+
+export type MutationLoginWithGoogleArgs = {
+  googleId: Scalars['String']['input'];
+  googleIdToken: Scalars['String']['input'];
 };
 
 
@@ -910,12 +924,12 @@ export type MutationReportComicSeriesArgs = {
 
 
 export type MutationSignUpArgs = {
-  ageRange?: InputMaybe<UserAgeRange>;
+  ageRange: UserAgeRange;
   birthYear?: InputMaybe<Scalars['Int']['input']>;
   email: Scalars['String']['input'];
-  name?: InputMaybe<Scalars['String']['input']>;
   provider: AuthProvider;
-  username?: InputMaybe<Scalars['String']['input']>;
+  providerId?: InputMaybe<Scalars['String']['input']>;
+  username: Scalars['String']['input'];
 };
 
 /**  The privacy types for a list  */
@@ -1096,11 +1110,10 @@ export type User = {
   __typename?: 'User';
   ageRange?: Maybe<UserAgeRange>;
   birthYear?: Maybe<Scalars['Int']['output']>;
-  createdAt: Scalars['Int']['output'];
+  createdAt?: Maybe<Scalars['Int']['output']>;
   email: Scalars['String']['output'];
   id: Scalars['ID']['output'];
-  isEmailVerified: Scalars['Boolean']['output'];
-  name?: Maybe<Scalars['String']['output']>;
+  isEmailVerified?: Maybe<Scalars['Boolean']['output']>;
   updatedAt?: Maybe<Scalars['Int']['output']>;
   username: Scalars['String']['output'];
 };
@@ -1129,7 +1142,7 @@ export type MiniCreatorDetailsFragment = { __typename?: 'Creator', uuid: string,
 
 export type MiniUserDetailsFragment = { __typename?: 'User', id: string, username: string };
 
-export type UserDetailsFragment = { __typename?: 'User', id: string, username: string, email: string, name?: string | null, isEmailVerified: boolean, createdAt: number, ageRange?: UserAgeRange | null, birthYear?: number | null };
+export type UserDetailsFragment = { __typename?: 'User', id: string, username: string, email: string, isEmailVerified?: boolean | null, ageRange?: UserAgeRange | null, birthYear?: number | null };
 
 export type ReportComicSeriesMutationVariables = Exact<{
   uuid: Scalars['ID']['input'];
@@ -1170,7 +1183,7 @@ export type GetCreatorQuery = { __typename?: 'Query', getCreator?: { __typename?
 export type GetCurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetCurrentUserQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, username: string, email: string, name?: string | null, isEmailVerified: boolean, createdAt: number, ageRange?: UserAgeRange | null, birthYear?: number | null } | null };
+export type GetCurrentUserQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, username: string, email: string, isEmailVerified?: boolean | null, ageRange?: UserAgeRange | null, birthYear?: number | null } | null };
 
 export type GetMiniCurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1342,9 +1355,7 @@ export const UserDetails = gql`
   id
   username
   email
-  name
   isEmailVerified
-  createdAt
   ageRange
   birthYear
 }

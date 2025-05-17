@@ -1,5 +1,5 @@
 import type { GraphQLResolveInfo } from 'graphql';
-import type { ComicSeriesModel, ComicIssueModel, ComicStoryModel, CreatorModel, CreatorContentModel, ListModel } from '../database/types.js';
+import type { ComicSeriesModel, ComicIssueModel, ComicStoryModel, CreatorModel, CreatorContentModel, ListModel, UserModel } from '../database/types.js';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -869,22 +869,27 @@ export enum ListType {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  /** Exchange OTP token for authentication tokens */
+  exchangeOTPForTokens: AuthResponse;
   /** Exchange refresh token for new access token */
   exchangeRefreshForAccessToken: Scalars['String']['output'];
   /** Exchange refresh token for new refresh token */
   exchangeRefreshForRefreshToken: Scalars['String']['output'];
+  /** Log in with Apple */
+  loginWithApple?: Maybe<Scalars['Boolean']['output']>;
   /** Log in an existing user */
-  login: AuthResponse;
-  /** Logout user */
-  logout: Scalars['Boolean']['output'];
+  loginWithEmail?: Maybe<Scalars['Boolean']['output']>;
+  /** Log in with Google */
+  loginWithGoogle?: Maybe<Scalars['Boolean']['output']>;
   /**  Report a comic series  */
   reportComicSeries?: Maybe<Scalars['Boolean']['output']>;
-  /** Send a magic link for passwordless authentication */
-  sendMagicLink: Scalars['Boolean']['output'];
   /** Register a new user */
   signUp: AuthResponse;
-  /** Verify email address */
-  verifyEmail: Scalars['Boolean']['output'];
+};
+
+
+export type MutationExchangeOtpForTokensArgs = {
+  otp: Scalars['String']['input'];
 };
 
 
@@ -898,11 +903,20 @@ export type MutationExchangeRefreshForRefreshTokenArgs = {
 };
 
 
-export type MutationLoginArgs = {
-  appleId?: InputMaybe<Scalars['String']['input']>;
-  email?: InputMaybe<Scalars['String']['input']>;
-  googleId?: InputMaybe<Scalars['String']['input']>;
-  provider: AuthProvider;
+export type MutationLoginWithAppleArgs = {
+  appleId: Scalars['String']['input'];
+  appleIdToken: Scalars['String']['input'];
+};
+
+
+export type MutationLoginWithEmailArgs = {
+  email: Scalars['String']['input'];
+};
+
+
+export type MutationLoginWithGoogleArgs = {
+  googleId: Scalars['String']['input'];
+  googleIdToken: Scalars['String']['input'];
 };
 
 
@@ -913,12 +927,12 @@ export type MutationReportComicSeriesArgs = {
 
 
 export type MutationSignUpArgs = {
-  ageRange?: InputMaybe<UserAgeRange>;
+  ageRange: UserAgeRange;
   birthYear?: InputMaybe<Scalars['Int']['input']>;
   email: Scalars['String']['input'];
-  name?: InputMaybe<Scalars['String']['input']>;
   provider: AuthProvider;
-  username?: InputMaybe<Scalars['String']['input']>;
+  providerId?: InputMaybe<Scalars['String']['input']>;
+  username: Scalars['String']['input'];
 };
 
 /**  The privacy types for a list  */
@@ -1099,11 +1113,10 @@ export type User = {
   __typename?: 'User';
   ageRange?: Maybe<UserAgeRange>;
   birthYear?: Maybe<Scalars['Int']['output']>;
-  createdAt: Scalars['Int']['output'];
+  createdAt?: Maybe<Scalars['Int']['output']>;
   email: Scalars['String']['output'];
   id: Scalars['ID']['output'];
-  isEmailVerified: Scalars['Boolean']['output'];
-  name?: Maybe<Scalars['String']['output']>;
+  isEmailVerified?: Maybe<Scalars['Boolean']['output']>;
   updatedAt?: Maybe<Scalars['Int']['output']>;
   username: Scalars['String']['output'];
 };
@@ -1189,7 +1202,7 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = ResolversObject<{
   AuthProvider: AuthProvider;
-  AuthResponse: ResolverTypeWrapper<AuthResponse>;
+  AuthResponse: ResolverTypeWrapper<Omit<AuthResponse, 'user'> & { user: ResolversTypes['User'] }>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
   ComicIssue: ResolverTypeWrapper<ComicIssueModel>;
   ComicIssueForSeries: ResolverTypeWrapper<Omit<ComicIssueForSeries, 'issues'> & { issues?: Maybe<Array<Maybe<ResolversTypes['ComicIssue']>>> }>;
@@ -1222,13 +1235,13 @@ export type ResolversTypes = ResolversObject<{
   SortOrder: SortOrder;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
   TaddyType: TaddyType;
-  User: ResolverTypeWrapper<User>;
+  User: ResolverTypeWrapper<UserModel>;
   UserAgeRange: UserAgeRange;
 }>;
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = ResolversObject<{
-  AuthResponse: AuthResponse;
+  AuthResponse: Omit<AuthResponse, 'user'> & { user: ResolversParentTypes['User'] };
   Boolean: Scalars['Boolean']['output'];
   ComicIssue: ComicIssueModel;
   ComicIssueForSeries: Omit<ComicIssueForSeries, 'issues'> & { issues?: Maybe<Array<Maybe<ResolversParentTypes['ComicIssue']>>> };
@@ -1248,7 +1261,7 @@ export type ResolversParentTypes = ResolversObject<{
   Query: {};
   SearchResults: Omit<SearchResults, 'comicSeries' | 'creators'> & { comicSeries?: Maybe<Array<Maybe<ResolversParentTypes['ComicSeries']>>>, creators?: Maybe<Array<Maybe<ResolversParentTypes['Creator']>>> };
   String: Scalars['String']['output'];
-  User: User;
+  User: UserModel;
 }>;
 
 export type AuthResponseResolvers<ContextType = any, ParentType extends ResolversParentTypes['AuthResponse'] = ResolversParentTypes['AuthResponse']> = ResolversObject<{
@@ -1418,14 +1431,14 @@ export type ListResolvers<ContextType = any, ParentType extends ResolversParentT
 }>;
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
+  exchangeOTPForTokens?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationExchangeOtpForTokensArgs, 'otp'>>;
   exchangeRefreshForAccessToken?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationExchangeRefreshForAccessTokenArgs, 'refreshToken'>>;
   exchangeRefreshForRefreshToken?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationExchangeRefreshForRefreshTokenArgs, 'refreshToken'>>;
-  login?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationLoginArgs, 'provider'>>;
-  logout?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  loginWithApple?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationLoginWithAppleArgs, 'appleId' | 'appleIdToken'>>;
+  loginWithEmail?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationLoginWithEmailArgs, 'email'>>;
+  loginWithGoogle?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationLoginWithGoogleArgs, 'googleId' | 'googleIdToken'>>;
   reportComicSeries?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationReportComicSeriesArgs, 'uuid'>>;
-  sendMagicLink?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  signUp?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationSignUpArgs, 'email' | 'provider'>>;
-  verifyEmail?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  signUp?: Resolver<ResolversTypes['AuthResponse'], ParentType, ContextType, RequireFields<MutationSignUpArgs, 'ageRange' | 'email' | 'provider' | 'username'>>;
 }>;
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
@@ -1457,11 +1470,10 @@ export type SearchResultsResolvers<ContextType = any, ParentType extends Resolve
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = ResolversObject<{
   ageRange?: Resolver<Maybe<ResolversTypes['UserAgeRange']>, ParentType, ContextType>;
   birthYear?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  createdAt?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  createdAt?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  isEmailVerified?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  isEmailVerified?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   updatedAt?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   username?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

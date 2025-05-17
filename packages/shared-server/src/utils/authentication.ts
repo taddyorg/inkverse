@@ -33,7 +33,7 @@ function getOptionsForTokenType(type: TokenType): { expiresIn: number } {
 /**
  * Extract Bearer token from Authorization header
  */
-export const extractTokenFromHeader = (header: string | null): string | undefined => {
+export const extractTokenFromHeader = (header: string | null | undefined): string | undefined => {
 	if (!header) { return }
 	const [scheme, token] = header.split(" ");
 
@@ -46,7 +46,7 @@ export const extractTokenFromHeader = (header: string | null): string | undefine
  * Parameters for verifying a token
  */
 export type VerifyTokenParams = {
-	req?: Request;
+	req?: { headers?: Record<string, string> };
 	token?: string;
 }
 
@@ -59,7 +59,7 @@ export type VerifyTokenParams = {
  */
 export const verifyToken = ({ req, token }: VerifyTokenParams): TokenPayload | undefined => {
 	// Get token from request headers or passed parameter
-	const tokenToVerify = token || (req ? extractTokenFromHeader(req.headers.get('authorization')) : undefined);
+	const tokenToVerify = token || (req ? extractTokenFromHeader(req?.headers?.authorization) : undefined);
 	
 	if (!tokenToVerify) { return }
 

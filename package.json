@@ -23,7 +23,7 @@
     "concurrently": "^9.1.2"
   },
   "scripts": {
-    "graphql-codegen": "graphql-codegen --config packages/public/src/graphql/codegen.ts && graphql-codegen --config packages/shared-client/src/graphql/codegen.ts && graphql-codegen --config packages/shared-server/src/graphql/codegen.ts",
+    "graphql-codegen": "echo 'Generating GraphQL types for @inkverse/public...' && graphql-codegen --config packages/public/src/graphql/codegen.ts && echo 'Generating GraphQL types for @inkverse/shared-client...' && graphql-codegen --config packages/shared-client/src/graphql/codegen.ts && echo 'Generating GraphQL types for @inkverse/shared-server...' && graphql-codegen --config packages/shared-server/src/graphql/codegen.ts",
     "migrate": "tsx ./node_modules/.bin/knex --knexfile ./packages/shared-server/src/database/config.ts migrate:latest",
     "migrate:rollback": "tsx ./packages/shared-server/src/database/list-last-batch-migrations.ts",
     "migrate:list": "tsx ./node_modules/.bin/knex --knexfile ./packages/shared-server/src/database/config.ts migrate:list",

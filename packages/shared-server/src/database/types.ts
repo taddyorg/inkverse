@@ -5,7 +5,8 @@ import type {
   Genre, 
   Language, 
   SeriesStatus,
-  TaddyType
+  TaddyType,
+  UserAgeRange
 } from "../graphql/types.js";
 
 export type ComicSeriesModel = {
@@ -120,6 +121,7 @@ export type UUIDLookupModel = {
   updatedAt: Date | null;
 }
 
+// replace with GraphQL enum when ready
 export enum ListType {
   COMICSERIES = 'COMICSERIES',
   COMICISSUE = 'COMICISSUE',
@@ -144,18 +146,17 @@ export type ListModel = {
 }
 
 export type UserModel = {
-  id: number;
-  uuid: string;
-  createdAt: Date;
-  updatedAt: Date | null;
+  id: string;
+  createdAt: number;
+  updatedAt: number | null;
   name: string | null;
-  email: string | null;
-  username: string | null;
+  email: string;
+  username: string;
   isEmailVerified: boolean;
   resetPasswordToken: string | null;
-  resetPasswordExpiry: Date | null;
+  resetPasswordExpiry: number | null;
   googleId: string | null;
   appleId: string | null;
-  ageRange: string | null;
+  ageRange: UserAgeRange | null;
   birthYear: number | null;
 }
