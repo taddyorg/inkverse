@@ -1,10 +1,11 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { StyleSheet, Image } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { useNavigation } from '@react-navigation/native';
 
 import { Screen, ThemedView, ThemedText, ThemedButton } from '@/app/components/ui';
 import { HeaderSettingsButton } from '@/app/components/profile/HeaderSettingsButton'
+// import { AuthModal } from '@/app/components/profile/AuthModal';
 import { SETTINGS_SCREEN } from '@/constants/Navigation';
 
 type ListItem = 
@@ -14,6 +15,7 @@ type ListItem =
 
 export function ProfileScreen() {
   const navigation = useNavigation();
+  // const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   
   const listData = useMemo((): ListItem[] => {
     return [
@@ -45,17 +47,11 @@ export function ProfileScreen() {
             <ThemedText style={styles.subheading}>
               Create your profile to start saving your favorite webtoons and tracking your reading history!
             </ThemedText>
-            <ThemedButton 
-              buttonText="Coming Soon"
-              style={[styles.ctaButton, 
-                { 
-                  // backgroundColor: Colors.light.text,
-                  opacity: 0.5 
-                }
-              ]}
-              disabled={true}
-              onPress={() => console.log('CTA pressed')}
-            />
+            {/* <ThemedButton 
+              buttonText="Sign Up / Log In"
+              style={styles.ctaButton}
+              onPress={() => setIsAuthModalOpen(true)}
+            /> */}
           </ThemedView>
         </ThemedView>
       );
@@ -71,6 +67,10 @@ export function ProfileScreen() {
         estimatedItemSize={100}
         contentContainerStyle={{ padding: 16 }}
       />
+      {/* <AuthModal 
+        visible={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+      /> */}
     </Screen>
   );
 }
