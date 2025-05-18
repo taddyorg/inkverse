@@ -1,7 +1,5 @@
-import type { ApolloClient } from '@apollo/client';
 import axios from 'axios';
-import { UpdateUserProfile } from '../graphql/operations';
-import type { UserAgeRange, AuthResponse } from '@inkverse/public/graphql/types';
+import type { AuthResponse } from '../graphql/types';
 
 export interface AuthState {
   user: any | null;
@@ -233,47 +231,4 @@ export function logout(dispatch: React.Dispatch<AuthAction>): void {
 
 export function clearAuthError(dispatch: React.Dispatch<AuthAction>): void {
   dispatch({ type: AuthActionType.AUTH_CLEAR_ERROR });
-}
-
-interface DispatchUpdateUserProfileParams {
-  publicClient: ApolloClient<any>;
-  username: string;
-  ageRange: UserAgeRange;
-  birthYear?: number;
-}
-
-export async function dispatchUpdateUserProfile(
-  { publicClient, username, ageRange, birthYear }: DispatchUpdateUserProfileParams,
-  dispatch?: React.Dispatch<AuthAction>
-): Promise<void> {
-  if (dispatch) dispatch({ type: AuthActionType.AUTH_START });
-
-  try {
-    const { data, errors } = await publicClient.mutate({
-      mutation: UpdateUserProfile,
-      variables: { username, ageRange, birthYear },
-    });
-
-    if (errors) {
-      throw new Error(errors[0]?.message || 'Failed to update profile');
-    }
-
-    if (!data?.updateUserProfile) {
-      throw new Error('Failed to update profile');
-    }
-
-    // Update the auth state with the new user data
-    if (dispatch) {
-      dispatch({ type: AuthActionType.AUTH_SUCCESS, payload: { 
-        user: data.updateUserProfile,
-        accessToken: null as unknown as string, // Keep existing tokens
-        refreshToken: null as unknown as string
-      }});
-    }
-  } catch (error: any) {
-    if (dispatch) {
-      dispatch({ type: AuthActionType.AUTH_ERROR, payload: error.message });
-    }
-    throw error;
-  }
 }
