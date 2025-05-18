@@ -15,6 +15,9 @@
       "import": "./dist/*.js"
     }
   },
+  "dependencies": {
+    "axios": "^1.7.9"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rm -rf dist tsconfig.tsbuildinfo && tsc",

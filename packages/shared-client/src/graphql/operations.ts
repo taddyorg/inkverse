@@ -866,54 +866,10 @@ export enum ListType {
 
 export type Mutation = {
   __typename?: 'Mutation';
-  /** Exchange OTP token for authentication tokens */
-  exchangeOTPForTokens: AuthResponse;
-  /** Exchange refresh token for new access token */
-  exchangeRefreshForAccessToken: Scalars['String']['output'];
-  /** Exchange refresh token for new refresh token */
-  exchangeRefreshForRefreshToken: Scalars['String']['output'];
-  /** Log in with Apple */
-  loginWithApple?: Maybe<Scalars['Boolean']['output']>;
-  /** Log in an existing user */
-  loginWithEmail?: Maybe<Scalars['Boolean']['output']>;
-  /** Log in with Google */
-  loginWithGoogle?: Maybe<Scalars['Boolean']['output']>;
   /**  Report a comic series  */
   reportComicSeries?: Maybe<Scalars['Boolean']['output']>;
-  /** Register a new user */
-  signUp: AuthResponse;
-};
-
-
-export type MutationExchangeOtpForTokensArgs = {
-  otp: Scalars['String']['input'];
-};
-
-
-export type MutationExchangeRefreshForAccessTokenArgs = {
-  refreshToken: Scalars['String']['input'];
-};
-
-
-export type MutationExchangeRefreshForRefreshTokenArgs = {
-  refreshToken: Scalars['String']['input'];
-};
-
-
-export type MutationLoginWithAppleArgs = {
-  appleId: Scalars['String']['input'];
-  appleIdToken: Scalars['String']['input'];
-};
-
-
-export type MutationLoginWithEmailArgs = {
-  email: Scalars['String']['input'];
-};
-
-
-export type MutationLoginWithGoogleArgs = {
-  googleId: Scalars['String']['input'];
-  googleIdToken: Scalars['String']['input'];
+  /** Update user profile (username and age) */
+  updateUserProfile?: Maybe<User>;
 };
 
 
@@ -923,12 +879,9 @@ export type MutationReportComicSeriesArgs = {
 };
 
 
-export type MutationSignUpArgs = {
+export type MutationUpdateUserProfileArgs = {
   ageRange: UserAgeRange;
   birthYear?: InputMaybe<Scalars['Int']['input']>;
-  email: Scalars['String']['input'];
-  provider: AuthProvider;
-  providerId?: InputMaybe<Scalars['String']['input']>;
   username: Scalars['String']['input'];
 };
 
@@ -1115,7 +1068,7 @@ export type User = {
   id: Scalars['ID']['output'];
   isEmailVerified?: Maybe<Scalars['Boolean']['output']>;
   updatedAt?: Maybe<Scalars['Int']['output']>;
-  username: Scalars['String']['output'];
+  username?: Maybe<Scalars['String']['output']>;
 };
 
 /** Age range buckets for users */
@@ -1140,9 +1093,9 @@ export type MiniComicSeriesDetailsFragment = { __typename?: 'ComicSeries', uuid:
 
 export type MiniCreatorDetailsFragment = { __typename?: 'Creator', uuid: string, name?: string | null, shortUrl?: string | null, avatarImageAsString?: string | null, links?: Array<{ __typename?: 'LinkDetails', url?: string | null, type?: LinkType | null } | null> | null };
 
-export type MiniUserDetailsFragment = { __typename?: 'User', id: string, username: string };
+export type MiniUserDetailsFragment = { __typename?: 'User', id: string, username?: string | null };
 
-export type UserDetailsFragment = { __typename?: 'User', id: string, username: string, email: string, isEmailVerified?: boolean | null, ageRange?: UserAgeRange | null, birthYear?: number | null };
+export type UserDetailsFragment = { __typename?: 'User', id: string, username?: string | null, email: string, isEmailVerified?: boolean | null, ageRange?: UserAgeRange | null, birthYear?: number | null };
 
 export type ReportComicSeriesMutationVariables = Exact<{
   uuid: Scalars['ID']['input'];
@@ -1151,6 +1104,15 @@ export type ReportComicSeriesMutationVariables = Exact<{
 
 
 export type ReportComicSeriesMutation = { __typename?: 'Mutation', reportComicSeries?: boolean | null };
+
+export type UpdateUserProfileMutationVariables = Exact<{
+  username: Scalars['String']['input'];
+  ageRange: UserAgeRange;
+  birthYear?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type UpdateUserProfileMutation = { __typename?: 'Mutation', updateUserProfile?: { __typename?: 'User', id: string, username?: string | null, email: string, isEmailVerified?: boolean | null, ageRange?: UserAgeRange | null, birthYear?: number | null } | null };
 
 export type GetComicIssueQueryVariables = Exact<{
   issueUuid: Scalars['ID']['input'];
@@ -1183,12 +1145,12 @@ export type GetCreatorQuery = { __typename?: 'Query', getCreator?: { __typename?
 export type GetCurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetCurrentUserQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, username: string, email: string, isEmailVerified?: boolean | null, ageRange?: UserAgeRange | null, birthYear?: number | null } | null };
+export type GetCurrentUserQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, username?: string | null, email: string, isEmailVerified?: boolean | null, ageRange?: UserAgeRange | null, birthYear?: number | null } | null };
 
 export type GetMiniCurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetMiniCurrentUserQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, username: string } | null };
+export type GetMiniCurrentUserQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, username?: string | null } | null };
 
 export type GetDocumentationQueryVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -1365,6 +1327,17 @@ export const ReportComicSeries = gql`
   reportComicSeries(uuid: $uuid, reportType: $reportType)
 }
     `;
+export const UpdateUserProfile = gql`
+    mutation UpdateUserProfile($username: String!, $ageRange: UserAgeRange!, $birthYear: Int) {
+  updateUserProfile(
+    username: $username
+    ageRange: $ageRange
+    birthYear: $birthYear
+  ) {
+    ...UserDetails
+  }
+}
+    ${UserDetails}`;
 export const GetComicIssue = gql`
     query GetComicIssue($issueUuid: ID!, $seriesUuid: ID!, $sortOrderForIssues: SortOrder, $limitPerPageForIssues: Int, $pageForIssues: Int) {
   getComicIssue(uuid: $issueUuid, seriesUuid: $seriesUuid) {

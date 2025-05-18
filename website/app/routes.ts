@@ -15,5 +15,7 @@ export default [
     route("search/:term/:types?", "routes/search.tsx"),
     route("api/settings", "routes/api.settings.ts"),
     route("download-app", "routes/download-app.tsx"),
+    route("reset", "routes/reset.tsx"),
+    route("profile/setup", "routes/profile/setup.tsx"),
     route("*", "routes/error.tsx"),
 ] satisfies RouteConfig;

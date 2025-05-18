@@ -151,7 +151,7 @@ export type UserModel = {
   updatedAt: number | null;
   name: string | null;
   email: string;
-  username: string;
+  username: string | null;
   isEmailVerified: boolean;
   resetPasswordToken: string | null;
   resetPasswordExpiry: number | null;

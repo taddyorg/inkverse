@@ -5,6 +5,10 @@ export function safeFormattedDate(date: string | undefined, defaultValue = undef
   return moment.utc(date).isValid() ? moment.utc(date).format() : defaultValue;
 }
 
+export function currentDate() {
+  return moment.utc().unix();
+}
+
 export function safeAndPrettyFormattedDate(date: string | number | undefined, convertToTimestamp = true) {
   if (!date) { return null }
 

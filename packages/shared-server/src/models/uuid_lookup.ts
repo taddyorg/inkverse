@@ -16,7 +16,7 @@ export class UUIDLookup {
     .transacting(transaction)
     .insert({
       uuid,
-      taddy_type: type 
+      taddyType: type 
     })
     .returning('*');
 

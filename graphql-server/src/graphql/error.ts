@@ -25,10 +25,39 @@ function getSafeErrorMessageForGraphQLError(err: GraphQLError): string {
   if (!err.message) { return 'Unknown error' }
 
   if (process.env.NODE_ENV === 'production'){
-    if (err.message.startsWith('select *')){
-      return 'SQL Error';
+    // Hide database errors in production
+    const lowerMessage = err.message.toLowerCase();
+    if (lowerMessage.includes('duplicate key') || lowerMessage.includes('unique constraint')) {
+      if (lowerMessage.includes('email')) {
+        return 'This email is already in use';
+      }
+      if (lowerMessage.includes('username')) {
+        return 'This username is already taken';
+      }
     }
-  }else if (err.message.startsWith('Context creation failed: ')){
+    
+    // Hide all SQL-related errors
+    if (lowerMessage.includes('select') || 
+        lowerMessage.includes('insert') || 
+        lowerMessage.includes('update') || 
+        lowerMessage.includes('delete') ||
+        lowerMessage.includes('column') ||
+        lowerMessage.includes('table')) {
+      return 'A database error occurred';
+    }
+    
+    // Allow user input errors through
+    if (err.extensions?.code === 'BAD_USER_INPUT' || 
+        err.extensions?.code === 'UNAUTHENTICATED') {
+      return err.message;
+    }
+    
+    // Default for any other production error
+    return 'An error occurred';
+  }
+  
+  // In development, return full error
+  if (err.message.startsWith('Context creation failed: ')){
     return err.message.replace("Context creation failed: ", "");
   }
 

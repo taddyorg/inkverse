@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { BsGear } from "react-icons/bs";
 import { useMatches, useNavigate } from "react-router";
+import { AuthModal } from "../profile/AuthModal";
 
 interface NavbarProps {
   theme: string;
@@ -15,6 +16,7 @@ export function Navbar({ theme, zoomMode, onThemeChange, onZoomModeChange }: Nav
   const [searchTypes, setSearchTypes] = useState('comics');
   const [showSearchBox, setShowSearchBox] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   const matches = useMatches();
   const navigate = useNavigate();
@@ -81,77 +83,53 @@ export function Navbar({ theme, zoomMode, onThemeChange, onZoomModeChange }: Nav
               : (<a href="/"><NavbarLogo /></a>)
             }
           </div>
-          <div className='flex flex-row items-center'>
-            <div className="flex items-center mr-4">
-              <svg onClick={() => setShowSearchBox(!showSearchBox)} 
-                   xmlns="http://www.w3.org/2000/svg" 
-                   className="h-6 w-6 cursor-pointer mr-2 text-gray-800 hover:text-gray-400 dark:text-white dark:hover:text-gray-400 stroke-current" 
-                   fill="none" 
-                   viewBox="0 0 24 24">
+          <div className='flex flex-row items-center space-x-4'>
+            {/* Search Icon */}
+            <button 
+              onClick={() => setShowSearchBox(!showSearchBox)}
+              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-center"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" 
+                  className="h-6 w-6 text-gray-800 dark:text-white stroke-current" 
+                  fill="none" 
+                  viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
-            </div>
-            <div className="relative">
-              <button
-                onClick={() => setShowSettings(!showSettings)}
-                className="text-gray-800 mt-1 hover:text-gray-400 dark:text-white dark:hover:text-gray-400 settings-button"
-                aria-label="Settings"
-              >
-                <BsGear size={24}/>
-              </button>
-              {showSettings && (
-                <div className="settings-modal absolute right-0 mt-2 w-60 bg-white dark:bg-gray-800 rounded-md shadow-lg z-10 border border-gray-200 dark:border-gray-700">
-                  <div className="px-4 py-2 flex justify-between items-center hover:bg-gray-100 dark:hover:bg-gray-700">
-                    <button 
-                      onClick={toggleTheme}
-                      className="flex justify-center items-center w-full text-gray-800 dark:text-white"
-                    >
-                      <span className="text-base text-gray-700 dark:text-gray-200 mr-2">
-                        {theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-                      </span>
-                      {theme === 'dark' ? (
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 stroke-current" fill="none" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" 
-                          />
-                        </svg>
-                      ) : (
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 stroke-current" fill="none" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                            d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" 
-                          />
-                        </svg>
-                      )}
-                    </button>
-                  </div>
-                  <div className="hidden sm:block px-4 py-2 justify-between items-center hover:bg-gray-100 dark:hover:bg-gray-700">
-                    
-                      <button 
-                        onClick={toggleZoomMode}
-                        className="flex justify-center items-center w-full text-gray-800 dark:text-white flex-col"
-                      >
-                        <div className="flex items-center w-full">
-                          <span className="text-base text-gray-700 dark:text-gray-200">
-                            {zoomMode === 'out' ? 'Switch to Zoomed In Reading Mode' : 'Switch to Zoomed Out Reading Mode'}
-                          </span>
-                          {zoomMode === 'out' ? (
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 stroke-current ml-2" fill="none" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10H7" />
-                            </svg>
-                          ) : (
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 stroke-current ml-2" fill="none" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10H7M10 7v6" />
-                            </svg>
-                          )}
-                        </div>
-                        <img className="aspect-1 mt-2 bg-white" src="https://ink0.inkverse.co/general/zommed-in-vs-out-5.png" alt="Zoomed In vs Zoomed Out" />
-                      </button>
-                  </div>
-                </div>
+            </button>
+            
+            {/* Theme Toggle */}
+            <button 
+              onClick={toggleTheme}
+              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-center"
+            >
+              {theme === 'light' ? (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-800 stroke-current" fill="none" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                    d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" 
+                  />
+                </svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white stroke-current" fill="none" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                    d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" 
+                  />
+                </svg>
               )}
-            </div>
+            </button>
+            
+            {/* Auth Button */}
+            <button
+              onClick={() => setShowAuthModal(true)}
+              className="bg-red-500 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-800 text-white font-semibold px-6 py-2 rounded-full flex items-center justify-center"
+            >
+              Sign Up
+            </button>
+            
+            <AuthModal
+              isOpen={showAuthModal}
+              onClose={() => setShowAuthModal(false)}
+            />
+            {/* Settings code commented out */}
           </div>
         </div>
         {showSearchBox && (

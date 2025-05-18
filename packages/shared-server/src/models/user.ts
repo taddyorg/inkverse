@@ -7,14 +7,15 @@ import { database } from "../database/index.js";
 import type { UserModel } from '@inkverse/shared-server/database/types';
 import { AuthProvider, type UserAgeRange } from "@inkverse/public/graphql/types";
 import { generateRandomString } from "../utils/crypto.js";
+import { currentDate } from "../utils/date.js";
 
 interface UserCreateOrUpdateInput {
-  email: string;
-  username: string;
-  googleId: string | null | undefined;
-  appleId: string | null | undefined;
-  ageRange: UserAgeRange;
-  birthYear: number | null | undefined;
+  email?: string | null;
+  username?: string | null;
+  googleId?: string | null | undefined;
+  appleId?: string | null | undefined;
+  ageRange?: UserAgeRange | null;
+  birthYear?: number | null | undefined;
 }
 
 export class User {
@@ -60,7 +61,7 @@ export class User {
   static async getAndVerifyEmailByOTP(otp: string): Promise<UserModel | null> {
     const user = await database('users')
       .where({ resetPasswordToken: otp })
-      .andWhere('resetPasswordExpiry', '>', Date.now() / 1000)
+      .andWhere('resetPasswordExpiry', '>', currentDate())
       .first();
     
     if (!user) {
@@ -71,27 +72,29 @@ export class User {
     const [updatedUser] = await database("users")
       .where({ id: user.id })
       .update({
-        updatedAt: Date.now() / 1000,
+        updatedAt: currentDate(),
         isEmailVerified: true,
       })
       .returning('*');
-    
+
+    //TODO: Add to Marketing Email List
+
     return updatedUser;
   }
 
   static async checkOrResetPasswordReset(user: UserModel): Promise<UserModel | null> {
-    if (user.resetPasswordExpiry && user.resetPasswordExpiry > Date.now() / 1000) { 
+    if (user.resetPasswordExpiry && user.resetPasswordExpiry > currentDate()) { 
       return user
     }else{
       const hex = await generateRandomString(40)
-      const expiryDate = (Date.now() / 1000) + (4 * 24 * 60 * 60); // 4 days in seconds
+      const expiryDate = currentDate() + (4 * 24 * 60 * 60); // 4 days in seconds
 
       const [ returnedUser ] = await database('users')
         .where({
           id: user.id,
         })
         .update({
-          updatedAt: Date.now() / 1000,
+          updatedAt: currentDate(),
           resetPasswordToken: hex,
           resetPasswordExpiry: expiryDate
         })
@@ -104,12 +107,12 @@ export class User {
   /**
    * Create a new user
    */
-  static async createUser(userData: UserCreateOrUpdateInput): Promise<UserModel> {
+  static async createUser(userData: Partial<UserCreateOrUpdateInput>): Promise<UserModel> {
     // Create user object for database    
     // Insert user into database
     const [user] = await database("users")
       .insert({ 
-        createdAt: Date.now() / 1000,
+        createdAt: currentDate(),
         ...userData,
       })
       .returning('*');
@@ -125,7 +128,7 @@ export class User {
     const [updatedUser] = await database("users")
       .where({ id })
       .update({
-        updatedAt: Date.now() / 1000,
+        updatedAt: currentDate(),
         ...userData,
       })
       .returning('*');
@@ -145,7 +148,7 @@ export class User {
       const [updatedUser] = await database("users")
         .where({ id: userId })
         .update({
-          updatedAt: Date.now() / 1000,
+          updatedAt: currentDate(),
           ...(provider === AuthProvider.GOOGLE && { googleId: providerId }),
           ...(provider === AuthProvider.APPLE && { appleId: providerId }),
         })
@@ -165,7 +168,7 @@ export class User {
     const [updatedUser] = await database("users")
       .where({ id })
       .update({
-        updatedAt: Date.now() / 1000,
+        updatedAt: currentDate(),
         isEmailVerified: true,
       })
       .returning('*');
@@ -176,11 +179,12 @@ export class User {
   /**
    * Generate a username from email
    */
-  private static safeUsername(inputUsername: string): string {
+  static sanitizeUsername(inputUsername: string): string {
     // Remove special characters and make lowercase
     const sanitized = inputUsername
       .replace(/[^a-zA-Z0-9_-]/g, '')
-      .toLowerCase();
+      .toLowerCase()
+      .trim();
     
     // Enforce 80 character limit
     return sanitized.slice(0, 80);

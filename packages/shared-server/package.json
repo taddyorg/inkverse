@@ -33,7 +33,7 @@
     "@aws-sdk/lib-storage": "^3.686.0",
     "@aws-sdk/s3-request-presigner": "^3.686.0",
     "@sentry/node": "^8.38.0",
-    "axios": "^1.7.7",
+    "axios": "^1.7.9",
     "firebase-admin": "^12.7.0",
     "graphql": "^16.9.0",
     "graphql-request": "^7.1.2",
