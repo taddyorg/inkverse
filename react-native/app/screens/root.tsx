@@ -21,9 +21,9 @@ import { ListScreen } from './list';
 import { ComicsListScreen } from './comicslist';
 import { BlogScreen } from './blog';
 import { ReportsScreen } from './reports';
-// import { ResetScreen } from './reset';
-// import { ProfileSetupUsernameScreen } from './profilesetup-username';
-// import { ProfileSetupAgeScreen } from './profilesetup-age';
+import { ResetScreen } from './reset';
+import { ProfileSetupUsernameScreen } from './profilesetup-username';
+import { ProfileSetupAgeScreen } from './profilesetup-age';
 import { AppLoaderProvider } from '../components/providers/AppLoaderProvider';
 import { WrappedComicSeriesScreen } from './wrapped-screens/wrappedcomicseries';
 import { WrappedComicIssueScreen } from './wrapped-screens/wrappedcomicissue';
@@ -52,9 +52,9 @@ import {
   BLOG_SCREEN, 
   REPORTS_SCREEN, 
   MAIN_SCREEN,
-  // RESET_SCREEN,
-  // PROFILE_SETUP_USERNAME_SCREEN,
-  // PROFILE_SETUP_AGE_SCREEN,
+  RESET_SCREEN,
+  PROFILE_SETUP_USERNAME_SCREEN,
+  PROFILE_SETUP_AGE_SCREEN,
 } from '../../constants/Navigation';
 
 Sentry.init({
@@ -322,9 +322,9 @@ function App() {
         [WRAPPED_CREATOR_SCREEN]: 'creators/:shortUrl',
         [WRAPPED_LIST_SCREEN]: 'lists/:idAndName',
         [WRAPPED_TAGGED_SCREEN]: 'tagged/:tag',
-        // [RESET_SCREEN]: 'reset',
-        // [PROFILE_SETUP_USERNAME_SCREEN]: 'profile/setup/username',
-        // [PROFILE_SETUP_AGE_SCREEN]: 'profile/setup/age',
+        [RESET_SCREEN]: 'reset',
+        [PROFILE_SETUP_USERNAME_SCREEN]: 'profile/setup/username',
+        [PROFILE_SETUP_AGE_SCREEN]: 'profile/setup/age',
       },
     },
   };

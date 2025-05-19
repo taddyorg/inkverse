@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { View, StyleSheet, useWindowDimensions, Linking } from 'react-native';
 import sanitizeHtml from 'sanitize-html';
-import RenderHtml from 'react-native-render-html';
+import RenderHtml, { MixedStyleDeclaration } from 'react-native-render-html';
 import { useNavigation } from '@react-navigation/native';
 
 import { ThemedText } from '../ui';
@@ -95,11 +95,11 @@ export function CreatorForIssue({ creators, comicissue }: CreatorForIssueProps) 
               color: textColor, 
               fontSize: 16,
               fontFamily: 'SourceSans3-Regular'
-            }}
+            } as MixedStyleDeclaration}
             tagsStyles={{
-              a: { color: linkColor, textDecorationLine: 'none' },
-              p: { marginVertical: 8 },
-              img: { maxWidth: '100%', height: 'auto' }
+              a: { color: linkColor, textDecorationLine: 'none' } as MixedStyleDeclaration,
+              p: { marginVertical: 8 } as MixedStyleDeclaration,
+              img: { maxWidth: '100%', height: 'auto' } as MixedStyleDeclaration
             }}
             enableExperimentalBRCollapsing={true}
             enableCSSInlineProcessing={false}

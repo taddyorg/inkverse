@@ -3,15 +3,20 @@
   "version": "1.0.0",
   "author": "Daniel Mathews <danny@taddy.org>",
   "private": true,
-  "workspaces": [
-    "packages/public",
-    "packages/shared-client",
-    "packages/shared-server",
-    "graphql-server",
-    "website",
-    "react-native",
-    "worker"
-  ],
+  "workspaces": {
+    "packages": [
+      "packages/public",
+      "packages/shared-client",
+      "packages/shared-server",
+      "graphql-server",
+      "website",
+      "react-native",
+      "worker"
+    ],
+    "nohoist": [
+      "react-native/**"
+    ]
+  },
   "devDependencies": {
     "@graphql-codegen/cli": "5.0.6",
     "@graphql-codegen/introspection": "4.0.3",
