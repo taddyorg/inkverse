@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { BsGear } from "react-icons/bs";
 import { useMatches, useNavigate } from "react-router";
-import { AuthModal } from "../profile/AuthModal";
+import { SignupModal } from "../profile/SignupModal";
 
 interface NavbarProps {
   theme: string;
@@ -16,7 +16,7 @@ export function Navbar({ theme, zoomMode, onThemeChange, onZoomModeChange }: Nav
   const [searchTypes, setSearchTypes] = useState('comics');
   const [showSearchBox, setShowSearchBox] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showSignupModal, setShowSignupModal] = useState(false);
 
   const matches = useMatches();
   const navigate = useNavigate();
@@ -119,15 +119,15 @@ export function Navbar({ theme, zoomMode, onThemeChange, onZoomModeChange }: Nav
             
             {/* Auth Button */}
             <button
-              onClick={() => setShowAuthModal(true)}
+              onClick={() => setShowSignupModal(true)}
               className="bg-red-500 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-800 text-white font-semibold px-6 py-2 rounded-full flex items-center justify-center"
             >
               Sign Up
             </button>
             
-            <AuthModal
-              isOpen={showAuthModal}
-              onClose={() => setShowAuthModal(false)}
+            <SignupModal
+              isOpen={showSignupModal}
+              onClose={() => setShowSignupModal(false)}
             />
             {/* Settings code commented out */}
           </div>

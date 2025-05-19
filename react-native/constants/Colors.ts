@@ -20,6 +20,7 @@ export const Colors = {
     tag: '#ED5959', // brand-pink
     category: '#567CD6', // taddy-blue
     actionText: '#F7F7F7', // action-text
+    button: '#ED5959', // taddy-blue
   },
   dark: {
     text: '#F7F7F7',      // soft-white
@@ -32,6 +33,7 @@ export const Colors = {
     tag: '#567CD6', // taddy-blue
     category: '#ED5959', // taddy-blue-dark
     actionText: '#F7F7F7', // action-text
+    button: '#567CD6', // taddy-blue
   },
 } as const;
 

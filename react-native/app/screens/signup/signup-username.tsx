@@ -1,7 +1,6 @@
 import { useState, useReducer } from 'react';
 import { StyleSheet, View, TextInput } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { useApolloClient } from '@apollo/client';
 import { 
   authReducer, 
   authInitialState,
@@ -9,11 +8,10 @@ import {
 } from '@inkverse/shared-client/dispatch/authentication';
 import { Screen, ThemedView, ThemedText, ThemedButton } from '@/app/components/ui';
 import { Colors, useThemeColor } from '@/constants/Colors';
-import { PROFILE_SETUP_AGE_SCREEN } from '@/constants/Navigation';
+import { SIGNUP_AGE_SCREEN } from '@/constants/Navigation';
 
-export function ProfileSetupUsernameScreen() {
+export function SignupUsernameScreen() {
   const navigation = useNavigation();
-  const apolloClient = useApolloClient();
   const [username, setUsername] = useState('');
   const [authState, dispatch] = useReducer(authReducer, authInitialState);
   
@@ -39,7 +37,7 @@ export function ProfileSetupUsernameScreen() {
 
       // For now, just store username in state and navigate to age selection
       // The actual mutation will be called after both steps are complete
-      navigation.navigate(PROFILE_SETUP_AGE_SCREEN, { username: username.trim() });
+      navigation.navigate(SIGNUP_AGE_SCREEN);
       
     } catch (err: any) {
       dispatch({ type: AuthActionType.AUTH_ERROR, payload: err.message });

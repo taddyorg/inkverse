@@ -1,7 +1,6 @@
 import { useState, useReducer } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { useApolloClient } from '@apollo/client';
 import { UserAgeRange } from '@inkverse/public/graphql/types';
 import { 
   authReducer, 
@@ -12,19 +11,14 @@ import { Screen, ThemedView, ThemedText, ThemedButton } from '@/app/components/u
 import { Colors, useThemeColor } from '@/constants/Colors';
 import { HOME_SCREEN } from '@/constants/Navigation';
 
-export function ProfileSetupAgeScreen() {
+export function SignupAgeScreen() {
   const navigation = useNavigation();
-  const route = useRoute();
-  const apolloClient = useApolloClient();
-  // @ts-ignore - params from previous screen
-  const username = route.params?.username;
   
   const [ageRange, setAgeRange] = useState<UserAgeRange | ''>('');
   const [birthYear, setBirthYear] = useState('');
   const [authState, dispatch] = useReducer(authReducer, authInitialState);
   
   const backgroundColor = useThemeColor({}, 'background');
-  const textColor = useThemeColor({}, 'text');
   const borderColor = useThemeColor(
     { light: Colors.light.background, dark: Colors.dark.background },
     'background'

@@ -35,9 +35,11 @@ export const WRAPPED_COMICISSUE_SCREEN = "WrappedComicIssueScreen";
 export const WRAPPED_CREATOR_SCREEN = "WrappedCreatorScreen";
 export const WRAPPED_LIST_SCREEN = "WrappedListScreen";
 export const WRAPPED_TAGGED_SCREEN = "WrappedTaggedScreen";
-export const RESET_SCREEN = "ResetScreen";
-export const PROFILE_SETUP_USERNAME_SCREEN = "ProfileSetupUsernameScreen";
-export const PROFILE_SETUP_AGE_SCREEN = "ProfileSetupAgeScreen";
+export const SIGNUP_SCREEN = "SignupScreen";
+export const SIGNUP_EMAIL_SCREEN = "SignupEmailScreen";
+export const SIGNUP_RESET_SCREEN = "SignupResetScreen";
+export const SIGNUP_USERNAME_SCREEN = "SignupUsernameScreen";
+export const SIGNUP_AGE_SCREEN = "SignupAgeScreen";
 
 export type RootStackParamList = {
   [HOME_TAB]: undefined;
@@ -60,9 +62,11 @@ export type RootStackParamList = {
   [WRAPPED_CREATOR_SCREEN]: WrappedCreatorScreenParams;
   [WRAPPED_LIST_SCREEN]: WrappedListScreenParams;
   [WRAPPED_TAGGED_SCREEN]: WrappedTaggedScreenParams;
-  [RESET_SCREEN]: { token?: string } | undefined;
-  [PROFILE_SETUP_USERNAME_SCREEN]: undefined;
-  [PROFILE_SETUP_AGE_SCREEN]: { username: string } | undefined;
+  [SIGNUP_SCREEN]: undefined;
+  [SIGNUP_EMAIL_SCREEN]: undefined;
+  [SIGNUP_RESET_SCREEN]: { token?: string } | undefined;
+  [SIGNUP_USERNAME_SCREEN]: undefined;
+  [SIGNUP_AGE_SCREEN]: undefined;
 };
 
 interface ResetNavigationToContentScreenParams {

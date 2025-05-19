@@ -21,10 +21,13 @@ import { ListScreen } from './list';
 import { ComicsListScreen } from './comicslist';
 import { BlogScreen } from './blog';
 import { ReportsScreen } from './reports';
-import { ResetScreen } from './reset';
-import { ProfileSetupUsernameScreen } from './profilesetup-username';
-import { ProfileSetupAgeScreen } from './profilesetup-age';
+import { SignupScreen } from './signup';
+import { SignupEmailScreen } from './signup/signup-email';
+import { SignupResetScreen } from './signup/signup-reset';
+import { SignupUsernameScreen } from './signup/signup-username';
+import { SignupAgeScreen } from './signup/signup-age';
 import { AppLoaderProvider } from '../components/providers/AppLoaderProvider';
+import { SignupProvider } from '../contexts/SignupContext';
 import { WrappedComicSeriesScreen } from './wrapped-screens/wrappedcomicseries';
 import { WrappedComicIssueScreen } from './wrapped-screens/wrappedcomicissue';
 import { WrappedCreatorScreen } from './wrapped-screens/wrappedcreator';
@@ -52,9 +55,11 @@ import {
   BLOG_SCREEN, 
   REPORTS_SCREEN, 
   MAIN_SCREEN,
-  RESET_SCREEN,
-  PROFILE_SETUP_USERNAME_SCREEN,
-  PROFILE_SETUP_AGE_SCREEN,
+  SIGNUP_SCREEN,
+  SIGNUP_EMAIL_SCREEN,
+  SIGNUP_RESET_SCREEN,
+  SIGNUP_USERNAME_SCREEN,
+  SIGNUP_AGE_SCREEN,
 } from '../../constants/Navigation';
 
 Sentry.init({
@@ -322,9 +327,7 @@ function App() {
         [WRAPPED_CREATOR_SCREEN]: 'creators/:shortUrl',
         [WRAPPED_LIST_SCREEN]: 'lists/:idAndName',
         [WRAPPED_TAGGED_SCREEN]: 'tagged/:tag',
-        [RESET_SCREEN]: 'reset',
-        [PROFILE_SETUP_USERNAME_SCREEN]: 'profile/setup/username',
-        [PROFILE_SETUP_AGE_SCREEN]: 'profile/setup/age',
+        [SIGNUP_RESET_SCREEN]: 'reset',
       },
     },
   };
@@ -336,6 +339,50 @@ function App() {
     gestureDirection: 'vertical' as const,
     fullScreenGestureEnabled: true,
     contentStyle: { backgroundColor: 'white' },
+  }
+
+  const modalScreenOptionsCannotClose = {
+    presentation: 'modal' as const,
+    animation: 'slide_from_bottom' as const,
+    contentStyle: { backgroundColor: 'white' },
+    gestureEnabled: false,
+    fullScreenGestureEnabled: false,
+  }
+
+  // Create the signup stack navigator
+  const SignupStack = createNativeStackNavigator();
+  
+  function SignupNavigator() {
+    return (
+      <SignupProvider>
+        <SignupStack.Navigator
+          screenOptions={{
+            headerShown: false,
+          }}
+        >
+          <SignupStack.Screen 
+            name={SIGNUP_SCREEN} 
+            component={SignupScreen}
+          />
+          <SignupStack.Screen 
+            name={SIGNUP_EMAIL_SCREEN} 
+            component={SignupEmailScreen}
+          />
+          <SignupStack.Screen 
+            name={SIGNUP_RESET_SCREEN} 
+            component={SignupResetScreen}
+          />
+          <SignupStack.Screen 
+            name={SIGNUP_USERNAME_SCREEN} 
+            component={SignupUsernameScreen}
+          />
+          <SignupStack.Screen 
+            name={SIGNUP_AGE_SCREEN} 
+            component={SignupAgeScreen}
+          />
+        </SignupStack.Navigator>
+      </SignupProvider>
+    );
   }
 
   return (
@@ -360,7 +407,10 @@ function App() {
           }}
         >
           <Stack.Navigator screenOptions={{ headerShown: false }}>
-            <Stack.Screen name={MAIN_SCREEN} component={RootStack} />
+            <Stack.Screen 
+              name={MAIN_SCREEN} 
+              component={RootStack} 
+            />
             <Stack.Screen 
               name={BLOG_SCREEN} 
               component={BlogScreen}
@@ -395,6 +445,11 @@ function App() {
               name={WRAPPED_TAGGED_SCREEN} 
               component={WrappedTaggedScreen}
               options={modalScreenOptions}
+            />
+            <Stack.Screen 
+              name={SIGNUP_SCREEN} 
+              component={SignupNavigator}
+              options={modalScreenOptionsCannotClose}
             />
           </Stack.Navigator>
         </PostHogProvider>

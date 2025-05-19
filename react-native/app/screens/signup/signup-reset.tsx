@@ -1,7 +1,7 @@
 import { useEffect, useReducer } from 'react';
-import { StyleSheet, View, ActivityIndicator } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
-import { useApolloClient } from '@apollo/client';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { 
   dispatchExchangeOTPForTokens,
   authReducer,
@@ -9,15 +9,15 @@ import {
   AuthActionType
 } from '@inkverse/shared-client/dispatch/authentication';
 import { Screen, ThemedView, ThemedText, ThemedButton } from '@/app/components/ui';
-import { Colors, useThemeColor } from '@/constants/Colors';
+import { useThemeColor } from '@/constants/Colors';
 import config from '@/config';
-import { HOME_SCREEN, PROFILE_SETUP_USERNAME_SCREEN } from '@/constants/Navigation';
+import { RootStackParamList, SIGNUP_RESET_SCREEN, SIGNUP_USERNAME_SCREEN } from '@/constants/Navigation';
 
-export function ResetScreen() {
-  const route = useRoute();
+export function SignupResetScreen() {
+  const route = useRoute<NativeStackScreenProps<RootStackParamList, typeof SIGNUP_RESET_SCREEN>['route']>();
   const navigation = useNavigation();
-  const apolloClient = useApolloClient();
   const [authState, dispatch] = useReducer(authReducer, authInitialState);
+
   
   const backgroundColor = useThemeColor({}, 'background');
   const errorColor = useThemeColor(
@@ -27,11 +27,10 @@ export function ResetScreen() {
 
   useEffect(() => {
     const handleTokenExchange = async () => {
-      // @ts-ignore - params may be present from deep link
       const token = route.params?.token;
       
       if (!token) {
-        navigation.navigate(HOME_SCREEN);
+        // navigation.reset({ index: 0, routes: [{ name: HOME_SCREEN }] });
         return;
       }
 
@@ -53,10 +52,10 @@ export function ResetScreen() {
   useEffect(() => {
     if (authState.isAuthenticated && authState.user) {
       // Check if user needs to complete their profile
-      if (!authState.user.username || !authState.user.ageRange) {
-        navigation.navigate(PROFILE_SETUP_USERNAME_SCREEN);
+      if (!authState.user.username) {
+        navigation.navigate(SIGNUP_USERNAME_SCREEN);
       } else {
-        navigation.navigate(HOME_SCREEN);
+        // navigation.reset({ index: 0, routes: [{ name: HOME_SCREEN }] });
       }
     }
   }, [authState.isAuthenticated, authState.user, navigation]);
@@ -72,11 +71,11 @@ export function ResetScreen() {
             <ThemedText style={styles.errorMessage}>
               {authState.error}
             </ThemedText>
-            <ThemedButton
-              buttonText="Return to Home"
-              onPress={() => navigation.navigate(HOME_SCREEN)}
+            {/* <ThemedButton
+              buttonText="Return Home"
+              onPress={() => navigation.reset({ index: 0, routes: [{ name: HOME_SCREEN }] })}
               style={styles.button}
-            />
+            /> */}
           </ThemedView>
         </ThemedView>
       </Screen>
@@ -88,14 +87,8 @@ export function ResetScreen() {
       <ThemedView style={styles.container}>
         <ThemedView style={[styles.card, { backgroundColor }]}>
           <ThemedText size="title" style={styles.title}>
-            Verifying your email...
+            Logging you in...
           </ThemedText>
-          <ThemedText style={styles.subtitle}>
-            Please wait while we verify your authentication token.
-          </ThemedText>
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={Colors.light.tint} />
-          </View>
         </ThemedView>
       </ThemedView>
     </Screen>
@@ -112,14 +105,6 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: 12,
     padding: 24,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 5,
     maxWidth: 400,
     width: '100%',
   },

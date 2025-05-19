@@ -24,6 +24,7 @@ export enum AuthActionType {
   AUTH_SUCCESS = 'AUTH_SUCCESS',
   AUTH_ERROR = 'AUTH_ERROR',
   AUTH_LOGOUT = 'AUTH_LOGOUT',
+  AUTH_RESET = 'AUTH_RESET',
   AUTH_CLEAR_ERROR = 'AUTH_CLEAR_ERROR',
 }
 
@@ -32,6 +33,7 @@ type AuthAction =
   | { type: AuthActionType.AUTH_SUCCESS; payload: AuthResponse }
   | { type: AuthActionType.AUTH_ERROR; payload: string }
   | { type: AuthActionType.AUTH_LOGOUT }
+  | { type: AuthActionType.AUTH_RESET }
   | { type: AuthActionType.AUTH_CLEAR_ERROR };
 
 export const authReducer = (state: AuthState, action: AuthAction): AuthState => {
@@ -50,6 +52,7 @@ export const authReducer = (state: AuthState, action: AuthAction): AuthState => 
       };
     case AuthActionType.AUTH_ERROR:
       return { ...state, isLoading: false, error: action.payload };
+    case AuthActionType.AUTH_RESET:
     case AuthActionType.AUTH_LOGOUT:
       return authInitialState;
     case AuthActionType.AUTH_CLEAR_ERROR:

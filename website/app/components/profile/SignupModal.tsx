@@ -24,7 +24,7 @@ interface AuthModalProps {
 
 type AuthMode = 'signup' | 'emailInput' | 'verifyEmail';
 
-export function AuthModal({ isOpen, onClose }: AuthModalProps) {
+export function SignupModal({ isOpen, onClose }: AuthModalProps) {
   const [mode, setMode] = useState<AuthMode>('signup');
   const [email, setEmail] = useState('');
   const [authState, dispatch] = useReducer(authReducer, authInitialState);
@@ -34,20 +34,12 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   // Reset state when modal opens/closes
   useEffect(() => {
     if (!isOpen) {
+      console.log('resetting auth state');
       setMode('signup');
       setEmail('');
-      if (authState.error) {
-        clearAuthError(dispatch);
-      }
+      dispatch({ type: AuthActionType.AUTH_RESET });
     }
   }, [isOpen]);
-
-  // Handle successful authentication
-  useEffect(() => {
-    if (authState.isAuthenticated && authState.user) {
-      onClose();
-    }
-  }, [authState.isAuthenticated, authState.user, onClose]);
 
   // Handle body scroll locking
   useEffect(() => {
@@ -206,13 +198,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
               Sign Up / Log In to Inkverse
             </h2>
 
-            {authState.error && (
-              <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400 rounded-lg text-sm">
-                {authState.error}
-              </div>
-            )}
-
-            <div className="space-y-3">
+            <div className="space-y-3 mb-2">
               <button
                 onClick={() => handleSocialLogin(AuthProvider.GOOGLE)}
                 disabled={authState.isLoading}
@@ -244,9 +230,15 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
               </button>
             </div>
 
-            <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
+            {authState.error && (
+              <div className="mt-4 p-3 bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400 rounded-lg text-sm">
+                {authState.error}
+              </div>
+            )}
+
+            {/* <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
               Please see our <a href="/terms-of-service" className="hover:underline" target='_blank'>Terms of Service</a> and <a href="/terms-of-service/privacy-policy" className="hover:underline" target='_blank'>Privacy Policy</a>.
-            </p>
+            </p> */}
           </>
         )}
 
@@ -254,12 +246,6 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
         {mode === 'emailInput' && (
           <>
             <h2 className="text-2xl font-bold mb-6 text-center">Enter your email</h2>
-
-            {authState.error && (
-              <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400 rounded-lg text-sm">
-                {authState.error}
-              </div>
-            )}
 
             <input
               type="email"
@@ -282,6 +268,12 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
             >
               {authState.isLoading ? 'Sending...' : 'Submit'}
             </button>
+
+            {authState.error && (
+              <div className="mt-4 p-3 bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400 rounded-lg text-sm">
+                {authState.error}
+              </div>
+            )}
           </>
         )}
 

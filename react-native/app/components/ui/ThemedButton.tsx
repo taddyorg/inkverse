@@ -1,15 +1,16 @@
 import * as React from 'react';
-import { StyleProp, useColorScheme, TouchableOpacity, StyleSheet, TouchableOpacityProps } from 'react-native';
+import { StyleProp, useColorScheme, TouchableOpacity, StyleSheet, TouchableOpacityProps, TextStyle } from 'react-native';
 
 import { ThemedText, ThemedTextFontFamilyMap } from './ThemedText';
 import { Colors } from '@/constants/Colors';
 
 type ThemedButtonProps = TouchableOpacityProps & {
   buttonText: string;
+  buttonTextProps?: StyleProp<TextStyle>;
   props?: StyleProp<TouchableOpacityProps>;
 }
 
-export function ThemedButton({ buttonText, onPress, style, ...props }: ThemedButtonProps) {
+export function ThemedButton({ buttonText, onPress, style, buttonTextProps, ...props }: ThemedButtonProps) {
   const colorScheme = useColorScheme() ?? 'light';
 
   const backgroundColor = colorScheme === 'light' ? Colors.light.tint : Colors.dark.tint;
@@ -21,7 +22,7 @@ export function ThemedButton({ buttonText, onPress, style, ...props }: ThemedBut
         style={[styles.button, { backgroundColor }, style]}
         {...props}
         >
-        <ThemedText style={[styles.buttonText, { color: buttonTextColor }]}>
+        <ThemedText style={[styles.buttonText, { color: buttonTextColor }, buttonTextProps]}>
             {buttonText}
         </ThemedText>
       </TouchableOpacity>
@@ -32,6 +33,7 @@ const styles = StyleSheet.create({
   button: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 8,
     paddingHorizontal: 14,
     paddingVertical: 14,
@@ -40,6 +42,7 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 18,
     fontFamily: ThemedTextFontFamilyMap.semiBold,
+    textAlign: 'center',
   },
   icon: {
     marginRight: 4
