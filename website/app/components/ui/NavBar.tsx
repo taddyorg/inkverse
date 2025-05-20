@@ -74,8 +74,15 @@ export function Navbar({ theme, zoomMode, onThemeChange, onZoomModeChange }: Nav
     };
   }, [showSettings]);
 
-  return (ignoreNav ? null :
-    <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" aria-label="Top">
+  return (ignoreNav
+   ?  <>
+        <SignupModal
+          isOpen={showSignupModal}
+          onClose={() => setShowSignupModal(false)}
+          hideComponent={false}
+        />
+      </>
+   : <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" aria-label="Top">
         <div className="w-full pt-4 flex items-center justify-between">
           <div className="flex items-center">
             {isRootRoute 

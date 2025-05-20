@@ -112,6 +112,7 @@ export const createToken = ({ user, type, additionalData = {} }: CreateTokenPara
 	if (!privateKey) { throw new Error('JWT private key not configured') }
 
 	const payload = {
+		iss: 'https://inkverse.co',
 		sub: user.id,
 		tokenType: type,
 		...additionalData

@@ -62,6 +62,21 @@ await knex.schema.createTable('comicseries', (table) => {
 });
 ```
 
+### knex and knex-stringcase
+
+For the database layer, we use knex and knex-stringcase. Stringcase is useful to use camelCase for the database column names.
+
+e.g.) In the database, the column name is google_id, but in the code, we use googleId.
+
+```typescript
+import { database } from "../database/index.js";
+static async getUserByGoogleId(googleId: string): Promise<UserModel | null> {
+   return await database("users")
+   .where({ googleId })
+   .first('*');
+}
+```
+
 ### Caching Layer
 
 The cache module provides:

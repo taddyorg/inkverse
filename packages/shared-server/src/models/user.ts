@@ -8,6 +8,7 @@ import type { UserModel } from '@inkverse/shared-server/database/types';
 import { AuthProvider, type UserAgeRange } from "@inkverse/public/graphql/types";
 import { generateRandomString } from "../utils/crypto.js";
 import { currentDate } from "../utils/date.js";
+import { addContactToList } from "../messaging/email/octopus.js";
 
 interface UserCreateOrUpdateInput {
   email?: string | null;
@@ -16,6 +17,7 @@ interface UserCreateOrUpdateInput {
   appleId?: string | null | undefined;
   ageRange?: UserAgeRange | null;
   birthYear?: number | null | undefined;
+  isEmailVerified?: boolean | null | undefined;
 }
 
 export class User {
@@ -42,7 +44,7 @@ export class User {
    */
   static async getUserByGoogleId(googleId: string): Promise<UserModel | null> {
     return await database("users")
-      .where({ google_id: googleId })
+      .where({ googleId })
       .first('*');
   }
 
@@ -51,7 +53,7 @@ export class User {
    */
   static async getUserByAppleId(appleId: string): Promise<UserModel | null> {
     return await database("users")
-      .where({ apple_id: appleId })
+      .where({ appleId })
       .first('*');
   }
 
@@ -77,7 +79,7 @@ export class User {
       })
       .returning('*');
 
-    //TODO: Add to Marketing Email List
+    await addContactToList('signup', { email: updatedUser.email });
 
     return updatedUser;
   }
@@ -134,31 +136,6 @@ export class User {
       .returning('*');
     
     return updatedUser;
-  }
-
-  /**
-   * Link OAuth provider to existing user account
-   */
-  static async linkProviderToUser(
-    userId: string, 
-    provider: AuthProvider, 
-    providerId: string,
-  ): Promise<UserModel | null> {
-    try {
-      const [updatedUser] = await database("users")
-        .where({ id: userId })
-        .update({
-          updatedAt: currentDate(),
-          ...(provider === AuthProvider.GOOGLE && { googleId: providerId }),
-          ...(provider === AuthProvider.APPLE && { appleId: providerId }),
-        })
-        .returning('*');
-      
-      return updatedUser;
-    } catch (error) {
-      console.error(`Failed to link ${provider} provider to user ${userId}:`, error);
-      return null;
-    }
   }
 
   /**

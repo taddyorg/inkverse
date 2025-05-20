@@ -30,8 +30,6 @@ const corsOptions = {
 
 async function startServer() {
   const app = express();
-  
-
   const httpServer = http.createServer(app);
 
   const server = new ApolloServer({

@@ -1,13 +1,12 @@
 import axios, { type AxiosError, type AxiosRequestConfig } from "axios";
 
-enum EmailListName {
-  SIGNUP = "signup",
+type EmailListName = 'signup'
+
+const EMAIL_LISTS: Record<EmailListName, string> = {
+  signup: 'signup',
 }
 
-const EMAIL_LISTS = JSON.parse(process.env.EMAIL_LISTS || '{}');
-
 type Contact = {
-  name: string;
   email: string;
   platforms?: string[];
 }
@@ -27,12 +26,12 @@ export async function addContactToList(listName: EmailListName, contact: Contact
   const data = {
     api_key: process.env.EMAIL_OCTOPUS_API_KEY,
     email_address: contact.email,
-    fields: {
-      ...(contact.name && {
-        Name: contact.name,
-        FirstName: contact.name.split(' ')[0],
-      }),
-    },
+    // fields: {
+    //   ...(contact.name && {
+    //     Name: contact.name,
+    //     FirstName: contact.name.split(' ')[0],
+    //   }),
+    // },
     ...(contact.platforms?.length && { platforms: contact.platforms }),
     status: "SUBSCRIBED"
   };

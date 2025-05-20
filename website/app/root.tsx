@@ -11,7 +11,9 @@ import {
 } from "react-router";
 
 import { useEffect, useState } from 'react';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import { getSettings } from "@/lib/action/settings";
+import config from "../config";
 
 import type { Route } from "./+types/root";
 import stylesheet from "./app.css?url";
@@ -106,13 +108,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        <Navbar 
-          theme={theme}
-          zoomMode={zoomMode}
-          onThemeChange={handleThemeChange} 
-          onZoomModeChange={handleZoomModeChange}
-        />
-        {children}
+        <GoogleOAuthProvider clientId={config.GOOGLE_CLIENT_ID}>
+          <Navbar 
+            theme={theme}
+            zoomMode={zoomMode}
+            onThemeChange={handleThemeChange} 
+            onZoomModeChange={handleZoomModeChange}
+          />
+          {children}
+        </GoogleOAuthProvider>
         <ScrollRestoration />
         <script
           dangerouslySetInnerHTML={{
