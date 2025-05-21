@@ -67,8 +67,6 @@ Content-Type: text/plain
 Contact: danny@inkverse.co
 
 Policy: https://inkverse.co/terms-of-service/privacy-policy
-
-Expires: ${new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString()}
 `
 
 const appleAppSiteAssociationJSON = {
