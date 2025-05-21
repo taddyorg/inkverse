@@ -1,8 +1,7 @@
 import { AuthenticationError, UserInputError } from './error.js';
 import type { UserModel } from '@inkverse/shared-server/database/types';
 import { User } from '@inkverse/shared-server/models/index';
-import { UserAgeRange, type MutationResolvers, type MutationUpdateUserProfileArgs } from '@inkverse/public/graphql/types';
-import type { GraphQLContext } from 'src/middleware/auth.js';
+import { UserAgeRange, type MutationResolvers } from '@inkverse/shared-server/graphql/types';
 
 // GraphQL Type Definitions
 export const UserDefinitions = `
@@ -78,7 +77,7 @@ export const UserQueries = {
 };
 
 export const UserMutations: MutationResolvers = {
-  updateUserProfile: async (_parent: any, { username, ageRange, birthYear }: MutationUpdateUserProfileArgs, context: GraphQLContext): Promise<UserModel | null> => {
+  updateUserProfile: async (_parent, { username, ageRange, birthYear }, context): Promise<UserModel | null> => {
     // Check if user is authenticated
     if (!context.user) {
       throw new AuthenticationError('You must be logged in to update your profile');

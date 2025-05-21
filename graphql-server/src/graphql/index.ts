@@ -124,8 +124,8 @@ export const resolvers: Resolvers = {
     ...UserQueries,
   },
   Mutation: {
-    ...ComicSeriesMutations,
     ...UserMutations,
+    ...ComicSeriesMutations,
   },
   ...ComicSeriesFieldResolvers,
   ...ComicIssueFieldResolvers,

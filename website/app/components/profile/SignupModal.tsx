@@ -1,11 +1,14 @@
 import React, { useState, useReducer, useEffect, useRef } from 'react';
 import { IoClose } from 'react-icons/io5';
-import { FcGoogle } from 'react-icons/fc';
 import { FaApple } from 'react-icons/fa';
 import { MdEmail, MdArrowBack } from 'react-icons/md';
-import { AuthProvider } from '@inkverse/public/graphql/types';
 import { isAValidEmail } from '@inkverse/public/utils';
 import { createPortal } from 'react-dom';
+import config from '@/config';
+
+import { GoogleLogin, useGoogleOneTapLogin } from '@react-oauth/google';
+import AppleSignin from 'react-apple-signin-auth';
+
 import { 
   authReducer, 
   authInitialState, 
@@ -15,26 +18,53 @@ import {
   clearAuthError,
   AuthActionType
 } from '@inkverse/shared-client/dispatch/authentication';
-import config from '@/config';
 
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
+  hideComponent?: boolean;
 }
 
 type AuthMode = 'signup' | 'emailInput' | 'verifyEmail';
 
-export function SignupModal({ isOpen, onClose }: AuthModalProps) {
+export function SignupModal({ isOpen, onClose, hideComponent = true }: AuthModalProps) {
   const [mode, setMode] = useState<AuthMode>('signup');
   const [email, setEmail] = useState('');
   const [authState, dispatch] = useReducer(authReducer, authInitialState);
   const modalRef = useRef<HTMLDivElement>(null);
   const initialFocusRef = useRef<HTMLButtonElement>(null);
 
+  const handleGoogleLoginSuccess = async (credentialResponse: any) => {
+    try {
+      if (!credentialResponse.credential) {
+        throw new Error('No credential received from Google');
+      }
+      
+      await dispatchLoginWithGoogle(
+        { baseUrl: config.AUTH_URL, googleIdToken: credentialResponse.credential },
+        dispatch
+      );
+      
+      // Close the modal on success
+      onClose();
+    } catch (err: any) {
+      // Error is handled by the dispatch function
+    }
+  };
+  
+  const handleGoogleLoginError = () => {
+    dispatch({ type: AuthActionType.AUTH_ERROR, payload: 'Google sign-in was unsuccessful' });
+  };
+
+  useGoogleOneTapLogin({
+    onSuccess: handleGoogleLoginSuccess,
+    onError: handleGoogleLoginError,
+    disabled: isOpen
+  });
+
   // Reset state when modal opens/closes
   useEffect(() => {
     if (!isOpen) {
-      console.log('resetting auth state');
       setMode('signup');
       setEmail('');
       dispatch({ type: AuthActionType.AUTH_RESET });
@@ -74,7 +104,6 @@ export function SignupModal({ isOpen, onClose }: AuthModalProps) {
     }
   }, [isOpen]);
 
-  // Handle keyboard events
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (!isOpen) return;
@@ -131,22 +160,30 @@ export function SignupModal({ isOpen, onClose }: AuthModalProps) {
       dispatch({ type: AuthActionType.AUTH_ERROR, payload: err?.message || 'Failed to submit email' });
     }
   };
-
-  const handleSocialLogin = async (provider: AuthProvider) => {
+  
+  const handleAppleLogin = async (response: any) => {
     try {
-      if (provider === AuthProvider.GOOGLE) {
-        // TODO: Implement actual Google OAuth flow
-        dispatch({ type: AuthActionType.AUTH_ERROR, payload: 'Google login integration coming soon' });
-      } else if (provider === AuthProvider.APPLE) {
-        // TODO: Implement actual Apple OAuth flow
-        dispatch({ type: AuthActionType.AUTH_ERROR, payload: 'Apple login integration coming soon' });
+      if (!response.authorization?.id_token) {
+        throw new Error('No ID token received from Apple');
       }
+      
+      await dispatchLoginWithApple(
+        { 
+          baseUrl: config.AUTH_URL, 
+          idToken: response.authorization.id_token,
+          code: response.authorization.code
+        },
+        dispatch
+      );
+      
+      // Close the modal on success
+      onClose();
     } catch (err: any) {
       // Error is handled by the dispatch function
     }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || !hideComponent) return null;
   
   // Modal content
   const modalContent = (
@@ -199,35 +236,67 @@ export function SignupModal({ isOpen, onClose }: AuthModalProps) {
             </h2>
 
             <div className="space-y-3 mb-2">
-              <button
-                onClick={() => handleSocialLogin(AuthProvider.GOOGLE)}
-                disabled={authState.isLoading}
-                className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                <FcGoogle className="w-5 h-5" />
-                <span>Continue with Google</span>
-              </button>
+              <div className="w-full flex justify-center mb-4">
+                <div style={{ width: '240px' }}>
+                  <GoogleLogin
+                    onSuccess={handleGoogleLoginSuccess}
+                    onError={handleGoogleLoginError}
+                    ux_mode="popup"
+                    size="large"
+                    theme="outline"
+                    shape="rectangular"
+                    text="continue_with"
+                    locale="en"
+                    width="240"
+                    context="signin"
+                  />
+                </div>
+              </div>
 
-              <button
-                onClick={() => handleSocialLogin(AuthProvider.APPLE)}
-                disabled={authState.isLoading}
-                className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                <FaApple className="w-5 h-5" />
-                <span>Continue with Apple</span>
-              </button>
+              <div className="w-full flex justify-center">
+                <div style={{ width: '240px' }}>
+                  <AppleSignin
+                    authOptions={{
+                      clientId: config.APPLE_CLIENT_ID,
+                      scope: 'name email',
+                      redirectURI: config.APPLE_REDIRECT_URI,
+                      nonce: Math.random().toString(36).substring(2, 10),
+                    }}
+                    uiType="light"
+                    onSuccess={handleAppleLogin}
+                    onError={(error: any) => {
+                      dispatch({ type: AuthActionType.AUTH_ERROR, payload: 'Apple sign-in was unsuccessful' });
+                    }}
+                    render={({ onClick }: any) => (
+                      <button
+                        onClick={onClick}
+                        disabled={authState.isLoading}
+                        className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                        id="apple-sign-in-button"
+                      >
+                        <FaApple className="w-5 h-5" />
+                        <span>Continue with Apple</span>
+                      </button>
+                    )}
+                  />
+                </div>
+              </div>
 
-              <button
-                onClick={() => {
-                  setMode('emailInput');
-                  clearAuthError(dispatch);
-                }}
-                disabled={authState.isLoading}
-                className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                <MdEmail className="w-5 h-5" />
-                <span>Continue with Email</span>
-              </button>
+              <div className="w-full flex justify-center">
+                <div style={{ width: '240px' }}>
+                  <button
+                    onClick={() => {
+                      setMode('emailInput');
+                      clearAuthError(dispatch);
+                    }}
+                    disabled={authState.isLoading}
+                    className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                  >
+                    <MdEmail className="w-5 h-5" />
+                    <span>Continue with Email</span>
+                  </button>
+                </div>
+              </div>
             </div>
 
             {authState.error && (

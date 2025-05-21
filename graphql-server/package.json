@@ -16,14 +16,17 @@
   "description": "GraphQL Server for Inkverse",
   "dependencies": {
     "@apollo/server": "^4.11.2",
-    "@inkverse/shared-server": "*",
     "@inkverse/public": "*",
+    "@inkverse/shared-server": "*",
+    "apple-signin-auth": "^2.0.0",
     "axios": "^1.7.9",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "google-auth-library": "^9.15.1",
     "graphql": "^16.10.0",
     "graphql-tag": "^2.12.6",
+    "jsonwebtoken": "^9.0.2",
     "lodash-es": "^4.17.21",
     "notion-client": "^7.1.5",
     "uuid": "^11.0.3"

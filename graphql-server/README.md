@@ -6,6 +6,10 @@ This is the main server for Inkverse, a GraphQL API.
 
 If you haven't already, follow the steps in the [root README](../README.md) to setup the database, queues and install dependencies.
 
+## Environment Variables
+
+There is a `.env.example` file in the root of the graphql-server directory. Make a copy of it and name it `.env`. Fill it in with your values.
+
 ## Run the server!
 
 ```

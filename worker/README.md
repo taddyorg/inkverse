@@ -1,9 +1,13 @@
 # Worker 
 The Worker repo is a collection of scripts and useful commands for running various background or scheduled jobs.
 
-### Setup Database and Queues
+## Setup Database and Queues
 
 If you haven't already, follow the steps in the [root README](../README.md) to setup the database and queues locally.
+
+## Environment Variables
+
+There is a `.env.example` file in the root of the worker directory. Make a copy of it and name it `.env`. Fill it in with your values.
 
 ## Useful Commands
 
