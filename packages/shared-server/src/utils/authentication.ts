@@ -46,7 +46,7 @@ export const extractTokenFromHeader = (header: string | null | undefined): strin
  * Parameters for verifying a token
  */
 export type VerifyTokenParams = {
-	req?: { headers?: Record<string, string> };
+	headers?: Record<string, any>;
 	token?: string;
 }
 
@@ -57,9 +57,9 @@ export type VerifyTokenParams = {
  * @returns Decoded token payload or undefined if no token
  * @throws Error if token is invalid
  */
-export const verifyToken = ({ req, token }: VerifyTokenParams): TokenPayload | undefined => {
+export const verifyToken = ({ headers, token }: VerifyTokenParams): TokenPayload | undefined => {
 	// Get token from request headers or passed parameter
-	const tokenToVerify = token || (req ? extractTokenFromHeader(req?.headers?.authorization) : undefined);
+	const tokenToVerify = token || (headers ? extractTokenFromHeader(headers['authorization']) : undefined);
 	
 	if (!tokenToVerify) { return }
 

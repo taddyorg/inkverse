@@ -23,7 +23,8 @@
       },
       "associatedDomains": [
         "applinks:inkverse.co"
-      ]
+      ],
+      "usesAppleSignIn": true
     },
     "android": {
       "package": "com.bamtoons",
@@ -87,6 +88,13 @@
             "parentTheme": "Light",
             "enforceNavigationBarContrast": false
           }
+        }
+      ],
+      "expo-apple-authentication",
+      [
+        "expo-secure-store",
+        {
+          "configureAndroidBackup": true
         }
       ]
     ],

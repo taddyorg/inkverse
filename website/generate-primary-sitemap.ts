@@ -1,6 +1,6 @@
 import fs from 'fs';
-import { NotionPage, additionalInfoForNotionId } from './public/notion'
-import { arrayToObject } from './public/utils'
+import { NotionPage, additionalInfoForNotionId } from '@inkverse/public/notion'
+import { arrayToObject } from '@inkverse/public/utils'
 
 function getPriority(url: string): string {
   const defaultValue = '0.8';

@@ -26,7 +26,6 @@ export default function handleRequest(
         <ServerRouter
           context={reactRouterContext}
           url={request.url}
-          abortDelay={ABORT_DELAY}
         />,
       {
         onShellReady() {

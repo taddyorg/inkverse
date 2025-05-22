@@ -1,21 +1,75 @@
-import { ApolloClient, InMemoryCache, createHttpLink } from '@apollo/client';
+import { ApolloClient, InMemoryCache, createHttpLink, from } from '@apollo/client';
 import type { NormalizedCacheObject } from '@apollo/client';
 
 import config from '@/config';
 import { typePolicies } from '@inkverse/public/apollo';
+import { setContext } from '@apollo/client/link/context';
+import { getAccessToken } from '../auth/user';
 
-let client: ApolloClient<NormalizedCacheObject> | null = null;
+const cache = new InMemoryCache({ typePolicies });
 
-export function initClient(apolloState: any): ApolloClient<NormalizedCacheObject> {
-  client = new ApolloClient({
-    cache: new InMemoryCache({ typePolicies }).restore(apolloState),
-    link: createHttpLink({
-      uri: config.SERVER_URL,
-    }),
-  });
-  return client;
+// Create the HTTP link for GraphQL requests
+const httpLink = createHttpLink({
+  uri: config.SERVER_URL,
+});
+
+// Create the auth link to inject tokens into requests
+const authLink = setContext((_, { headers }) => {
+  // Get the authentication token from local storage
+  const token = getAccessToken();
+  
+  // Return the headers to the context so httpLink can read them
+  return {
+    headers: {
+      ...headers,
+      authorization: token ? `Bearer ${token}` : '',
+    }
+  };
+});
+
+// Public client for unauthenticated requests (cached content)
+const publicClient = new ApolloClient({
+  cache,
+  link: httpLink,
+  headers: {
+    'client-name': 'inkverse-website',
+    'client-version': '3.0.0',
+  }
+});
+
+
+// User client for authenticated requests
+const userClient = new ApolloClient({
+  cache,
+  link: from([authLink, httpLink]),
+  headers: {
+    'client-name': 'inkverse-website',
+    'client-version': '3.0.0',
+  }
+});
+
+
+/**
+ * Initialize the public Apollo client with state restoration
+ */
+export function initPublicApolloClient(apolloState: any): ApolloClient<NormalizedCacheObject> {
+  // Restore cache state
+  cache.restore(apolloState);
+  
+  // Return the public client
+  return publicClient;
 }
 
-export function getApolloClient() {
-  return client;
+/**
+ * Get the public client
+ */
+export function getPublicApolloClient(): ApolloClient<NormalizedCacheObject> {
+  return publicClient;
+}
+
+/**
+ * Get the user client
+ */
+export function getUserApolloClient(): ApolloClient<NormalizedCacheObject> {
+  return userClient;
 }

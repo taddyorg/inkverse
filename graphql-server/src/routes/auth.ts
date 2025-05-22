@@ -1,3 +1,13 @@
+import path from 'path';
+import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const envPath = path.resolve(__dirname, '..', '..', '.env');
+dotenv.config({ path: envPath });
+
 import express, { Router, type Request, type Response } from 'express';
 import { User } from '@inkverse/shared-server/models/index';
 import { type UserModel } from '@inkverse/shared-server/database/types';
@@ -6,13 +16,28 @@ import { sendEmail } from '@inkverse/shared-server/messaging/email/index';
 import { inkverseWebsiteUrl } from '@inkverse/public/utils';
 import { createToken, refreshAccessToken, refreshRefreshToken } from '@inkverse/shared-server/utils/authentication';
 import { TokenType } from '@inkverse/public/user';
+import { OAuth2Client } from 'google-auth-library';
+import { addContactToList } from '@inkverse/shared-server/messaging/email/octopus';
+import * as AppleSignin from 'apple-signin-auth';
 
 const router = Router();
 
+// Initialize Google OAuth client
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
+
+// Apple Sign-In credentials
+const APPLE_CLIENT_ID = process.env.APPLE_CLIENT_ID;
+
+type SafeUser = Pick<UserModel, 'id' | 'isEmailVerified' | 'username'>;
+const userModelToSafeUser = (user: UserModel): SafeUser => ({
+  id: user.id,
+  isEmailVerified: user.isEmailVerified,
+  username: user.username
+});
+
 router.use(express.urlencoded({ extended: false }));
 router.use(express.json());
-
-type SafeUser = Pick<UserModel, 'id' | 'isEmailVerified'>; 
 
 // Login with Email
 router.post('/login-with-email', async (req: Request, res: Response) => {
@@ -74,81 +99,302 @@ router.post('/login-with-email', async (req: Request, res: Response) => {
 // Login with Google
 router.post('/login-with-google', async (req: Request, res: Response) => {
   try {
-    const { googleId, googleIdToken } = req.body;
+    const { googleIdToken } = req.body;
 
-    if (!googleId || !googleIdToken) {
-      return res.status(400).json({ error: 'Google ID and ID token are required' });
+    if (!googleIdToken) {
+      return res.status(400).json({ error: 'Google ID token is required' });
     }
 
-    // TODO: Implement actual token verification
-    // In a real implementation, we would verify the googleIdToken with Google's OAuth API
-    // For example, using Google's OAuth2 library to verify the token
-    // const ticket = await client.verifyIdToken({
-    //    idToken: googleIdToken,
-    //    audience: process.env.GOOGLE_CLIENT_ID
-    // });
-    // const payload = ticket.getPayload();
-    // const verifiedGoogleId = payload.sub; // Google user ID
-    //
-    // Then we'd compare verifiedGoogleId with the provided googleId
-    // if (verifiedGoogleId !== googleId) {
-    //   throw new AuthenticationError('Google ID verification failed');
-    // }
+    if (!GOOGLE_CLIENT_ID) {
+      return res.status(500).json({ error: 'Server configuration error: Missing Google Client ID' });
+    }
 
-    // TODO: Implement actual token verification
-    // For now, we'll assume the token is valid and proceed with login
+    // Verify the Google ID token with Google's OAuth API
+    const ticket = await googleClient.verifyIdToken({
+      idToken: googleIdToken,
+      audience: GOOGLE_CLIENT_ID
+    });
     
+    const payload = ticket.getPayload();
+    if (!payload) {
+      return res.status(401).json({ error: 'Invalid Google token: empty payload' });
+    }
+
+    // Verify required fields
+    if (!payload.sub) {
+      return res.status(401).json({ error: 'Invalid Google token: missing user ID' });
+    }
+    
+    if (!payload.email) {
+      return res.status(401).json({ error: 'Invalid Google token: missing email' });
+    }
+    
+    // Verify token issuer is Google
+    if (payload.iss !== 'accounts.google.com' && payload.iss !== 'https://accounts.google.com') {
+      return res.status(401).json({ error: 'Invalid Google token: incorrect issuer' });
+    }
+    
+    // Extract user information from verified token
+    const googleId = payload.sub; // Google user ID
+    const email = payload.email; // User's email from Google
+    const isEmailVerified = payload.email_verified || false;
+        
     // Check if user exists with this Google ID
-    const existingUser = await User.getUserByGoogleId(googleId);
-    
-    if (!existingUser) {
-      // User doesn't exist yet, they need to sign up first
-      return res.status(404).json({ error: 'User not found. Please sign up first.' });
-    }
+    const alreadyGoogleUser = await User.getUserByGoogleId(googleId);
 
-    // TODO: Return tokens in actual implementation
-    // For now, return success
-    return res.status(200).json({ success: true });
+    if (alreadyGoogleUser) {
+      // User exists, generate tokens
+      const accessToken = createToken({
+        user: { id: alreadyGoogleUser.id },
+        type: TokenType.ACCESS
+      });
+
+      const refreshToken = createToken({
+        user: { id: alreadyGoogleUser.id },
+        type: TokenType.REFRESH
+      });
+
+      if (!alreadyGoogleUser.isEmailVerified && isEmailVerified) {
+        await User.updateUser(alreadyGoogleUser.id, { isEmailVerified: isEmailVerified });
+        await addContactToList('signup', { email: alreadyGoogleUser.email });
+      }
+
+      return res.status(200).json({
+        accessToken,
+        refreshToken,
+        user: userModelToSafeUser(alreadyGoogleUser)
+      });
+    }
+    
+    // Check if a user with this email exists
+    const alreadyEmailUser = await User.getUserByEmail(email);
+    
+    if (alreadyEmailUser) {
+      // Link Google ID to existing user account
+      const updatedUser = await User.updateUser(alreadyEmailUser.id, 
+        { 
+          googleId,
+          ...(isEmailVerified && { isEmailVerified })
+        });
+
+      if (updatedUser && isEmailVerified) {
+        await addContactToList('signup', { email: alreadyEmailUser.email });
+      }
+
+      if (!updatedUser) {
+        return res.status(500).json({ error: 'Failed to link Google account' });
+      }
+      
+      // User exists and linked, generate tokens
+      const accessToken = createToken({
+        user: { id: updatedUser.id },
+        type: TokenType.ACCESS
+      });
+
+      const refreshToken = createToken({
+        user: { id: updatedUser.id },
+        type: TokenType.REFRESH
+      });
+
+      return res.status(200).json({
+        accessToken,
+        refreshToken,
+        user: userModelToSafeUser(updatedUser)
+      });
+    }
+    
+    // User doesn't exist, create a new one
+    const newUser = await User.createUser({
+      email,
+      googleId,
+      isEmailVerified, // Use email verification status from Google token
+    });
+
+    if (newUser && isEmailVerified) {
+      await addContactToList('signup', { email: newUser.email });
+    }
+    
+    const accessToken = createToken({
+      user: { id: newUser.id },
+      type: TokenType.ACCESS
+    });
+
+    const refreshToken = createToken({
+      user: { id: newUser.id },
+      type: TokenType.REFRESH
+    });
+
+    return res.status(200).json({
+      accessToken,
+      refreshToken,
+      user: userModelToSafeUser(newUser)
+    });
+
   } catch (error: any) {
     console.error('Google login error:', error);
-    return res.status(500).json({ error: 'Failed to login with Google' });
+    
+    // Provide specific error messages for token verification failures
+    if (error.message && error.message.includes('Token used too late')) {
+      return res.status(401).json({ error: 'Expired Google token' });
+    }
+    
+    if (error.message && error.message.includes('Invalid token signature')) {
+      return res.status(401).json({ error: 'Invalid Google token signature' });
+    }
+    
+    if (error.message && error.message.includes('Wrong number of segments')) {
+      return res.status(401).json({ error: 'Malformed Google token' });
+    }
+    
+    if (error.message && error.message.includes('audience mismatch')) {
+      return res.status(401).json({ error: 'Google token was not issued for this application' });
+    }
+    
+    return res.status(500).json({ error: 'Failed to login with Google', details: error?.message || 'Unknown error' });
   }
 });
 
-// Login with Apple
+// Apple Sign-In Callback
 router.post('/login-with-apple', async (req: Request, res: Response) => {
   try {
-    const { appleId, appleIdToken } = req.body;
-
-    if (!appleId || !appleIdToken) {
-      return res.status(400).json({ error: 'Apple ID and ID token are required' });
+    const { code, id_token } = req.body;
+    
+    if (!id_token) {
+      return res.status(400).json({ error: 'ID token is required' });
+    }
+    
+    if (!APPLE_CLIENT_ID) {
+      return res.status(500).json({ error: 'Server configuration error: Missing Apple Client ID' });
     }
 
-    //TODO: Implement actual token verification
-    // In a real implementation, we would verify the appleIdToken with Apple's authentication services
-    // Apple uses JWT tokens that need to be verified
-    // For example:
-    // 1. Get the Apple public key from their JWKS endpoint
-    // 2. Use a JWT library to verify the token
-    // 3. Check that the token was issued for your app
-    // 4. Extract the verified user ID
-    //
-    // For now, we'll assume the token is valid and proceed with login
+    // Verify the Apple ID token
+    // This will fetch Apple's public keys and verify the token signature
+    const appleIdTokenClaims = await AppleSignin.verifyIdToken(id_token, {
+      audience: APPLE_CLIENT_ID, // Client ID - validation
+    });
+
+    // Extract user information from verified token
+    const appleUserId = appleIdTokenClaims.sub; // Apple user ID
+    let email = appleIdTokenClaims.email;
+    const isEmailVerified = !!appleIdTokenClaims.email_verified;
+
+    if (!appleUserId) {
+      return res.status(401).json({ error: 'Invalid Apple ID token: missing user ID' });
+    }
 
     // Check if user exists with this Apple ID
-    const existingUser = await User.getUserByAppleId(appleId);
+    let user = await User.getUserByAppleId(appleUserId);
     
-    if (!existingUser) {
-      // User doesn't exist yet, they need to sign up first
-      return res.status(404).json({ error: 'User not found. Please sign up first.' });
+    // For subsequent sign-ins, Apple doesn't include email in the token
+    // Use the email from our database if available
+    if (!email && user && user.email) {
+      email = user.email;
     }
+    
+    if (user) {
+      // User exists, generate tokens
+      const accessToken = createToken({
+        user: { id: user.id },
+        type: TokenType.ACCESS
+      });
 
-    // TODO: Return tokens in actual implementation
-    // For now, return success
-    return res.status(200).json({ success: true });
+      const refreshToken = createToken({
+        user: { id: user.id },
+        type: TokenType.REFRESH
+      });
+
+      if (!user.isEmailVerified && isEmailVerified && email) {
+        await User.updateUser(user.id, { isEmailVerified });
+        await addContactToList('signup', { email });
+      }
+
+      return res.status(200).json({
+        accessToken,
+        refreshToken,
+        user: userModelToSafeUser(user)
+      });
+    }
+    
+    // If we don't have an email at this point, we can't proceed with new user creation
+    if (!email) {
+      return res.status(401).json({ error: 'Email is required for new account creation' });
+    }
+    
+    // Check if a user with this email exists
+    const existingUser = await User.getUserByEmail(email);
+    
+    if (existingUser) {
+      // Link Apple ID to existing user account
+      const updatedUser = await User.updateUser(existingUser.id, { 
+        appleId: appleUserId,
+        ...(isEmailVerified && { isEmailVerified })
+      });
+
+      if (updatedUser && isEmailVerified) {
+        await addContactToList('signup', { email });
+      }
+
+      if (!updatedUser) {
+        return res.status(500).json({ error: 'Failed to link Apple account' });
+      }
+      
+      // User exists and linked, generate tokens
+      const accessToken = createToken({
+        user: { id: updatedUser.id },
+        type: TokenType.ACCESS
+      });
+
+      const refreshToken = createToken({
+        user: { id: updatedUser.id },
+        type: TokenType.REFRESH
+      });
+
+      return res.status(200).json({
+        accessToken,
+        refreshToken,
+        user: userModelToSafeUser(updatedUser)
+      });
+    }
+    
+    // User doesn't exist, create a new one
+    const newUser = await User.createUser({
+      email,
+      appleId: appleUserId,
+      isEmailVerified,
+    });
+
+    if (newUser && isEmailVerified) {
+      await addContactToList('signup', { email });
+    }
+    
+    const accessToken = createToken({
+      user: { id: newUser.id },
+      type: TokenType.ACCESS
+    });
+
+    const refreshToken = createToken({
+      user: { id: newUser.id },
+      type: TokenType.REFRESH
+    });
+
+    return res.status(200).json({
+      accessToken,
+      refreshToken,
+      user: userModelToSafeUser(newUser)
+    });
+    
   } catch (error: any) {
     console.error('Apple login error:', error);
-    return res.status(500).json({ error: 'Failed to login with Apple' });
+    
+    // Provide specific error messages for token verification failures
+    if (error.name === 'JsonWebTokenError') {
+      return res.status(401).json({ error: 'Invalid Apple ID token: ' + error.message });
+    }
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ error: 'Expired Apple ID token' });
+    }
+    
+    return res.status(500).json({ error: 'Failed to login with Apple', details: error.message });
   }
 });
 
@@ -183,7 +429,7 @@ router.post('/exchange-otp', async (req: Request, res: Response) => {
     return res.status(200).json({
       accessToken,
       refreshToken,
-      user: user as unknown as SafeUser
+      user: userModelToSafeUser(user)
     });
   } catch (error: any) {
     console.error(error);
@@ -244,7 +490,5 @@ router.post('/exchange-refresh-token-for-refresh-token', async (req: Request, re
     return res.status(401).json({ error: 'Failed to refresh refresh token' });
   }
 });
-
-
 
 export default router;

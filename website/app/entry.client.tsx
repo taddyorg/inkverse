@@ -15,7 +15,7 @@ import { HydratedRouter } from "react-router/dom";
 import { startTransition, StrictMode, useEffect } from "react";
 import { hydrateRoot } from "react-dom/client";
 import { ApolloProvider } from '@apollo/client';
-import { initClient } from "@/lib/apollo/client.client"
+import { initPublicApolloClient } from "@/lib/apollo/client.client"
 import posthog from "posthog-js";
 import config from "@/config";
 
@@ -32,7 +32,7 @@ function PosthogInit() {
 startTransition(() => {
   // Initialize Apollo client with the hydrated state
   const apolloState = window.__APOLLO_STATE__ || {};
-  const client = initClient(apolloState);
+  const client = initPublicApolloClient(apolloState);
 
   hydrateRoot(
     document,

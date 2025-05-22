@@ -1,5 +1,5 @@
 import { type LoaderFunctionArgs } from "react-router";
-import { getApolloClient } from "@/lib/apollo/client.server";
+import { getPublicApolloClient } from "@/lib/apollo/client.server";
 import { type SearchQuery, Search, type SearchQueryVariables } from "@inkverse/shared-client/graphql/operations";
 import { handleLoaderError } from "./error-handler";
 
@@ -25,7 +25,7 @@ export async function loadSearch({ params, request, context }: LoaderFunctionArg
     throw new Response("Not Found", { status: 404 });
   }
 
-  const client = getApolloClient(request);
+  const client = getPublicApolloClient(request);
 
   const typesArray = types.split(',').map(type => prettyTypeToInkverseType(type.trim()));
 

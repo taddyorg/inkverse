@@ -1,5 +1,5 @@
 import { type LoaderFunctionArgs } from "react-router";
-import { getApolloClient } from "@/lib/apollo/client.server";
+import { getPublicApolloClient } from "@/lib/apollo/client.server";
 import { type GetDocumentationQuery, type GetDocumentationQueryVariables, GetDocumentation } from "@inkverse/shared-client/graphql/operations";
 import { handleLoaderError } from "./error-handler";
 
@@ -13,7 +13,7 @@ export async function loadDocumentation({ params, request, context }: LoaderFunc
       ? `${basePath}/${params.slug}` 
       : basePath;
   
-  const client = getApolloClient(request);
+  const client = getPublicApolloClient(request);
   
   try {
     const { data } = await client.query<GetDocumentationQuery, GetDocumentationQueryVariables>({

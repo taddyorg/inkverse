@@ -17,7 +17,7 @@ import config from "../config";
 
 import type { Route } from "./+types/root";
 import stylesheet from "./app.css?url";
-import { getApolloClient } from "@/lib/apollo/client.client";
+import { getPublicApolloClient } from "@/lib/apollo/client.client";
 import { Navbar } from './components/ui';
 
 import 'react-notion-x/src/styles.css'
@@ -57,7 +57,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Handle Apollo state restoration
     if ((currentRouteData as any)?.apolloState) {
-      const client = getApolloClient();
+      const client = getPublicApolloClient();
       if (client) {
         client.restore((currentRouteData as any).apolloState);
       }

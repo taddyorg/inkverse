@@ -1,5 +1,5 @@
 import { type LoaderFunctionArgs } from "react-router";
-import { getApolloClient } from "@/lib/apollo/client.server";
+import { getPublicApolloClient } from "@/lib/apollo/client.server";
 import { type GetListQuery, GetList, type GetListQueryVariables } from "@inkverse/shared-client/graphql/operations";
 import { handleLoaderError } from "./error-handler";
 
@@ -15,7 +15,7 @@ export async function loadList({ params, request, context }: LoaderFunctionArgs)
     throw new Response("Not Found", { status: 404 });
   }
 
-  const client = getApolloClient(request);
+  const client = getPublicApolloClient(request);
 
   const listId = id.split('-')[0].slice(2);
 

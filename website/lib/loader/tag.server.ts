@@ -1,5 +1,5 @@
 import { type LoaderFunctionArgs } from "react-router";
-import { getApolloClient } from "@/lib/apollo/client.server";
+import { getPublicApolloClient } from "@/lib/apollo/client.server";
 import { handleLoaderError } from "./error-handler";
 import { Genre, type ComicSeries } from "@inkverse/shared-client/graphql/types";
 import { parseComicsListResults } from "@inkverse/shared-client/dispatch/comicslist";
@@ -16,7 +16,7 @@ const LIMIT_PER_PAGE = 12;
 export async function loadComicsList({ params, request, context }: LoaderFunctionArgs): Promise<ComicsListLoaderData> {
   const { pageType, value } = params;
   
-  const client = getApolloClient(request);
+  const client = getPublicApolloClient(request);
   
   const filterParams: {
     filterForTags?: string[];

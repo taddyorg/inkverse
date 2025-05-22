@@ -4,24 +4,23 @@
  * Verifies JWT tokens and attaches user data to the request context
  */
 import { verifyToken } from '@inkverse/shared-server/utils/authentication';
-import type { User as UserType } from '@inkverse/public/graphql/types';
-import { User } from '@inkverse/shared-server/models/index';
-import type { UserModel } from '@inkverse/shared-server/database/types';
+import type { User } from '@inkverse/public/graphql/types';
+import { User as UserFns } from '@inkverse/shared-server/models/index';
 
 /**
  * GraphQL context type for authentication
  */
 export type GraphQLContext = {
-  user?: UserType | null;
+  user?: User | null;
 }
 
 /**
  * Get user data from database by ID
  */
-const getUserById = async (userId: string): Promise<UserType | null> => {
+const getUserById = async (userId: string): Promise<User | null> => {
   try {
     // Use the User model to retrieve user by ID
-    const user = await User.getUserById(userId);
+    const user = await UserFns.getUserById(userId);
     
     if (!user) {
       console.log(`User not found for ID: ${userId}`);
@@ -29,7 +28,7 @@ const getUserById = async (userId: string): Promise<UserType | null> => {
     }
     
     // Convert UserModel to GraphQL User type
-    return user as unknown as UserType;
+    return user as unknown as User;
   } catch (error) {
     console.error(`Error retrieving user with ID ${userId}:`, error);
     return null;
@@ -42,7 +41,7 @@ const getUserById = async (userId: string): Promise<UserType | null> => {
 export const createAuthContext = async (req: Request): Promise<GraphQLContext> => {
   try {
     // Try to verify the token
-    const tokenPayload = verifyToken({ req });
+    const tokenPayload = verifyToken({ headers: req.headers });
     
     if (!tokenPayload || !tokenPayload.sub) {
       // No token or invalid token

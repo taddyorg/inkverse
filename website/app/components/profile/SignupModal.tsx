@@ -183,6 +183,10 @@ export function SignupModal({ isOpen, onClose, hideComponent = true }: AuthModal
     }
   };
 
+  const handleAppleLoginError = (error: any) => {
+    dispatch({ type: AuthActionType.AUTH_ERROR, payload: 'Apple sign-in was unsuccessful' });
+  };
+
   if (!isOpen || !hideComponent) return null;
   
   // Modal content
@@ -258,15 +262,13 @@ export function SignupModal({ isOpen, onClose, hideComponent = true }: AuthModal
                   <AppleSignin
                     authOptions={{
                       clientId: config.APPLE_CLIENT_ID,
-                      scope: 'name email',
+                      scope: 'email',
                       redirectURI: config.APPLE_REDIRECT_URI,
                       nonce: Math.random().toString(36).substring(2, 10),
                     }}
                     uiType="light"
                     onSuccess={handleAppleLogin}
-                    onError={(error: any) => {
-                      dispatch({ type: AuthActionType.AUTH_ERROR, payload: 'Apple sign-in was unsuccessful' });
-                    }}
+                    onError={handleAppleLoginError}
                     render={({ onClick }: any) => (
                       <button
                         onClick={onClick}

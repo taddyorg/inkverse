@@ -7084,6 +7084,11 @@ expect@^29.0.0, expect@^29.7.0:
     jest-message-util "^29.7.0"
     jest-util "^29.7.0"
 
+expo-apple-authentication@~7.2.4:
+  version "7.2.4"
+  resolved "https://registry.yarnpkg.com/expo-apple-authentication/-/expo-apple-authentication-7.2.4.tgz#fd66339064de8d81526ec9d58d2fae8ebf87f088"
+  integrity sha512-T2agaLLPT4Ax97FeXImB7BCCEzEJ0gB+ZwlFa/FXBtbp6WFKcGRlTVKiX2YPYLZzN5QjXcmQ9HHJ17jRthNHMg==
+
 expo-application@~6.1.4:
   version "6.1.4"
   resolved "https://registry.yarnpkg.com/expo-application/-/expo-application-6.1.4.tgz#34ee2f7a86e3689f15961b296e82934e0f85afd6"
@@ -7178,6 +7183,11 @@ expo-modules-core@2.3.13:
   integrity sha512-vmKHv7tEo2wUQoYDV6grhsLsQfD3DUnew5Up3yNnOE1gHGQE+zhV1SBYqaPMPB12OvpyD1mlfzGhu6r9PODnng==
   dependencies:
     invariant "^2.2.4"
+
+expo-secure-store@~14.2.3:
+  version "14.2.3"
+  resolved "https://registry.yarnpkg.com/expo-secure-store/-/expo-secure-store-14.2.3.tgz#8e74da512e671cec5f7b88679def3d54b59cd49d"
+  integrity sha512-hYBbaAD70asKTFd/eZBKVu+9RTo9OSTMMLqXtzDF8ndUGjpc6tmRCoZtrMHlUo7qLtwL5jm+vpYVBWI8hxh/1Q==
 
 expo-splash-screen@~0.30.8:
   version "0.30.8"
@@ -8981,6 +8991,11 @@ jws@^4.0.0:
     jwa "^2.0.0"
     safe-buffer "^5.0.1"
 
+jwt-decode@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/jwt-decode/-/jwt-decode-4.0.0.tgz#2270352425fd413785b2faf11f6e755c5151bd4b"
+  integrity sha512-+KJGIyHgkGuIq3IEBNftfhW/LfWhXUIY6OmyVWjliu5KH1y0fw7VQ8YndE2O4qZdMSd9SqbnC8GOcZEy0Om7sA==
+
 katex@^0.16.21:
   version "0.16.22"
   resolved "https://registry.yarnpkg.com/katex/-/katex-0.16.22.tgz#d2b3d66464b1e6d69e6463b28a86ced5a02c5ccd"
@@ -10593,10 +10608,10 @@ posthog-react-native-session-replay@^1.0.6:
   resolved "https://registry.yarnpkg.com/posthog-react-native-session-replay/-/posthog-react-native-session-replay-1.0.6.tgz#8f80589f63dc6df644690e3323c1032bb1045a65"
   integrity sha512-IOVFaMpdpyMsemnpKNKrIdU2XI7Qfb6Ctp1hOc4gsHKDctGWgwbgZu4a6Sn1viChlSBlTBUCj8BqgUSlkgK2Zg==
 
-posthog-react-native@^3.15.3:
-  version "3.15.3"
-  resolved "https://registry.yarnpkg.com/posthog-react-native/-/posthog-react-native-3.15.3.tgz#9b89238621281abe2f77c80ec368403132cad0f5"
-  integrity sha512-BLFtW1Ywv8laRlvlfw3irZF5UHzfAHZK8nQ+QoZ59zAIAcr4LJZl3iwloeNs1440r7OFQPc6ZZI3lHw3Fz5PSA==
+posthog-react-native@^3.15.4:
+  version "3.15.4"
+  resolved "https://registry.yarnpkg.com/posthog-react-native/-/posthog-react-native-3.15.4.tgz#25ea8a162a1b3ec50cfa4f32ceb2bd0f25faf68a"
+  integrity sha512-U8xzCnrcWBVJZtlfa3pcPIfKf1VWBwXX+umv9h6ZE0Im+j3Rh8pczho5SNjvacsC3nzVHvxsNF+P4oEfbH7p1g==
 
 preact@^10.19.3:
   version "10.26.6"

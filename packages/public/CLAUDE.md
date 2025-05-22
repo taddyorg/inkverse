@@ -156,3 +156,6 @@ const coverUrl = getCoverImageUrl({
 2. **Parsing Errors**: The image URL utilities handle JSON parsing errors, but may log errors if data is malformed. Check error logs if images aren't loading.
 
 3. **Type Incompatibility**: When GraphQL schema changes, ensure you rebuild this package to update the types before using them in other packages.
+
+4. **Importing from the public package**:
+   - When importing from the public package, the `src` directory is ignored and not needed. ex) Use '@inkverse/public/comicissue' instead of '@inkverse/public/src/comicissue'

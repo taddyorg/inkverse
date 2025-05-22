@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { AuthResponse } from '../graphql/types';
+import type { AuthResponse, User } from '../graphql/types';
 
 export interface AuthState {
   user: any | null;
@@ -8,6 +8,19 @@ export interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
+}
+
+/**
+ * Interface for token storage functions that will be passed to authentication methods
+ * Each client (web, mobile) can implement these differently based on their storage mechanism
+ */
+export interface StorageFunctions {
+  /** Function to save the access token (e.g., to localStorage, SecureStore, etc.) */
+  saveAccessToken: (token: string) => Promise<void> | void;
+  /** Function to save the refresh token */
+  saveRefreshToken: (token: string) => Promise<void> | void;
+  /** Optional function to save user details */
+  saveUserDetails: (user: Partial<User>) => Promise<void> | void;
 }
 
 export const authInitialState: AuthState = {
@@ -120,24 +133,38 @@ export async function dispatchExchangeOTPForTokens(
 
 interface DispatchLoginWithGoogleParams {
   baseUrl: string;
-  googleId: string;
   googleIdToken: string;
+  storageFunctions?: StorageFunctions;
 }
 
+/**
+ * Authenticates a user with Google and stores tokens using provided storage functions
+ */
 export async function dispatchLoginWithGoogle(
-  { baseUrl, googleId, googleIdToken }: DispatchLoginWithGoogleParams,
+  { baseUrl, googleIdToken, storageFunctions }: DispatchLoginWithGoogleParams,
   dispatch?: React.Dispatch<AuthAction>
 ): Promise<void> {
   if (dispatch) dispatch({ type: AuthActionType.AUTH_START });
 
   try {
-    const response = await axios.post(`${baseUrl}/login-with-google`, { googleId, googleIdToken });
+    const response = await axios.post(`${baseUrl}/login-with-google`, { googleIdToken });
 
-    if (!response.data.success) {
+    if (!response.data.accessToken || !response.data.refreshToken || !response.data.user) {
       throw new Error('Failed to login with Google');
     }
 
-    // TODO: Handle successful login response when it returns auth tokens
+    // Store tokens using provided storage functions
+    if (storageFunctions) {
+      await Promise.all([
+        storageFunctions.saveAccessToken(response.data.accessToken),
+        storageFunctions.saveRefreshToken(response.data.refreshToken),
+        storageFunctions.saveUserDetails(response.data.user)
+      ].filter(Boolean)); // Filter out undefined promises
+    }
+
+    if (dispatch) {
+      dispatch({ type: AuthActionType.AUTH_SUCCESS, payload: response.data });
+    }
   } catch (error: any) {
     if (dispatch) {
       dispatch({ type: AuthActionType.AUTH_ERROR, payload: error.response?.data?.error || error.message });
@@ -148,24 +175,36 @@ export async function dispatchLoginWithGoogle(
 
 interface DispatchLoginWithAppleParams {
   baseUrl: string;
-  appleId: string;
-  appleIdToken: string;
+  idToken: string;
+  code?: string;
+  storageFunctions?: StorageFunctions;
 }
 
 export async function dispatchLoginWithApple(
-  { baseUrl, appleId, appleIdToken }: DispatchLoginWithAppleParams,
+  { baseUrl, idToken, code, storageFunctions }: DispatchLoginWithAppleParams,
   dispatch?: React.Dispatch<AuthAction>
 ): Promise<void> {
   if (dispatch) dispatch({ type: AuthActionType.AUTH_START });
 
   try {
-    const response = await axios.post(`${baseUrl}/login-with-apple`, { appleId, appleIdToken });
+    const response = await axios.post(`${baseUrl}/login-with-apple`, { id_token: idToken, code });
 
-    if (!response.data.success) {
+    if (!response.data.accessToken || !response.data.refreshToken || !response.data.user) {
       throw new Error('Failed to login with Apple');
     }
 
-    // TODO: Handle successful login response when it returns auth tokens
+    // Store tokens using provided storage functions
+    if (storageFunctions) {
+      await Promise.all([
+        storageFunctions.saveAccessToken(response.data.accessToken),
+        storageFunctions.saveRefreshToken(response.data.refreshToken),
+        storageFunctions.saveUserDetails(response.data.user)
+      ].filter(Boolean)); // Filter out undefined promises
+    }
+
+    if (dispatch) {
+      dispatch({ type: AuthActionType.AUTH_SUCCESS, payload: response.data });
+    }
   } catch (error: any) {
     if (dispatch) {
       dispatch({ type: AuthActionType.AUTH_ERROR, payload: error.response?.data?.error || error.message });

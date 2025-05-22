@@ -140,3 +140,6 @@ The package provides many TypeScript types for consistent type checking across a
 3. **Build Issues**:
    - Run `yarn build` to regenerate the dist folder
    - Check for TypeScript errors in the source files
+
+4. **Importing from the shared client package**:
+   - When importing from the shared client package, the `src` directory is ignored and not needed. ex) Use '@inkverse/shared-client/dispatch/comicissue' instead of '@inkverse/shared-client/src/dispatch/comicissue'

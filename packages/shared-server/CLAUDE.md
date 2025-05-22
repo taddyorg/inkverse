@@ -256,3 +256,6 @@ The shared-server package connects to several external services:
    - Run `yarn build` to identify type issues
    - Ensure dependencies are installed correctly
    - Check for circular dependencies between modules
+
+6. **Importing from the shared server package**:
+   - When importing from the shared server package, the `src` directory is ignored and not needed. ex) Use '@inkverse/shared-server/database' instead of '@inkverse/shared-server/src/database'

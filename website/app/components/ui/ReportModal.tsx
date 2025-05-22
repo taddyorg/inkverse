@@ -1,6 +1,6 @@
 import React, { useState, useReducer, useEffect, useRef } from 'react';
 import { ReportType, getPrettyReportType } from '@inkverse/public/report';
-import { getApolloClient } from '@/lib/apollo/client.client';
+import { getPublicApolloClient } from '@/lib/apollo/client.client';
 import { submitReportComicSeries, reportReducer, reportInitialState, resetReportComicSeries } from '@inkverse/shared-client/dispatch/reports';
 import { IoClose } from 'react-icons/io5';
 
@@ -107,7 +107,7 @@ export function ReportModal({ isOpen, onClose, uuid, type }: ReportModalProps) {
     if (!selectedReportType || !uuid) return;
     
     try {
-      const client = getApolloClient();
+      const client = getPublicApolloClient();
       if (type === 'comicseries' && client) {
         await submitReportComicSeries({ publicClient: client, uuid, reportType: selectedReportType }, dispatch);
       }

@@ -1,5 +1,5 @@
 import { type LoaderFunctionArgs } from "react-router";
-import { getApolloClient } from "@/lib/apollo/client.server";
+import { getPublicApolloClient } from "@/lib/apollo/client.server";
 import { type GetComicSeriesQuery, type GetComicSeriesQueryVariables, GetComicSeries, type GetMiniComicSeriesQuery, type GetMiniComicSeriesQueryVariables, GetMiniComicSeries, SortOrder } from "@inkverse/shared-client/graphql/operations";
 import { handleLoaderError } from "./error-handler";
 import type { ApolloQueryResult } from "@apollo/client";
@@ -8,7 +8,7 @@ import { parseLoaderComicSeries, type ComicSeriesLoaderData } from "@inkverse/sh
 export async function loadComicSeries({ params, request, context }: LoaderFunctionArgs): Promise<ComicSeriesLoaderData> {
   const { shortUrl } = params;
 
-  const client = getApolloClient(request);
+  const client = getPublicApolloClient(request);
 
   try {
     // Get comic series data first
