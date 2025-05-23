@@ -5,6 +5,7 @@ import { ApolloClient, from } from '@apollo/client';
 import * as Sentry from '@sentry/react-native';
 import { typePolicies } from '@inkverse/public/apollo';
 import config from '@/config';
+import { getAccessToken } from '@/lib/auth/user';
 
 const cache = new InMemoryCache({ typePolicies });
 
@@ -12,12 +13,15 @@ const httpLink = new HttpLink({
   uri: `${config.SERVER_URL}`,
 });
 
-const authLink = setContext((_, { headers }) => {
-  // const token = getAccessToken()
+const authLink = setContext(async (_, { headers }) => {
+  // Get token from secure storage
+  const token = await getAccessToken();
+  if (!token) { throw new Error('No token found'); }
+  
   return {
     headers: {
       ...headers,
-      // ...(!!token && { authorization: `Bearer ${token}`})
+      ...(!!token && { authorization: `Bearer ${token}`})
     }
   }
 });

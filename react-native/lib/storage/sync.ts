@@ -19,12 +19,12 @@ export function syncStorageClear(): void {
   syscStorage = {};
 }
 
-export function migrateAsyncStorageToSyncStorage(): void {
+export async function migrateAsyncStorageToSyncStorage(): Promise<void> {
   const keys = [USER_DETAILS_KEY];
-  keys.forEach((key) => {
-    const value = asyncGetObject(key);
+  for (const key of keys) {
+    const value = await asyncGetObject(key);
     if (value) {
       syncStorageSet(key, value);
     }
-  });
+  }
 }

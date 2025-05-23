@@ -9,6 +9,7 @@ const envPath = path.resolve(__dirname, '..', '..', '.env');
 dotenv.config({ path: envPath });
 
 import express, { Router, type Request, type Response } from 'express';
+import cookieParser from 'cookie-parser';
 import { User } from '@inkverse/shared-server/models/index';
 import { type UserModel } from '@inkverse/shared-server/database/types';
 import { isAValidEmail } from '@inkverse/public/utils';
@@ -29,6 +30,15 @@ const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 // Apple Sign-In credentials
 const APPLE_CLIENT_ID = process.env.APPLE_CLIENT_ID;
 
+// Cookie options for refresh token
+const REFRESH_TOKEN_COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'strict' as const,
+  maxAge: 180 * 24 * 60 * 60 * 1000, // 180 days
+  path: '/'
+};
+
 type SafeUser = Pick<UserModel, 'id' | 'isEmailVerified' | 'username'>;
 const userModelToSafeUser = (user: UserModel): SafeUser => ({
   id: user.id,
@@ -36,6 +46,7 @@ const userModelToSafeUser = (user: UserModel): SafeUser => ({
   username: user.username
 });
 
+router.use(cookieParser());
 router.use(express.urlencoded({ extended: false }));
 router.use(express.json());
 
@@ -159,6 +170,9 @@ router.post('/login-with-google', async (req: Request, res: Response) => {
         await addContactToList('signup', { email: alreadyGoogleUser.email });
       }
 
+      // Set the refresh token cookie
+      res.cookie('inkverse-refresh-token', refreshToken, REFRESH_TOKEN_COOKIE_OPTIONS);
+
       return res.status(200).json({
         accessToken,
         refreshToken,
@@ -196,6 +210,8 @@ router.post('/login-with-google', async (req: Request, res: Response) => {
         type: TokenType.REFRESH
       });
 
+      res.cookie('inkverse-refresh-token', refreshToken, REFRESH_TOKEN_COOKIE_OPTIONS);
+
       return res.status(200).json({
         accessToken,
         refreshToken,
@@ -223,6 +239,8 @@ router.post('/login-with-google', async (req: Request, res: Response) => {
       user: { id: newUser.id },
       type: TokenType.REFRESH
     });
+
+    res.cookie('inkverse-refresh-token', refreshToken, REFRESH_TOKEN_COOKIE_OPTIONS);
 
     return res.status(200).json({
       accessToken,
@@ -308,6 +326,8 @@ router.post('/login-with-apple', async (req: Request, res: Response) => {
         await addContactToList('signup', { email });
       }
 
+      res.cookie('inkverse-refresh-token', refreshToken, REFRESH_TOKEN_COOKIE_OPTIONS);
+
       return res.status(200).json({
         accessToken,
         refreshToken,
@@ -349,6 +369,8 @@ router.post('/login-with-apple', async (req: Request, res: Response) => {
         type: TokenType.REFRESH
       });
 
+      res.cookie('inkverse-refresh-token', refreshToken, REFRESH_TOKEN_COOKIE_OPTIONS);
+
       return res.status(200).json({
         accessToken,
         refreshToken,
@@ -376,6 +398,8 @@ router.post('/login-with-apple', async (req: Request, res: Response) => {
       user: { id: newUser.id },
       type: TokenType.REFRESH
     });
+
+    res.cookie('inkverse-refresh-token', refreshToken, REFRESH_TOKEN_COOKIE_OPTIONS);
 
     return res.status(200).json({
       accessToken,
@@ -409,7 +433,7 @@ router.post('/exchange-otp', async (req: Request, res: Response) => {
 
     // Find user by OTP token and verify email
     const user = await User.getAndVerifyEmailByOTP(otp);
-    
+
     if (!user) {
       return res.status(401).json({ error: 'Invalid or expired OTP token' });
     }
@@ -426,6 +450,8 @@ router.post('/exchange-otp', async (req: Request, res: Response) => {
     });
 
     // Return auth response
+    res.cookie('inkverse-refresh-token', refreshToken, REFRESH_TOKEN_COOKIE_OPTIONS);
+
     return res.status(200).json({
       accessToken,
       refreshToken,
@@ -440,14 +466,17 @@ router.post('/exchange-otp', async (req: Request, res: Response) => {
 // Refresh Access Token
 router.post('/exchange-refresh-token-for-access-token', async (req: Request, res: Response) => {
   try {
+    // Check for token in body or cookie
     const { token } = req.body;
+    const cookieToken = req.cookies?.['inkverse-refresh-token'];
+    const refreshToken = token || cookieToken;
     
-    if (!token) {
+    if (!refreshToken) {
       return res.status(401).json({ error: 'No token provided' });
     }
 
     // Use the utility function to refresh the access token
-    const accessToken = await refreshAccessToken(token);
+    const accessToken = await refreshAccessToken(refreshToken);
     
     return res.status(200).json({ accessToken });
   } catch (error: any) {
@@ -467,14 +496,20 @@ router.post('/exchange-refresh-token-for-access-token', async (req: Request, res
 // Refresh Refresh Token
 router.post('/exchange-refresh-token-for-refresh-token', async (req: Request, res: Response) => {
   try {
+    // Check for token in body or cookie
     const { token } = req.body;
+    const cookieToken = req.cookies?.['inkverse-refresh-token'];
+    const refreshToken = token || cookieToken;
     
-    if (!token) {
+    if (!refreshToken) {
       return res.status(401).json({ error: 'No token provided' });
     }
 
     // Use the utility function to refresh the refresh token
-    const newRefreshToken = await refreshRefreshToken(token);
+    const newRefreshToken = await refreshRefreshToken(refreshToken);
+
+    // Set the new refresh token as cookie
+    res.cookie('inkverse-refresh-token', newRefreshToken, REFRESH_TOKEN_COOKIE_OPTIONS)
 
     return res.status(200).json({ refreshToken: newRefreshToken });
   } catch (error: any) {
@@ -489,6 +524,19 @@ router.post('/exchange-refresh-token-for-refresh-token', async (req: Request, re
     // Generic error for unexpected issues
     return res.status(401).json({ error: 'Failed to refresh refresh token' });
   }
+});
+
+// Logout
+router.post('/logout', async (req: Request, res: Response) => {
+  // Clear the refresh token cookie
+  res.clearCookie('inkverse-refresh-token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    path: '/'
+  });
+  
+  return res.status(200).json({ success: true });
 });
 
 export default router;

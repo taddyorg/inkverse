@@ -105,19 +105,34 @@ export async function dispatchLoginWithEmail(
 interface DispatchExchangeOTPParams {
   baseUrl: string;
   otp: string;
+  storageFunctions?: StorageFunctions;
+  includeCredentials?: boolean; // For web - to receive Set-Cookie headers
 }
 
 export async function dispatchExchangeOTPForTokens(
-  { baseUrl, otp }: DispatchExchangeOTPParams,
+  { baseUrl, otp, storageFunctions, includeCredentials = false }: DispatchExchangeOTPParams,
   dispatch?: React.Dispatch<AuthAction>
 ): Promise<void> {
   if (dispatch) dispatch({ type: AuthActionType.AUTH_START });
 
   try {
-    const response = await axios.post(`${baseUrl}/exchange-otp`, { otp });
+    const response = await axios.post(
+      `${baseUrl}/exchange-otp`, 
+      { otp },
+      { withCredentials: includeCredentials }
+    );
 
     if (!response.data.accessToken || !response.data.refreshToken || !response.data.user) {
       throw new Error('Failed to verify OTP');
+    }
+
+    // Store tokens using provided storage functions
+    if (storageFunctions) {
+      await Promise.all([
+        storageFunctions.saveAccessToken(response.data.accessToken),
+        storageFunctions.saveRefreshToken(response.data.refreshToken),
+        storageFunctions.saveUserDetails(response.data.user)
+      ].filter(Boolean)); // Filter out undefined promises
     }
 
     if (dispatch) {
@@ -135,19 +150,24 @@ interface DispatchLoginWithGoogleParams {
   baseUrl: string;
   googleIdToken: string;
   storageFunctions?: StorageFunctions;
+  includeCredentials?: boolean; // For web - to receive Set-Cookie headers
 }
 
 /**
  * Authenticates a user with Google and stores tokens using provided storage functions
  */
 export async function dispatchLoginWithGoogle(
-  { baseUrl, googleIdToken, storageFunctions }: DispatchLoginWithGoogleParams,
+  { baseUrl, googleIdToken, storageFunctions, includeCredentials = false }: DispatchLoginWithGoogleParams,
   dispatch?: React.Dispatch<AuthAction>
 ): Promise<void> {
   if (dispatch) dispatch({ type: AuthActionType.AUTH_START });
 
   try {
-    const response = await axios.post(`${baseUrl}/login-with-google`, { googleIdToken });
+    const response = await axios.post(
+      `${baseUrl}/login-with-google`, 
+      { googleIdToken },
+      { withCredentials: includeCredentials }
+    );
 
     if (!response.data.accessToken || !response.data.refreshToken || !response.data.user) {
       throw new Error('Failed to login with Google');
@@ -178,16 +198,21 @@ interface DispatchLoginWithAppleParams {
   idToken: string;
   code?: string;
   storageFunctions?: StorageFunctions;
+  includeCredentials?: boolean; // For web - to receive Set-Cookie headers
 }
 
 export async function dispatchLoginWithApple(
-  { baseUrl, idToken, code, storageFunctions }: DispatchLoginWithAppleParams,
+  { baseUrl, idToken, code, storageFunctions, includeCredentials = false }: DispatchLoginWithAppleParams,
   dispatch?: React.Dispatch<AuthAction>
 ): Promise<void> {
   if (dispatch) dispatch({ type: AuthActionType.AUTH_START });
 
   try {
-    const response = await axios.post(`${baseUrl}/login-with-apple`, { id_token: idToken, code });
+    const response = await axios.post(
+      `${baseUrl}/login-with-apple`, 
+      { id_token: idToken, code },
+      { withCredentials: includeCredentials }
+    );
 
     if (!response.data.accessToken || !response.data.refreshToken || !response.data.user) {
       throw new Error('Failed to login with Apple');
@@ -215,19 +240,20 @@ export async function dispatchLoginWithApple(
 
 interface DispatchRefreshAccessTokenParams {
   baseUrl: string;
-  refreshToken: string;
+  refreshToken?: string; // Optional - for mobile/non-cookie environments
+  includeCredentials?: boolean; // For web - includes cookies in request
 }
 
 export async function dispatchRefreshAccessToken(
-  { baseUrl, refreshToken }: DispatchRefreshAccessTokenParams
+  { baseUrl, refreshToken, includeCredentials = false }: DispatchRefreshAccessTokenParams
 ): Promise<string> {
   try {
 
-    const response = await axios.post(`${baseUrl}/exchange-refresh-token-for-access-token`, {}, {
-      headers: {
-        'Authorization': `Bearer ${refreshToken}`
-      }
-    });
+    const response = await axios.post(
+      `${baseUrl}/exchange-refresh-token-for-access-token`, 
+      { token: refreshToken }, 
+      { withCredentials: includeCredentials } // This ensures cookies are sent
+    );
 
     if (!response.data.accessToken) {
       throw new Error('Failed to refresh access token');
@@ -241,18 +267,20 @@ export async function dispatchRefreshAccessToken(
 
 interface DispatchRefreshRefreshTokenParams {
   baseUrl: string;
-  refreshToken: string;
+  refreshToken?: string; // Optional - for mobile/non-cookie environments
+  includeCredentials?: boolean; // For web - includes cookies in request
 }
 
 export async function dispatchRefreshRefreshToken(
-  { baseUrl, refreshToken }: DispatchRefreshRefreshTokenParams
+  { baseUrl, refreshToken, includeCredentials = false }: DispatchRefreshRefreshTokenParams
 ): Promise<string> {
   try {
-    const response = await axios.post(`${baseUrl}/exchange-refresh-token-for-refresh-token`, {}, {
-      headers: {
-        'Authorization': `Bearer ${refreshToken}`
-      }
-    });
+    
+    const response = await axios.post(
+      `${baseUrl}/exchange-refresh-token-for-refresh-token`, 
+      { token: refreshToken }, 
+      { withCredentials: includeCredentials } // This ensures cookies are sent
+    );
 
     if (!response.data.refreshToken) {
       throw new Error('Failed to refresh refresh token');

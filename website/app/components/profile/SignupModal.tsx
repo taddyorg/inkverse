@@ -18,6 +18,7 @@ import {
   clearAuthError,
   AuthActionType
 } from '@inkverse/shared-client/dispatch/authentication';
+import { webStorageFunctions } from '@/lib/auth/user';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -41,7 +42,12 @@ export function SignupModal({ isOpen, onClose, hideComponent = true }: AuthModal
       }
       
       await dispatchLoginWithGoogle(
-        { baseUrl: config.AUTH_URL, googleIdToken: credentialResponse.credential },
+        { 
+          baseUrl: config.AUTH_URL, 
+          googleIdToken: credentialResponse.credential,
+          storageFunctions: webStorageFunctions,
+          includeCredentials: true
+        },
         dispatch
       );
       
@@ -171,7 +177,9 @@ export function SignupModal({ isOpen, onClose, hideComponent = true }: AuthModal
         { 
           baseUrl: config.AUTH_URL, 
           idToken: response.authorization.id_token,
-          code: response.authorization.code
+          code: response.authorization.code,
+          storageFunctions: webStorageFunctions,
+          includeCredentials: true
         },
         dispatch
       );

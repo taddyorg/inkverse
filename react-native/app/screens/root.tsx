@@ -27,6 +27,7 @@ import { SignupResetScreen } from './signup/signup-reset';
 import { SignupUsernameScreen } from './signup/signup-username';
 import { SignupAgeScreen } from './signup/signup-age';
 import { AppLoaderProvider } from '../components/providers/AppLoaderProvider';
+import { AuthRefreshProvider } from '../components/providers/AuthRefreshProvider';
 import { SignupProvider } from '../contexts/SignupContext';
 import { WrappedComicSeriesScreen } from './wrapped-screens/wrappedcomicseries';
 import { WrappedComicIssueScreen } from './wrapped-screens/wrappedcomicissue';
@@ -387,25 +388,26 @@ function App() {
 
   return (
     <AppLoaderProvider>
-      <NavigationContainer 
-        ref={navigationRef}
-        linking={linking}
-      >
-        <PostHogProvider 
-          apiKey={config.POST_HOG_INFO.API_KEY}
-          options={{
-            host: config.POST_HOG_INFO.HOST_URL,
-            // enableSessionReplay: true,
-            // sessionReplayConfig: {
-            //   maskAllTextInputs: true,
-            //   maskAllImages: true,
-            //   captureLog: true,
-            //   captureNetworkTelemetry: true,
-            //   androidDebouncerDelayMs: 500,
-            //   iOSdebouncerDelayMs: 1000,
-            // },
-          }}
+      <AuthRefreshProvider>
+        <NavigationContainer 
+          ref={navigationRef}
+          linking={linking}
         >
+          <PostHogProvider 
+            apiKey={config.POST_HOG_INFO.API_KEY}
+            options={{
+              host: config.POST_HOG_INFO.HOST_URL,
+              // enableSessionReplay: true,
+              // sessionReplayConfig: {
+              //   maskAllTextInputs: true,
+              //   maskAllImages: true,
+              //   captureLog: true,
+              //   captureNetworkTelemetry: true,
+              //   androidDebouncerDelayMs: 500,
+              //   iOSdebouncerDelayMs: 1000,
+              // },
+            }}
+          >
           <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen 
               name={MAIN_SCREEN} 
@@ -454,6 +456,7 @@ function App() {
           </Stack.Navigator>
         </PostHogProvider>
       </NavigationContainer>
+      </AuthRefreshProvider>
     </AppLoaderProvider>
   );
 }

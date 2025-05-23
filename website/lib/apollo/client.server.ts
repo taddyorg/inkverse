@@ -3,6 +3,7 @@ const { ApolloClient, InMemoryCache, createHttpLink, from } = pkg;
 import { typePolicies } from '@inkverse/public/apollo';
 import config from '@/config';
 import { setContext } from '@apollo/client/link/context';
+import { getRefreshToken } from '../auth/cookie';
 
 const cache = new InMemoryCache({ typePolicies });
 
@@ -11,25 +12,26 @@ const httpLink = createHttpLink({
   uri: config.SERVER_URL,
 });
 
-// Create the auth link to inject tokens into requests
-const authLink = setContext((_, { headers }) => {
-  // Get the authentication token from cookies
-  // const token = getAccessToken();
-  
-  // Return the headers to the context so httpLink can read them
-  return {
-    headers: {
-      ...headers,
-      authorization: token ? `Bearer ${token}` : '',
-    },
-  };
-});
+// Create auth link factory that forwards cookies
+const createAuthLink = (request: Request) => {
+  return setContext(async (_, { headers }) => {
+    // Get the refresh token from cookies
+    const refreshToken = await getRefreshToken(request);
+    
+    return {
+      headers: {
+        ...headers,
+        ...(refreshToken && { Authorization: `Bearer ${refreshToken}` }),
+      },
+    };
+  });
+};
 
 export function getPublicApolloClient(request: Request) {
   const client = new ApolloClient({
     ssrMode: true,
     cache,
-    link: httpLink,
+    link: from([httpLink]),
     headers: {
       'client-name': 'inkverse-website',
       'client-version': '3.0.0',
@@ -50,6 +52,8 @@ export function getPublicApolloClient(request: Request) {
 }
 
 export function getUserApolloClient(request: Request) {
+  const authLink = createAuthLink(request);
+  
   const client = new ApolloClient({
     ssrMode: true,
     cache,

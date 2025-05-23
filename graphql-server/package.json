@@ -20,6 +20,7 @@
     "@inkverse/shared-server": "*",
     "apple-signin-auth": "^2.0.0",
     "axios": "^1.7.9",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
@@ -32,6 +33,7 @@
     "uuid": "^11.0.3"
   },
   "devDependencies": {
+    "@types/cookie-parser": "^1.4.8",
     "@types/cors": "^2.8.17",
     "@types/lodash-es": "^4.17.12",
     "@types/node": "^22.10.2",

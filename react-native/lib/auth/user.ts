@@ -3,6 +3,7 @@ import { asyncSetObject, asyncGetObject, asyncDeleteMultiple } from '../storage/
 import type { StorageFunctions } from '@inkverse/shared-client/dispatch/authentication';
 import { syncStorageGet, syncStorageSet, syncStorageDelete } from '../storage/sync';
 import { User } from '@inkverse/shared-client/graphql/types';
+import { jwtDecode } from 'jwt-decode';
 
 // Key constants
 export const ACCESS_TOKEN_KEY = 'inkverse-access-token';
@@ -17,10 +18,18 @@ export async function saveAccessToken(token: string): Promise<void> {
 }
 
 /**
- * Retrieve the access token from secure storage
+ * Retrieve the access token from secure storage, if you can't get it, try to get the refresh token and use that
  */
 export async function getAccessToken(): Promise<string | null> {
-  return secureGet(ACCESS_TOKEN_KEY);
+  const token = await secureGet(ACCESS_TOKEN_KEY);
+  if (!token) { return await getRefreshToken(); }
+
+  const decoded = jwtDecode(token);
+  if (decoded.exp && decoded.exp < Date.now() / 1000) {
+    return await getRefreshToken();
+  }
+
+  return token;
 }
 
 /**
@@ -34,7 +43,15 @@ export async function saveRefreshToken(token: string): Promise<void> {
  * Retrieve the refresh token from secure storage
  */
 export async function getRefreshToken(): Promise<string | null> {
-  return secureGet(REFRESH_TOKEN_KEY);
+  const token = await secureGet(REFRESH_TOKEN_KEY);
+  if (!token) { return null; }
+
+  const decoded = jwtDecode(token);
+  if (decoded.exp && decoded.exp < Date.now() / 1000) {
+    return null;
+  }
+
+  return token;
 }
 
 /**

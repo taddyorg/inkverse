@@ -19,6 +19,8 @@ import type { Route } from "./+types/root";
 import stylesheet from "./app.css?url";
 import { getPublicApolloClient } from "@/lib/apollo/client.client";
 import { Navbar } from './components/ui';
+import { refreshAccessToken, refreshRefreshToken } from '@/lib/auth/refresh';
+import { isAuthenticated } from '@/lib/auth/user';
 
 import 'react-notion-x/src/styles.css'
 import 'prismjs/themes/prism-tomorrow.css'
@@ -54,6 +56,39 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const matches = useMatches();
   const currentRouteData = matches[matches.length - 1]?.data;
   
+  // Refresh access and refresh tokens on app start
+  useEffect(() => {
+    const refreshTokensOnAppStart = async () => {
+      if (isAuthenticated()) {
+        try {
+          await Promise.allSettled([
+            refreshAccessToken(),
+            refreshRefreshToken()
+          ]);
+
+          console.log('Tokens refreshed successfully');
+        } catch (error) {
+          console.error('Failed to refresh tokens on app start:', error);
+        }
+      }
+    };
+
+    refreshTokensOnAppStart();
+  }, []);
+
+  // Refresh access token every 15 minutes
+  useEffect(() => {
+    if (!isAuthenticated()) return;
+  
+    // Refresh tokens every 15 minutes
+    const interval = setInterval(async () => {
+      await refreshAccessToken();
+      console.log('Access token refreshed on interval');
+    }, 15 * 60 * 1000);
+  
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     // Handle Apollo state restoration
     if ((currentRouteData as any)?.apolloState) {

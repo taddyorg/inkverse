@@ -1,26 +1,24 @@
 import { useEffect, useReducer, useState } from 'react';
-import { redirect, useSearchParams, useNavigate } from 'react-router';
+import { redirect, useSearchParams, useNavigate, useParams } from 'react-router';
 import { type LoaderFunctionArgs, type MetaFunction } from "react-router";
-import { getApolloClient } from '@/lib/apollo/client.client';
 import { 
   dispatchExchangeOTPForTokens,
   authReducer,
   authInitialState,
   AuthActionType
 } from '@inkverse/shared-client/dispatch/authentication';
+import { webStorageFunctions } from '@/lib/auth/user';
 import { getMetaTags } from '@/lib/seo';
 import config from '@/config';
 
 export default function Reset() {
-  const [searchParams] = useSearchParams();
+  const { token } = useParams();
   const navigate = useNavigate();
   const [authState, dispatch] = useReducer(authReducer, authInitialState);
   const [hasAttempted, setHasAttempted] = useState(false);
 
   useEffect(() => {
     const handleTokenExchange = async () => {
-      const token = searchParams.get('token');
-      
       if (!token) {
         navigate('/');
         return;
@@ -35,7 +33,12 @@ export default function Reset() {
 
       try {
         await dispatchExchangeOTPForTokens(
-          { baseUrl: config.AUTH_URL, otp: token },
+          { 
+            baseUrl: config.AUTH_URL, 
+            otp: token,
+            storageFunctions: webStorageFunctions,
+            includeCredentials: true 
+          },
           (action) => dispatch(action as any)
         );
       } catch (error: any) {
@@ -44,7 +47,7 @@ export default function Reset() {
     };
 
     handleTokenExchange();
-  }, [searchParams, navigate, hasAttempted]);
+  }, [token, navigate, hasAttempted]);
 
   useEffect(() => {
     if (authState.isAuthenticated && authState.user) {
@@ -59,8 +62,8 @@ export default function Reset() {
 
   if (authState.error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full">
+      <div className="mx-auto sm:p-6 lg:p-8 zoomed-in:max-w-3xl max-w-xl">
+        <div className="p-8 rounded-lg max-w-md w-full">
           <h1 className="text-2xl font-bold text-red-600 dark:text-red-400 mb-4">Authentication Error</h1>
           <p className="text-gray-700 dark:text-gray-300 mb-6">{authState.error}</p>
           <button
@@ -75,8 +78,8 @@ export default function Reset() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-      <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full">
+    <div className="mx-auto sm:p-6 lg:p-8 zoomed-in:max-w-3xl max-w-xl">
+      <div className="p-8 rounded-lg max-w-md w-full">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Verifying your email...</h1>
         <p className="text-gray-700 dark:text-gray-300">Please wait while we verify your authentication token.</p>
         <div className="mt-6 flex justify-center">
