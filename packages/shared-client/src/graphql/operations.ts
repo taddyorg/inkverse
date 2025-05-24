@@ -880,9 +880,9 @@ export type MutationReportComicSeriesArgs = {
 
 
 export type MutationUpdateUserProfileArgs = {
-  ageRange: UserAgeRange;
+  ageRange?: InputMaybe<UserAgeRange>;
   birthYear?: InputMaybe<Scalars['Int']['input']>;
-  username: Scalars['String']['input'];
+  username?: InputMaybe<Scalars['String']['input']>;
 };
 
 /**  The privacy types for a list  */
@@ -1067,6 +1067,7 @@ export type User = {
   email: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   isEmailVerified?: Maybe<Scalars['Boolean']['output']>;
+  isProfileSetup?: Maybe<Scalars['Boolean']['output']>;
   updatedAt?: Maybe<Scalars['Int']['output']>;
   username?: Maybe<Scalars['String']['output']>;
 };
@@ -1106,8 +1107,8 @@ export type ReportComicSeriesMutationVariables = Exact<{
 export type ReportComicSeriesMutation = { __typename?: 'Mutation', reportComicSeries?: boolean | null };
 
 export type UpdateUserProfileMutationVariables = Exact<{
-  username: Scalars['String']['input'];
-  ageRange: UserAgeRange;
+  username?: InputMaybe<Scalars['String']['input']>;
+  ageRange?: InputMaybe<UserAgeRange>;
   birthYear?: InputMaybe<Scalars['Int']['input']>;
 }>;
 
@@ -1328,7 +1329,7 @@ export const ReportComicSeries = gql`
 }
     `;
 export const UpdateUserProfile = gql`
-    mutation UpdateUserProfile($username: String!, $ageRange: UserAgeRange!, $birthYear: Int) {
+    mutation UpdateUserProfile($username: String, $ageRange: UserAgeRange, $birthYear: Int) {
   updateUserProfile(
     username: $username
     ageRange: $ageRange

@@ -6,3 +6,4 @@ export { CreatorContent } from './creatorcontent.js';
 export { UUIDLookup } from './uuid_lookup.js';
 export { Common } from './common.js';
 export { User } from './user.js';
+export { OAuthToken } from './oauth_token.js';

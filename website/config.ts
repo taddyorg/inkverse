@@ -8,7 +8,8 @@ const developmentConfig = {
   },
   "GOOGLE_CLIENT_ID": "485860487313-jddr4ok61k6voj594b1sqhvj18gt7nms.apps.googleusercontent.com", 
   "APPLE_CLIENT_ID": "art.bamcomics.taddy", 
-  "APPLE_REDIRECT_URI": "https://inkverse.test:3010/api/auth/login-with-apple", 
+  "APPLE_REDIRECT_URI": "https://inkverse.test:3010/api/auth/login-with-apple",
+  "TADDY_CLIENT_ID":"151",
 }
 
 const developmentConfigButProductionData = {
@@ -22,6 +23,7 @@ const developmentConfigButProductionData = {
   "GOOGLE_CLIENT_ID": "485860487313-ditiq1chl9qjbiaemsthun7bbdstu3tq.apps.googleusercontent.com", 
   "APPLE_CLIENT_ID": "art.bamcomics.taddy", 
   "APPLE_REDIRECT_URI": "https://inkverse.co/api/auth/login-with-apple", 
+  "TADDY_CLIENT_ID":"151",
 }
 
 const productionConfig = {
@@ -35,6 +37,7 @@ const productionConfig = {
   "GOOGLE_CLIENT_ID": "485860487313-ditiq1chl9qjbiaemsthun7bbdstu3tq.apps.googleusercontent.com", 
   "APPLE_CLIENT_ID": "art.bamcomics.taddy", 
   "APPLE_REDIRECT_URI": "https://inkverse.co/api/auth/login-with-apple", 
+  "TADDY_CLIENT_ID":"151",
 }
 
 export default process.env.NODE_ENV === 'production'  

@@ -1,5 +1,6 @@
 import axios from 'axios';
-import type { AuthResponse, User } from '../graphql/types';
+import type { AuthResponse } from '../graphql/types';
+import type { StorageFunctions } from './utils';
 
 export interface AuthState {
   user: any | null;
@@ -8,19 +9,6 @@ export interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
-}
-
-/**
- * Interface for token storage functions that will be passed to authentication methods
- * Each client (web, mobile) can implement these differently based on their storage mechanism
- */
-export interface StorageFunctions {
-  /** Function to save the access token (e.g., to localStorage, SecureStore, etc.) */
-  saveAccessToken: (token: string) => Promise<void> | void;
-  /** Function to save the refresh token */
-  saveRefreshToken: (token: string) => Promise<void> | void;
-  /** Optional function to save user details */
-  saveUserDetails: (user: Partial<User>) => Promise<void> | void;
 }
 
 export const authInitialState: AuthState = {

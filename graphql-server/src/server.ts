@@ -16,6 +16,7 @@ import { errorMessageToJsonError, graphqlFormatError } from './graphql/error.js'
 import workerRouter from './routes/worker.js';
 import { createAuthContext } from './middleware/auth.js';
 import authRouter from './routes/auth.js';
+import hostingProviderRouter from './routes/hosting-provider.js';
 import { inkverseWebsiteUrl } from '@inkverse/public/utils';
 
 const PORT = 3010;
@@ -94,6 +95,7 @@ async function startServer() {
 
   app.use('/api/worker', workerRouter);
   app.use('/api/auth', cors(authCorsOptions), authRouter);
+  app.use('/api/hosting-provider', hostingProviderRouter);
 
   app.use((error: any, req: any, res: any, next: any) => {
     return errorMessageToJsonError(res, error)

@@ -1,4 +1,4 @@
-mutation UpdateUserProfile($username: String!, $ageRange: UserAgeRange!, $birthYear: Int) {
+mutation UpdateUserProfile($username: String, $ageRange: UserAgeRange, $birthYear: Int) {
   updateUserProfile(username: $username, ageRange: $ageRange, birthYear: $birthYear) {
     ...UserDetails
   }

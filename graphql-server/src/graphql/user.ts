@@ -15,6 +15,7 @@ export const UserDefinitions = `
     email: String!
     username: String
     isEmailVerified: Boolean
+    isProfileSetup: Boolean
     ageRange: UserAgeRange
     birthYear: Int
   }
@@ -61,8 +62,8 @@ export const UserMutationsDefinitions = `
   Update user profile (username and age)
   """
   updateUserProfile(
-    username: String!
-    ageRange: UserAgeRange!
+    username: String
+    ageRange: UserAgeRange
     birthYear: Int
   ): User
 

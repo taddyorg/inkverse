@@ -1,7 +1,12 @@
 import type { Dispatch } from 'react';
-import type { ApolloClient } from '@apollo/client';
+import type { ApolloClient, FetchResult } from '@apollo/client';
 import type { UserAgeRange } from '../graphql/types';
 import { UpdateUserProfile } from '../graphql/operations';
+import type { 
+  UpdateUserProfileMutation, 
+  UpdateUserProfileMutationVariables 
+} from '../graphql/operations';
+import type { StorageFunctions } from './utils';
 
 export interface UserDetailsState {
   userData: any | null;
@@ -48,31 +53,87 @@ export const userDetailsReducer = (state: UserDetailsState, action: UserDetailsA
   }
 };
 
-interface UpdateUserProfileParams {
-  userClient: ApolloClient<any>;
-  username: string;
-  ageRange: UserAgeRange;
-  birthYear?: number;
+export function clearUserDetailsError(dispatch: Dispatch<UserDetailsAction>): void {
+  dispatch({ type: UserDetailsActionType.USER_DETAILS_CLEAR_ERROR });
 }
 
-export async function updateUserProfile(
-  { userClient, username, ageRange, birthYear }: UpdateUserProfileParams,
+interface UpdateUsernameParams {
+  userClient: ApolloClient<any>;
+  username: string;
+  storageFunctions: StorageFunctions;
+}
+
+export async function updateUsername(
+  { userClient, username, storageFunctions }: UpdateUsernameParams,
   dispatch?: Dispatch<UserDetailsAction>
 ): Promise<any> {
   if (dispatch) dispatch({ type: UserDetailsActionType.USER_DETAILS_START });
 
   try {
-    const { data, errors } = await userClient.mutate({
+    const result: FetchResult<UpdateUserProfileMutation> = await userClient.mutate<
+      UpdateUserProfileMutation,
+      UpdateUserProfileMutationVariables
+    >({
       mutation: UpdateUserProfile,
-      variables: { username, ageRange, birthYear },
+      variables: { username },
     });
 
+    const { data, errors } = result;
+
     if (errors) {
-      throw new Error(errors[0]?.message || 'Failed to update profile');
+      throw new Error(errors[0]?.message || 'Failed to update username');
     }
 
     if (!data?.updateUserProfile) {
-      throw new Error('Failed to update profile');
+      throw new Error('Failed to update username');
+    }
+
+    if (dispatch) {
+      dispatch({ type: UserDetailsActionType.USER_DETAILS_SUCCESS, payload: data.updateUserProfile });
+    }
+
+    const user = data.updateUserProfile;
+
+    storageFunctions.saveUserDetails(user);
+
+    return user;
+  } catch (error: any) {
+    if (dispatch) {
+      dispatch({ type: UserDetailsActionType.USER_DETAILS_ERROR, payload: error?.message || 'Failed to update username' });
+    }
+    throw error;
+  }
+}
+
+interface UpdateAgeRangeParams {
+  userClient: ApolloClient<any>;
+  ageRange: UserAgeRange;
+  birthYear?: number;
+}
+
+export async function updateAgeRange(
+  { userClient, ageRange, birthYear }: UpdateAgeRangeParams,
+  dispatch?: Dispatch<UserDetailsAction>
+): Promise<any> {
+  if (dispatch) dispatch({ type: UserDetailsActionType.USER_DETAILS_START });
+
+  try {
+    const result: FetchResult<UpdateUserProfileMutation> = await userClient.mutate<
+      UpdateUserProfileMutation,
+      UpdateUserProfileMutationVariables
+    >({
+      mutation: UpdateUserProfile,
+      variables: { ageRange, birthYear },
+    });
+
+    const { data, errors } = result;
+
+    if (errors) {
+      throw new Error(errors[0]?.message || 'Failed to update age range');
+    }
+
+    if (!data?.updateUserProfile) {
+      throw new Error('Failed to update age range');
     }
 
     if (dispatch) {
@@ -82,12 +143,8 @@ export async function updateUserProfile(
     return data.updateUserProfile;
   } catch (error: any) {
     if (dispatch) {
-      dispatch({ type: UserDetailsActionType.USER_DETAILS_ERROR, payload: error?.message || 'Failed to update profile' });
+      dispatch({ type: UserDetailsActionType.USER_DETAILS_ERROR, payload: error?.message || 'Failed to update age range' });
     }
     throw error;
   }
-}
-
-export function clearUserDetailsError(dispatch: Dispatch<UserDetailsAction>): void {
-  dispatch({ type: UserDetailsActionType.USER_DETAILS_CLEAR_ERROR });
 }

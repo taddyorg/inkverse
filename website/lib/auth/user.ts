@@ -1,5 +1,5 @@
 import { localStorageSet, localStorageGet, localStorageSetObject, localStorageGetObject, localStorageDeleteMultiple, localStorageDelete } from '../storage/local';
-import type { StorageFunctions } from '@inkverse/shared-client/dispatch/authentication';
+import type { StorageFunctions } from '@inkverse/shared-client/dispatch/utils';
 import { jwtDecode } from 'jwt-decode';
 import type { User } from '@inkverse/shared-client/graphql/types';
 
