@@ -3,8 +3,9 @@ import {
   View, 
   ScrollView,
   StyleSheet,
+  Platform,
 } from 'react-native';
-import { FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { AuthProvider } from '@inkverse/public/graphql/types';
 import { 
@@ -20,6 +21,7 @@ import { SPACING } from '@/constants/Spacing';
 import { SvgXml } from 'react-native-svg';
 import { useSignupContext } from '@/app/contexts/SignupContext';
 import { SIGNUP_EMAIL_SCREEN } from '@/constants/Navigation';
+import * as AppleAuthentication from 'expo-apple-authentication';
 
 export function SignupScreen() {
   const navigation = useNavigation();
@@ -109,19 +111,32 @@ export function SignupScreen() {
                     </View>
                   </PressableOpacity>
 
-                  <PressableOpacity
-                    onPress={() => handleSocialLogin(AuthProvider.APPLE)}
-                    disabled={authState.isLoading}
-                    style={[styles.socialButton, { borderColor: textColor }]}
-                  >
-                    <View style={styles.socialButtonInner}>
-                      <FontAwesome5 name="apple" size={22} style={styles.socialIcon} color={textColor} />
-                      <ThemedText style={styles.socialButtonText} size="subtitle">
-                        Continue with Apple
-                      </ThemedText>
-                    </View>
-                  </PressableOpacity>
+                  {Platform.OS === 'ios' && (
+                    <AppleAuthentication.AppleAuthenticationButton
+                      buttonType={AppleAuthentication.AppleAuthenticationButtonType.CONTINUE}
+                      buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+                      cornerRadius={5}
+                      style={styles.socialButton}
+                      onPress={async () => {
+                        try {
+                          const credential = await AppleAuthentication.signInAsync({
+                            requestedScopes: [
+                              AppleAuthentication.AppleAuthenticationScope.EMAIL,
+                            ],
+                          });
 
+                          console.log(credential);
+                          // signed in
+                        } catch (e: any) {
+                          if (e?.code === 'ERR_REQUEST_CANCELED') {
+                            // handle that the user canceled the sign-in flow
+                          } else {
+                            // handle other errors
+                          }
+                        }
+                      }}
+                    />
+                  )}
                   <PressableOpacity
                     onPress={handleEmailSelection}
                     disabled={authState.isLoading}
