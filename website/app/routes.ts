@@ -16,6 +16,7 @@ export default [
     route("api/settings", "routes/api.settings.ts"),
     route("download-app", "routes/download-app.tsx"),
     route("reset/:token", "routes/reset.tsx"),
+    route("hosting-provider/:uuid", "routes/hosting-provider.tsx"),
     route("profile/setup", "routes/profile/setup.tsx"),
     route("*", "routes/error.tsx"),
 ] satisfies RouteConfig;

@@ -1,5 +1,5 @@
 import { CreatorDetails } from './CreatorDetails';
-import type { ComicIssue, Creator } from '@inkverse/shared-client/graphql/types';
+import type { ComicIssue, Creator } from '@inkverse/shared-client/graphql/operations';
 import * as DOMPurifyModule from 'dompurify';
 import { useMemo } from 'react';
 

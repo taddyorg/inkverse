@@ -1,7 +1,7 @@
 import { FaRegFlag } from 'react-icons/fa';
 import { useState } from 'react';
 
-import type { ComicSeries } from '@inkverse/shared-client/graphql/types';
+import type { ComicSeries } from '@inkverse/shared-client/graphql/operations';
 import { getPrettySeriesStatus } from '@inkverse/public/status';
 import { getPrettyContentRating } from '@inkverse/public/ratings';
 import { ReportModal } from '../ui/ReportModal';

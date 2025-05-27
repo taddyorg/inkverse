@@ -16,7 +16,7 @@ import { Screen, ScrollIndicator, ThemedActivityIndicator, ThemedRefreshControl 
 
 import { publicClient } from '@/lib/apollo';
 import { comicIssueQueryReducer, comicIssueInitialState, loadComicIssue } from '@inkverse/shared-client/dispatch/comicissue';
-import { ComicIssue } from '@inkverse/shared-client/graphql/types';
+import { ComicIssue } from '@inkverse/shared-client/graphql/operations';
 import { getStoryImageUrl } from '@inkverse/public/comicstory';
 
 type ListItemType = 'story' | 'grid' | 'creator' | 'next-episode';

@@ -8,7 +8,7 @@ import type { UserModel } from '@inkverse/shared-server/database/types';
 import { AuthProvider, type UserAgeRange } from "@inkverse/public/graphql/types";
 import { generateRandomString } from "../utils/crypto.js";
 import { currentDate } from "../utils/date.js";
-import { addContactToList } from "../messaging/email/octopus.js";
+import { addContactToList, removeContactFromList } from "../messaging/email/octopus.js";
 
 interface UserCreateOrUpdateInput {
   email?: string | null;
@@ -153,6 +153,34 @@ export class User {
     return updatedUser;
   }
   
+  /**
+   * Delete user account and all associated data
+   */
+  static async deleteUser(id: string): Promise<boolean> {
+    try {
+
+      const user = await User.getUserById(id);
+      if (!user) { return false }
+
+      // Start a transaction to ensure all deletions succeed or fail together
+      await database.transaction(async (trx) => {
+        // Delete related data first
+        await trx('user_device').where({ user_id: id }).del();
+        await trx('oauth_token').where({ user_id: id }).del();
+        
+        // Finally delete the user
+        await trx('users').where({ id }).del();
+      });
+
+      await removeContactFromList('signup', { email: user.email });
+      
+      return true;
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      return false;
+    }
+  }
+
   /**
    * Generate a username from email
    */

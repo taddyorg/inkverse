@@ -14,9 +14,9 @@ const httpLink = createHttpLink({
 });
 
 // Create the auth link to inject tokens into requests
-const authLink = setContext((_, { headers }) => {
+const authLink = setContext(async (_, { headers }) => {
   // Get the authentication token from local storage
-  const token = getAccessToken();
+  const token = await getAccessToken();
   
   // Return the headers to the context so httpLink can read them
   return {

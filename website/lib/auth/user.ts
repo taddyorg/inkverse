@@ -1,7 +1,9 @@
+import config from '@/config';
 import { localStorageSet, localStorageGet, localStorageSetObject, localStorageGetObject, localStorageDeleteMultiple, localStorageDelete } from '../storage/local';
 import type { StorageFunctions } from '@inkverse/shared-client/dispatch/utils';
 import { jwtDecode } from 'jwt-decode';
 import type { User } from '@inkverse/shared-client/graphql/types';
+import { dispatchRefreshAccessToken, dispatchRefreshRefreshToken } from '@inkverse/shared-client/dispatch/authentication';
 
 // Key constants
 const ACCESS_TOKEN_KEY = 'inkverse-access-token';
@@ -28,18 +30,36 @@ export function saveRefreshToken(token: string): void {
 /**
  * Retrieve the access token from localStorage
  */
-export function getAccessToken(): string | null {
-  const accessToken = localStorageGet(ACCESS_TOKEN_KEY);
-  if (!accessToken) return null;
+export async function getAccessToken(): Promise<string | null> {
+  try {
+    const accessToken = localStorageGet(ACCESS_TOKEN_KEY);
+    if (!accessToken) {
+      console.log('Access token not found, attempting to refresh');
+      return await refreshAccessToken();
+    }
 
-  const decodedToken = jwtDecode(accessToken);
-  if (!decodedToken || !decodedToken.exp) return null;
+    const decodedToken = jwtDecode(accessToken);
+    if (!decodedToken || !decodedToken.exp) {
+      console.warn('Invalid token format, attempting to refresh');
+      // Clear invalid token from storage
+      localStorageDelete(ACCESS_TOKEN_KEY);
+      return await refreshAccessToken();
+    }
 
-  const isNotExpired = decodedToken.exp > Date.now() / 1000;
-  if (!isNotExpired) {
-    console.log('access token expired!!!');
+    // Check if token is expired (exp time is LESS than current time)
+    const isExpired = decodedToken.exp < (Date.now() / 1000);
+    if (isExpired) {
+      console.log('Access token expired, attempting to refresh');
+      // Clear expired token from storage
+      localStorageDelete(ACCESS_TOKEN_KEY);
+      return await refreshAccessToken();
+    }
+
+    return accessToken;
+  } catch (error) {
+    console.error('Error getting access token:', error);
+    return null;
   }
-  return accessToken;
 }
 
 /**
@@ -72,6 +92,54 @@ export function clearAuthData(): void {
  */
 export function isAuthenticated(): boolean {
   return getUserDetails() !== null;
+}
+
+/**
+ * Refresh the access token using the refresh token stored in HTTP-only cookie
+ */
+export async function refreshAccessToken(): Promise<string | null> {
+  try {
+    // Call the refresh endpoint with includeCredentials to send cookies
+    const newAccessToken = await dispatchRefreshAccessToken({
+      baseUrl: config.AUTH_URL,
+      includeCredentials: true, // This will send the cookie
+    });
+
+    if (newAccessToken) {
+      // Save the new access token to localStorage
+      saveAccessToken(newAccessToken);
+      return newAccessToken;
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Failed to refresh access token:', error);
+    return null;
+  }
+}
+
+/**
+ * Refresh the access token using the refresh token stored in HTTP-only cookie
+ */
+export async function refreshRefreshToken(): Promise<string | null> {
+  try {
+    // Call the refresh endpoint with includeCredentials to send cookies
+    const newRefreshToken = await dispatchRefreshRefreshToken({
+      baseUrl: config.AUTH_URL,
+      includeCredentials: true, // This will send the cookie
+    });   
+
+    if (newRefreshToken) {
+      // Save the new access token to localStorage
+      saveRefreshToken(newRefreshToken);
+      return newRefreshToken;
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Failed to refresh access token:', error);
+    return null;
+  }
 }
 
 /**

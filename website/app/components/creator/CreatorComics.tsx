@@ -1,7 +1,7 @@
 import { ComicSeriesDetails } from '../comics/ComicSeriesDetails';
 import type { CreatorPageType } from './CreatorDetails';
 
-import type { ComicSeries } from '@inkverse/shared-client/graphql/types';
+import type { ComicSeries } from '@inkverse/shared-client/graphql/operations';
 
 type CreatorComicsProps = {
   comicseries?: ComicSeries[] | null | undefined;

@@ -10,7 +10,7 @@ import { ListDetails } from '@/app/components/list/ListDetails';
 
 import { publicClient } from '@/lib/apollo';
 import { loadList, listQueryReducer, listInitialState } from '@inkverse/shared-client/dispatch/list';
-import { List } from '@inkverse/shared-client/graphql/types';
+import { List } from '@inkverse/shared-client/graphql/operations';
 
 type ListItem =
   | { type: 'screen-header'; key: string; data?: { name?: string } }

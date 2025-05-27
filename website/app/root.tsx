@@ -17,14 +17,16 @@ import config from "../config";
 
 import type { Route } from "./+types/root";
 import stylesheet from "./app.css?url";
-import { getPublicApolloClient } from "@/lib/apollo/client.client";
+import { getPublicApolloClient, getUserApolloClient } from "@/lib/apollo/client.client";
 import { Navbar } from './components/ui';
-import { refreshAccessToken, refreshRefreshToken } from '@/lib/auth/refresh';
+import { refreshAccessToken, refreshRefreshToken } from '@/lib/auth/user';
 import { isAuthenticated } from '@/lib/auth/user';
 
 import 'react-notion-x/src/styles.css'
 import 'prismjs/themes/prism-tomorrow.css'
 import 'katex/dist/katex.min.css'
+import { fetchAllHostingProviderTokens } from "@inkverse/shared-client/dispatch/hosting-provider";
+import { saveHostingProviderRefreshToken, refreshHostingProviderAccessToken } from "@/lib/auth/hosting-provider";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -61,12 +63,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
     const refreshTokensOnAppStart = async () => {
       if (isAuthenticated()) {
         try {
+          const userClient = getUserApolloClient();
           await Promise.allSettled([
             refreshAccessToken(),
-            refreshRefreshToken()
+            refreshRefreshToken(),
+            fetchAllHostingProviderTokens({ userClient, saveHostingProviderRefreshToken, refreshHostingProviderAccessToken })
           ]);
-
-          console.log('Tokens refreshed successfully');
         } catch (error) {
           console.error('Failed to refresh tokens on app start:', error);
         }

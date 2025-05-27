@@ -1,9 +1,8 @@
 import { type LoaderFunctionArgs } from "react-router";
 import { getPublicApolloClient } from "@/lib/apollo/client.server";
 import { handleLoaderError } from "./error-handler";
-import { Genre, type ComicSeries } from "@inkverse/shared-client/graphql/types";
 import { parseComicsListResults } from "@inkverse/shared-client/dispatch/comicslist";
-import { Search, type SearchQuery, type SearchQueryVariables } from "@inkverse/shared-client/graphql/operations";
+import { Genre, type ComicSeries, Search, type SearchQuery, type SearchQueryVariables } from "@inkverse/shared-client/graphql/operations";
 
 export type ComicsListPageType = 'tag' | 'genre';
 

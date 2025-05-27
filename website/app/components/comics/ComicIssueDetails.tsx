@@ -4,7 +4,7 @@ import { MdLock } from 'react-icons/md';
 import { prettyFormattedDate, prettyFormattedFreeInDays } from '@inkverse/shared-client/utils/date';
 import { getThumbnailImageUrl } from '@inkverse/public/comicseries';
 import { getInkverseUrl } from '@inkverse/public/utils';
-import type { ComicSeries, ComicIssue } from '@inkverse/shared-client/graphql/types';
+import type { ComicSeries, ComicIssue } from '@inkverse/shared-client/graphql/operations';
 
 type ComicIssueDetailsProps = {
   comicseries: ComicSeries,

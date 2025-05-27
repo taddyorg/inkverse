@@ -1,7 +1,6 @@
 import type { Dispatch } from 'react';
 import type { ApolloClient, FetchResult } from '@apollo/client';
-import type { UserAgeRange } from '../graphql/types';
-import { UpdateUserProfile } from '../graphql/operations';
+import { UpdateUserProfile, type UserAgeRange } from '../graphql/operations';
 import type { 
   UpdateUserProfileMutation, 
   UpdateUserProfileMutationVariables 

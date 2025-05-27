@@ -1,6 +1,6 @@
 import { Link } from "react-router";
 
-import type { ComicSeries } from '@inkverse/shared-client/graphql/types';
+import type { ComicSeries } from '@inkverse/shared-client/graphql/operations';
 import { getInkverseUrl } from '@inkverse/public/utils';
 import { getPrettyGenre } from '@inkverse/public/genres';
 import { getBannerImageUrl, getCoverImageUrl, getThumbnailImageUrl } from '@inkverse/public/comicseries';

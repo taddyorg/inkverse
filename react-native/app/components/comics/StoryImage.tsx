@@ -1,7 +1,7 @@
 import React, { memo, useCallback, useState } from 'react';
 import { Image, ImageLoadEventData } from 'expo-image';
 
-import { ComicStory } from '@inkverse/shared-client/graphql/types';
+import { ComicStory } from '@inkverse/shared-client/graphql/operations';
 import { getStoryImageUrl } from '@inkverse/public/comicstory';
 
 interface StoryImageProps {

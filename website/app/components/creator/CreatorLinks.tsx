@@ -1,7 +1,6 @@
 import React from 'react';
 
-import type { LinkDetails } from '@inkverse/shared-client/graphql/types';
-import { LinkType } from '@inkverse/shared-client/graphql/types';
+import { LinkType, type LinkDetails } from '@inkverse/shared-client/graphql/operations';
 import { linkIconNames } from '@inkverse/shared-client/utils/link-icons';
 
 type CreatorLinksProps = {

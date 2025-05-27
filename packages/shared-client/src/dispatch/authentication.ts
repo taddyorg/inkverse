@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { AuthResponse } from '../graphql/types';
+import type { AuthResponse } from '@inkverse/shared-client/graphql/operations';
 import type { StorageFunctions } from './utils';
 
 export interface AuthState {

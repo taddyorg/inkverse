@@ -7,8 +7,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rm -rf dist tsconfig.tsbuildinfo && tsc -b",
-    "create-new-queue": "tsx src/shared/queues/create-new-queue.ts",
-    "receive-messages": "tsx src/shared/queues/receive-messages.ts",
+    "create-new-queue": "tsx ../packages/shared-server/src/queues/create-new-queue.ts",
+    "receive-messages": "tsx ../packages/shared-server/src/queues/receive-messages.ts",
     "add-new-feed-by-uuid": "tsx src/scripts/feeds/add-new-feed-by-uuid.ts",
     "mock-webhook-event": "tsx src/scripts/feeds/mock-webhook-event.ts",
     "import-all-comics": "tsx src/scripts/feeds/import-all-comics.ts",

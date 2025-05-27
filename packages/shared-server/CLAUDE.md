@@ -227,6 +227,7 @@ The shared-server package connects to several external services:
 
 5. **TypeScript**:
    - Leverage TypeScript interfaces for database models
+   - When a migration is added, update the database/types.ts file to include the new or updated tables and columns
    - Define precise return types for functions
    - Use enums for constrained values
 

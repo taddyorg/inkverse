@@ -17,7 +17,7 @@ import { getUserDetails, webStorageFunctions } from '@/lib/auth/user';
 import { getAuthorizationCodeUrl } from '@inkverse/public/hosting-providers';
 import config from '@/config';
 
-type SetupStep = 'username' | 'age' | 'patreon' | 'complete';
+type SetupStep = 'username' | 'age' | 'patreon' | 'patreon-connected' | 'bluesky' | 'bluesky-connected' | 'complete';
 const TADDY_PROVIDER_UUID = 'e9957105-80e4-46e3-8e82-20472b9d7512'; // Needed just for this screen
 
 export default function AccountSetup() {
@@ -28,9 +28,7 @@ export default function AccountSetup() {
   const [ageRange, setAgeRange] = useState<UserAgeRange | ''>('');
   const [birthYear, setBirthYear] = useState('');
   const [userDetailsState, dispatch] = useReducer(userDetailsReducer, userDetailsInitialState);
-  const [savedUsername, setSavedUsername] = useState('');
   const [isInitializing, setIsInitializing] = useState(true);
-  const [userId, setUserId] = useState<string | null>(null);
 
   // Fetch user details on mount to determine current step
   useEffect(() => {
@@ -44,11 +42,9 @@ export default function AccountSetup() {
 
         if (data?.me) {
           const user = data.me;
-          setUserId(user.id);
           
           // If username is already set, move to age step
           if (user.username) {
-            setSavedUsername(user.username);
             setUsername(user.username);
             
             // If age is also set, redirect to home
@@ -103,7 +99,6 @@ export default function AccountSetup() {
       );
 
       // Save username and move to next step
-      setSavedUsername(username.trim());
       setCurrentStep('age');
     } catch (err: any) {
       // Error is handled by the dispatch function
@@ -155,7 +150,7 @@ export default function AccountSetup() {
 
   // Progress indicator
   const steps = ['username', 'age', 'patreon'];
-  const currentStepIndex = steps.indexOf(currentStep === 'complete' ? 'patreon' : currentStep);
+  const currentStepIndex = steps.indexOf(currentStep === 'complete' || currentStep === 'patreon-connected' ? 'patreon' : currentStep);
 
   // Show loading state while fetching initial user data
   if (isInitializing) {
@@ -375,6 +370,65 @@ export default function AccountSetup() {
               >
                 Back to previous step
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* Patreon Connected Step */}
+        {currentStep === 'patreon-connected' && (
+          <div className="space-y-4">
+            <div className="text-center py-8">
+              <div className="mb-4">
+                <svg className="w-16 h-16 text-green-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                Patreon Connected Successfully!
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                You can now see exclusive content from creators you support on Patreon.
+              </p>
+              
+              <button
+                onClick={() => {
+                  setCurrentStep('complete');
+                  setTimeout(() => {
+                    navigate('/');
+                  }, 500);
+                }}
+                className="w-full py-3 px-4 rounded-lg font-medium transition-colors bg-brand-pink dark:bg-taddy-blue text-white hover:opacity-90"
+              >
+                Continue to Inkverse
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Bluesky Connection Step */}
+        {currentStep === 'bluesky' && (
+          <div className="space-y-4">
+            <div className="text-center py-8">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                Connect with Bluesky
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                Follow the creators you support on Bluesky to see their exclusive content on Inkverse
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Bluesky Connected Step */}
+        {currentStep === 'bluesky-connected' && (
+          <div className="space-y-4">
+            <div className="text-center py-8">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                Bluesky Connected Successfully!
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                You can now see exclusive content from creators you support on Bluesky.
+              </p>
             </div>
           </div>
         )}

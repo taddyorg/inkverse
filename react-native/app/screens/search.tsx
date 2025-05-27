@@ -6,7 +6,7 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import { useState, useCallback, useEffect, useReducer } from 'react';
 
 import { Screen, ThemedText, PressableOpacity, ScreenHeader, ThemedActivityIndicator } from '@/app/components/ui';
-import { Genre, ComicSeries } from '@inkverse/shared-client/graphql/types';
+import { Genre, ComicSeries } from '@inkverse/shared-client/graphql/operations';
 import { getPrettyGenre } from '@inkverse/public/genres';
 import { Colors, useThemeColor } from '@/constants/Colors';
 import { ComicSeriesDetails } from '@/app/components/comics/ComicSeriesDetails';

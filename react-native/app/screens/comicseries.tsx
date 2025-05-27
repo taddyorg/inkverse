@@ -9,7 +9,7 @@ import { ComicIssuesList, ComicIssuesListProps } from '@/app/components/comics/C
 import { ComicSeriesInfo } from '@/app/components/comics/ComicSeriesInfo';
 
 import { publicClient } from '@/lib/apollo';
-import { ComicIssue, ComicSeries } from '@inkverse/shared-client/graphql/types';
+import { ComicIssue, ComicSeries } from '@inkverse/shared-client/graphql/operations';
 import { loadComicSeries, comicSeriesQueryReducerDefault, comicSeriesInitialState } from '@inkverse/shared-client/dispatch/comicseries';
 import { RootStackParamList, COMICSERIES_SCREEN, COMICISSUE_SCREEN } from '@/constants/Navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';

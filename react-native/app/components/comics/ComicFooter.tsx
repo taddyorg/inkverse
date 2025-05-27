@@ -3,7 +3,7 @@ import { Animated, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { PressableOpacity } from '../ui';
-import { ComicIssue } from '@inkverse/shared-client/graphql/types';
+import { ComicIssue } from '@inkverse/shared-client/graphql/operations';
 
 // Use the same height as the header for consistency
 export const FOOTER_HEIGHT = 80;

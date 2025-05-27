@@ -1,4 +1,4 @@
-import type { User } from "src/graphql/types";
+import type { User } from "../graphql/operations";
 
 export enum ActionTypes {
   GET_HOMEFEED = 'GET_HOMEFEED',
@@ -9,6 +9,8 @@ export enum ActionTypes {
   SEARCH = 'SEARCH',
   COMICS_LIST = 'COMICS_LIST',
   REPORT_COMIC_SERIES = 'REPORT_COMIC_SERIES',
+  CONNECT_HOSTING_PROVIDER = 'CONNECT_HOSTING_PROVIDER',
+  FETCH_USER_TOKENS = 'FETCH_USER_TOKENS',
 }
 
 export type Dispatch = (action: Action | { type: string; payload?: any }) => void;
@@ -98,5 +100,5 @@ export interface StorageFunctions {
   /** Function to save the refresh token */
   saveRefreshToken: (token: string) => Promise<void> | void;
   /** Function to save only essential user details */
-  saveUserDetails: (user: Pick<User, 'id' | 'isEmailVerified' | 'username' | 'isProfileSetup'>) => Promise<void> | void;
+  saveUserDetails: (user: Pick<User, 'id' | 'isEmailVerified' | 'username'>) => Promise<void> | void;
 }

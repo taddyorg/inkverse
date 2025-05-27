@@ -1,6 +1,6 @@
 import { AuthenticationError, UserInputError } from './error.js';
 import type { UserModel } from '@inkverse/shared-server/database/types';
-import { User } from '@inkverse/shared-server/models/index';
+import { User, OAuthToken } from '@inkverse/shared-server/models/index';
 import { UserAgeRange, type MutationResolvers } from '@inkverse/shared-server/graphql/types';
 
 // GraphQL Type Definitions
@@ -15,7 +15,6 @@ export const UserDefinitions = `
     email: String!
     username: String
     isEmailVerified: Boolean
-    isProfileSetup: Boolean
     ageRange: UserAgeRange
     birthYear: Int
   }
@@ -67,6 +66,19 @@ export const UserMutationsDefinitions = `
     birthYear: Int
   ): User
 
+  """
+  Fetch user's OAuth tokens for a specific hosting provider
+  """
+  fetchRefreshTokenForHostingProvider(
+    hostingProviderUuid: String!
+  ): String
+
+
+  """
+  Fetch all hosting provider tokens for the user
+  """
+  fetchAllHostingProviderTokens: [String!]
+  
 `;
 
 // Resolvers
@@ -103,6 +115,27 @@ export const UserMutations: MutationResolvers = {
     return await User.updateUser(context.user.id, userData);
   },
 
+  fetchRefreshTokenForHostingProvider: async (_parent: any, { hostingProviderUuid }: { hostingProviderUuid: string }, context: any): Promise<string | null> => {
+    // Check if user is authenticated
+    if (!context.user) {
+      throw new AuthenticationError('You must be logged in to fetch tokens');
+    }
+
+    // Validate hostingProviderUuid
+    if (!hostingProviderUuid) {
+      throw new UserInputError('Hosting provider UUID is required');
+    }
+
+    return await OAuthToken.getRefreshToken(context.user.id, hostingProviderUuid);
+    
+  },
+
+  fetchAllHostingProviderTokens: async (_parent: any, _args: any, context: any): Promise<string[] | null> => {
+    if (!context.user) {
+      throw new AuthenticationError('You must be logged in to fetch tokens');
+    }
+    return await OAuthToken.getAllRefreshTokensForUser(context.user.id);
+  },
 };
 
 export const UserFieldResolvers = {

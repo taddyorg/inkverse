@@ -5,7 +5,7 @@ import { Image } from 'expo-image';
 import { useNavigation } from '@react-navigation/native';
 
 import { ThemedText, ThemedTextFontFamilyMap, PressableOpacity } from '@/app/components/ui';
-import { ComicIssue, ComicSeries } from '@inkverse/shared-client/graphql/types';
+import { ComicIssue, ComicSeries } from '@inkverse/shared-client/graphql/operations';
 import { prettyFormattedDate, prettyFormattedFreeInDays } from '@inkverse/shared-client/utils/date';
 import { Colors, useThemeColor } from '@/constants/Colors';
 import { getThumbnailImageUrl } from '@inkverse/public/comicseries';

@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { MdLock } from 'react-icons/md';
 
-import type { ComicIssue, ComicSeries } from '@inkverse/shared-client/graphql/types';
+import type { ComicIssue, ComicSeries } from '@inkverse/shared-client/graphql/operations';
 import { getThumbnailImageUrl } from '@inkverse/public/comicissue';
 import { getInkverseUrl } from '@inkverse/public/utils';
 

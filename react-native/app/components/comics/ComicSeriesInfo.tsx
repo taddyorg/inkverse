@@ -2,7 +2,7 @@ import React from 'react';
 import { View, StyleSheet, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { ThemedText, ThemedView, ThemedIcon, PressableOpacity } from '@/app/components/ui';
-import { ComicSeries } from '@inkverse/shared-client/graphql/types';
+import { ComicSeries } from '@inkverse/shared-client/graphql/operations';
 import { getPrettySeriesStatus } from '@inkverse/public/status';
 import { getPrettyContentRating } from '@inkverse/public/ratings';
 import { REPORTS_SCREEN } from '@/constants/Navigation';

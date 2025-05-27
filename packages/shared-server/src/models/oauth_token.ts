@@ -20,8 +20,9 @@ export class OAuthToken {
     userId: string;
     hostingProviderUuid: string;
     refreshToken: string;
+    refreshTokenExpiresAt: number;
   }): Promise<void> {
-    const { userId, hostingProviderUuid, refreshToken } = params;
+    const { userId, hostingProviderUuid, refreshToken, refreshTokenExpiresAt } = params;
     
     try {
       // Validate inputs
@@ -36,6 +37,7 @@ export class OAuthToken {
           userId,
           hostingProviderUuid,
           refreshToken,
+          refreshTokenExpiresAt,
           createdAt: new Date(),
         })
         .onConflict(['user_id', 'hosting_provider_uuid'])
@@ -53,18 +55,29 @@ export class OAuthToken {
    */
   static async getRefreshToken(userId: string, hostingProviderUuid: string): Promise<string | null> {
     try {
-      const result = await database('oauth_token')
+      const [hostingProvider] = await database('oauth_token')
         .where({
           userId,
           hostingProviderUuid,
         })
-        .first('refreshToken');
+        .select('refreshToken');
       
-      return result?.refreshToken || null;
+      return hostingProvider?.refreshToken || null;
     } catch (error) {
       console.error('Error getting refresh token:', error);
       return null;
     }
+  }
+
+  /**
+   * Get all OAuth refresh tokens for a user
+   */
+  static async getAllRefreshTokensForUser(userId: string): Promise<string[] | null> {
+    const tokens = await database('oauth_token')
+      .where({ userId })
+      .select('refreshToken');
+
+    return tokens.map((token) => token.refreshToken);
   }
 
   /**

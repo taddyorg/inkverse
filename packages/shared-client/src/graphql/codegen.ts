@@ -9,16 +9,6 @@ const config: CodegenConfig = {
   schema: serverUrl,
   documents: "packages/shared-client/src/graphql/**/*.graphql",
   generates: {
-    "packages/shared-client/src/graphql/types.ts": {
-      config: {
-        useIndexSignature: true,
-        useTypeImports: true,
-        namingConvention: {
-          enumValues: 'upper-case#upperCase'
-        }
-      },
-      plugins: ["typescript", "typescript-resolvers"]
-    },
     "packages/shared-client/src/graphql/operations.ts": {
       config: {
         namingConvention: {

@@ -11,7 +11,7 @@ import { CreatorComics } from '@/app/components/creator/CreatorComics';
 import { Screen, HeaderBackButton, HeaderShareButton, ThemedActivityIndicator, ThemedRefreshControl, ScreenHeader } from '@/app/components/ui';
 
 import { creatorQueryReducer, getCreatorScreen, creatorInitialState } from '@inkverse/shared-client/dispatch/creator';
-import { ComicSeries, Creator } from '@inkverse/shared-client/graphql/types';
+import { ComicSeries, Creator } from '@inkverse/shared-client/graphql/operations';
 
 type CreatorListItem =
   | { type: 'screen-header'; key: string; data: { name: string } }

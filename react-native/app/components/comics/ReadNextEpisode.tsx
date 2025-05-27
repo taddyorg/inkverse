@@ -5,7 +5,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 
 import { ThemedText, ThemedTextFontFamilyMap, PressableOpacity } from '../ui';
 
-import { ComicIssue } from '@inkverse/shared-client/graphql/types';
+import { ComicIssue } from '@inkverse/shared-client/graphql/operations';
 import { getThumbnailImageUrl } from '@inkverse/public/comicissue';
 import { useThemeColor } from '@/constants/Colors';
 

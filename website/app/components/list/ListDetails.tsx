@@ -1,5 +1,5 @@
 import { ComicSeriesDetails } from '../comics/ComicSeriesDetails';
-import type { List } from '@inkverse/shared-client/graphql/types';
+import type { List } from '@inkverse/shared-client/graphql/operations';
 
 export type ListPageType = 
   | 'list-screen';

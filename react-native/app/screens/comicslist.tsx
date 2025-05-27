@@ -5,7 +5,7 @@ import { FlashList } from '@shopify/flash-list';
 import { useState, useCallback, useEffect, useReducer } from 'react';
 
 import { Screen, ThemedText, PressableOpacity, ScreenHeader, HeaderBackButton, ThemedActivityIndicator } from '@/app/components/ui';
-import { ComicSeries, Genre } from '@inkverse/shared-client/graphql/types';
+import { ComicSeries, Genre } from '@inkverse/shared-client/graphql/operations';
 import { Colors } from '@/constants/Colors';
 import { ComicSeriesDetails } from '@/app/components/comics/ComicSeriesDetails';
 import { publicClient } from '@/lib/apollo';

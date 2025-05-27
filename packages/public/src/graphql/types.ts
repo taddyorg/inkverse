@@ -867,10 +867,19 @@ export enum ListType {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  /** Fetch all hosting provider tokens for the user */
+  fetchAllHostingProviderTokens?: Maybe<Array<Scalars['String']['output']>>;
+  /** Fetch user's OAuth tokens for a specific hosting provider */
+  fetchRefreshTokenForHostingProvider?: Maybe<Scalars['String']['output']>;
   /**  Report a comic series  */
   reportComicSeries?: Maybe<Scalars['Boolean']['output']>;
   /** Update user profile (username and age) */
   updateUserProfile?: Maybe<User>;
+};
+
+
+export type MutationFetchRefreshTokenForHostingProviderArgs = {
+  hostingProviderUuid: Scalars['String']['input'];
 };
 
 
@@ -1068,7 +1077,6 @@ export type User = {
   email: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   isEmailVerified?: Maybe<Scalars['Boolean']['output']>;
-  isProfileSetup?: Maybe<Scalars['Boolean']['output']>;
   updatedAt?: Maybe<Scalars['Int']['output']>;
   username?: Maybe<Scalars['String']['output']>;
 };
@@ -1383,6 +1391,8 @@ export type ListResolvers<ContextType = any, ParentType extends ResolversParentT
 }>;
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
+  fetchAllHostingProviderTokens?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  fetchRefreshTokenForHostingProvider?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationFetchRefreshTokenForHostingProviderArgs, 'hostingProviderUuid'>>;
   reportComicSeries?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationReportComicSeriesArgs, 'uuid'>>;
   updateUserProfile?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, Partial<MutationUpdateUserProfileArgs>>;
 }>;
@@ -1420,7 +1430,6 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   isEmailVerified?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  isProfileSetup?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   updatedAt?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   username?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

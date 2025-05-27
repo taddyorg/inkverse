@@ -18,6 +18,7 @@ export interface OAuthEndpoints {
   newAccessTokenUrl: string;
   newRefreshTokenUrl: string;
   newContentTokenUrl: string;
+  publicKey: string;
   instructionsUrl?: string;
 }
 
@@ -36,7 +37,8 @@ export const providerDetails: Record<string, ProviderDetails> = {
       newAccessTokenUrl: 'https://taddy.org/auth/oauth2/new_access_token',
       newRefreshTokenUrl: 'https://taddy.org/auth/oauth2/new_refresh_token',
       newContentTokenUrl: 'https://taddy.org/auth/oauth2/new_content_token',
-      instructionsUrl: 'https://taddy.org/developers/instructions'
+      instructionsUrl: 'https://taddy.org/developers/instructions',
+      publicKey: "-----BEGIN PUBLIC KEY-----\nMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAtnihy/rnKGH9jdqWVgot\noNqWcqY2ATJE5bHtvypEf7JVqisX7yfUKC1JY1uzlLVDoMFTJdzTnAUl4xf6EpTZ\n92RGIzWDdcEk4syPSdWms855CMArTcw9fY56/egG3kYMZlVsxRysZPT5F/ovfs0H\nCFGQRsBX5vtfoFikEelInlfS0zZjljIyIZMKxPrfV/PDw+bJUJCxut3GQVf4/UnO\n4uXBPh13WyaxvMNKf1qk4CbCW1e8n17Ec3tyz4/OqVrFmtzSO9WzIEijvrQIuJQu\nNzBsgXDhPH5FZ0giYqB+ImoeURd8TirXgncv5cxcsX4sVsTXN7VBMpczmpsKMlay\nRnKo2DrBYLHPLXlKmcRq6qNNJBSXYrtk4sxRg4pFz//D0TREWM4o2T1DLgKTWqFs\nsWzs6kWVfy8KQc0ID/k2s3iK4JbxjNj3wXzkXBJTqQEahjIGesxgZqN0OlCAbXvM\ncLCeymnlRxNm4I6fZPXs7QVXmG9aGdpkWK/xNiS10WXdJxcveoud4/QH9Trq2aKl\n3bb/g71FJFfsGheoYcd+8iS9aP5lu7f91LXC5QjfKIU7JSlY4czWA1Ji9DS4Rci5\nZTMluktVO50vhr3PQxDgrB8foxxfUq4fG/ru6jBBZPk4RfNyJv6tUjkcZF0evhnm\nBqlqHmg1hzvvuyC4WW5H7LcCAwEAAQ==\n-----END PUBLIC KEY-----"
     }
   }
 }
@@ -94,58 +96,6 @@ export function getAuthorizationCodeUrl({
   }
 
   return url.toString();
-}
-
-
-type ExchangeOAuthCodeForAccessAndRefreshTokensParams = {
-  hostingProviderUuid: string;
-  code: string;
-  clientId: string;
-  clientSecret: string;
-  codeVerifier?: string;
-}
-
-/**
- * Exchange authorization code for OAuth tokens using axios
- */
-export async function exchangeOAuthCodeForAccessAndRefreshTokens({
-    hostingProviderUuid,
-    code,
-    clientId,
-    clientSecret,
-    codeVerifier,
-  }: ExchangeOAuthCodeForAccessAndRefreshTokensParams,
-): Promise<OAuthTokens> {
-  try {
-    const tokenUrl = providerDetails[hostingProviderUuid]?.endpoints.tokenUrl;
-    if (!tokenUrl) {
-      throw new Error(`Token URL not found for hosting provider ${hostingProviderUuid}`);
-    }
-
-    const response = await axios.post(tokenUrl, new URLSearchParams({
-      grant_type: 'authorization_code',
-      code,
-      client_id: clientId,
-      client_secret: clientSecret,
-      ...(codeVerifier ? { code_verifier: codeVerifier } : {}),
-    }), {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-    });
-
-    const data = response.data;
-
-    return {
-      accessToken: data.accessToken,
-      refreshToken: data.refreshToken,
-    };
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      throw new Error(`Failed to exchange code: ${error.response?.data || error.message}`);
-    }
-    throw new Error(`Failed to exchange code: ${error}`);
-  }
 }
 
 type GetNewAccessTokenParams = {
@@ -234,7 +184,7 @@ type GetContentTokenParams = {
 /**
  * Get content token for a specific series using axios
  */
-export async function getContentToken({
+export async function getNewContentToken({
     hostingProviderUuid,
     accessToken,
     seriesUuid,

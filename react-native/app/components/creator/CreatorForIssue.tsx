@@ -6,7 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 
 import { ThemedText } from '../ui';
 import { CreatorDetails } from './CreatorDetails';
-import { Creator, ComicIssue } from '@inkverse/shared-client/graphql/types';
+import { Creator, ComicIssue } from '@inkverse/shared-client/graphql/operations';
 import { useThemeColor } from '@/constants/Colors';
 import { BLOG_SCREEN } from '@/constants/Navigation';
 

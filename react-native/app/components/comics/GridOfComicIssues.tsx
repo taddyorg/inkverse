@@ -6,7 +6,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { FlashList } from '@shopify/flash-list';
 
 import { ThemedText, PressableOpacity, ThemedTextFontFamilyMap } from '../ui';
-import { ComicIssue, ComicSeries } from '@inkverse/shared-client/graphql/types';
+import { ComicIssue, ComicSeries } from '@inkverse/shared-client/graphql/operations';
 import { getThumbnailImageUrl } from '@inkverse/public/comicissue';
 import { COMICISSUE_SCREEN } from '@/constants/Navigation';
 

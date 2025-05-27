@@ -6,7 +6,7 @@ import { FlashList } from '@shopify/flash-list';
 
 import { ThemedText, ThemedView, ThemedTextFontFamilyMap } from '../ui/index';
 import { LIST_SCREEN } from '@/constants/Navigation';
-import type { List } from '@inkverse/shared-client/graphql/types';
+import type { List } from '@inkverse/shared-client/graphql/operations';
 import { ComicSeriesDetails } from '../comics/ComicSeriesDetails';
 
 type ListPageType = 

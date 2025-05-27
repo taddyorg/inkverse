@@ -7,7 +7,7 @@ import { ThemedText, ThemedTextFontFamilyMap, ThemedView, PressableOpacity } fro
 import { CreatorDetails } from '../creator/CreatorDetails';
 
 import { COMICS_LIST_SCREEN, COMICSERIES_SCREEN } from '@/constants/Navigation';
-import { ComicSeries, ContentRating, Genre } from '@inkverse/shared-client/graphql/types';
+import { ComicSeries, Genre } from '@inkverse/shared-client/graphql/operations';
 import { getBannerImageUrl, getCoverImageUrl, getThumbnailImageUrl } from '@inkverse/public/comicseries';
 import { getPrettyGenre } from '@inkverse/public/genres';
 import { useThemeColor } from '@/constants/Colors';

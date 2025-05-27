@@ -5,7 +5,7 @@ import { Octicons } from '@expo/vector-icons';
 
 import { Colors } from '@/constants/Colors';
 import { ThemedText, ThemedIcon } from '../ui';
-import { ComicIssue, ComicSeries } from '@inkverse/shared-client/graphql/types';
+import { ComicIssue, ComicSeries } from '@inkverse/shared-client/graphql/operations';
 import { ComicIssueDetails } from './ComicIssueDetails';
 import { PressableOpacity } from '../ui/PressableOpacity';
 

@@ -1,5 +1,5 @@
 import { ComicIssueDetails } from './ComicIssueDetails';
-import type { ComicSeries, ComicIssue } from '@inkverse/shared-client/graphql/types';
+import type { ComicSeries, ComicIssue } from '@inkverse/shared-client/graphql/operations';
 import { useState, useMemo } from 'react';
 import { FaSortAmountDown, FaSortAmountUp } from 'react-icons/fa';
 

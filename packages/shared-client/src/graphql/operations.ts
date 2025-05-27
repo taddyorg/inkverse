@@ -866,10 +866,19 @@ export enum ListType {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  /** Fetch all hosting provider tokens for the user */
+  fetchAllHostingProviderTokens?: Maybe<Array<Scalars['String']['output']>>;
+  /** Fetch user's OAuth tokens for a specific hosting provider */
+  fetchRefreshTokenForHostingProvider?: Maybe<Scalars['String']['output']>;
   /**  Report a comic series  */
   reportComicSeries?: Maybe<Scalars['Boolean']['output']>;
   /** Update user profile (username and age) */
   updateUserProfile?: Maybe<User>;
+};
+
+
+export type MutationFetchRefreshTokenForHostingProviderArgs = {
+  hostingProviderUuid: Scalars['String']['input'];
 };
 
 
@@ -1067,7 +1076,6 @@ export type User = {
   email: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   isEmailVerified?: Maybe<Scalars['Boolean']['output']>;
-  isProfileSetup?: Maybe<Scalars['Boolean']['output']>;
   updatedAt?: Maybe<Scalars['Int']['output']>;
   username?: Maybe<Scalars['String']['output']>;
 };
@@ -1097,6 +1105,18 @@ export type MiniCreatorDetailsFragment = { __typename?: 'Creator', uuid: string,
 export type MiniUserDetailsFragment = { __typename?: 'User', id: string, username?: string | null };
 
 export type UserDetailsFragment = { __typename?: 'User', id: string, username?: string | null, email: string, isEmailVerified?: boolean | null, ageRange?: UserAgeRange | null, birthYear?: number | null };
+
+export type FetchAllHostingProviderTokensMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type FetchAllHostingProviderTokensMutation = { __typename?: 'Mutation', fetchAllHostingProviderTokens?: Array<string> | null };
+
+export type FetchRefreshTokenForHostingProviderMutationVariables = Exact<{
+  hostingProviderUuid: Scalars['String']['input'];
+}>;
+
+
+export type FetchRefreshTokenForHostingProviderMutation = { __typename?: 'Mutation', fetchRefreshTokenForHostingProvider?: string | null };
 
 export type ReportComicSeriesMutationVariables = Exact<{
   uuid: Scalars['ID']['input'];
@@ -1321,6 +1341,16 @@ export const UserDetails = gql`
   isEmailVerified
   ageRange
   birthYear
+}
+    `;
+export const FetchAllHostingProviderTokens = gql`
+    mutation FetchAllHostingProviderTokens {
+  fetchAllHostingProviderTokens
+}
+    `;
+export const FetchRefreshTokenForHostingProvider = gql`
+    mutation FetchRefreshTokenForHostingProvider($hostingProviderUuid: String!) {
+  fetchRefreshTokenForHostingProvider(hostingProviderUuid: $hostingProviderUuid)
 }
     `;
 export const ReportComicSeries = gql`

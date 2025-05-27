@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 
 import { getAvatarImageUrl } from '@inkverse/public/creator';
-import type { Creator, LinkDetails } from '@inkverse/shared-client/graphql/types';
+import type { Creator, LinkDetails } from '@inkverse/shared-client/graphql/operations';
 import { CreatorLinks } from './CreatorLinks';
 import { getInkverseUrl } from '@inkverse/public/utils';
 

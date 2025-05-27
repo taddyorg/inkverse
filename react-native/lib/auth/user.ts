@@ -1,8 +1,8 @@
 import { secureSet, secureGet, secureDeleteMultiple } from '../storage/secure';
 import { asyncSetObject, asyncGetObject, asyncDeleteMultiple } from '../storage/async';
-import type { StorageFunctions } from '@inkverse/shared-client/dispatch/authentication';
+import type { StorageFunctions } from '@inkverse/shared-client/dispatch/utils';
 import { syncStorageGet, syncStorageSet, syncStorageDelete } from '../storage/sync';
-import { User } from '@inkverse/shared-client/graphql/types';
+import { User } from '@inkverse/shared-client/graphql/operations';
 import { jwtDecode } from 'jwt-decode';
 
 // Key constants

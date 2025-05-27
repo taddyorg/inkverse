@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { MdChevronLeft, MdChevronRight, MdLock } from 'react-icons/md';
 
-import type { ComicSeries, ComicIssue } from '@inkverse/shared-client/graphql/types';
+import type { ComicSeries, ComicIssue } from '@inkverse/shared-client/graphql/operations';
 import { getInkverseUrl } from '@inkverse/public/utils';
 import { Link } from 'react-router-dom';
 import { getThumbnailImageUrl } from '@inkverse/public/comicseries';
