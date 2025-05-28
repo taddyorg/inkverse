@@ -798,6 +798,7 @@ export type LinkDetails = {
 
 export enum LinkType {
   BANDCAMP = 'BANDCAMP',
+  BLUESKY = 'BLUESKY',
   DISCORD = 'DISCORD',
   EMAIL = 'EMAIL',
   ETSY = 'ETSY',

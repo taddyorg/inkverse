@@ -140,6 +140,7 @@ enum LinkType {
   KO_FI
   ETSY
   LINKTREE
+  BLUESKY
 }
 `
 

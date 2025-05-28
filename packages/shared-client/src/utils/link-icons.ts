@@ -27,4 +27,5 @@ export const linkIconNames: Record<LinkType, string> = {
   [LinkType.KO_FI]: "kofi-2",
   [LinkType.LINKTREE]: "linktree-1",
   [LinkType.ETSY]: "etsy",
+  [LinkType.BLUESKY]: "bluesky",
 };

@@ -34,9 +34,9 @@ function getClient(): BlueskyClient {
  * @param did - The user DID (e.g., "did:plc:abc123...")
  * @returns Array of all followers
  */
-export async function getAllFollowers(did: string): Promise<BlueskyFollower[]> {
+export async function getAllFollows(did: string): Promise<BlueskyFollower[]> {
   const blueskyClient = getClient();
-  return blueskyClient.getAllFollowers(did);
+  return blueskyClient.getAllFollows(did);
 }
 
 /**

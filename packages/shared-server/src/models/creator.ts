@@ -7,7 +7,8 @@ import { safeCountry } from "@inkverse/public/country";
 import { safeLinkType } from "@inkverse/public/links";
 
 import { safeStringValue, safeArrayProperties, safeObjWithVariantKeys, convertTextToBoolean, prettyEncodeTitle } from "../utils/common.js";
-import { UUIDLookup } from "./index.js";
+import { UUIDLookup, CreatorLink } from "./index.js";
+import { createHash } from "./utils.js";
 
 type CreatorInput = Omit<CreatorModel, 'id' | 'uuid' | 'createdAt' | 'updatedAt'>;
 
@@ -25,6 +26,7 @@ function getCreatorDetails(data: Record<string, any>, shortUrl: string): Creator
   const links = linksAsString 
     ? (JSON.parse(linksAsString) || []).filter((link: Record<string, string>) => safeLinkType(link.type)) 
     : null;
+  const linksHash = createHash(links);
   const copyright = safeStringValue(get(data, 'copyright', null), 2000);
   const sssUrl = safeStringValue(get(data, 'sssUrl', null), 2000);
   const sssOwnerName = safeStringValue(get(data, 'sssOwnerName', null));
@@ -37,6 +39,7 @@ function getCreatorDetails(data: Record<string, any>, shortUrl: string): Creator
     shortUrl,
     hash,
     contentHash,
+    linksHash,
     datePublished,
     avatarImage,
     country,
@@ -87,13 +90,18 @@ export class Creator {
     try {
       const shortUrl = await Creator.getShortUrl(uuid, name);
       await UUIDLookup.saveUUIDforType(trx, uuid, TaddyType.CREATOR);
+      const creatorDetails = getCreatorDetails(data, shortUrl);
+      
       const [ creator ] = await database("creator")
         .transacting(trx)
         .insert({
           uuid,
-          ...getCreatorDetails(data, shortUrl)
+          ...creatorDetails
         })
         .returning("*");
+      
+      // Add creator links if any
+      await CreatorLink.addCreatorLinks(creatorDetails.links, creator.uuid, trx);
       
       await trx.commit();
       
@@ -111,14 +119,22 @@ export class Creator {
     var trx = await database.transaction();
     try {
       const shortUrl = await Creator.getShortUrl(uuid, name);
+      const creatorDetails = getCreatorDetails(data, shortUrl);
+
+      // Update creator data
       const [ creator ] = await database("creator")
         .transacting(trx)
         .where({ uuid })
         .update({
           updatedAt: new Date(),
-          ...getCreatorDetails(data, shortUrl)
+          ...creatorDetails,
         })
         .returning("*");
+      
+      // Update creator links if the hash has changed
+      if (creatorDetails.linksHash !== creator.linksHash) {
+        await CreatorLink.updateCreatorLinks(creatorDetails.links, creator.uuid, trx);
+      }
       
       await trx.commit();
       
@@ -145,6 +161,9 @@ export class Creator {
         .transacting(trx)
         .where({ creatorUuid: uuid })
         .delete('*');
+      
+      // Delete creator links
+      await CreatorLink.deleteCreatorLinks(uuid, trx);
 
       const allContentUUids = deletedCreatorContent.map(creatorcontent => creatorcontent.uuid);
       const allUuids = [ uuid, ...allContentUUids ];

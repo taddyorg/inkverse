@@ -25,6 +25,7 @@ import { SetupAge } from '@/app/components/profile/SetupAge';
 import { SetupBluesky } from '@/app/components/profile/SetupBluesky';
 import { SetupPatreon } from '@/app/components/profile/SetupPatreon';
 import { SetupComplete } from '@/app/components/profile/SetupComplete';
+import { isValidDomain } from '@inkverse/shared-client/utils/common';
 
 type SetupStep = 'username' | 'age' | 'patreon' | 'patreon-connected' | 'bluesky' | 'bluesky-verify' | 'bluesky-connected' | 'complete';
 const TADDY_PROVIDER_UUID = 'e9957105-80e4-46e3-8e82-20472b9d7512'; // Needed just for this screen
@@ -172,6 +173,11 @@ export default function AccountSetup() {
     dispatch({ type: UserDetailsActionType.USER_DETAILS_CLEAR_ERROR });
 
     if (!userClientRef.current) return;
+
+    if (!isValidDomain(blueskyHandle)) {
+      dispatch({ type: UserDetailsActionType.USER_DETAILS_ERROR, payload: 'Invalid Bluesky handle. Make sure you use your full handle (ex: yourhandle.bsky.social)' });
+      return;
+    }
 
     try {
       // Verify the Bluesky handle

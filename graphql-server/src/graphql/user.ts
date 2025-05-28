@@ -2,7 +2,7 @@ import { AuthenticationError, UserInputError } from './error.js';
 import type { UserModel } from '@inkverse/shared-server/database/types';
 import { User, OAuthToken } from '@inkverse/shared-server/models/index';
 import { UserAgeRange, type MutationResolvers } from '@inkverse/shared-server/graphql/types';
-import { getAllFollowers, getProfile, type BlueskyFollower, type BlueskyProfile } from '@inkverse/shared-server/bluesky/index';
+import { getAllFollows, getProfile, type BlueskyFollower, type BlueskyProfile } from '@inkverse/shared-server/bluesky/index';
 
 // GraphQL Type Definitions
 export const UserDefinitions = `
@@ -120,7 +120,6 @@ export const UserQueries = {
       throw new AuthenticationError('You must be logged in to get your Bluesky profile');
     }
 
-
     // Validate handle
     if (!handle || handle.trim().length === 0) {
       throw new UserInputError('Bluesky handle cannot be empty');
@@ -141,8 +140,8 @@ export const UserQueries = {
         avatar: profile.avatar || undefined,
         description: profile.description || undefined,
       };
-    } catch (error) {
-      console.error('Error getting Bluesky profile:', error);
+    } catch (error: any) {
+      console.error('Error getting Bluesky profile:', error?.response?.data?.message);
       throw new UserInputError('Error getting Bluesky profile. Make sure you use your full handle (ex: yourhandle.bsky.social)');
     }
   },
@@ -159,8 +158,8 @@ export const UserQueries = {
     }
 
     // Get all followers from Bluesky
-    const followers = await getAllFollowers(context.user.blueskyDid);
-    return followers.map((follower: BlueskyFollower) => follower.handle);
+    const profilesFollowed = await getAllFollows(context.user.blueskyDid);
+    return profilesFollowed.map((profileFollowed: BlueskyFollower) => profileFollowed.handle);
   },
 };
 
@@ -178,8 +177,7 @@ export const UserMutations: MutationResolvers = {
 
     const userData = {
       ...(username && { username: User.sanitizeUsername(username) }),
-      ...(ageRange && { ageRange }),
-      ...(birthYear && { birthYear }),
+      ...(ageRange && { ageRange, birthYear: ageRange === UserAgeRange.UNDER_18 ? birthYear : null }),
     }
 
     if (Object.keys(userData).length === 0) {

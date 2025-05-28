@@ -4,6 +4,7 @@ import type {
   ContentRating, 
   Genre, 
   Language, 
+  LinkType, 
   SeriesStatus,
   TaddyType,
   UserAgeRange
@@ -87,6 +88,7 @@ export type CreatorModel = {
   bio: string | null;
   avatarImage: Record<string, string> | null;
   contentHash: string | null;
+  linksHash: string | null;
   datePublished: number | null;
   country: string | null;
   links: Record<string, string>[] | null;
@@ -97,6 +99,16 @@ export type CreatorModel = {
   sssOwnerName: string | null;
   sssOwnerPublicEmail: string | null;
   isBlocked: boolean | null;
+}
+
+export type CreatorLinkModel = {
+  id: number | null;
+  createdAt: Date;
+  updatedAt: Date | null;
+  creatorUuid: string;
+  type: LinkType;
+  baseUrl: string | null;
+  value: string;
 }
 
 export type CreatorContentModel = {

@@ -5,7 +5,7 @@ import {
   SaveBlueskyDid,
   GetBlueskyFollowers,
   GetBlueskyProfile,
-  type UserAgeRange 
+  UserAgeRange,
 } from '../graphql/operations';
 import type { 
   UpdateUserProfileMutation, 
@@ -167,7 +167,7 @@ export async function updateAgeRange(
       UpdateUserProfileMutationVariables
     >({
       mutation: UpdateUserProfile,
-      variables: { ageRange, birthYear },
+      variables: { ageRange, birthYear: ageRange === UserAgeRange.UNDER_18 ? birthYear : null },
     });
 
     const { data, errors } = result;
