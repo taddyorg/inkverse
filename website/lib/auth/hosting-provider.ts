@@ -1,12 +1,30 @@
 import { getNewAccessToken, getNewContentToken, getNewRefreshToken } from '@inkverse/public/hosting-providers';
 import { localStorageSet, localStorageGet, localStorageDeleteMultiple, localStorageDelete } from '../storage/local';
-import { jwtDecode } from 'jwt-decode';
+import { jwtDecode, type JwtPayload } from 'jwt-decode';
 
 // Key constants
 const HOSTING_PROVIDER_ACCESS_TOKEN_ENDING = 'access-token';
 const HOSTING_PROVIDER_REFRESH_TOKEN_ENDING = 'refresh-token';
 const HOSTING_PROVIDER_UUIDS_KEY = 'hosting-provider-uuids';
 const contentTokenForProviderAndSeries: Record<string, string> = {};
+
+const TOKEN_REFRESH_BUFFER = 5 * 60; // 5 minutes buffer
+
+function isTokenExpired(token: string): boolean {
+  try {
+    const decoded = jwtDecode(token) as JwtPayload;
+    if (!decoded || !decoded.exp) {
+      return true;
+    }
+
+    const now = Math.floor(Date.now() / 1000);
+    const expirationTime = decoded.exp - TOKEN_REFRESH_BUFFER;
+
+    return now >= expirationTime;
+  } catch {
+    return true;
+  }
+}
 
 /**
  * Get all connected hosting provider UUIDs
@@ -85,16 +103,9 @@ export async function getHostingProviderAccessToken(hostingProviderUuid: string)
     return await refreshHostingProviderAccessToken(hostingProviderUuid);
   }
 
-  const decodedToken = jwtDecode(accessToken);
-  if (!decodedToken || !decodedToken.exp){
+  if (isTokenExpired(accessToken)) {
     localStorageDelete(`${hostingProviderUuid}:${HOSTING_PROVIDER_ACCESS_TOKEN_ENDING}`);
     return await refreshHostingProviderAccessToken(hostingProviderUuid);
-  }
-
-  const isExpired = decodedToken.exp < (Date.now() / 1000);
-  if (isExpired) {
-    localStorageDelete(`${hostingProviderUuid}:${HOSTING_PROVIDER_ACCESS_TOKEN_ENDING}`);
-    await refreshHostingProviderAccessToken(hostingProviderUuid);
   }
 
   return accessToken;
@@ -106,17 +117,11 @@ export async function getHostingProviderRefreshToken(hostingProviderUuid: string
     return await getNewHostingProviderRefreshToken(hostingProviderUuid);
   }
 
-  const decodedToken = jwtDecode(refreshToken);
-  if (!decodedToken || !decodedToken.exp) {
-    localStorageDelete(`${hostingProviderUuid}:${HOSTING_PROVIDER_REFRESH_TOKEN_ENDING}`);
-    return await getNewHostingProviderRefreshToken(hostingProviderUuid);
-  }
-
-  const isExpired = decodedToken.exp < (Date.now() / 1000);
-  if (isExpired) {
+  if (isTokenExpired(refreshToken)) {
     clearHostingProviderAuthData(hostingProviderUuid);
     throw new Error('hosting provider refresh token expired!!!');
   }
+
   return refreshToken;
 }
 
@@ -126,11 +131,7 @@ export async function getContentTokenForProviderAndSeries(hostingProviderUuid: s
     return await refreshContentTokenForProviderAndSeries(hostingProviderUuid, seriesUuid);
   }
 
-  const decodedToken = jwtDecode(contentToken);
-  if (!decodedToken || !decodedToken.exp) return null;
-
-  const isExpired = decodedToken.exp < (Date.now() / 1000);
-  if (isExpired) {
+  if (isTokenExpired(contentToken)) {
     localStorageDelete(`${hostingProviderUuid}:${HOSTING_PROVIDER_REFRESH_TOKEN_ENDING}`);
     await refreshContentTokenForProviderAndSeries(hostingProviderUuid, seriesUuid);
   }

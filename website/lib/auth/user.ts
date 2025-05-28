@@ -1,13 +1,31 @@
 import config from '@/config';
 import { localStorageSet, localStorageGet, localStorageSetObject, localStorageGetObject, localStorageDeleteMultiple, localStorageDelete } from '../storage/local';
 import type { StorageFunctions } from '@inkverse/shared-client/dispatch/utils';
-import { jwtDecode } from 'jwt-decode';
-import type { User } from '@inkverse/shared-client/graphql/types';
+import { jwtDecode, type JwtPayload } from 'jwt-decode';
+import type { User } from '@inkverse/shared-client/graphql/operations';
 import { dispatchRefreshAccessToken, dispatchRefreshRefreshToken } from '@inkverse/shared-client/dispatch/authentication';
 
 // Key constants
 const ACCESS_TOKEN_KEY = 'inkverse-access-token';
 const USER_DETAILS_KEY = 'inkverse-user-details';
+
+const TOKEN_REFRESH_BUFFER = 5 * 60; // 5 minutes buffer
+
+function isTokenExpired(token: string): boolean {
+  try {
+    const decoded = jwtDecode(token) as JwtPayload;
+    if (!decoded || !decoded.exp) {
+      return true;
+    }
+    
+    const now = Math.floor(Date.now() / 1000);
+    const expirationTime = decoded.exp - TOKEN_REFRESH_BUFFER;
+    
+    return now >= expirationTime;
+  } catch {
+    return true;
+  }
+}
 
 /**
  * Save the access token to localStorage
@@ -38,19 +56,9 @@ export async function getAccessToken(): Promise<string | null> {
       return await refreshAccessToken();
     }
 
-    const decodedToken = jwtDecode(accessToken);
-    if (!decodedToken || !decodedToken.exp) {
-      console.warn('Invalid token format, attempting to refresh');
+    if (isTokenExpired(accessToken)) {
+      console.warn('Access token expired, attempting to refresh');
       // Clear invalid token from storage
-      localStorageDelete(ACCESS_TOKEN_KEY);
-      return await refreshAccessToken();
-    }
-
-    // Check if token is expired (exp time is LESS than current time)
-    const isExpired = decodedToken.exp < (Date.now() / 1000);
-    if (isExpired) {
-      console.log('Access token expired, attempting to refresh');
-      // Clear expired token from storage
       localStorageDelete(ACCESS_TOKEN_KEY);
       return await refreshAccessToken();
     }

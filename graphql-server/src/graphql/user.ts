@@ -2,6 +2,7 @@ import { AuthenticationError, UserInputError } from './error.js';
 import type { UserModel } from '@inkverse/shared-server/database/types';
 import { User, OAuthToken } from '@inkverse/shared-server/models/index';
 import { UserAgeRange, type MutationResolvers } from '@inkverse/shared-server/graphql/types';
+import { getAllFollowers, getProfile, type BlueskyFollower, type BlueskyProfile } from '@inkverse/shared-server/bluesky/index';
 
 // GraphQL Type Definitions
 export const UserDefinitions = `
@@ -17,6 +18,15 @@ export const UserDefinitions = `
     isEmailVerified: Boolean
     ageRange: UserAgeRange
     birthYear: Int
+    blueskyDid: String
+  }
+
+  """
+  Public profile
+  """
+  type PublicProfile {
+    id: ID!
+    username: String
   }
 
   """
@@ -39,12 +49,14 @@ export const UserDefinitions = `
   }
 
   """
-  Authentication response with user data
+  Bluesky profile information
   """
-  type AuthResponse {
-    accessToken: String!
-    refreshToken: String!
-    user: User!
+  type BlueskyProfile {
+    did: ID!
+    handle: String!
+    displayName: String
+    avatar: String
+    description: String
   }
 `;
 
@@ -54,6 +66,16 @@ export const UserQueriesDefinitions = `
   Get the current authenticated user
   """
   me: User
+
+  """
+  Get Bluesky profile details for a given handle
+  """
+  getBlueskyProfile(handle: String!): BlueskyProfile
+
+  """
+  Get the list of followers for the authenticated user's Bluesky account
+  """
+  getBlueskyFollowers: [String!]
 `;
 
 export const UserMutationsDefinitions = `
@@ -78,6 +100,11 @@ export const UserMutationsDefinitions = `
   Fetch all hosting provider tokens for the user
   """
   fetchAllHostingProviderTokens: [String!]
+
+  """
+  Save or update the user's Bluesky handle
+  """
+  saveBlueskyDid(did: String!): User
   
 `;
 
@@ -86,6 +113,54 @@ export const UserQueries = {
   me: async (_parent: any, _args: any, context: any): Promise<UserModel | null> => {
     if (!context.user) { return null }
     return context.user;
+  },
+  
+  getBlueskyProfile: async (_parent: any, { handle }: { handle: string }, _context: any): Promise<BlueskyProfile | null> => {
+    if (!_context.user) {
+      throw new AuthenticationError('You must be logged in to get your Bluesky profile');
+    }
+
+
+    // Validate handle
+    if (!handle || handle.trim().length === 0) {
+      throw new UserInputError('Bluesky handle cannot be empty');
+    }
+
+    // Remove @ if present at the beginning
+    const cleanHandle = handle.startsWith('@') ? handle.slice(1) : handle;
+
+    try {
+      // Get profile from Bluesky API
+      const profile = await getProfile(cleanHandle);
+      
+      // Return only the requested fields
+      return {
+        did: profile.did,
+        handle: profile.handle,
+        displayName: profile.displayName || undefined,
+        avatar: profile.avatar || undefined,
+        description: profile.description || undefined,
+      };
+    } catch (error) {
+      console.error('Error getting Bluesky profile:', error);
+      throw new UserInputError('Error getting Bluesky profile. Make sure you use your full handle (ex: yourhandle.bsky.social)');
+    }
+  },
+
+  getBlueskyFollowers: async (_parent: any, _args: any, context: any): Promise<string[]> => {
+    // Check if user is authenticated
+    if (!context.user) {
+      throw new AuthenticationError('You must be logged in to get your Bluesky followers');
+    }
+
+    // Check if user has a Bluesky handle
+    if (!context.user.blueskyDid) {
+      throw new UserInputError('You must set your Bluesky handle first');
+    }
+
+    // Get all followers from Bluesky
+    const followers = await getAllFollowers(context.user.blueskyDid);
+    return followers.map((follower: BlueskyFollower) => follower.handle);
   },
 };
 
@@ -136,10 +211,20 @@ export const UserMutations: MutationResolvers = {
     }
     return await OAuthToken.getAllRefreshTokensForUser(context.user.id);
   },
+
+  saveBlueskyDid: async (_parent: any, { did }: { did: string }, context: any): Promise<UserModel | null> => {
+    // Check if user is authenticated
+    if (!context.user) {
+      throw new AuthenticationError('You must be logged in to save your Bluesky DID');
+    }
+
+    // Update the user's Bluesky DID
+    return await User.updateUser(context.user.id, { blueskyDid: did });
+  },
 };
 
 export const UserFieldResolvers = {
   User: {
-
+    
   },
 };

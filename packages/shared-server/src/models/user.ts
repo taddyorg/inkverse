@@ -18,6 +18,7 @@ interface UserCreateOrUpdateInput {
   ageRange?: UserAgeRange | null;
   birthYear?: number | null | undefined;
   isEmailVerified?: boolean | null | undefined;
+  blueskyDid?: string | null | undefined;
 }
 
 export class User {

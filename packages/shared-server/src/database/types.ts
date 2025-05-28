@@ -159,4 +159,5 @@ export type UserModel = {
   appleId: string | null;
   ageRange: UserAgeRange | null;
   birthYear: number | null;
+  blueskyDid: string | null;
 }

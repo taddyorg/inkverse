@@ -1,0 +1,6 @@
+mutation SaveBlueskyDid($did: String!) {
+  saveBlueskyDid(did: $did) {
+    id
+    blueskyDid
+  }
+}

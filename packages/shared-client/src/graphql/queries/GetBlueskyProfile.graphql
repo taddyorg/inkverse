@@ -1,0 +1,9 @@
+query GetBlueskyProfile($handle: String!) {
+  getBlueskyProfile(handle: $handle) {
+    did
+    handle
+    displayName
+    avatar
+    description
+  }
+}

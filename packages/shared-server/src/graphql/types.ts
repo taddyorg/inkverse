@@ -25,12 +25,14 @@ export enum AuthProvider {
   GOOGLE = 'GOOGLE'
 }
 
-/** Authentication response with user data */
-export type AuthResponse = {
-  __typename?: 'AuthResponse';
-  accessToken: Scalars['String']['output'];
-  refreshToken: Scalars['String']['output'];
-  user: User;
+/** Bluesky profile information */
+export type BlueskyProfile = {
+  __typename?: 'BlueskyProfile';
+  avatar?: Maybe<Scalars['String']['output']>;
+  description?: Maybe<Scalars['String']['output']>;
+  did: Scalars['ID']['output'];
+  displayName?: Maybe<Scalars['String']['output']>;
+  handle: Scalars['String']['output'];
 };
 
 /**  Comic Issue Details  */
@@ -875,6 +877,8 @@ export type Mutation = {
   fetchRefreshTokenForHostingProvider?: Maybe<Scalars['String']['output']>;
   /**  Report a comic series  */
   reportComicSeries?: Maybe<Scalars['Boolean']['output']>;
+  /** Save or update the user's Bluesky handle */
+  saveBlueskyDid?: Maybe<User>;
   /** Update user profile (username and age) */
   updateUserProfile?: Maybe<User>;
 };
@@ -888,6 +892,11 @@ export type MutationFetchRefreshTokenForHostingProviderArgs = {
 export type MutationReportComicSeriesArgs = {
   reportType?: InputMaybe<Scalars['String']['input']>;
   uuid: Scalars['ID']['input'];
+};
+
+
+export type MutationSaveBlueskyDidArgs = {
+  did: Scalars['String']['input'];
 };
 
 
@@ -905,8 +914,19 @@ export enum PrivacyType {
   PUBLIC = 'PUBLIC'
 }
 
+/** Public profile */
+export type PublicProfile = {
+  __typename?: 'PublicProfile';
+  id: Scalars['ID']['output'];
+  username?: Maybe<Scalars['String']['output']>;
+};
+
 export type Query = {
   __typename?: 'Query';
+  /** Get the list of followers for the authenticated user's Bluesky account */
+  getBlueskyFollowers?: Maybe<Array<Scalars['String']['output']>>;
+  /** Get Bluesky profile details for a given handle */
+  getBlueskyProfile?: Maybe<BlueskyProfile>;
   /**  Get details on a comic issue */
   getComicIssue?: Maybe<ComicIssue>;
   /**  Get details on a Comic Series  */
@@ -939,6 +959,11 @@ export type Query = {
   me?: Maybe<User>;
   /**  Search for a term  */
   search?: Maybe<SearchResults>;
+};
+
+
+export type QueryGetBlueskyProfileArgs = {
+  handle: Scalars['String']['input'];
 };
 
 
@@ -1075,6 +1100,7 @@ export type User = {
   __typename?: 'User';
   ageRange?: Maybe<UserAgeRange>;
   birthYear?: Maybe<Scalars['Int']['output']>;
+  blueskyDid?: Maybe<Scalars['String']['output']>;
   createdAt?: Maybe<Scalars['Int']['output']>;
   email: Scalars['String']['output'];
   id: Scalars['ID']['output'];
@@ -1164,7 +1190,7 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = ResolversObject<{
   AuthProvider: AuthProvider;
-  AuthResponse: ResolverTypeWrapper<Omit<AuthResponse, 'user'> & { user: ResolversTypes['User'] }>;
+  BlueskyProfile: ResolverTypeWrapper<BlueskyProfile>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
   ComicIssue: ResolverTypeWrapper<ComicIssueModel>;
   ComicIssueForSeries: ResolverTypeWrapper<Omit<ComicIssueForSeries, 'issues'> & { issues?: Maybe<Array<Maybe<ResolversTypes['ComicIssue']>>> }>;
@@ -1191,6 +1217,7 @@ export type ResolversTypes = ResolversObject<{
   ListType: ListType;
   Mutation: ResolverTypeWrapper<{}>;
   PrivacyType: PrivacyType;
+  PublicProfile: ResolverTypeWrapper<PublicProfile>;
   Query: ResolverTypeWrapper<{}>;
   SearchResults: ResolverTypeWrapper<Omit<SearchResults, 'comicSeries' | 'creators'> & { comicSeries?: Maybe<Array<Maybe<ResolversTypes['ComicSeries']>>>, creators?: Maybe<Array<Maybe<ResolversTypes['Creator']>>> }>;
   SeriesStatus: SeriesStatus;
@@ -1203,7 +1230,7 @@ export type ResolversTypes = ResolversObject<{
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = ResolversObject<{
-  AuthResponse: Omit<AuthResponse, 'user'> & { user: ResolversParentTypes['User'] };
+  BlueskyProfile: BlueskyProfile;
   Boolean: Scalars['Boolean']['output'];
   ComicIssue: ComicIssueModel;
   ComicIssueForSeries: Omit<ComicIssueForSeries, 'issues'> & { issues?: Maybe<Array<Maybe<ResolversParentTypes['ComicIssue']>>> };
@@ -1220,16 +1247,19 @@ export type ResolversParentTypes = ResolversObject<{
   LinkDetails: LinkDetails;
   List: ListModel;
   Mutation: {};
+  PublicProfile: PublicProfile;
   Query: {};
   SearchResults: Omit<SearchResults, 'comicSeries' | 'creators'> & { comicSeries?: Maybe<Array<Maybe<ResolversParentTypes['ComicSeries']>>>, creators?: Maybe<Array<Maybe<ResolversParentTypes['Creator']>>> };
   String: Scalars['String']['output'];
   User: UserModel;
 }>;
 
-export type AuthResponseResolvers<ContextType = any, ParentType extends ResolversParentTypes['AuthResponse'] = ResolversParentTypes['AuthResponse']> = ResolversObject<{
-  accessToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  refreshToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+export type BlueskyProfileResolvers<ContextType = any, ParentType extends ResolversParentTypes['BlueskyProfile'] = ResolversParentTypes['BlueskyProfile']> = ResolversObject<{
+  avatar?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  did?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  displayName?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  handle?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -1396,10 +1426,19 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   fetchAllHostingProviderTokens?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   fetchRefreshTokenForHostingProvider?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationFetchRefreshTokenForHostingProviderArgs, 'hostingProviderUuid'>>;
   reportComicSeries?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationReportComicSeriesArgs, 'uuid'>>;
+  saveBlueskyDid?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationSaveBlueskyDidArgs, 'did'>>;
   updateUserProfile?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, Partial<MutationUpdateUserProfileArgs>>;
 }>;
 
+export type PublicProfileResolvers<ContextType = any, ParentType extends ResolversParentTypes['PublicProfile'] = ResolversParentTypes['PublicProfile']> = ResolversObject<{
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  username?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
+  getBlueskyFollowers?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  getBlueskyProfile?: Resolver<Maybe<ResolversTypes['BlueskyProfile']>, ParentType, ContextType, RequireFields<QueryGetBlueskyProfileArgs, 'handle'>>;
   getComicIssue?: Resolver<Maybe<ResolversTypes['ComicIssue']>, ParentType, ContextType, RequireFields<QueryGetComicIssueArgs, 'seriesUuid' | 'uuid'>>;
   getComicSeries?: Resolver<Maybe<ResolversTypes['ComicSeries']>, ParentType, ContextType, Partial<QueryGetComicSeriesArgs>>;
   getComicStory?: Resolver<Maybe<ResolversTypes['ComicStory']>, ParentType, ContextType, Partial<QueryGetComicStoryArgs>>;
@@ -1428,6 +1467,7 @@ export type SearchResultsResolvers<ContextType = any, ParentType extends Resolve
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = ResolversObject<{
   ageRange?: Resolver<Maybe<ResolversTypes['UserAgeRange']>, ParentType, ContextType>;
   birthYear?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  blueskyDid?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   createdAt?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -1438,7 +1478,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
 }>;
 
 export type Resolvers<ContextType = any> = ResolversObject<{
-  AuthResponse?: AuthResponseResolvers<ContextType>;
+  BlueskyProfile?: BlueskyProfileResolvers<ContextType>;
   ComicIssue?: ComicIssueResolvers<ContextType>;
   ComicIssueForSeries?: ComicIssueForSeriesResolvers<ContextType>;
   ComicSeries?: ComicSeriesResolvers<ContextType>;
@@ -1452,6 +1492,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   LinkDetails?: LinkDetailsResolvers<ContextType>;
   List?: ListResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
+  PublicProfile?: PublicProfileResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   SearchResults?: SearchResultsResolvers<ContextType>;
   User?: UserResolvers<ContextType>;

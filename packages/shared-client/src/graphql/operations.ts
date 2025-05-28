@@ -22,12 +22,14 @@ export enum AuthProvider {
   GOOGLE = 'GOOGLE'
 }
 
-/** Authentication response with user data */
-export type AuthResponse = {
-  __typename?: 'AuthResponse';
-  accessToken: Scalars['String']['output'];
-  refreshToken: Scalars['String']['output'];
-  user: User;
+/** Bluesky profile information */
+export type BlueskyProfile = {
+  __typename?: 'BlueskyProfile';
+  avatar?: Maybe<Scalars['String']['output']>;
+  description?: Maybe<Scalars['String']['output']>;
+  did: Scalars['ID']['output'];
+  displayName?: Maybe<Scalars['String']['output']>;
+  handle: Scalars['String']['output'];
 };
 
 /**  Comic Issue Details  */
@@ -872,6 +874,8 @@ export type Mutation = {
   fetchRefreshTokenForHostingProvider?: Maybe<Scalars['String']['output']>;
   /**  Report a comic series  */
   reportComicSeries?: Maybe<Scalars['Boolean']['output']>;
+  /** Save or update the user's Bluesky handle */
+  saveBlueskyDid?: Maybe<User>;
   /** Update user profile (username and age) */
   updateUserProfile?: Maybe<User>;
 };
@@ -885,6 +889,11 @@ export type MutationFetchRefreshTokenForHostingProviderArgs = {
 export type MutationReportComicSeriesArgs = {
   reportType?: InputMaybe<Scalars['String']['input']>;
   uuid: Scalars['ID']['input'];
+};
+
+
+export type MutationSaveBlueskyDidArgs = {
+  did: Scalars['String']['input'];
 };
 
 
@@ -902,8 +911,19 @@ export enum PrivacyType {
   PUBLIC = 'PUBLIC'
 }
 
+/** Public profile */
+export type PublicProfile = {
+  __typename?: 'PublicProfile';
+  id: Scalars['ID']['output'];
+  username?: Maybe<Scalars['String']['output']>;
+};
+
 export type Query = {
   __typename?: 'Query';
+  /** Get the list of followers for the authenticated user's Bluesky account */
+  getBlueskyFollowers?: Maybe<Array<Scalars['String']['output']>>;
+  /** Get Bluesky profile details for a given handle */
+  getBlueskyProfile?: Maybe<BlueskyProfile>;
   /**  Get details on a comic issue */
   getComicIssue?: Maybe<ComicIssue>;
   /**  Get details on a Comic Series  */
@@ -936,6 +956,11 @@ export type Query = {
   me?: Maybe<User>;
   /**  Search for a term  */
   search?: Maybe<SearchResults>;
+};
+
+
+export type QueryGetBlueskyProfileArgs = {
+  handle: Scalars['String']['input'];
 };
 
 
@@ -1072,6 +1097,7 @@ export type User = {
   __typename?: 'User';
   ageRange?: Maybe<UserAgeRange>;
   birthYear?: Maybe<Scalars['Int']['output']>;
+  blueskyDid?: Maybe<Scalars['String']['output']>;
   createdAt?: Maybe<Scalars['Int']['output']>;
   email: Scalars['String']['output'];
   id: Scalars['ID']['output'];
@@ -1126,6 +1152,13 @@ export type ReportComicSeriesMutationVariables = Exact<{
 
 export type ReportComicSeriesMutation = { __typename?: 'Mutation', reportComicSeries?: boolean | null };
 
+export type SaveBlueskyDidMutationVariables = Exact<{
+  did: Scalars['String']['input'];
+}>;
+
+
+export type SaveBlueskyDidMutation = { __typename?: 'Mutation', saveBlueskyDid?: { __typename?: 'User', id: string, blueskyDid?: string | null } | null };
+
 export type UpdateUserProfileMutationVariables = Exact<{
   username?: InputMaybe<Scalars['String']['input']>;
   ageRange?: InputMaybe<UserAgeRange>;
@@ -1134,6 +1167,18 @@ export type UpdateUserProfileMutationVariables = Exact<{
 
 
 export type UpdateUserProfileMutation = { __typename?: 'Mutation', updateUserProfile?: { __typename?: 'User', id: string, username?: string | null, email: string, isEmailVerified?: boolean | null, ageRange?: UserAgeRange | null, birthYear?: number | null } | null };
+
+export type GetBlueskyFollowersQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetBlueskyFollowersQuery = { __typename?: 'Query', getBlueskyFollowers?: Array<string> | null };
+
+export type GetBlueskyProfileQueryVariables = Exact<{
+  handle: Scalars['String']['input'];
+}>;
+
+
+export type GetBlueskyProfileQuery = { __typename?: 'Query', getBlueskyProfile?: { __typename?: 'BlueskyProfile', did: string, handle: string, displayName?: string | null, avatar?: string | null, description?: string | null } | null };
 
 export type GetComicIssueQueryVariables = Exact<{
   issueUuid: Scalars['ID']['input'];
@@ -1358,6 +1403,14 @@ export const ReportComicSeries = gql`
   reportComicSeries(uuid: $uuid, reportType: $reportType)
 }
     `;
+export const SaveBlueskyDid = gql`
+    mutation SaveBlueskyDid($did: String!) {
+  saveBlueskyDid(did: $did) {
+    id
+    blueskyDid
+  }
+}
+    `;
 export const UpdateUserProfile = gql`
     mutation UpdateUserProfile($username: String, $ageRange: UserAgeRange, $birthYear: Int) {
   updateUserProfile(
@@ -1369,6 +1422,22 @@ export const UpdateUserProfile = gql`
   }
 }
     ${UserDetails}`;
+export const GetBlueskyFollowers = gql`
+    query GetBlueskyFollowers {
+  getBlueskyFollowers
+}
+    `;
+export const GetBlueskyProfile = gql`
+    query GetBlueskyProfile($handle: String!) {
+  getBlueskyProfile(handle: $handle) {
+    did
+    handle
+    displayName
+    avatar
+    description
+  }
+}
+    `;
 export const GetComicIssue = gql`
     query GetComicIssue($issueUuid: ID!, $seriesUuid: ID!, $sortOrderForIssues: SortOrder, $limitPerPageForIssues: Int, $pageForIssues: Int) {
   getComicIssue(uuid: $issueUuid, seriesUuid: $seriesUuid) {
