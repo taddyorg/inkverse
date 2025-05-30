@@ -16,7 +16,8 @@
     "purge-cache": "tsx src/scripts/cache/delete.ts",
     "purge-cache-production": "NODE_ENV=production tsx src/scripts/cache/delete.ts everything",
     "pre-download-comic-stories-height-and-width": "tsx src/scripts/images/start.ts",
-    "build-sitemap": "tsx src/scripts/sitemap/start.ts"
+    "build-sitemap": "tsx src/scripts/sitemap/start.ts",
+    "generate-creator-links": "tsx src/scripts/feeds/generate-creator-links.ts"
   },
   "author": "Inkverse",
   "license": "AGPL-3.0",

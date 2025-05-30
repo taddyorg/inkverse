@@ -58,7 +58,6 @@ export class CreatorLink {
   }
 
   static async updateCreatorLinks(links: Record<string, any>[] | null, creatorUuid: string, trx: Knex.Transaction): Promise<CreatorLinkModel[]> {
-    console.log('updateCreatorLinks', links, creatorUuid);
     if (!links || links.length === 0) {
       return [];
     }

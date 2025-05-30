@@ -43,8 +43,13 @@ export class BlueskyClient {
    */
   private isTokenExpired(token: string): boolean {
     try {
-      const decoded = jwt.decode(token) as { exp?: number };
-      if (!decoded || !decoded.exp) {
+      const decoded = jwt.decode(token) as { exp?: number, iat?: number };
+      if (!decoded || typeof decoded !== 'object') {
+        console.warn('Invalid JWT token structure');
+        return true;
+      }
+      
+      if (!decoded.exp) {
         return true;
       }
       
@@ -52,7 +57,8 @@ export class BlueskyClient {
       const expirationTime = decoded.exp - TOKEN_REFRESH_BUFFER;
       
       return now >= expirationTime;
-    } catch {
+    } catch (error) {
+      console.warn('Error decoding JWT token:', error);
       return true;
     }
   }
@@ -156,15 +162,62 @@ export class BlueskyClient {
   }
 
   /**
+   * Make an authenticated request with automatic token refresh on expiration
+   */
+  private async makeAuthenticatedRequest<T>(
+    method: 'GET' | 'POST',
+    url: string,
+    data?: any,
+    params?: URLSearchParams
+  ): Promise<T> {
+    let attempt = 0;
+    const maxAttempts = 2;
+
+    while (attempt < maxAttempts) {
+      try {
+        const accessToken = await this.getValidAccessToken();
+        
+        const config = {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            ...(method === 'POST' && { "Content-Type": "application/json" }),
+          },
+          ...(params && { params }),
+        };
+
+        const response = method === 'GET' 
+          ? await axios.get<T>(url, config)
+          : await axios.post<T>(url, data, config);
+
+        return response.data;
+      } catch (error) {
+        if (error instanceof AxiosError) {
+          const status = error.response?.status;
+          const isTokenError = status === 400 || status === 401;
+          
+          // If it's a token error and we haven't retried yet, force refresh and try again
+          if (isTokenError && attempt === 0) {
+            this.accessToken = null;
+            this.refreshToken = null;
+            attempt++;
+            continue;
+          }
+        }
+        throw error;
+      }
+    }
+
+    throw new Error("Max authentication attempts exceeded");
+  }
+
+  /**
    * Get all followers for a specific Bluesky user
    */
-  public async getAllFollowers(did: string): Promise<BlueskyFollower[]> {
+  public async getAllFollows(did: string): Promise<BlueskyFollower[]> {
     const followers: BlueskyFollower[] = [];
     let cursor: string | undefined = undefined;
 
     try {
-      const accessToken = await this.getValidAccessToken();
-
       while (true) {
         const params = new URLSearchParams({
           actor: did,
@@ -175,18 +228,14 @@ export class BlueskyClient {
           params.append("cursor", cursor);
         }
 
-        const response = await axios.get<BlueskyFollowsResponse>(
-          `${BLUESKY_BASE_URL}/app.bsky.graph.getFollows?${params.toString()}`,
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          }
+        const response = await this.makeAuthenticatedRequest<BlueskyFollowsResponse>(
+          'GET',
+          `${BLUESKY_BASE_URL}/app.bsky.graph.getFollows?${params.toString()}`
         );
 
-        followers.push(...response.data.follows);
+        followers.push(...response.follows);
 
-        cursor = response.data.cursor;
+        cursor = response.cursor;
         if (!cursor) {
           break;
         }
@@ -208,7 +257,7 @@ export class BlueskyClient {
    * Get the follower count for a specific Bluesky user
    */
   public async getFollowerCount(handle: string): Promise<number> {
-    const followers = await this.getAllFollowers(handle);
+    const followers = await this.getAllFollows(handle);
     return followers.length;
   }
 
@@ -217,22 +266,16 @@ export class BlueskyClient {
    */
   public async getProfile(handle: string): Promise<BlueskyProfile> {
     try {
-      const accessToken = await this.getValidAccessToken();
-
       const params = new URLSearchParams({
         actor: handle,
       });
 
-      const response = await axios.get<BlueskyProfile>(
-        `${BLUESKY_BASE_URL}/app.bsky.actor.getProfile?${params.toString()}`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
+      const response = await this.makeAuthenticatedRequest<BlueskyProfile>(
+        'GET',
+        `${BLUESKY_BASE_URL}/app.bsky.actor.getProfile?${params.toString()}`
       );
 
-      return response.data;
+      return response;
     } catch (error) {
       if (error instanceof AxiosError) {
         throw getSafeError(

@@ -180,18 +180,8 @@ export function SetupBluesky({
           onClick={onContinue}
           className="w-full py-3 px-4 rounded-lg font-medium transition-colors bg-brand-pink dark:bg-taddy-blue text-white hover:opacity-90"
         >
-          Continue to Patreon
+          Follow creators
         </button>
-
-        <div className="mt-4">
-          <button
-            type="button"
-            onClick={onBack}
-            className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 underline"
-          >
-            Back to previous step
-          </button>
-        </div>
       </div>
     </div>
   );

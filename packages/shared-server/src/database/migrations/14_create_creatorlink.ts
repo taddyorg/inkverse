@@ -11,6 +11,7 @@ export async function up(knex: Knex): Promise<void> {
     table.string('value').notNullable();
     table.index(['creator_uuid']);
     table.index(['creator_uuid', 'type']);
+    table.index(['type', 'value']);
   });
 }
 

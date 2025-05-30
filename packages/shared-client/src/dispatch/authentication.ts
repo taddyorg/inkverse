@@ -1,6 +1,6 @@
 import axios from 'axios';
-import type { AuthResponse } from '@inkverse/shared-client/graphql/operations';
 import type { StorageFunctions } from './utils';
+import type { User } from '@inkverse/shared-client/graphql/operations';
 
 export interface AuthState {
   user: any | null;
@@ -31,7 +31,7 @@ export enum AuthActionType {
 
 type AuthAction =
   | { type: AuthActionType.AUTH_START }
-  | { type: AuthActionType.AUTH_SUCCESS; payload: AuthResponse }
+  | { type: AuthActionType.AUTH_SUCCESS; payload: { accessToken: string; refreshToken: string; user: User } }
   | { type: AuthActionType.AUTH_ERROR; payload: string }
   | { type: AuthActionType.AUTH_LOGOUT }
   | { type: AuthActionType.AUTH_RESET }

@@ -114,11 +114,12 @@ export class Creator {
     }
   }
 
-  static async updateCreator(data: Record<string, any>): Promise<CreatorModel | null> {    
+  static async updateCreator(data: Record<string, any>): Promise<CreatorModel | null> { 
     const { uuid, name } = data;
     var trx = await database.transaction();
     try {
       const shortUrl = await Creator.getShortUrl(uuid, name);
+      const oldCreator = await Creator.getCreatorByUuid(uuid);
       const creatorDetails = getCreatorDetails(data, shortUrl);
 
       // Update creator data
@@ -132,7 +133,7 @@ export class Creator {
         .returning("*");
       
       // Update creator links if the hash has changed
-      if (creatorDetails.linksHash !== creator.linksHash) {
+      if (creatorDetails.linksHash !== oldCreator?.linksHash) {
         await CreatorLink.updateCreatorLinks(creatorDetails.links, creator.uuid, trx);
       }
       
