@@ -9,7 +9,7 @@ import { ReadNextEpisode } from "../components/comics/ReadNextEpisode";
 import { getMetaTags } from "@/lib/seo";
 import { loadComicIssue } from "@/lib/loader/comicissue.server";
 import { inkverseWebsiteUrl, getInkverseUrl } from "@inkverse/public/utils";
-import type { ComicIssue, Creator } from '@inkverse/shared-client/graphql/types';
+import type { Creator } from '@inkverse/shared-client/graphql/operations';
 import { getBannerImageUrl } from "@inkverse/public/comicissue";
 import { getStoryImageUrl } from "@inkverse/public/comicstory";
 import { CreatorsForIssue } from "../components/creator/CreatorsForIssue";
@@ -17,12 +17,12 @@ import { CreatorsForIssue } from "../components/creator/CreatorsForIssue";
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   if (!data) { return []; }
   else if (!data.comicissue) { return []; }
-  return getMetaTags(
-    data.comicissue.name, 
-    data.comicissue.creatorNote,
-    `${inkverseWebsiteUrl}${getInkverseUrl({ type: "comicissue", shortUrl: data.comicseries?.shortUrl, name: data.comicissue.name, uuid: data.comicissue.uuid })}`,
-    getBannerImageUrl({ bannerImageAsString: data.comicissue.bannerImageAsString }),
-  );
+  return getMetaTags({
+    title: data.comicissue.name, 
+    description: data.comicissue.creatorNote,
+    url: `${inkverseWebsiteUrl}${getInkverseUrl({ type: "comicissue", shortUrl: data.comicseries?.shortUrl, name: data.comicissue.name, uuid: data.comicissue.uuid })}`,
+    imageURL: getBannerImageUrl({ bannerImageAsString: data.comicissue.bannerImageAsString }),
+  });
 };
 
 export const loader = async ({ params, request, context }: LoaderFunctionArgs) => {

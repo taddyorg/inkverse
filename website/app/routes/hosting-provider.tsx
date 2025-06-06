@@ -9,16 +9,17 @@ import {
   fetchRefreshTokenForHostingProvider,
   clearHostingProviderError,
   FETCH_USER_TOKENS,
-  type HostingProviderState 
 } from '@inkverse/shared-client/dispatch/hosting-provider';
-import { saveHostingProviderRefreshToken } from '@/lib/auth/hosting-provider';
+import { checkValidHostingProviderRefreshToken, refreshHostingProviderAccessToken, saveHostingProviderRefreshToken } from '@/lib/auth/hosting-provider';
+import { localStorageGet } from '@/lib/storage/local';
 
-export const meta: MetaFunction = () => {
-  return getMetaTags(
-    'Connecting your account...', 
-    'Please wait while we connect your hosting provider account.',
-    ''
-  );
+export const meta: MetaFunction = ({ params }) => {
+  const { uuid } = params;
+  return getMetaTags({
+    title: 'Connecting your account...', 
+    description: 'Please wait while we connect your hosting provider account.',
+    url: `https://inkverse.co/hosting-provider${uuid ? `/${uuid}` : ''}`,
+  });
 };
 
 function getErrorMessage(errorParam: string): string {
@@ -45,6 +46,7 @@ export default function HostingProvider() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [state, dispatch] = useReducer(hostingProviderReducer, hostingProviderInitialState);
+  const fromScreen = localStorageGet('patreon-from-screen') || '/';
 
   const successParam = searchParams.get('success');
   const errorParam = searchParams.get('error');
@@ -57,6 +59,12 @@ export default function HostingProvider() {
       return;
     }
 
+    //Handle success case - no need to fetch tokens
+    if (successParam === 'true' && uuid && checkValidHostingProviderRefreshToken(uuid)) {
+      handleSuccessWithoutSavingTokens();
+      return;
+    }
+
     // Handle success case - fetch tokens
     if (successParam === 'true' && uuid && !state.isLoading && !state.refreshToken) {
       const userClient = getUserApolloClient();
@@ -66,19 +74,26 @@ export default function HostingProvider() {
 
     // Handle redirect after successful connection
     if (state.refreshToken && successParam === 'true' && uuid) {
-      //save the refresh token to local storage for hosting provider
-      saveHostingProviderRefreshToken(state.refreshToken, uuid);
-      const timer = setTimeout(() => {
-        navigate('/profile/setup?step=patreon-connected');
-      }, 1000);
-      return () => clearTimeout(timer);
+      handleSuccessWithSavingTokens({ token: state.refreshToken, uuid });
+      return;
     }
+
   }, [errorParam, successParam, uuid, state.isLoading, state.refreshToken, navigate, dispatch]);
 
   const handleRetry = () => {
     clearHostingProviderError(dispatch);
-    navigate('/profile/setup?step=patreon');
+    navigate(`${fromScreen}?step=patreon`);
   };
+
+  const handleSuccessWithoutSavingTokens = async () => {
+    navigate(`${fromScreen}?step=patreon-connected`);
+  }
+
+  const handleSuccessWithSavingTokens = async ({ token, uuid }: { token: string, uuid: string }) => {
+    saveHostingProviderRefreshToken(token, uuid);
+    await refreshHostingProviderAccessToken(uuid);
+    navigate(`${fromScreen}?step=patreon-connected`);
+  }
 
   const handleGoHome = () => {
     navigate('/');
@@ -114,24 +129,6 @@ export default function HostingProvider() {
   if (state.refreshToken) {
     return (
       <div className="max-w-3xl mx-auto sm:p-6 lg:p-8">
-        <div className="p-8 rounded-lg max-w-md w-full mx-auto text-center">
-          <div className="mb-4">
-            <div className="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto">
-              <svg className="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-          </div>
-          <h1 className="text-2xl font-bold text-green-600 dark:text-green-400 mb-4">
-            Successfully Connected!
-          </h1>
-          <p className="text-gray-700 dark:text-gray-300 mb-4">
-            Your hosting provider account has been connected successfully.
-          </p>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Redirecting you back to setup...
-          </p>
-        </div>
       </div>
     );
   }
@@ -143,7 +140,7 @@ export default function HostingProvider() {
           Connecting your account...
         </h1>
         <p className="text-gray-700 dark:text-gray-300 mb-6">
-          Please wait while we connect your hosting provider account.
+          Please wait while we connect your account.
         </p>
         <div className="mt-6 flex justify-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-pink dark:border-taddy-blue"></div>

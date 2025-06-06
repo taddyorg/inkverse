@@ -1,0 +1,3 @@
+mutation SubscribeToMultipleComicSeries($seriesUuids: [ID]!) {
+  subscribeToMultipleComicSeries(seriesUuids: $seriesUuids)
+}

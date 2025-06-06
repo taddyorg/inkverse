@@ -269,4 +269,21 @@ export class ComicSeries {
       throw e;
     }
   }
+
+  static async getComicsFromCreatorUuids(creatorUuids: string[]): Promise<ComicSeriesModel[]> {
+    if (!creatorUuids || creatorUuids.length === 0) {
+      return [];
+    }
+
+    // Join comicseries with creatorcontent to get all series for the given creators
+    const results = await database('comicseries')
+      .join('creatorcontent', 'comicseries.uuid', 'creatorcontent.content_uuid')
+      .whereIn('creatorcontent.creator_uuid', creatorUuids)
+      .where('creatorcontent.content_type', 'COMICSERIES')
+      .andWhere('comicseries.is_blocked', false)
+      .orderBy('comicseries.created_at', 'desc')
+      .select('comicseries.*');
+    
+    return results;
+  }
 }

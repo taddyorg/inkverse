@@ -15,11 +15,12 @@ import { getBannerImageUrl } from '@inkverse/public/comicseries';
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   if (!data) { return []; }
   else if (!data.comicseries) { return []; }
-  return getMetaTags(
-    data.comicseries.name, 
-    data.comicseries.description,
-    `${inkverseWebsiteUrl}${getInkverseUrl({ type: "comicseries", shortUrl: data.comicseries.shortUrl })}`,
-    getBannerImageUrl({ bannerImageAsString: data.comicseries.bannerImageAsString }),
+  return getMetaTags({
+      title: data.comicseries.name, 
+      description: data.comicseries.description,
+      url: `${inkverseWebsiteUrl}${getInkverseUrl({ type: "comicseries", shortUrl: data.comicseries.shortUrl })}`,
+      imageURL: getBannerImageUrl({ bannerImageAsString: data.comicseries.bannerImageAsString }),
+    }
   );
 };
 

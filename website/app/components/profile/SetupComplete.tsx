@@ -1,13 +1,22 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { getUserDetails } from "@/lib/auth/user";
 
-export function SetupComplete({ username }: { username: string }) {
+export function SetupComplete() {
   const navigate = useNavigate();
   
   useEffect(() => {
+    const user = getUserDetails();
+    if (!user) {
+      navigate('/');
+      return;
+    }
+
     setTimeout(() => {
-      navigate(`/${username}`);
-    }, 2000);
+      navigate(`/${user?.username}`);
+    }, 500);
+
+    
   }, []);
 
   return (

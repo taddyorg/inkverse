@@ -11,12 +11,12 @@ import { getInkverseUrl, inkverseWebsiteUrl } from '@inkverse/public/utils';
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   if (!data) { return []; }
   else if (!data.list) { return []; }
-  return getMetaTags(
-    data.list.name, 
-    data.list.description,
-    `${inkverseWebsiteUrl}${getInkverseUrl({ type: "list", id: data.list.id, name: data.list.name })}`,
-    data.list.bannerImageUrl,
-  );
+  return getMetaTags({
+    title: data.list.name, 
+    description: data.list.description,
+    url: `${inkverseWebsiteUrl}${getInkverseUrl({ type: "list", id: data.list.id, name: data.list.name })}`,
+    imageURL: data.list.bannerImageUrl,
+  });
 };
 
 export const loader = async ({ params, request, context }: LoaderFunctionArgs) => {

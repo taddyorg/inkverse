@@ -6,7 +6,7 @@ import { ComicSeriesDetails } from '@/app/components/comics/ComicSeriesDetails';
 import { loadSearch } from '@/lib/loader/search.server';
 import { getMetaTags } from '@/lib/seo';
 import { getInkverseUrl, inkverseWebsiteUrl } from '@inkverse/public/utils';
-import type { ComicSeries } from '@inkverse/shared-client/graphql/types';
+import type { ComicSeries } from '@inkverse/shared-client/graphql/operations';
 
 export const meta: MetaFunction<typeof loader> = ({ data, params }) => {
   if (!data) { return []; }
@@ -15,11 +15,11 @@ export const meta: MetaFunction<typeof loader> = ({ data, params }) => {
   const searchTerm = params.term || '';
   const searchTypes = params.types || 'comics';
 
-  return getMetaTags(
-    `Search for ${searchTypes.split(',').join('& ')} with '${searchTerm}'`,
-    `Search for comics, creators, lists, and more on Inkverse.`,
-    `${inkverseWebsiteUrl}${getInkverseUrl({ type: "search", term: searchTerm, types: searchTypes.split(',') })}`,
-  );
+  return getMetaTags({
+    title: `Search for ${searchTypes.split(',').join('& ')} with '${searchTerm}'`,
+    description: `Search for comics, creators, lists, and more on Inkverse.`,
+    url: `${inkverseWebsiteUrl}${getInkverseUrl({ type: "search", term: searchTerm, types: searchTypes.split(',') })}`,
+  });
 };
 
 export const loader = async ({ params, request, context }: LoaderFunctionArgs) => {

@@ -11,8 +11,11 @@ import {
   updateUsername,
   updateAgeRange,
   saveBlueskyDid,
-  getBlueskyFollowers,
   verifyBlueskyHandle,
+  followComicsFromBlueskyCreators,
+  followComicsFromPatreonCreators,
+  subscribeToComics,
+  subscribeToPatreonComics,
   UserDetailsActionType
 } from '@inkverse/shared-client/dispatch/user-details';
 import { GetCurrentUser } from '@inkverse/shared-client/graphql/operations';
@@ -25,7 +28,10 @@ import { SetupAge } from '@/app/components/profile/SetupAge';
 import { SetupBluesky } from '@/app/components/profile/SetupBluesky';
 import { SetupPatreon } from '@/app/components/profile/SetupPatreon';
 import { SetupComplete } from '@/app/components/profile/SetupComplete';
+import { PatreonConnected } from '@/app/components/profile/PatreonConnected';
+import { BlueskyConnected } from '@/app/components/profile/BlueskyConnected';
 import { isValidDomain } from '@inkverse/shared-client/utils/common';
+import { localStorageSet } from '@/lib/storage/local';
 
 type SetupStep = 'username' | 'age' | 'patreon' | 'patreon-connected' | 'bluesky' | 'bluesky-verify' | 'bluesky-connected' | 'complete';
 const TADDY_PROVIDER_UUID = 'e9957105-80e4-46e3-8e82-20472b9d7512'; // Needed just for this screen
@@ -40,15 +46,34 @@ export default function AccountSetup() {
   const [blueskyHandle, setBlueskyHandle] = useState('');
   const [userDetailsState, dispatch] = useReducer(userDetailsReducer, userDetailsInitialState);
   const [isInitializing, setIsInitializing] = useState(true);
+  
+  // All Bluesky state is now handled by dispatch
+  
   const userClientRef = useRef<ReturnType<typeof getUserApolloClient> | null>(null);
 
   // Fetch user details on mount to determine current step
   useEffect(() => {
+    const stepParam = searchParams.get('step') as SetupStep;
+    const validSteps: SetupStep[] = ['username', 'age', 'patreon', 'patreon-connected', 'bluesky', 'bluesky-verify', 'bluesky-connected', 'complete'];
+    
+    const userClient = getUserApolloClient();
+    userClientRef.current = userClient;
+
+    // If there's a valid step in URL params, go directly to that step
+    if (stepParam && validSteps.includes(stepParam)) {
+      setCurrentStep(stepParam);
+      setIsInitializing(false);
+      
+      // If user just connected Patreon, fetch comics from Patreon creators
+      if (stepParam === 'patreon-connected') {
+        handlePatreonConnected();
+      }
+      
+      return;
+    }
+
     const fetchUserDetails = async () => {
       try {
-        const userClient = getUserApolloClient();
-        userClientRef.current = userClient;
-        
         const { data } = await userClient.query({
           query: GetCurrentUser,
           fetchPolicy: 'network-only' // Always get fresh data
@@ -66,6 +91,7 @@ export default function AccountSetup() {
               setAgeRange(user.ageRange);
               
               // Otherwise go to Patreon step
+              localStorageSet('patreon-from-screen', '/profile/setup');
               setCurrentStep('patreon');
             } else {
               // Otherwise go to age step
@@ -84,7 +110,7 @@ export default function AccountSetup() {
     };
 
     fetchUserDetails();
-  }, [navigate]);
+  }, [navigate, searchParams]);
 
   // Update URL when step changes
   useEffect(() => {
@@ -148,6 +174,7 @@ export default function AccountSetup() {
       );
 
       // Move to patreon step
+      localStorageSet('patreon-from-screen', '/profile/setup');
       setCurrentStep('patreon');
     } catch (err: any) {
       // Error is handled by the dispatch function
@@ -157,8 +184,10 @@ export default function AccountSetup() {
   const handleBack = () => {
     if (currentStep === 'age') {
       setCurrentStep('username');
-    } else if (currentStep === 'patreon' || currentStep === 'patreon-connected') {
+    } else if (currentStep === 'patreon') {
       setCurrentStep('age');
+    } else if (currentStep === 'patreon-connected') {
+      setCurrentStep('patreon');
     } else if (currentStep === 'bluesky') {
       setCurrentStep('patreon');
     } else if (currentStep === 'bluesky-verify') {
@@ -195,7 +224,7 @@ export default function AccountSetup() {
     }
   };
 
-  const handleBlueskyConfirm = async (did: string) => {
+  const handleBlueskyDidSave = async (did: string) => {
     dispatch({ type: UserDetailsActionType.USER_DETAILS_CLEAR_ERROR });
 
     if (!userClientRef.current) return;
@@ -211,15 +240,41 @@ export default function AccountSetup() {
         dispatch
       );
 
-      // Get followers after saving DID
-      await getBlueskyFollowers(
+      // Step 1: Get comics from Bluesky creators after saving DID  
+      await followComicsFromBlueskyCreators(
         { userClient: userClientRef.current },
         dispatch
       );
-
+      
       setCurrentStep('bluesky-connected');
     } catch (err: any) {
       // Error is handled by the dispatch function
+    }
+  };
+
+  const handleSubscribeToBlueskyComics = async () => {
+    if (!userClientRef.current) return;
+
+    try {
+      // Extract UUIDs from the comic series
+      const seriesUuids = (userDetailsState.blueskyComicSeries || []).map(series => series.uuid).filter(Boolean);
+      
+      if (seriesUuids.length === 0) {
+        setCurrentStep('complete');
+        return;
+      }
+
+      const result = await subscribeToComics({ 
+        userClient: userClientRef.current,
+        seriesUuids
+      }, dispatch);
+
+      if (result.success) {
+        setCurrentStep('complete');
+      }
+    } catch (err) {
+      console.error('Error subscribing to Bluesky comics:', err);
+      // Error is handled by dispatch
     }
   };
 
@@ -239,6 +294,47 @@ export default function AccountSetup() {
 
     //open auth url in new tab
     window.open(authUrl, '_blank');
+  };
+
+  const handlePatreonConnected = async () => {
+    if (!userClientRef.current) return;
+
+    try {
+      // Fetch comics from Patreon creators after successful OAuth connection
+      await followComicsFromPatreonCreators(
+        { userClient: userClientRef.current },
+        dispatch
+      );
+    } catch (err: any) {
+      console.error('Error fetching Patreon comics:', err);
+      // Error is handled by dispatch
+    }
+  };
+
+  const handleSubscribeToPatreonComics = async () => {
+    if (!userClientRef.current) return;
+
+    try {
+      // Extract UUIDs from the comic series
+      const seriesUuids = (userDetailsState.patreonComicSeries || []).map(series => series.uuid).filter(Boolean);
+      
+      if (seriesUuids.length === 0) {
+        setCurrentStep('bluesky');
+        return;
+      }
+
+      const result = await subscribeToPatreonComics({ 
+        userClient: userClientRef.current,
+        seriesUuids
+      }, dispatch);
+
+      if (result.success) {
+        setCurrentStep('bluesky');
+      }
+    } catch (err) {
+      console.error('Error subscribing to Patreon comics:', err);
+      // Error is handled by dispatch
+    }
   };
 
 
@@ -296,7 +392,7 @@ export default function AccountSetup() {
         )}
 
         {/* Patreon Steps */}
-        {(currentStep === 'patreon' || currentStep === 'patreon-connected') && (
+        {currentStep === 'patreon' && (
           <SetupPatreon
             currentStep={currentStep}
             onConnect={handlePatreonConnect}
@@ -310,23 +406,45 @@ export default function AccountSetup() {
           />
         )}
 
+        {/* Patreon Connected Step */}
+        {currentStep === 'patreon-connected' && (
+          <PatreonConnected 
+            loading={userDetailsState.isLoading || userDetailsState.patreonSubscriptionLoading}
+            error={userDetailsState.error || userDetailsState.patreonSubscriptionError}
+            comicSeries={userDetailsState.patreonComicSeries}
+            onContinue={handleSubscribeToPatreonComics}
+            onSkip={() => setCurrentStep('bluesky')}
+          />
+        )}
+
         {/* Bluesky Steps */}
-        {(currentStep === 'bluesky' || currentStep === 'bluesky-verify' || currentStep === 'bluesky-connected') && (
+        {(currentStep === 'bluesky' || currentStep === 'bluesky-verify') && (
           <SetupBluesky
             blueskyHandle={blueskyHandle}
             setBlueskyHandle={setBlueskyHandle}
             userDetailsState={userDetailsState}
             currentStep={currentStep}
             onVerify={handleBlueskyVerify}
-            onConfirm={handleBlueskyConfirm}
+            onConfirm={handleBlueskyDidSave}
             onBack={handleBack}
             onSkip={() => setCurrentStep('complete')}
-            onContinue={() => setCurrentStep('complete')}
+          />
+        )}
+
+        {/* Bluesky Connected Step */}
+        {currentStep === 'bluesky-connected' && (
+          <BlueskyConnected 
+            handle={blueskyHandle}
+            loading={userDetailsState.isLoading || userDetailsState.blueskySubscriptionLoading}
+            error={userDetailsState.error || userDetailsState.blueskySubscriptionError}
+            comicSeries={userDetailsState.blueskyComicSeries}
+            onContinue={handleSubscribeToBlueskyComics}
+            onSkip={() => setCurrentStep('complete')}
           />
         )}
 
         {/* Complete Step */}
-        {currentStep === 'complete' && <SetupComplete username={username} />}
+        {currentStep === 'complete' && <SetupComplete />}
       </div>
     </div>
   );
@@ -334,9 +452,9 @@ export default function AccountSetup() {
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
-  const seoMetaData = getMetaTags(url.href);
-  
-  return {
-    seoMetaData,
-  };
+  return getMetaTags({
+    title: 'Complete your profile',
+    description: 'Complete your profile to get started',
+    url: url.href,
+  });
 }

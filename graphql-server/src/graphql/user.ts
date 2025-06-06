@@ -1,8 +1,11 @@
+import axios from 'axios';
+
 import { AuthenticationError, UserInputError } from './error.js';
-import type { UserModel } from '@inkverse/shared-server/database/types';
-import { User, OAuthToken } from '@inkverse/shared-server/models/index';
-import { UserAgeRange, type MutationResolvers } from '@inkverse/shared-server/graphql/types';
+import type { ComicSeriesModel, UserModel } from '@inkverse/shared-server/database/types';
+import { User, OAuthToken, CreatorLink, ComicSeries, UserSeriesSubscription } from '@inkverse/shared-server/models/index';
+import { UserAgeRange, type MutationResolvers, LinkType } from '@inkverse/shared-server/graphql/types';
 import { getAllFollows, getProfile, type BlueskyFollower, type BlueskyProfile } from '@inkverse/shared-server/bluesky/index';
+import { getNewAccessToken, TADDY_HOSTING_PROVIDER_UUID } from '@inkverse/public/hosting-providers';
 
 // GraphQL Type Definitions
 export const UserDefinitions = `
@@ -73,9 +76,14 @@ export const UserQueriesDefinitions = `
   getBlueskyProfile(handle: String!): BlueskyProfile
 
   """
-  Get the list of followers for the authenticated user's Bluesky account
+  Get all comics from Bluesky creators
   """
-  getBlueskyFollowers: [String!]
+  getComicsFromBlueskyCreators: [ComicSeries]
+
+  """
+  Get all comics from Patreon creators
+  """
+  getComicsFromPatreonCreators: [ComicSeries]
 `;
 
 export const UserMutationsDefinitions = `
@@ -105,6 +113,21 @@ export const UserMutationsDefinitions = `
   Save or update the user's Bluesky handle
   """
   saveBlueskyDid(did: String!): User
+
+  """
+  Subscribe to a comic series
+  """
+  subscribeToSeries(seriesUuid: ID!): Boolean!
+
+  """
+  Unsubscribe from a comic series
+  """
+  unsubscribeFromSeries(seriesUuid: ID!): Boolean!
+
+  """
+  Subscribe to multiple comic series
+  """
+  subscribeToMultipleComicSeries(seriesUuids: [ID]!): Boolean!
   
 `;
 
@@ -146,10 +169,9 @@ export const UserQueries = {
     }
   },
 
-  getBlueskyFollowers: async (_parent: any, _args: any, context: any): Promise<string[]> => {
-    // Check if user is authenticated
+  getComicsFromBlueskyCreators: async (_parent: any, _args: any, context: any): Promise<ComicSeriesModel[]> => {
     if (!context.user) {
-      throw new AuthenticationError('You must be logged in to get your Bluesky followers');
+      throw new AuthenticationError('You must be logged in to get comics from Bluesky creators');
     }
 
     // Check if user has a Bluesky handle
@@ -159,7 +181,50 @@ export const UserQueries = {
 
     // Get all followers from Bluesky
     const profilesFollowed = await getAllFollows(context.user.blueskyDid);
-    return profilesFollowed.map((profileFollowed: BlueskyFollower) => profileFollowed.handle);
+    const handles = profilesFollowed.map((profileFollowed: BlueskyFollower) => profileFollowed.handle);
+
+    // Get all comics from the creators
+    const creatorUuids = await CreatorLink.getCreatorLinksByTypeAndValue(LinkType.BLUESKY, handles);
+    return await ComicSeries.getComicsFromCreatorUuids(creatorUuids);
+  },
+
+  getComicsFromPatreonCreators: async (_parent: any, _args: any, context: any): Promise<ComicSeriesModel[]> => {
+    if (!context.user) {
+      throw new AuthenticationError('You must be logged in to get comics from Patreon creators');
+    }
+
+    // get taddy refresh token
+    const refreshToken = await OAuthToken.getRefreshToken(context.user.id, TADDY_HOSTING_PROVIDER_UUID);
+    if (!refreshToken) {
+      throw new UserInputError('You must have a Taddy token to find comics from Patreon creators');
+    }
+
+    const accessToken = await getNewAccessToken({
+      hostingProviderUuid: TADDY_HOSTING_PROVIDER_UUID,
+      refreshToken,
+    });
+
+    const response = await axios.post('https://taddy.org/auth/patreon/following', {
+      token: accessToken,
+    });
+
+    const data = response.data;
+    
+    // Extract Patreon creator usernames from the response
+    const patreonIdentifiers = data.following?.map((creator: { username: string }) => creator.username) || [];
+    
+    if (!patreonIdentifiers || patreonIdentifiers.length === 0) {
+      return [];
+    }
+
+    // Get creator UUIDs from CreatorLink based on Patreon identifiers
+    const creatorUuids = await CreatorLink.getCreatorLinksByTypeAndValue(
+      LinkType.PATREON,
+      patreonIdentifiers
+    );
+
+    // Use the same method as Bluesky to get comics
+    return await ComicSeries.getComicsFromCreatorUuids(creatorUuids);
   },
 };
 
@@ -218,6 +283,51 @@ export const UserMutations: MutationResolvers = {
 
     // Update the user's Bluesky DID
     return await User.updateUser(context.user.id, { blueskyDid: did });
+  },
+
+  subscribeToSeries: async (_parent: any, { seriesUuid }: { seriesUuid: string }, context: any): Promise<boolean> => {
+    if (!context.user) {
+      throw new AuthenticationError('You must be logged in to subscribe to a series');
+    }
+
+    const subscription = await UserSeriesSubscription.subscribeToComicSeries(Number(context.user.id), seriesUuid);
+    return !!subscription;
+  },
+
+  unsubscribeFromSeries: async (_parent: any, { seriesUuid }: { seriesUuid: string }, context: any): Promise<boolean> => {
+    if (!context.user) {
+      throw new AuthenticationError('You must be logged in to unsubscribe from a series');
+    }
+
+    return await UserSeriesSubscription.unsubscribeFromComicSeries(Number(context.user.id), seriesUuid);
+  },
+
+  subscribeToMultipleComicSeries: async (_parent: any, { seriesUuids }: { seriesUuids: string[] }, context: any): Promise<boolean> => {
+    if (!context.user) {
+      throw new AuthenticationError('You must be logged in to subscribe to series');
+    }
+
+    if (!seriesUuids || seriesUuids.length === 0) {
+      throw new UserInputError('At least one series UUID is required');
+    }
+
+    // Filter out null/undefined values and duplicate UUIDs
+    const uniqueSeriesUuids = [...new Set(seriesUuids.filter(Boolean))];
+
+    try {
+      // Subscribe to all series
+      const results = await Promise.allSettled(
+        uniqueSeriesUuids.map(seriesUuid => 
+          UserSeriesSubscription.subscribeToComicSeries(Number(context.user.id), seriesUuid)
+        )
+      );
+
+      // Return true if at least one subscription succeeded
+      return results.some(result => result.status === 'fulfilled' && result.value);
+    } catch (error) {
+      console.error('Error subscribing to multiple comic series:', error);
+      throw new Error('Failed to subscribe to comic series');
+    }
   },
 };
 

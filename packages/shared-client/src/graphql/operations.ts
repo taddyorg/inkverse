@@ -877,6 +877,12 @@ export type Mutation = {
   reportComicSeries?: Maybe<Scalars['Boolean']['output']>;
   /** Save or update the user's Bluesky handle */
   saveBlueskyDid?: Maybe<User>;
+  /** Subscribe to multiple comic series */
+  subscribeToMultipleComicSeries: Scalars['Boolean']['output'];
+  /** Subscribe to a comic series */
+  subscribeToSeries: Scalars['Boolean']['output'];
+  /** Unsubscribe from a comic series */
+  unsubscribeFromSeries: Scalars['Boolean']['output'];
   /** Update user profile (username and age) */
   updateUserProfile?: Maybe<User>;
 };
@@ -895,6 +901,21 @@ export type MutationReportComicSeriesArgs = {
 
 export type MutationSaveBlueskyDidArgs = {
   did: Scalars['String']['input'];
+};
+
+
+export type MutationSubscribeToMultipleComicSeriesArgs = {
+  seriesUuids: Array<InputMaybe<Scalars['ID']['input']>>;
+};
+
+
+export type MutationSubscribeToSeriesArgs = {
+  seriesUuid: Scalars['ID']['input'];
+};
+
+
+export type MutationUnsubscribeFromSeriesArgs = {
+  seriesUuid: Scalars['ID']['input'];
 };
 
 
@@ -921,8 +942,6 @@ export type PublicProfile = {
 
 export type Query = {
   __typename?: 'Query';
-  /** Get the list of followers for the authenticated user's Bluesky account */
-  getBlueskyFollowers?: Maybe<Array<Scalars['String']['output']>>;
   /** Get Bluesky profile details for a given handle */
   getBlueskyProfile?: Maybe<BlueskyProfile>;
   /**  Get details on a comic issue */
@@ -931,6 +950,10 @@ export type Query = {
   getComicSeries?: Maybe<ComicSeries>;
   /**  Get details on a comic story */
   getComicStory?: Maybe<ComicStory>;
+  /** Get all comics from Bluesky creators */
+  getComicsFromBlueskyCreators?: Maybe<Array<Maybe<ComicSeries>>>;
+  /** Get all comics from Patreon creators */
+  getComicsFromPatreonCreators?: Maybe<Array<Maybe<ComicSeries>>>;
   /**  Get details on a Creator  */
   getCreator?: Maybe<Creator>;
   /**  Get details on a Creator Content  */
@@ -1160,6 +1183,13 @@ export type SaveBlueskyDidMutationVariables = Exact<{
 
 export type SaveBlueskyDidMutation = { __typename?: 'Mutation', saveBlueskyDid?: { __typename?: 'User', id: string, blueskyDid?: string | null } | null };
 
+export type SubscribeToMultipleComicSeriesMutationVariables = Exact<{
+  seriesUuids: Array<InputMaybe<Scalars['ID']['input']>> | InputMaybe<Scalars['ID']['input']>;
+}>;
+
+
+export type SubscribeToMultipleComicSeriesMutation = { __typename?: 'Mutation', subscribeToMultipleComicSeries: boolean };
+
 export type UpdateUserProfileMutationVariables = Exact<{
   username?: InputMaybe<Scalars['String']['input']>;
   ageRange?: InputMaybe<UserAgeRange>;
@@ -1168,11 +1198,6 @@ export type UpdateUserProfileMutationVariables = Exact<{
 
 
 export type UpdateUserProfileMutation = { __typename?: 'Mutation', updateUserProfile?: { __typename?: 'User', id: string, username?: string | null, email: string, isEmailVerified?: boolean | null, ageRange?: UserAgeRange | null, birthYear?: number | null } | null };
-
-export type GetBlueskyFollowersQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type GetBlueskyFollowersQuery = { __typename?: 'Query', getBlueskyFollowers?: Array<string> | null };
 
 export type GetBlueskyProfileQueryVariables = Exact<{
   handle: Scalars['String']['input'];
@@ -1191,6 +1216,16 @@ export type GetComicIssueQueryVariables = Exact<{
 
 
 export type GetComicIssueQuery = { __typename?: 'Query', getComicIssue?: { __typename?: 'ComicIssue', bannerImageAsString?: string | null, creatorNote?: string | null, uuid: string, seriesUuid: string, name?: string | null, position?: number | null, thumbnailImageAsString?: string | null, datePublished?: number | null, scopesForExclusiveContent?: Array<string | null> | null, dateExclusiveContentAvailable?: number | null, stories?: Array<{ __typename?: 'ComicStory', uuid: string, issueUuid: string, seriesUuid: string, storyImageAsString?: string | null, width?: number | null, height?: number | null } | null> | null, nextIssue?: { __typename?: 'ComicIssue', uuid: string, seriesUuid: string, name?: string | null, position?: number | null, thumbnailImageAsString?: string | null, datePublished?: number | null, scopesForExclusiveContent?: Array<string | null> | null, dateExclusiveContentAvailable?: number | null } | null } | null, getComicSeries?: { __typename?: 'ComicSeries', uuid: string, name?: string | null, description?: string | null, datePublished?: number | null, hash?: string | null, issuesHash?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, tags?: Array<string | null> | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null, language?: Language | null, status?: SeriesStatus | null, contentRating?: ContentRating | null, seriesType?: ComicSeriesType | null, isCompleted?: boolean | null, issueCount?: number | null, creators?: Array<{ __typename?: 'Creator', uuid: string, name?: string | null, shortUrl?: string | null, avatarImageAsString?: string | null, links?: Array<{ __typename?: 'LinkDetails', url?: string | null, type?: LinkType | null } | null> | null } | null> | null } | null, getIssuesForComicSeries?: { __typename?: 'ComicIssueForSeries', seriesUuid: string, issues?: Array<{ __typename?: 'ComicIssue', uuid: string, seriesUuid: string, name?: string | null, position?: number | null, thumbnailImageAsString?: string | null, datePublished?: number | null, scopesForExclusiveContent?: Array<string | null> | null, dateExclusiveContentAvailable?: number | null } | null> | null } | null };
+
+export type GetComicsFromBlueskyCreatorsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetComicsFromBlueskyCreatorsQuery = { __typename?: 'Query', getComicsFromBlueskyCreators?: Array<{ __typename?: 'ComicSeries', uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null } | null> | null };
+
+export type GetComicsFromPatreonCreatorsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetComicsFromPatreonCreatorsQuery = { __typename?: 'Query', getComicsFromPatreonCreators?: Array<{ __typename?: 'ComicSeries', uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null } | null> | null };
 
 export type GetComicSeriesQueryVariables = Exact<{
   uuid: Scalars['ID']['input'];
@@ -1412,6 +1447,11 @@ export const SaveBlueskyDid = gql`
   }
 }
     `;
+export const SubscribeToMultipleComicSeries = gql`
+    mutation SubscribeToMultipleComicSeries($seriesUuids: [ID]!) {
+  subscribeToMultipleComicSeries(seriesUuids: $seriesUuids)
+}
+    `;
 export const UpdateUserProfile = gql`
     mutation UpdateUserProfile($username: String, $ageRange: UserAgeRange, $birthYear: Int) {
   updateUserProfile(
@@ -1423,11 +1463,6 @@ export const UpdateUserProfile = gql`
   }
 }
     ${UserDetails}`;
-export const GetBlueskyFollowers = gql`
-    query GetBlueskyFollowers {
-  getBlueskyFollowers
-}
-    `;
 export const GetBlueskyProfile = gql`
     query GetBlueskyProfile($handle: String!) {
   getBlueskyProfile(handle: $handle) {
@@ -1466,6 +1501,20 @@ export const GetComicIssue = gql`
 ${ComicSeriesDetails}
 ${MiniCreatorDetails}
 ${MiniComicIssueDetails}`;
+export const GetComicsFromBlueskyCreators = gql`
+    query GetComicsFromBlueskyCreators {
+  getComicsFromBlueskyCreators {
+    ...miniComicSeriesDetails
+  }
+}
+    ${MiniComicSeriesDetails}`;
+export const GetComicsFromPatreonCreators = gql`
+    query GetComicsFromPatreonCreators {
+  getComicsFromPatreonCreators {
+    ...miniComicSeriesDetails
+  }
+}
+    ${MiniComicSeriesDetails}`;
 export const GetComicSeries = gql`
     query GetComicSeries($uuid: ID!, $sortOrderForIssues: SortOrder, $limitPerPageForIssues: Int, $pageForIssues: Int) {
   getComicSeries(uuid: $uuid) {

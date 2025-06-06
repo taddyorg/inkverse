@@ -43,6 +43,7 @@ export class OAuthToken {
         .onConflict(['user_id', 'hosting_provider_uuid'])
         .merge({
           refreshToken,
+          refreshTokenExpiresAt,
           updatedAt: new Date(),
         });
     } catch (error) {

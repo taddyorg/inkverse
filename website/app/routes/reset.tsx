@@ -91,10 +91,10 @@ export default function Reset() {
 }
 
 export const meta: MetaFunction = ({ data }) => {
-  return getMetaTags(
-    "Logging in...",
-    "Please wait while we verify your authentication token.",
-    "https://inkverse.co/reset"
-  );
+  return getMetaTags({
+    title: "Logging in...",
+    description: "Please wait while we verify your authentication token.",
+    url: "https://inkverse.co/reset",
+  });
 
 };

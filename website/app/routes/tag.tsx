@@ -17,11 +17,11 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 
   if (!data) { return []; }
   else if (!data.comicseries) { return []; }
-  return getMetaTags(
-    getTitle(tag),
-    "Comics tagged with " + tag,
-    `${inkverseWebsiteUrl}${getInkverseUrl({ type: "tag", name: tag })}`,
-  );
+  return getMetaTags({
+    title: getTitle(tag),
+    description: "Comics tagged with " + tag,
+    url: `${inkverseWebsiteUrl}${getInkverseUrl({ type: "tag", name: tag })}`,
+  });
 };
 
 export const loader = async ({ params, request, context }: LoaderFunctionArgs) => {

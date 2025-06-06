@@ -111,6 +111,18 @@ export async function getHostingProviderAccessToken(hostingProviderUuid: string)
   return accessToken;
 }
 
+export function checkValidHostingProviderRefreshToken(hostingProviderUuid: string): boolean {
+  const refreshToken = localStorageGet(`${hostingProviderUuid}:${HOSTING_PROVIDER_REFRESH_TOKEN_ENDING}`);
+  if (!refreshToken) return false;
+
+  if (isTokenExpired(refreshToken)) {
+    clearHostingProviderAuthData(hostingProviderUuid);
+    return false;
+  }
+
+  return true;
+}
+
 export async function getHostingProviderRefreshToken(hostingProviderUuid: string): Promise<string | null> {
   const refreshToken = localStorageGet(`${hostingProviderUuid}:${HOSTING_PROVIDER_REFRESH_TOKEN_ENDING}`);
   if (!refreshToken) {

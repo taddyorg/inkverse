@@ -15,7 +15,12 @@ export function getDocumentMeta(data: GetDocumentationQuery['getDocumentation'])
   const description = getDescription(recordMap.block, mainBlock?.value?.content || []);
   const imageURL = getImageUrl(data.id, additionalInfoForNotionId[data.id]);
 
-  return getMetaTags(title, description, `https://inkverse.co${data.id}`, imageURL);
+  return getMetaTags({
+    title,
+    description,
+    url: `https://inkverse.co${data.id}`,
+    imageURL,
+  });
 }
 
 export function getDescription(allBlocks: Record<string, any>, blockIds = []): string {

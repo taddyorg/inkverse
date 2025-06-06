@@ -1,22 +1,25 @@
 import { unlink, writeFile } from 'fs/promises';
 import path from 'path';
 import { build } from './build.js';
-import { downloadAndSave } from './download-and-save.js';
+import { refreshHostingProviderAccessToken } from './refresh-token.js';
+
 
 async function main(args: string[]) {
     try {
-        const outputPath = path.join(process.cwd(), 'output', 'comicstories.txt');
+        const outputPath = path.join(process.cwd(), 'output', 'oauth_tokens.txt');
 
         // Setup
         await unlink(outputPath).catch(() => {}); // Remove existing file if it exists
         await writeFile(outputPath, ''); // Create new empty file
 
         // Build
-        await build('comicstory', 'id', outputPath);
-        await downloadAndSave(outputPath);
+        await build('oauth_token', 'id', outputPath);
+
+        //refresh the access token
+        await refreshHostingProviderAccessToken(outputPath);
 
         //remove the file
-        await unlink(outputPath)
+        // await unlink(outputPath)
 
         console.log('[run-scheduler] Program finished.');
         process.exit(0);

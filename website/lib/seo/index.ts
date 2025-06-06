@@ -1,9 +1,13 @@
-export const getMetaTags = (
-	title: string | null = '',
-	description: string | null = '',
-	url: string | null = '',
-	imageURL: string | null = 'https://ink0.inkverse.co/general/inkverse-brandmark-white.png'
-) => {
+interface MetaTags {
+	title: string | null | undefined;
+	description: string | null | undefined;
+	url: string | null | undefined;
+	imageURL?: string | null | undefined;
+}
+
+export const getMetaTags = (metaTags: MetaTags) => {
+	const { title, description, url, imageURL = 'https://ink0.inkverse.co/general/inkverse-brandmark-white.png' } = metaTags;
+
 	const improvedTitle = `${title} - Inkverse Webtoons & Webcomics`;
 
 	return [

@@ -1,0 +1,8 @@
+# import miniComicSeriesDetails from '../fragments/MiniComicSeriesDetails.graphql'
+# import miniCreatorDetails from '../fragments/MiniCreatorDetails.graphql'
+
+query GetComicsFromBlueskyCreators {
+  getComicsFromBlueskyCreators {
+    ...miniComicSeriesDetails
+  }
+}

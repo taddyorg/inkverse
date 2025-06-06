@@ -1,5 +1,7 @@
 import axios from 'axios';
 
+export const TADDY_HOSTING_PROVIDER_UUID = 'e9957105-80e4-46e3-8e82-20472b9d7512';
+
 export interface OAuthTokens {
   accessToken?: string;
   refreshToken?: string;
@@ -28,7 +30,7 @@ export interface ProviderDetails {
 }
 
 export const providerDetails: Record<string, ProviderDetails> = {
-  "e9957105-80e4-46e3-8e82-20472b9d7512": {
+  [TADDY_HOSTING_PROVIDER_UUID]: {
     displayName: 'Taddy Ink',
     endpoints: {
       signupUrl: 'https://taddy.org/developers/signup',

@@ -13,11 +13,12 @@ import { getAvatarImageUrl } from '@inkverse/public/creator';
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   if (!data) { return []; }
   else if (!data.creator) { return []; }
-  return getMetaTags(
-    data.creator.name, 
-    data.creator.bio,
-    `${inkverseWebsiteUrl}${getInkverseUrl({ type: "creator", shortUrl: data.creator.shortUrl })}`,
-    getAvatarImageUrl({ avatarImageAsString: data.creator.avatarImageAsString }),
+  return getMetaTags({
+      title: data.creator.name, 
+      description: data.creator.bio,
+      url: `${inkverseWebsiteUrl}${getInkverseUrl({ type: "creator", shortUrl: data.creator.shortUrl })}`,
+      imageURL: getAvatarImageUrl({ avatarImageAsString: data.creator.avatarImageAsString }),
+    }
   );
 };
 

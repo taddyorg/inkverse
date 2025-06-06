@@ -173,3 +173,11 @@ export type UserModel = {
   birthYear: number | null;
   blueskyDid: string | null;
 }
+
+export type UserSeriesSubscriptionModel = {
+  id: number;
+  createdAt: number;
+  updatedAt: number | null;
+  userId: number;
+  seriesUuid: string;
+}

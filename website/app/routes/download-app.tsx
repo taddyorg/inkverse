@@ -2,11 +2,11 @@ import type { MetaFunction } from "react-router";
 import { getMetaTags } from "@/lib/seo";
 
 export const meta: MetaFunction = () => {
-  return getMetaTags(
-    "Download the Inkverse Mobile App",
-    "Discover and read the best webtoons and webcomics on Inkverse - your premier mobile app for digital comics. Available on iOS and Android.",
-    "https://inkverse.co/download-app"
-  );
+  return getMetaTags({
+    title: "Download the Inkverse Mobile App",
+    description: "Discover and read the best webtoons and webcomics on Inkverse - your premier mobile app for digital comics. Available on iOS and Android.",
+    url: "https://inkverse.co/download-app",
+  });
 }
 
 export default function DownloadApp() {

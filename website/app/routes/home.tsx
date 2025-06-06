@@ -5,7 +5,7 @@ import { GetAppButton } from "../components/ui/GetAppButton";
 
 import { getMetaTags } from "@/lib/seo";
 import { loadHomeScreen } from "@/lib/loader/home.server";
-import type { ComicSeries, List } from "@inkverse/shared-client/graphql/types";
+import type { ComicSeries, List } from "@inkverse/shared-client/graphql/operations";
 import { getInkverseUrl } from "@inkverse/public/utils";
 import type { NewsItem } from "@inkverse/public/news-items";
 import { inkverseNewsItems } from "@inkverse/public/news-items";
@@ -16,11 +16,11 @@ const MainCopy = {
 }
 
 export const meta: MetaFunction = () => {
-  return getMetaTags(
-    MainCopy.title, 
-    MainCopy.description,
-    "https://inkverse.co"
-  );
+  return getMetaTags({
+    title: MainCopy.title, 
+    description: MainCopy.description,
+    url: "https://inkverse.co",
+  });
 }
 
 const footerNavigation = {

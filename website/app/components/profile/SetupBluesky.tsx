@@ -4,12 +4,11 @@ interface SetupBlueskyProps {
   blueskyHandle: string;
   setBlueskyHandle: (handle: string) => void;
   userDetailsState: UserDetailsState;
-  currentStep: 'bluesky' | 'bluesky-verify' | 'bluesky-connected';
+  currentStep: 'bluesky' | 'bluesky-verify';
   onVerify: (e: React.FormEvent) => Promise<void>;
   onConfirm: (did: string) => Promise<void>;
   onBack: () => void;
   onSkip: () => void;
-  onContinue: () => void;
 }
 
 export function SetupBluesky({ 
@@ -21,7 +20,6 @@ export function SetupBluesky({
   onConfirm,
   onBack, 
   onSkip,
-  onContinue 
 }: SetupBlueskyProps) {
   if (currentStep === 'bluesky') {
     return (
@@ -159,30 +157,5 @@ export function SetupBluesky({
     );
   }
 
-  return (
-    <div className="space-y-4">
-      <div className="text-center py-8">
-        <div className="mb-4">
-          <svg className="w-16 h-16 text-[#00A8E8] mx-auto" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm3.707 7.293a1 1 0 0 1 0 1.414l-4 4a1 1 0 0 1-1.414 0l-2-2a1 1 0 1 1 1.414-1.414L11 12.586l3.293-3.293a1 1 0 0 1 1.414 0z"/>
-          </svg>
-        </div>
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
-          Bluesky Connected Successfully!
-        </h2>
-        {userDetailsState.blueskyFollowers && userDetailsState.blueskyFollowers.length > 0 && (
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
-            Found {userDetailsState.blueskyFollowers.length} creator{userDetailsState.blueskyFollowers.length !== 1 ? 's' : ''} you follow on Bluesky!
-          </p>
-        )}
-        
-        <button
-          onClick={onContinue}
-          className="w-full py-3 px-4 rounded-lg font-medium transition-colors bg-brand-pink dark:bg-taddy-blue text-white hover:opacity-90"
-        >
-          Follow creators
-        </button>
-      </div>
-    </div>
-  );
+  return null;
 }

@@ -44,6 +44,15 @@ export class CreatorLink {
       .returning('*');
   }
 
+  static async getCreatorLinksByTypeAndValue(type: LinkType, values: string[]): Promise<string[]> {
+    const creatorLinks = await database('creatorlink')
+      .where({ type })
+      .whereIn('value', values)
+      .returning('creatorUuid')
+
+    return creatorLinks.map(link => link.creatorUuid);
+  }
+
   static async addCreatorLinks(links: Record<string, any>[] | null, creatorUuid: string, trx: Knex.Transaction): Promise<CreatorLinkModel[]> {
     if (!links || links.length === 0) {
       return [];
