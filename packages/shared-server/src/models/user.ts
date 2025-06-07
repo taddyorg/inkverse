@@ -192,18 +192,4 @@ export class User {
       return false;
     }
   }
-
-  /**
-   * Generate a username from email
-   */
-  static sanitizeUsername(inputUsername: string): string {
-    // Remove special characters and make lowercase
-    const sanitized = inputUsername
-      .replace(/[^a-zA-Z0-9_-]/g, '')
-      .toLowerCase()
-      .trim();
-    
-    // Enforce 80 character limit
-    return sanitized.slice(0, 80);
-  }
 }

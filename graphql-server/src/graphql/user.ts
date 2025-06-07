@@ -6,6 +6,7 @@ import { User, OAuthToken, CreatorLink, ComicSeries, UserSeriesSubscription } fr
 import { UserAgeRange, type MutationResolvers, LinkType } from '@inkverse/shared-server/graphql/types';
 import { getAllFollows, getProfile, type BlueskyFollower, type BlueskyProfile } from '@inkverse/shared-server/bluesky/index';
 import { getNewAccessToken, TADDY_HOSTING_PROVIDER_UUID } from '@inkverse/public/hosting-providers';
+import { sanitizeUsername, validateUsername } from '@inkverse/public/user';
 
 // GraphQL Type Definitions
 export const UserDefinitions = `
@@ -245,13 +246,27 @@ export const UserMutations: MutationResolvers = {
       throw new AuthenticationError('You must be logged in to update your profile');
     }
 
+    // Validate username if provided
+    if (username) {
+      const validation = validateUsername(username);
+      if (!validation.isValid) {
+        throw new UserInputError(validation.error || 'Invalid username');
+      }
+
+      // Check if username is already taken by another user
+      const existingUser = await User.getUserByUsername(username);
+      if (existingUser && existingUser.id !== context.user.id) {
+        throw new UserInputError('This username is already taken');
+      }
+    }
+
     //If age range is under 18, birth year is required
     if (ageRange === UserAgeRange.UNDER_18 && !birthYear) {
       throw new UserInputError('Birth year is required for users under 18');
     }
 
     const userData = {
-      ...(username && { username: User.sanitizeUsername(username) }),
+      ...(username && { username: sanitizeUsername(username) }),
       ...(ageRange && { ageRange, birthYear: ageRange === UserAgeRange.UNDER_18 ? birthYear : null }),
     }
 
