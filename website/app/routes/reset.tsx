@@ -12,7 +12,8 @@ import { getMetaTags } from '@/lib/seo';
 import config from '@/config';
 
 export default function Reset() {
-  const { token } = useParams();
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get('token');
   const navigate = useNavigate();
   const [authState, dispatch] = useReducer(authReducer, authInitialState);
   const [hasAttempted, setHasAttempted] = useState(false);

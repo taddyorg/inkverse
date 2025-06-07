@@ -20,8 +20,8 @@ interface ComicsFoundProps {
 function ComicsFound({ comicSeries, onContinue }: ComicsFoundProps) {
   return (
     <>
-      <p className="text-gray-600 mb-8 text-center">
-        We've found {comicSeries?.length} comic{comicSeries?.length === 1 ? '' : 's'} you follow on Bluesky.
+      <p className="text-inkverse-black dark:text-white mb-8 text-center">
+        We found {comicSeries?.length} comic{comicSeries?.length === 1 ? '' : 's'} you follow on Bluesky.
       </p>
       <div className="flex flex-col gap-4">
         {comicSeries?.map((series) => {
@@ -43,7 +43,7 @@ function ComicsFound({ comicSeries, onContinue }: ComicsFoundProps) {
 function NoComicsFound() {
   return (
     <>
-      <p className="text-gray-600 mb-8 text-center">
+      <p className="text-inkverse-black dark:text-white mb-8 text-center">
         We didn't find any comics you follow on Bluesky.
       </p>
     </>
@@ -57,14 +57,14 @@ export function BlueskyConnected({ handle, loading, error, comicSeries, onContin
         <FaCheckCircle className="w-full h-full text-green-500" />
       </div>
       
-      <h2 className="text-2xl font-bold mb-2">Bluesky Connected!</h2>
+      <h2 className="text-2xl font-bold mb-2 text-inkverse-black dark:text-white">Bluesky Connected!</h2>
       
       {loading ? (
-        <p className="text-gray-600 mb-8">Finding creators you follow...</p>
+        <p className="text-inkverse-black dark:text-white mb-8">Finding creators you follow...</p>
       ) : error ? (
         <div className="text-center mb-8">
           <p className="text-red-600 mb-2">{error}</p>
-          <p className="text-gray-600">But your Bluesky account is connected.</p>
+          <p className="text-inkverse-black dark:text-white">But your Bluesky account is connected.</p>
         </div>
       ) : comicSeries && comicSeries.length > 0 ? (
         <ComicsFound comicSeries={comicSeries} onContinue={onContinue} />

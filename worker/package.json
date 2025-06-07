@@ -18,7 +18,8 @@
     "pre-download-comic-stories-height-and-width": "tsx src/scripts/images/start.ts",
     "build-sitemap": "tsx src/scripts/sitemap/start.ts",
     "generate-creator-links": "tsx src/scripts/feeds/generate-creator-links.ts",
-    "refresh-hosting-provider-access-tokens": "tsx src/scripts/hosting-provider/start.ts"
+    "refresh-hosting-provider-access-tokens": "tsx src/scripts/hosting-provider/start.ts",
+    "delete-user": "tsx src/scripts/user/delete.ts"
   },
   "author": "Inkverse",
   "license": "AGPL-3.0",

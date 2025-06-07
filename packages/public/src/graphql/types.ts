@@ -906,7 +906,7 @@ export type MutationSaveBlueskyDidArgs = {
 
 
 export type MutationSubscribeToMultipleComicSeriesArgs = {
-  seriesUuids: Array<InputMaybe<Scalars['ID']['input']>>;
+  seriesUuids: Array<Scalars['ID']['input']>;
 };
 
 
@@ -933,13 +933,6 @@ export enum PrivacyType {
   /**  The list is public  */
   PUBLIC = 'PUBLIC'
 }
-
-/** Public profile */
-export type PublicProfile = {
-  __typename?: 'PublicProfile';
-  id: Scalars['ID']['output'];
-  username?: Maybe<Scalars['String']['output']>;
-};
 
 export type Query = {
   __typename?: 'Query';
@@ -977,6 +970,10 @@ export type Query = {
   getRecentlyAddedComicSeries?: Maybe<HomeScreenComicSeries>;
   /**  Get a list of recently updated comics  */
   getRecentlyUpdatedComicSeries?: Maybe<HomeScreenComicSeries>;
+  /** Get a user by their ID */
+  getUserById?: Maybe<User>;
+  /** Get a user by their username */
+  getUserByUsername?: Maybe<User>;
   /** Get the current authenticated user */
   me?: Maybe<User>;
   /**  Search for a term  */
@@ -1072,6 +1069,16 @@ export type QueryGetRecentlyUpdatedComicSeriesArgs = {
 };
 
 
+export type QueryGetUserByIdArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryGetUserByUsernameArgs = {
+  username: Scalars['String']['input'];
+};
+
+
 export type QuerySearchArgs = {
   filterForGenres?: InputMaybe<Array<InputMaybe<Genre>>>;
   filterForTags?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -1124,7 +1131,7 @@ export type User = {
   birthYear?: Maybe<Scalars['Int']['output']>;
   blueskyDid?: Maybe<Scalars['String']['output']>;
   createdAt?: Maybe<Scalars['Int']['output']>;
-  email: Scalars['String']['output'];
+  email?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   isEmailVerified?: Maybe<Scalars['Boolean']['output']>;
   updatedAt?: Maybe<Scalars['Int']['output']>;
@@ -1239,7 +1246,6 @@ export type ResolversTypes = ResolversObject<{
   ListType: ListType;
   Mutation: ResolverTypeWrapper<{}>;
   PrivacyType: PrivacyType;
-  PublicProfile: ResolverTypeWrapper<PublicProfile>;
   Query: ResolverTypeWrapper<{}>;
   SearchResults: ResolverTypeWrapper<SearchResults>;
   SeriesStatus: SeriesStatus;
@@ -1269,7 +1275,6 @@ export type ResolversParentTypes = ResolversObject<{
   LinkDetails: LinkDetails;
   List: List;
   Mutation: {};
-  PublicProfile: PublicProfile;
   Query: {};
   SearchResults: SearchResults;
   String: Scalars['String']['output'];
@@ -1455,12 +1460,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateUserProfile?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, Partial<MutationUpdateUserProfileArgs>>;
 }>;
 
-export type PublicProfileResolvers<ContextType = any, ParentType extends ResolversParentTypes['PublicProfile'] = ResolversParentTypes['PublicProfile']> = ResolversObject<{
-  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  username?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
   getBlueskyProfile?: Resolver<Maybe<ResolversTypes['BlueskyProfile']>, ParentType, ContextType, RequireFields<QueryGetBlueskyProfileArgs, 'handle'>>;
   getComicIssue?: Resolver<Maybe<ResolversTypes['ComicIssue']>, ParentType, ContextType, RequireFields<QueryGetComicIssueArgs, 'seriesUuid' | 'uuid'>>;
@@ -1479,6 +1478,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getMostPopularComicSeries?: Resolver<Maybe<ResolversTypes['HomeScreenComicSeries']>, ParentType, ContextType, Partial<QueryGetMostPopularComicSeriesArgs>>;
   getRecentlyAddedComicSeries?: Resolver<Maybe<ResolversTypes['HomeScreenComicSeries']>, ParentType, ContextType, Partial<QueryGetRecentlyAddedComicSeriesArgs>>;
   getRecentlyUpdatedComicSeries?: Resolver<Maybe<ResolversTypes['HomeScreenComicSeries']>, ParentType, ContextType, Partial<QueryGetRecentlyUpdatedComicSeriesArgs>>;
+  getUserById?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryGetUserByIdArgs, 'id'>>;
+  getUserByUsername?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryGetUserByUsernameArgs, 'username'>>;
   me?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   search?: Resolver<Maybe<ResolversTypes['SearchResults']>, ParentType, ContextType, Partial<QuerySearchArgs>>;
 }>;
@@ -1495,7 +1496,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   birthYear?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   blueskyDid?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   createdAt?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   isEmailVerified?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   updatedAt?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -1518,7 +1519,6 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   LinkDetails?: LinkDetailsResolvers<ContextType>;
   List?: ListResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
-  PublicProfile?: PublicProfileResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   SearchResults?: SearchResultsResolvers<ContextType>;
   User?: UserResolvers<ContextType>;

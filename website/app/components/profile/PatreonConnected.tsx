@@ -19,8 +19,8 @@ interface ComicsFoundProps {
 function ComicsFound({ comicSeries, onContinue }: ComicsFoundProps) {
   return (
     <>
-      <p className="text-gray-600 mb-8 text-center">
-        We've found {comicSeries?.length} comic{comicSeries?.length === 1 ? '' : 's'} from creators you support on Patreon.
+      <p className="text-inkverse-black dark:text-white mb-8 text-center">
+        We found {comicSeries?.length} comic{comicSeries?.length === 1 ? '' : 's'} from creators you support on Patreon.
       </p>
       <div className="flex flex-col gap-4">
         {comicSeries?.map((series) => {
@@ -42,8 +42,8 @@ function ComicsFound({ comicSeries, onContinue }: ComicsFoundProps) {
 function NoComicsFound() {
   return (
     <>
-      <p className="text-gray-600 mb-8 text-center">
-        We didn't find any comics from creators you support on Patreon.
+      <p className="text-inkverse-black dark:text-white mb-8 text-center">
+        We didn't find any Inkverse creators you support on Patreon.
       </p>
     </>
   );
@@ -59,11 +59,10 @@ export function PatreonConnected({ loading, error, comicSeries, onContinue, onSk
       <h2 className="text-2xl font-bold mb-2">Patreon Connected!</h2>
       
       {loading ? (
-        <p className="text-gray-600 mb-8">Finding creators you support...</p>
+        <p className="text-inkverse-black dark:text-white mb-8">Finding creators you support...</p>
       ) : error ? (
         <div className="text-center mb-8">
           <p className="text-red-600 mb-2">{error}</p>
-          <p className="text-gray-600">But your Patreon account is connected.</p>
         </div>
       ) : comicSeries && comicSeries.length > 0 ? (
         <ComicsFound comicSeries={comicSeries} onContinue={onContinue} />

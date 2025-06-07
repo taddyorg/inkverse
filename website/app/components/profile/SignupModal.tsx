@@ -18,7 +18,7 @@ import {
   clearAuthError,
   AuthActionType
 } from '@inkverse/shared-client/dispatch/authentication';
-import { webStorageFunctions } from '@/lib/auth/user';
+import { isAuthenticated, webStorageFunctions } from '@/lib/auth/user';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -29,6 +29,7 @@ interface AuthModalProps {
 type AuthMode = 'signup' | 'emailInput' | 'verifyEmail';
 
 export function SignupModal({ isOpen, onClose, hideComponent = true }: AuthModalProps) {
+  const isUserAuthenticated = isAuthenticated();
   const [mode, setMode] = useState<AuthMode>('signup');
   const [email, setEmail] = useState('');
   const [authState, dispatch] = useReducer(authReducer, authInitialState);
@@ -65,7 +66,7 @@ export function SignupModal({ isOpen, onClose, hideComponent = true }: AuthModal
   useGoogleOneTapLogin({
     onSuccess: handleGoogleLoginSuccess,
     onError: handleGoogleLoginError,
-    disabled: isOpen
+    disabled: isOpen || isUserAuthenticated
   });
 
   // Reset state when modal opens/closes

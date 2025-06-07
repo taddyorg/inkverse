@@ -19,6 +19,9 @@ export function Navbar({ theme, zoomMode, onThemeChange, onZoomModeChange }: Nav
   const [showSettings, setShowSettings] = useState(false);
   const [showSignupModal, setShowSignupModal] = useState(false);
 
+  const userDetails = getUserDetails();
+  const isUserAuthenticated = isAuthenticated();
+
   const matches = useMatches();
   const navigate = useNavigate();
 
@@ -106,7 +109,7 @@ export function Navbar({ theme, zoomMode, onThemeChange, onZoomModeChange }: Nav
             </button>
 
             {/* Theme Toggle */}
-            {!isAuthenticated() && (
+            {!isUserAuthenticated && (
               <>
                 <button 
                   onClick={toggleTheme}
@@ -151,8 +154,8 @@ export function Navbar({ theme, zoomMode, onThemeChange, onZoomModeChange }: Nav
             )}
 
             {/* Profile Button */}
-            {typeof window !== 'undefined' && isAuthenticated() && getUserDetails() && (
-              <Link to={getUserDetails()?.username ? `/${getUserDetails()?.username}` : '/profile/setup'} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-center">
+            {typeof window !== 'undefined' && userDetails && (
+              <Link to={userDetails?.username ? `/${userDetails?.username}` : '/profile/setup'} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-center">
                 <PiUserBold className="h-6 w-6 text-gray-800 dark:text-white" />
               </Link>
             )}

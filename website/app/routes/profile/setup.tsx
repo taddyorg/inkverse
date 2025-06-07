@@ -1,6 +1,5 @@
 import { useState, useEffect, useReducer, useRef } from 'react';
-import { useNavigate, useSearchParams } from 'react-router';
-import { type LoaderFunctionArgs } from "react-router";
+import { useNavigate, useSearchParams, type MetaFunction } from 'react-router';
 import config from '@/config';
 import { getUserApolloClient } from '@/lib/apollo/client.client';
 import { UserAgeRange } from '@inkverse/public/graphql/types';
@@ -32,6 +31,7 @@ import { PatreonConnected } from '@/app/components/profile/PatreonConnected';
 import { BlueskyConnected } from '@/app/components/profile/BlueskyConnected';
 import { isValidDomain } from '@inkverse/shared-client/utils/common';
 import { localStorageSet } from '@/lib/storage/local';
+import { inkverseWebsiteUrl } from '@inkverse/public/utils';
 
 type SetupStep = 'username' | 'age' | 'patreon' | 'patreon-connected' | 'bluesky' | 'bluesky-verify' | 'bluesky-connected' | 'complete';
 const TADDY_PROVIDER_UUID = 'e9957105-80e4-46e3-8e82-20472b9d7512'; // Needed just for this screen
@@ -195,6 +195,7 @@ export default function AccountSetup() {
     } else if (currentStep === 'bluesky-connected') {
       setCurrentStep('bluesky');
     }
+    dispatch({ type: UserDetailsActionType.USER_DETAILS_CLEAR_ERROR });
   };
 
   const handleBlueskyVerify = async (e: React.FormEvent) => {
@@ -398,10 +399,12 @@ export default function AccountSetup() {
             onConnect={handlePatreonConnect}
             onSkip={() => {
               setCurrentStep('bluesky');
+              dispatch({ type: UserDetailsActionType.USER_DETAILS_CLEAR_ERROR });
             }}
             onBack={handleBack}
             onContinue={() => {
               setCurrentStep('bluesky');
+              dispatch({ type: UserDetailsActionType.USER_DETAILS_CLEAR_ERROR });
             }}
           />
         )}
@@ -413,7 +416,10 @@ export default function AccountSetup() {
             error={userDetailsState.error || userDetailsState.patreonSubscriptionError}
             comicSeries={userDetailsState.patreonComicSeries}
             onContinue={handleSubscribeToPatreonComics}
-            onSkip={() => setCurrentStep('bluesky')}
+            onSkip={() => {
+              setCurrentStep('bluesky');
+              dispatch({ type: UserDetailsActionType.USER_DETAILS_CLEAR_ERROR });
+            }}
           />
         )}
 
@@ -427,7 +433,10 @@ export default function AccountSetup() {
             onVerify={handleBlueskyVerify}
             onConfirm={handleBlueskyDidSave}
             onBack={handleBack}
-            onSkip={() => setCurrentStep('complete')}
+            onSkip={() => {
+              setCurrentStep('complete');
+              dispatch({ type: UserDetailsActionType.USER_DETAILS_CLEAR_ERROR });
+            }}
           />
         )}
 
@@ -450,11 +459,10 @@ export default function AccountSetup() {
   );
 }
 
-export async function loader({ params, request }: LoaderFunctionArgs) {
-  const url = new URL(request.url);
+export const meta: MetaFunction = () => {
   return getMetaTags({
     title: 'Complete your profile',
     description: 'Complete your profile to get started',
-    url: url.href,
+    url: `${inkverseWebsiteUrl}/profile/setup`,
   });
-}
+};  

@@ -77,7 +77,6 @@ function removeHostingProviderUuid(hostingProviderUuid: string): void {
  * Save the hosting provider access token to localStorage
  */
 export function saveHostingProviderAccessToken(token: string, hostingProviderUuid: string): void {
-  console.log('saveHostingProviderAccessToken', token, hostingProviderUuid);
   localStorageSet(`${hostingProviderUuid}:${HOSTING_PROVIDER_ACCESS_TOKEN_ENDING}`, token);
 }
 
@@ -85,7 +84,6 @@ export function saveHostingProviderAccessToken(token: string, hostingProviderUui
  * Save the hosting provider refresh token to localStorage and track the UUID
  */
 export function saveHostingProviderRefreshToken(token: string, hostingProviderUuid: string): void {
-  console.log('saveHostingProviderRefreshToken', token, hostingProviderUuid);
   localStorageSet(`${hostingProviderUuid}:${HOSTING_PROVIDER_REFRESH_TOKEN_ENDING}`, token);
   addHostingProviderUuid(hostingProviderUuid);
 }

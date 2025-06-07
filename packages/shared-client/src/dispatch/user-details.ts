@@ -422,22 +422,6 @@ export async function verifyBlueskyHandle(
   }
 }
 
-interface FollowCreatorsFromPatreonResult {
-  creatorsFollowed: number;
-}
-
-export async function followCreatorsFromPatreon(
-  token: string,
-  patreonApiUrl?: string
-): Promise<FollowCreatorsFromPatreonResult> {
-  try {
-    
-  } catch (error: any) {
-    console.error('Failed to follow creators from Patreon:', error);
-    throw new Error(error?.response?.data?.message || error?.message || 'Failed to follow creators from Patreon');
-  }
-}
-
 interface FollowComicsFromBlueskyCreatorsParams {
   userClient: ApolloClient<any>;
 }

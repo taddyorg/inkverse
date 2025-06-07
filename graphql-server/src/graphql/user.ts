@@ -16,20 +16,12 @@ export const UserDefinitions = `
     id: ID!
     createdAt: Int
     updatedAt: Int
-    email: String!
+    email: String
     username: String
     isEmailVerified: Boolean
     ageRange: UserAgeRange
     birthYear: Int
     blueskyDid: String
-  }
-
-  """
-  Public profile
-  """
-  type PublicProfile {
-    id: ID!
-    username: String
   }
 
   """
@@ -69,6 +61,16 @@ export const UserQueriesDefinitions = `
   Get the current authenticated user
   """
   me: User
+
+  """
+  Get a user by their username
+  """
+  getUserByUsername(username: String!): User
+
+  """
+  Get a user by their ID
+  """
+  getUserById(id: ID!): User
 
   """
   Get Bluesky profile details for a given handle
@@ -127,7 +129,7 @@ export const UserMutationsDefinitions = `
   """
   Subscribe to multiple comic series
   """
-  subscribeToMultipleComicSeries(seriesUuids: [ID]!): Boolean!
+  subscribeToMultipleComicSeries(seriesUuids: [ID!]!): Boolean!
   
 `;
 
@@ -137,7 +139,15 @@ export const UserQueries = {
     if (!context.user) { return null }
     return context.user;
   },
-  
+
+  getUserByUsername: async (_parent: any, { username }: { username: string }, context: any): Promise<UserModel | null> => {
+    return await User.getUserByUsername(username);
+  },
+
+  getUserById: async (_parent: any, { id }: { id: string }, context: any): Promise<UserModel | null> => {
+    return await User.getUserById(id);
+  },
+
   getBlueskyProfile: async (_parent: any, { handle }: { handle: string }, _context: any): Promise<BlueskyProfile | null> => {
     if (!_context.user) {
       throw new AuthenticationError('You must be logged in to get your Bluesky profile');
@@ -333,6 +343,33 @@ export const UserMutations: MutationResolvers = {
 
 export const UserFieldResolvers = {
   User: {
-    
+    createdAt: (user: UserModel, _args: any, context: any) => {
+      if (!context.user || context.user.id !== user.id) { return null; }
+      return user.createdAt || null;
+    },
+    updatedAt: (user: UserModel, _args: any, context: any) => {
+      if (!context.user || context.user.id !== user.id) { return null; }
+      return user.updatedAt || null;
+    },
+    email: (user: UserModel, _args: any, context: any) => {
+      if (!context.user || context.user.id !== user.id) { return null; }
+      return user.email || null;
+    },
+    isEmailVerified: (user: UserModel, _args: any, context: any) => {
+      if (!context.user || context.user.id !== user.id) { return null; }
+      return user.isEmailVerified || null;
+    },
+    ageRange: (user: UserModel, _args: any, context: any) => {
+      if (!context.user || context.user.id !== user.id) { return null; }
+      return user.ageRange || null;
+    },
+    birthYear: (user: UserModel, _args: any, context: any) => {
+      if (!context.user || context.user.id !== user.id) { return null; }
+      return user.birthYear || null;
+    },
+    blueskyDid: (user: UserModel, _args: any, context: any) => {
+      if (!context.user || context.user.id !== user.id) { return null; }
+      return user.blueskyDid || null;
+    },
   },
 };

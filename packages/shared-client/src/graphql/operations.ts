@@ -905,7 +905,7 @@ export type MutationSaveBlueskyDidArgs = {
 
 
 export type MutationSubscribeToMultipleComicSeriesArgs = {
-  seriesUuids: Array<InputMaybe<Scalars['ID']['input']>>;
+  seriesUuids: Array<Scalars['ID']['input']>;
 };
 
 
@@ -932,13 +932,6 @@ export enum PrivacyType {
   /**  The list is public  */
   PUBLIC = 'PUBLIC'
 }
-
-/** Public profile */
-export type PublicProfile = {
-  __typename?: 'PublicProfile';
-  id: Scalars['ID']['output'];
-  username?: Maybe<Scalars['String']['output']>;
-};
 
 export type Query = {
   __typename?: 'Query';
@@ -976,6 +969,10 @@ export type Query = {
   getRecentlyAddedComicSeries?: Maybe<HomeScreenComicSeries>;
   /**  Get a list of recently updated comics  */
   getRecentlyUpdatedComicSeries?: Maybe<HomeScreenComicSeries>;
+  /** Get a user by their ID */
+  getUserById?: Maybe<User>;
+  /** Get a user by their username */
+  getUserByUsername?: Maybe<User>;
   /** Get the current authenticated user */
   me?: Maybe<User>;
   /**  Search for a term  */
@@ -1071,6 +1068,16 @@ export type QueryGetRecentlyUpdatedComicSeriesArgs = {
 };
 
 
+export type QueryGetUserByIdArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryGetUserByUsernameArgs = {
+  username: Scalars['String']['input'];
+};
+
+
 export type QuerySearchArgs = {
   filterForGenres?: InputMaybe<Array<InputMaybe<Genre>>>;
   filterForTags?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -1123,7 +1130,7 @@ export type User = {
   birthYear?: Maybe<Scalars['Int']['output']>;
   blueskyDid?: Maybe<Scalars['String']['output']>;
   createdAt?: Maybe<Scalars['Int']['output']>;
-  email: Scalars['String']['output'];
+  email?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   isEmailVerified?: Maybe<Scalars['Boolean']['output']>;
   updatedAt?: Maybe<Scalars['Int']['output']>;
@@ -1154,7 +1161,7 @@ export type MiniCreatorDetailsFragment = { __typename?: 'Creator', uuid: string,
 
 export type MiniUserDetailsFragment = { __typename?: 'User', id: string, username?: string | null };
 
-export type UserDetailsFragment = { __typename?: 'User', id: string, username?: string | null, email: string, isEmailVerified?: boolean | null, ageRange?: UserAgeRange | null, birthYear?: number | null };
+export type UserDetailsFragment = { __typename?: 'User', id: string, username?: string | null, email?: string | null, isEmailVerified?: boolean | null, ageRange?: UserAgeRange | null, birthYear?: number | null };
 
 export type FetchAllHostingProviderTokensMutationVariables = Exact<{ [key: string]: never; }>;
 
@@ -1184,7 +1191,7 @@ export type SaveBlueskyDidMutationVariables = Exact<{
 export type SaveBlueskyDidMutation = { __typename?: 'Mutation', saveBlueskyDid?: { __typename?: 'User', id: string, blueskyDid?: string | null } | null };
 
 export type SubscribeToMultipleComicSeriesMutationVariables = Exact<{
-  seriesUuids: Array<InputMaybe<Scalars['ID']['input']>> | InputMaybe<Scalars['ID']['input']>;
+  seriesUuids: Array<Scalars['ID']['input']> | Scalars['ID']['input'];
 }>;
 
 
@@ -1197,7 +1204,7 @@ export type UpdateUserProfileMutationVariables = Exact<{
 }>;
 
 
-export type UpdateUserProfileMutation = { __typename?: 'Mutation', updateUserProfile?: { __typename?: 'User', id: string, username?: string | null, email: string, isEmailVerified?: boolean | null, ageRange?: UserAgeRange | null, birthYear?: number | null } | null };
+export type UpdateUserProfileMutation = { __typename?: 'Mutation', updateUserProfile?: { __typename?: 'User', id: string, username?: string | null, email?: string | null, isEmailVerified?: boolean | null, ageRange?: UserAgeRange | null, birthYear?: number | null } | null };
 
 export type GetBlueskyProfileQueryVariables = Exact<{
   handle: Scalars['String']['input'];
@@ -1247,7 +1254,7 @@ export type GetCreatorQuery = { __typename?: 'Query', getCreator?: { __typename?
 export type GetCurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetCurrentUserQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, username?: string | null, email: string, isEmailVerified?: boolean | null, ageRange?: UserAgeRange | null, birthYear?: number | null } | null };
+export type GetCurrentUserQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, username?: string | null, email?: string | null, isEmailVerified?: boolean | null, ageRange?: UserAgeRange | null, birthYear?: number | null } | null };
 
 export type GetMiniCurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1283,6 +1290,20 @@ export type GetMiniCreatorQueryVariables = Exact<{
 
 
 export type GetMiniCreatorQuery = { __typename?: 'Query', getCreator?: { __typename?: 'Creator', uuid: string, name?: string | null, shortUrl?: string | null, avatarImageAsString?: string | null, links?: Array<{ __typename?: 'LinkDetails', url?: string | null, type?: LinkType | null } | null> | null } | null };
+
+export type GetUserByIdQueryVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type GetUserByIdQuery = { __typename?: 'Query', getUserById?: { __typename?: 'User', id: string, username?: string | null, email?: string | null, isEmailVerified?: boolean | null, ageRange?: UserAgeRange | null, birthYear?: number | null } | null };
+
+export type GetUserByUsernameQueryVariables = Exact<{
+  username: Scalars['String']['input'];
+}>;
+
+
+export type GetUserByUsernameQuery = { __typename?: 'Query', getUserByUsername?: { __typename?: 'User', id: string, username?: string | null } | null };
 
 export type HomeScreenQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1448,7 +1469,7 @@ export const SaveBlueskyDid = gql`
 }
     `;
 export const SubscribeToMultipleComicSeries = gql`
-    mutation SubscribeToMultipleComicSeries($seriesUuids: [ID]!) {
+    mutation SubscribeToMultipleComicSeries($seriesUuids: [ID!]!) {
   subscribeToMultipleComicSeries(seriesUuids: $seriesUuids)
 }
     `;
@@ -1592,6 +1613,20 @@ export const GetMiniCreator = gql`
   }
 }
     ${MiniCreatorDetails}`;
+export const GetUserById = gql`
+    query GetUserById($id: ID!) {
+  getUserById(id: $id) {
+    ...UserDetails
+  }
+}
+    ${UserDetails}`;
+export const GetUserByUsername = gql`
+    query GetUserByUsername($username: String!) {
+  getUserByUsername(username: $username) {
+    ...MiniUserDetails
+  }
+}
+    ${MiniUserDetails}`;
 export const HomeScreen = gql`
     query HomeScreen {
   getFeaturedComicSeries {

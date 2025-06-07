@@ -41,6 +41,16 @@ export class User {
   }
 
   /**
+   * Get user by username
+   */
+  static async getUserByUsername(username: string): Promise<UserModel | null> {
+    const lowerUsername = username.toLowerCase().trim();
+    return await database("users")
+      .where({ username: lowerUsername })
+      .first('*');
+  }
+
+  /**
    * Get user by Google ID
    */
   static async getUserByGoogleId(googleId: string): Promise<UserModel | null> {
@@ -168,6 +178,7 @@ export class User {
         // Delete related data first
         await trx('user_device').where({ user_id: id }).del();
         await trx('oauth_token').where({ user_id: id }).del();
+        await trx('userseries_subscriptions').where({ userId: id }).del();
         
         // Finally delete the user
         await trx('users').where({ id }).del();

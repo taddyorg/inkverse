@@ -1,0 +1,7 @@
+#import UserDetails from '../fragments/UserDetails.graphql'
+
+query GetUserById($id: ID!) {
+  getUserById(id: $id) {
+    ...UserDetails
+  }
+}

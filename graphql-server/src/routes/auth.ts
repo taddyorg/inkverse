@@ -23,6 +23,11 @@ import * as AppleSignin from 'apple-signin-auth';
 
 const router = Router();
 
+// Helper function to extract refresh token from cookie
+function getRefreshTokenFromCookie(cookies: any): string | null {
+  return cookies?.['inkverse-refresh-token'] || null;
+}
+
 // Initialize Google OAuth client
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
@@ -170,7 +175,7 @@ router.post('/login-with-google', async (req: Request, res: Response) => {
         await addContactToList('signup', { email: alreadyGoogleUser.email });
       }
 
-      // Set the refresh token cookie
+      // Set the refresh token cookie as plain string
       res.cookie('inkverse-refresh-token', refreshToken, REFRESH_TOKEN_COOKIE_OPTIONS);
 
       return res.status(200).json({
@@ -468,7 +473,7 @@ router.post('/exchange-refresh-token-for-access-token', async (req: Request, res
   try {
     // Check for token in body or cookie
     const { token } = req.body;
-    const cookieToken = req.cookies?.['inkverse-refresh-token'];
+    const cookieToken = getRefreshTokenFromCookie(req.cookies);
     const refreshToken = token || cookieToken;
     
     if (!refreshToken) {
@@ -498,7 +503,7 @@ router.post('/exchange-refresh-token-for-refresh-token', async (req: Request, re
   try {
     // Check for token in body or cookie
     const { token } = req.body;
-    const cookieToken = req.cookies?.['inkverse-refresh-token'];
+    const cookieToken = getRefreshTokenFromCookie(req.cookies);
     const refreshToken = token || cookieToken;
     
     if (!refreshToken) {
@@ -508,11 +513,16 @@ router.post('/exchange-refresh-token-for-refresh-token', async (req: Request, re
     // Use the utility function to refresh the refresh token
     const newRefreshToken = await refreshRefreshToken(refreshToken);
 
+    if (!newRefreshToken) {
+      return res.status(401).json({ error: 'No new refresh token' });
+    }
+
     // Set the new refresh token as cookie
     res.cookie('inkverse-refresh-token', newRefreshToken, REFRESH_TOKEN_COOKIE_OPTIONS)
 
     return res.status(200).json({ refreshToken: newRefreshToken });
   } catch (error: any) {
+    console.log('error', error);
     // Convert known error types to proper errors
     if (error instanceof Error) {
       if (error.message.includes('expired')) {
@@ -524,19 +534,6 @@ router.post('/exchange-refresh-token-for-refresh-token', async (req: Request, re
     // Generic error for unexpected issues
     return res.status(401).json({ error: 'Failed to refresh refresh token' });
   }
-});
-
-// Logout
-router.post('/logout', async (req: Request, res: Response) => {
-  // Clear the refresh token cookie
-  res.clearCookie('inkverse-refresh-token', {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    path: '/'
-  });
-  
-  return res.status(200).json({ success: true });
 });
 
 export default router;

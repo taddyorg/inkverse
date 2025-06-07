@@ -115,3 +115,10 @@ export function localStorageDeleteMultiple(keys: string[]): boolean {
     return false;
   }
 }
+
+export function clearLocalStorage() {
+  if (!isLocalStorageAvailable()) {
+    return;
+  }
+  window.localStorage.clear();
+}
