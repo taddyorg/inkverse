@@ -51,9 +51,9 @@ export const loader: LoaderFunction = async ({ request }) => {
 };
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const { settings: initialSettings } = useLoaderData<{ settings: { theme: string, zoomMode: string } }>();
-  const [theme, setTheme] = useState(initialSettings.theme || 'light');
-  const [zoomMode, setZoomMode] = useState(initialSettings.zoomMode || 'out');
+  const { settings: initialSettings } = useLoaderData<{ settings: { theme?: string, zoomMode?: string } }>();
+  const [theme, setTheme] = useState(initialSettings?.theme || 'light');
+  const [zoomMode, setZoomMode] = useState(initialSettings?.zoomMode || 'out');
 
   const matches = useMatches();
   const currentRouteData = matches[matches.length - 1]?.data;

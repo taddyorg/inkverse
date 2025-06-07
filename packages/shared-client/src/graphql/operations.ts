@@ -875,6 +875,8 @@ export type Mutation = {
   fetchRefreshTokenForHostingProvider?: Maybe<Scalars['String']['output']>;
   /**  Report a comic series  */
   reportComicSeries?: Maybe<Scalars['Boolean']['output']>;
+  /** Resend verification email */
+  resendVerificationEmail: Scalars['Boolean']['output'];
   /** Save or update the user's Bluesky handle */
   saveBlueskyDid?: Maybe<User>;
   /** Subscribe to multiple comic series */
@@ -883,6 +885,8 @@ export type Mutation = {
   subscribeToSeries: Scalars['Boolean']['output'];
   /** Unsubscribe from a comic series */
   unsubscribeFromSeries: Scalars['Boolean']['output'];
+  /** Update user email */
+  updateUserEmail?: Maybe<User>;
   /** Update user profile (username and age) */
   updateUserProfile?: Maybe<User>;
 };
@@ -916,6 +920,11 @@ export type MutationSubscribeToSeriesArgs = {
 
 export type MutationUnsubscribeFromSeriesArgs = {
   seriesUuid: Scalars['ID']['input'];
+};
+
+
+export type MutationUpdateUserEmailArgs = {
+  email: Scalars['String']['input'];
 };
 
 
@@ -1161,7 +1170,7 @@ export type MiniCreatorDetailsFragment = { __typename?: 'Creator', uuid: string,
 
 export type MiniUserDetailsFragment = { __typename?: 'User', id: string, username?: string | null };
 
-export type UserDetailsFragment = { __typename?: 'User', id: string, username?: string | null, email?: string | null, isEmailVerified?: boolean | null, ageRange?: UserAgeRange | null, birthYear?: number | null };
+export type UserDetailsFragment = { __typename?: 'User', id: string, username?: string | null, email?: string | null, isEmailVerified?: boolean | null, ageRange?: UserAgeRange | null, birthYear?: number | null, blueskyDid?: string | null };
 
 export type FetchAllHostingProviderTokensMutationVariables = Exact<{ [key: string]: never; }>;
 
@@ -1183,6 +1192,11 @@ export type ReportComicSeriesMutationVariables = Exact<{
 
 export type ReportComicSeriesMutation = { __typename?: 'Mutation', reportComicSeries?: boolean | null };
 
+export type ResendVerificationEmailMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type ResendVerificationEmailMutation = { __typename?: 'Mutation', resendVerificationEmail: boolean };
+
 export type SaveBlueskyDidMutationVariables = Exact<{
   did: Scalars['String']['input'];
 }>;
@@ -1197,6 +1211,13 @@ export type SubscribeToMultipleComicSeriesMutationVariables = Exact<{
 
 export type SubscribeToMultipleComicSeriesMutation = { __typename?: 'Mutation', subscribeToMultipleComicSeries: boolean };
 
+export type UpdateUserEmailMutationVariables = Exact<{
+  email: Scalars['String']['input'];
+}>;
+
+
+export type UpdateUserEmailMutation = { __typename?: 'Mutation', updateUserEmail?: { __typename?: 'User', id: string, username?: string | null, email?: string | null, isEmailVerified?: boolean | null, ageRange?: UserAgeRange | null, birthYear?: number | null, blueskyDid?: string | null } | null };
+
 export type UpdateUserProfileMutationVariables = Exact<{
   username?: InputMaybe<Scalars['String']['input']>;
   ageRange?: InputMaybe<UserAgeRange>;
@@ -1204,7 +1225,7 @@ export type UpdateUserProfileMutationVariables = Exact<{
 }>;
 
 
-export type UpdateUserProfileMutation = { __typename?: 'Mutation', updateUserProfile?: { __typename?: 'User', id: string, username?: string | null, email?: string | null, isEmailVerified?: boolean | null, ageRange?: UserAgeRange | null, birthYear?: number | null } | null };
+export type UpdateUserProfileMutation = { __typename?: 'Mutation', updateUserProfile?: { __typename?: 'User', id: string, username?: string | null, email?: string | null, isEmailVerified?: boolean | null, ageRange?: UserAgeRange | null, birthYear?: number | null, blueskyDid?: string | null } | null };
 
 export type GetBlueskyProfileQueryVariables = Exact<{
   handle: Scalars['String']['input'];
@@ -1251,16 +1272,6 @@ export type GetCreatorQueryVariables = Exact<{
 
 export type GetCreatorQuery = { __typename?: 'Query', getCreator?: { __typename?: 'Creator', uuid: string, name?: string | null, shortUrl?: string | null, bio?: string | null, avatarImageAsString?: string | null, comics?: Array<{ __typename?: 'ComicSeries', uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null } | null> | null, links?: Array<{ __typename?: 'LinkDetails', url?: string | null, type?: LinkType | null } | null> | null } | null };
 
-export type GetCurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type GetCurrentUserQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, username?: string | null, email?: string | null, isEmailVerified?: boolean | null, ageRange?: UserAgeRange | null, birthYear?: number | null } | null };
-
-export type GetMiniCurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type GetMiniCurrentUserQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, username?: string | null } | null };
-
 export type GetDocumentationQueryVariables = Exact<{
   id: Scalars['ID']['input'];
 }>;
@@ -1291,12 +1302,19 @@ export type GetMiniCreatorQueryVariables = Exact<{
 
 export type GetMiniCreatorQuery = { __typename?: 'Query', getCreator?: { __typename?: 'Creator', uuid: string, name?: string | null, shortUrl?: string | null, avatarImageAsString?: string | null, links?: Array<{ __typename?: 'LinkDetails', url?: string | null, type?: LinkType | null } | null> | null } | null };
 
+export type GetMiniUserByIdQueryVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type GetMiniUserByIdQuery = { __typename?: 'Query', getUserById?: { __typename?: 'User', id: string, username?: string | null } | null };
+
 export type GetUserByIdQueryVariables = Exact<{
   id: Scalars['ID']['input'];
 }>;
 
 
-export type GetUserByIdQuery = { __typename?: 'Query', getUserById?: { __typename?: 'User', id: string, username?: string | null, email?: string | null, isEmailVerified?: boolean | null, ageRange?: UserAgeRange | null, birthYear?: number | null } | null };
+export type GetUserByIdQuery = { __typename?: 'Query', getUserById?: { __typename?: 'User', id: string, username?: string | null, email?: string | null, isEmailVerified?: boolean | null, ageRange?: UserAgeRange | null, birthYear?: number | null, blueskyDid?: string | null } | null };
 
 export type GetUserByUsernameQueryVariables = Exact<{
   username: Scalars['String']['input'];
@@ -1443,6 +1461,7 @@ export const UserDetails = gql`
   isEmailVerified
   ageRange
   birthYear
+  blueskyDid
 }
     `;
 export const FetchAllHostingProviderTokens = gql`
@@ -1460,6 +1479,11 @@ export const ReportComicSeries = gql`
   reportComicSeries(uuid: $uuid, reportType: $reportType)
 }
     `;
+export const ResendVerificationEmail = gql`
+    mutation ResendVerificationEmail {
+  resendVerificationEmail
+}
+    `;
 export const SaveBlueskyDid = gql`
     mutation SaveBlueskyDid($did: String!) {
   saveBlueskyDid(did: $did) {
@@ -1473,6 +1497,13 @@ export const SubscribeToMultipleComicSeries = gql`
   subscribeToMultipleComicSeries(seriesUuids: $seriesUuids)
 }
     `;
+export const UpdateUserEmail = gql`
+    mutation UpdateUserEmail($email: String!) {
+  updateUserEmail(email: $email) {
+    ...UserDetails
+  }
+}
+    ${UserDetails}`;
 export const UpdateUserProfile = gql`
     mutation UpdateUserProfile($username: String, $ageRange: UserAgeRange, $birthYear: Int) {
   updateUserProfile(
@@ -1570,20 +1601,6 @@ export const GetCreator = gql`
 }
     ${CreatorDetails}
 ${MiniComicSeriesDetails}`;
-export const GetCurrentUser = gql`
-    query GetCurrentUser {
-  me {
-    ...UserDetails
-  }
-}
-    ${UserDetails}`;
-export const GetMiniCurrentUser = gql`
-    query GetMiniCurrentUser {
-  me {
-    ...MiniUserDetails
-  }
-}
-    ${MiniUserDetails}`;
 export const GetDocumentation = gql`
     query GetDocumentation($id: ID!) {
   getDocumentation(id: $id) {
@@ -1613,6 +1630,13 @@ export const GetMiniCreator = gql`
   }
 }
     ${MiniCreatorDetails}`;
+export const GetMiniUserById = gql`
+    query GetMiniUserById($id: ID!) {
+  getUserById(id: $id) {
+    ...MiniUserDetails
+  }
+}
+    ${MiniUserDetails}`;
 export const GetUserById = gql`
     query GetUserById($id: ID!) {
   getUserById(id: $id) {

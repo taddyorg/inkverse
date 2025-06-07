@@ -21,6 +21,20 @@ interface UserCreateOrUpdateInput {
   blueskyDid?: string | null | undefined;
 }
 
+interface VerificationToken {
+  token: string;
+  expiry: number;
+}
+
+/**
+ * Generate a verification token and expiry date
+ */
+async function generateVerificationToken(): Promise<VerificationToken> {
+  const token = await generateRandomString(40);
+  const expiry = currentDate() + (4 * 24 * 60 * 60); // 4 days in seconds
+  return { token, expiry };
+}
+
 export class User {
   /**
    * Get user by ID
@@ -95,25 +109,27 @@ export class User {
     return updatedUser;
   }
 
+  /**
+   * Check if user has a valid reset password token, if not generate a new one
+   */
   static async checkOrResetPasswordReset(user: UserModel): Promise<UserModel | null> {
     if (user.resetPasswordExpiry && user.resetPasswordExpiry > currentDate()) { 
-      return user
-    }else{
-      const hex = await generateRandomString(40)
-      const expiryDate = currentDate() + (4 * 24 * 60 * 60); // 4 days in seconds
+      return user;
+    } else {
+      const { token, expiry } = await generateVerificationToken();
 
-      const [ returnedUser ] = await database('users')
+      const [returnedUser] = await database('users')
         .where({
           id: user.id,
         })
         .update({
           updatedAt: currentDate(),
-          resetPasswordToken: hex,
-          resetPasswordExpiry: expiryDate
+          resetPasswordToken: token,
+          resetPasswordExpiry: expiry,
         })
         .returning('*');
 
-      return returnedUser
+      return returnedUser;
     }
   }
 
@@ -149,21 +165,27 @@ export class User {
     return updatedUser;
   }
 
-  /**
-   * Mark user email as verified
-   */
-  static async markEmailAsVerified(id: string | number): Promise<UserModel | null> {
-    const [updatedUser] = await database("users")
-      .where({ id })
+  static async updateUserEmail(user: UserModel, email?: string | null): Promise<UserModel | null> {
+    const resetPasswordStillValid = user.resetPasswordExpiry && user.resetPasswordExpiry > currentDate();
+   
+    // Generate new verification token
+    const { token, expiry } = await generateVerificationToken();
+
+    const [returnedUser] = await database('users')
+      .where({
+        id: user.id,
+      })
       .update({
         updatedAt: currentDate(),
-        isEmailVerified: true,
+        ...(!resetPasswordStillValid ? { resetPasswordToken: token, resetPasswordExpiry: expiry } : {}),
+        ...(email ? { email } : {}),
+        isEmailVerified: false,
       })
       .returning('*');
-    
-    return updatedUser;
+
+      return returnedUser;
   }
-  
+
   /**
    * Delete user account and all associated data
    */

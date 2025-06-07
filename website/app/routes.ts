@@ -19,5 +19,11 @@ export default [
     route("logout", "routes/logout.tsx"),
     route("hosting-provider/:uuid", "routes/hosting-provider.tsx"),
     route("profile/setup", "routes/profile/setup.tsx"),
+    route("profile/edit", "routes/profile/edit.tsx"),
+    route("profile/edit/username", "routes/profile/edit/username.tsx"),
+    route("profile/edit/age", "routes/profile/edit/age.tsx"),
+    route("profile/edit/email", "routes/profile/edit/email.tsx"),
+    route("profile/edit/patreon", "routes/profile/edit/patreon.tsx"),
+    route("profile/edit/bluesky", "routes/profile/edit/bluesky.tsx"),
     route(":username", "routes/profile.tsx"),
 ] satisfies RouteConfig;

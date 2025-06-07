@@ -2,14 +2,11 @@ import type { Dispatch } from 'react';
 import type { ApolloClient, FetchResult } from '@apollo/client';
 import { 
   GetUserByUsername,
-  GetFullUserByUsername,
   UpdateUserProfile,
 } from '../graphql/operations';
 import type { 
   GetUserByUsernameQuery,
   GetUserByUsernameQueryVariables,
-  GetFullUserByUsernameQuery,
-  GetFullUserByUsernameQueryVariables,
   UpdateUserProfileMutation, 
   UpdateUserProfileMutationVariables,
   UserAgeRange,
@@ -77,8 +74,8 @@ export async function getUserByUsername(
   if (dispatch) dispatch({ type: ProfileActionType.PROFILE_START });
 
   try {
-    const result = await userClient.query<GetFullUserByUsernameQuery, GetFullUserByUsernameQueryVariables>({
-      query: GetFullUserByUsername,
+    const result = await userClient.query<GetUserByUsernameQuery, GetUserByUsernameQueryVariables>({
+      query: GetUserByUsername,
       variables: { username },
       fetchPolicy: 'network-only'
     });
@@ -101,47 +98,6 @@ export async function getUserByUsername(
   } catch (error: any) {
     if (dispatch) {
       dispatch({ type: ProfileActionType.PROFILE_ERROR, payload: error?.message || 'Failed to get user' });
-    }
-    throw error;
-  }
-}
-
-interface GetPublicUserByUsernameParams {
-  publicClient: ApolloClient<any>;
-  username: string;
-}
-
-export async function getPublicUserByUsername(
-  { publicClient, username }: GetPublicUserByUsernameParams,
-  dispatch?: Dispatch<ProfileAction>
-): Promise<any> {
-  if (dispatch) dispatch({ type: ProfileActionType.PROFILE_START });
-
-  try {
-    const result = await publicClient.query<GetUserByUsernameQuery, GetUserByUsernameQueryVariables>({
-      query: GetUserByUsername,
-      variables: { username },
-      fetchPolicy: 'network-only'
-    });
-
-    const { data, errors } = result;
-
-    if (errors) {
-      throw new Error(errors[0]?.message || 'Failed to get public user data');
-    }
-
-    if (!data?.getUserByUsername) {
-      throw new Error('User not found');
-    }
-
-    if (dispatch) {
-      dispatch({ type: ProfileActionType.PROFILE_SUCCESS, payload: data.getUserByUsername });
-    }
-
-    return data.getUserByUsername;
-  } catch (error: any) {
-    if (dispatch) {
-      dispatch({ type: ProfileActionType.PROFILE_ERROR, payload: error?.message || 'Failed to get public user data' });
     }
     throw error;
   }

@@ -1,0 +1,5 @@
+query GetMiniUserById($id: ID!) {
+  getUserById(id: $id) {
+    ...MiniUserDetails
+  }
+}

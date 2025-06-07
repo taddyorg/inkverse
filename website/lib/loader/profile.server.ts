@@ -1,6 +1,7 @@
 import { type LoaderFunctionArgs } from "react-router";
 import { getPublicApolloClient, getUserApolloClient } from "@/lib/apollo/client.server";
-import { type GetUserByUsernameQuery, GetUserByUsername, type GetUserByUsernameQueryVariables, type User, type GetUserByIdQuery, type GetUserByIdQueryVariables, GetUserById } from "@inkverse/shared-client/graphql/operations";
+import { type GetUserByUsernameQuery, GetUserByUsername, type GetUserByUsernameQueryVariables, type User, type GetUserByIdQuery, type GetUserByIdQueryVariables, GetUserById, GetMiniUserById } from "@inkverse/shared-client/graphql/operations";
+import { type GetMiniUserByIdQuery, type GetMiniUserByIdQueryVariables } from "@inkverse/shared-client/graphql/operations";
 import { handleLoaderError } from "./error-handler";
 import { getRefreshToken } from "@/lib/auth/cookie";
 import { jwtDecode, type JwtPayload } from 'jwt-decode';
@@ -48,8 +49,8 @@ export async function loadProfile({ params, request }: LoaderFunctionArgs): Prom
         // Use user client to get full profile data
         const userClient = getUserApolloClient(request);
         
-        const userResult = await userClient.query<GetUserByIdQuery, GetUserByIdQueryVariables>({
-          query: GetUserById,
+        const userResult = await userClient.query<GetMiniUserByIdQuery, GetMiniUserByIdQueryVariables>({
+          query: GetMiniUserById,
           variables: { id: userIdFromUsername },
         });
     
@@ -66,8 +67,8 @@ export async function loadProfile({ params, request }: LoaderFunctionArgs): Prom
         // Use public client to get limited profile data for other users
         const publicClient = getPublicApolloClient(request);
         
-        const userResult = await publicClient.query<GetUserByIdQuery, GetUserByIdQueryVariables>({
-          query: GetUserById,
+        const userResult = await publicClient.query<GetMiniUserByIdQuery, GetMiniUserByIdQueryVariables>({
+          query: GetMiniUserById,
           variables: { id: userIdFromUsername },
         });
 

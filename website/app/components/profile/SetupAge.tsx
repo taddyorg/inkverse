@@ -8,13 +8,32 @@ interface SetupAgeProps {
   setBirthYear: (birthYear: string) => void;
   userDetailsState: UserDetailsState;
   onSubmit: (e: React.FormEvent) => Promise<void>;
+  mode?: 'setup' | 'edit';
+  currentAgeRange?: UserAgeRange | null;
+  currentBirthYear?: number | null;
+  onCancel?: () => void;
 }
 
-export function SetupAge({ ageRange, setAgeRange, birthYear, setBirthYear, userDetailsState, onSubmit }: SetupAgeProps) {
+export function SetupAge({ ageRange, setAgeRange, birthYear, setBirthYear, userDetailsState, onSubmit, mode = 'setup', currentAgeRange, currentBirthYear, onCancel }: SetupAgeProps) {
   const currentYear = new Date().getFullYear();
 
+  const hasChanges = mode === 'edit' 
+    ? ageRange !== currentAgeRange || (ageRange === UserAgeRange.UNDER_18 && parseInt(birthYear) !== currentBirthYear)
+    : true;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Don't submit if no changes in edit mode
+    if (mode === 'edit' && !hasChanges) {
+      return;
+    }
+    
+    await onSubmit(e);
+  };
+
   return (
-    <form onSubmit={onSubmit} className="mt-6">
+    <form onSubmit={handleSubmit} className="mt-6">
       <label className="block text-inkverse-black dark:text-white font-semibold mb-1">
         Select your age range
       </label>
@@ -85,17 +104,43 @@ export function SetupAge({ ageRange, setAgeRange, birthYear, setBirthYear, userD
         </div>
       )}
 
-      <button
-        type="submit"
-        disabled={userDetailsState.isLoading}
-        className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${
-          userDetailsState.isLoading
-            ? 'bg-gray-400 cursor-not-allowed'
-            : 'bg-brand-pink dark:bg-taddy-blue text-white font-semibold hover:bg-brand-pink-dark dark:hover:bg-taddy-blue-dark'
-        }`}
-      >
-        {userDetailsState.isLoading ? 'Saving...' : 'Continue'}
-      </button>
+      {mode === 'edit' ? (
+        <div className="flex gap-3 mt-6">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="flex-1 py-3 px-4 rounded-lg font-semibold transition-colors border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={userDetailsState.isLoading || !ageRange || !hasChanges}
+            className="flex-1 py-3 px-4 rounded-lg font-semibold transition-colors bg-brand-pink dark:bg-taddy-blue text-white font-semibold hover:bg-brand-pink-dark dark:hover:bg-taddy-blue-dark"
+          >
+            {userDetailsState.isLoading ? 'Saving...' : 'Save Changes'}
+          </button>
+        </div>
+      ) : (
+        <button
+          type="submit"
+          disabled={userDetailsState.isLoading}
+          className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${
+            userDetailsState.isLoading
+              ? 'bg-gray-400 cursor-not-allowed'
+              : 'bg-brand-pink dark:bg-taddy-blue text-white font-semibold hover:bg-brand-pink-dark dark:hover:bg-taddy-blue-dark'
+          }`}
+        >
+          {userDetailsState.isLoading ? 'Saving...' : 'Continue'}
+        </button>
+      )}
+
+      {/* Server-side errors */}
+      {userDetailsState.error && (
+        <div className="mt-4 p-3 bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400 rounded-lg text-sm">
+          {userDetailsState.error}
+        </div>
+      )}
     </form>
   );
 }

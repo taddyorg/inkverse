@@ -1,3 +1,5 @@
+import { UserAgeRange } from "@inkverse/shared-server/graphql/types";
+
 /**
  * Authentication token payload (JWT)
  */
@@ -18,7 +20,22 @@ export type TokenPayload = {
 
 export interface UsernameValidationResult {
   isValid: boolean;
+  hide?: boolean;
   error?: string;
+}
+
+export function prettyAgeRange(ageRange: UserAgeRange | null | undefined): string {
+  switch (ageRange) {
+    case UserAgeRange.UNDER_18:
+      return 'Under 18';
+    case UserAgeRange.AGE_18_24:
+      return '18-24';
+    case UserAgeRange.AGE_25_34:
+      return '25-34';
+    case UserAgeRange.AGE_35_PLUS:
+      return '35+';
+    default: return 'Not set';
+  }
 }
 
 // Extract route segments from React Router generated types
@@ -92,6 +109,7 @@ export function validateUsername(username: string): UsernameValidationResult {
   if (trimmedUsername.length < USERNAME_VALIDATION.MIN_LENGTH) {
     return {
       isValid: false,
+      hide: true,
       error: `Username must be at least ${USERNAME_VALIDATION.MIN_LENGTH} characters long`
     };
   }

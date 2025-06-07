@@ -2,6 +2,7 @@ import type { Dispatch } from 'react';
 import type { ApolloClient, FetchResult } from '@apollo/client';
 import { 
   UpdateUserProfile, 
+  UpdateUserEmail,
   SaveBlueskyDid,
   GetComicsFromBlueskyCreators,
   GetComicsFromPatreonCreators,
@@ -12,6 +13,8 @@ import {
 import type { 
   UpdateUserProfileMutation, 
   UpdateUserProfileMutationVariables,
+  UpdateUserEmailMutation,
+  UpdateUserEmailMutationVariables,
   SaveBlueskyDidMutation,
   SaveBlueskyDidMutationVariables,
   GetBlueskyProfileQuery,
@@ -282,6 +285,54 @@ export async function updateAgeRange(
   }
 }
 
+interface UpdateUserEmailParams {
+  userClient: ApolloClient<any>;
+  email: string;
+  storageFunctions: StorageFunctions;
+}
+
+export async function updateUserEmail(
+  { userClient, email, storageFunctions }: UpdateUserEmailParams,
+  dispatch?: Dispatch<UserDetailsAction>
+): Promise<any> {
+  if (dispatch) dispatch({ type: UserDetailsActionType.USER_DETAILS_START });
+
+  try {
+    const result: FetchResult<UpdateUserEmailMutation> = await userClient.mutate<
+      UpdateUserEmailMutation,
+      UpdateUserEmailMutationVariables
+    >({
+      mutation: UpdateUserEmail,
+      variables: { email },
+    });
+
+    const { data, errors } = result;
+
+    if (errors) {
+      throw new Error(errors[0]?.message || 'Failed to update email');
+    }
+
+    if (!data?.updateUserEmail) {
+      throw new Error('Failed to update email');
+    }
+
+    if (dispatch) {
+      dispatch({ type: UserDetailsActionType.USER_DETAILS_SUCCESS, payload: data.updateUserEmail });
+    }
+
+    const user = data.updateUserEmail;
+
+    storageFunctions.saveUserDetails(user);
+
+    return user;
+  } catch (error: any) {
+    if (dispatch) {
+      dispatch({ type: UserDetailsActionType.USER_DETAILS_ERROR, payload: error?.message || 'Failed to update email' });
+    }
+    throw error;
+  }
+}
+
 interface SaveBlueskyDidParams {
   userClient: ApolloClient<any>;
   did: string;
@@ -532,18 +583,18 @@ export async function subscribeToComics(
   }
 }
 
-interface FollowComicsFromPatreonCreatorsParams {
+interface GetComicsFromPatreonCreatorsParams {
   userClient: ApolloClient<any>;
 }
 
-interface FollowComicsFromPatreonCreatorsResult {
+interface GetComicsFromPatreonCreatorsResult {
   comicSeries: ComicSeries[] | undefined;
 }
 
-export async function followComicsFromPatreonCreators(
-  { userClient }: FollowComicsFromPatreonCreatorsParams,
+export async function getComicsFromPatreonCreators(
+  { userClient }: GetComicsFromPatreonCreatorsParams,
   dispatch?: Dispatch<UserDetailsAction>
-): Promise<FollowComicsFromPatreonCreatorsResult> {
+): Promise<GetComicsFromPatreonCreatorsResult> {
   if (dispatch) dispatch({ type: UserDetailsActionType.USER_DETAILS_START });
 
   try {

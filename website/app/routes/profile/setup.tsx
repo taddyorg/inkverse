@@ -1,5 +1,5 @@
 import { useState, useEffect, useReducer, useRef } from 'react';
-import { useNavigate, useSearchParams, type MetaFunction } from 'react-router';
+import { Link, useLoaderData, useSearchParams, type LoaderFunctionArgs, type MetaFunction } from 'react-router';
 import config from '@/config';
 import { getUserApolloClient } from '@/lib/apollo/client.client';
 import { UserAgeRange } from '@inkverse/public/graphql/types';
@@ -12,12 +12,12 @@ import {
   saveBlueskyDid,
   verifyBlueskyHandle,
   followComicsFromBlueskyCreators,
-  followComicsFromPatreonCreators,
+  getComicsFromPatreonCreators,
   subscribeToComics,
   subscribeToPatreonComics,
-  UserDetailsActionType
+  UserDetailsActionType,
+  getComicsFromBlueskyCreators
 } from '@inkverse/shared-client/dispatch/user-details';
-import { GetCurrentUser } from '@inkverse/shared-client/graphql/operations';
 import { getUserDetails, webStorageFunctions } from '@/lib/auth/user';
 import { getAuthorizationCodeUrl } from '@inkverse/public/hosting-providers';
 import { MdArrowBack } from 'react-icons/md';
@@ -32,20 +32,38 @@ import { BlueskyConnected } from '@/app/components/profile/BlueskyConnected';
 import { isValidDomain } from '@inkverse/shared-client/utils/common';
 import { localStorageSet } from '@/lib/storage/local';
 import { inkverseWebsiteUrl } from '@inkverse/public/utils';
+import { loadProfileEdit } from '@/lib/loader/profile-edit.server';
 
 type SetupStep = 'username' | 'age' | 'patreon' | 'patreon-connected' | 'bluesky' | 'bluesky-verify' | 'bluesky-connected' | 'complete';
 const TADDY_PROVIDER_UUID = 'e9957105-80e4-46e3-8e82-20472b9d7512'; // Needed just for this screen
 
+export const loader = async ({ params, request, context }: LoaderFunctionArgs) => {
+  return await loadProfileEdit({ params, request, context });
+};
+
 export default function AccountSetup() {
-  const navigate = useNavigate();
+  const { user } = useLoaderData<typeof loader>();
+  
+  if (!user) {
+    return (
+      <div className="max-w-3xl mx-auto sm:p-6 lg:p-8">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold">You must be logged in to complete your profile</h1>
+          <Link to="/" className="text-brand-pink dark:text-taddy-blue mt-4 inline-block">
+            Go to Home
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   const [searchParams, setSearchParams] = useSearchParams();
   const [currentStep, setCurrentStep] = useState<SetupStep>('username');
-  const [username, setUsername] = useState('');
-  const [ageRange, setAgeRange] = useState<UserAgeRange | ''>('');
-  const [birthYear, setBirthYear] = useState('');
+  const [username, setUsername] = useState(user.username || '');
+  const [ageRange, setAgeRange] = useState<UserAgeRange | ''>(user.ageRange || '');
+  const [birthYear, setBirthYear] = useState(user.birthYear?.toString() || '');
   const [blueskyHandle, setBlueskyHandle] = useState('');
   const [userDetailsState, dispatch] = useReducer(userDetailsReducer, userDetailsInitialState);
-  const [isInitializing, setIsInitializing] = useState(true);
   
   // All Bluesky state is now handled by dispatch
   
@@ -62,7 +80,6 @@ export default function AccountSetup() {
     // If there's a valid step in URL params, go directly to that step
     if (stepParam && validSteps.includes(stepParam)) {
       setCurrentStep(stepParam);
-      setIsInitializing(false);
       
       // If user just connected Patreon, fetch comics from Patreon creators
       if (stepParam === 'patreon-connected') {
@@ -71,53 +88,12 @@ export default function AccountSetup() {
       
       return;
     }
-
-    const fetchUserDetails = async () => {
-      try {
-        const { data } = await userClient.query({
-          query: GetCurrentUser,
-          fetchPolicy: 'network-only' // Always get fresh data
-        });
-
-        if (data?.me) {
-          const user = data.me;
-          
-          // If username is already set, move to age step
-          if (user.username) {
-            setUsername(user.username);
-            
-            // If age is also set, check for Bluesky
-            if (user.ageRange) {
-              setAgeRange(user.ageRange);
-              
-              // Otherwise go to Patreon step
-              localStorageSet('patreon-from-screen', '/profile/setup');
-              setCurrentStep('patreon');
-            } else {
-              // Otherwise go to age step
-              setCurrentStep('age');
-            }
-          }
-          // If no username, stay on username step
-        }
-      } catch (error) {
-        // If there's an error fetching user (e.g., not authenticated),
-        // stay on username step
-        console.error('Error fetching user details:', error);
-      } finally {
-        setIsInitializing(false);
-      }
-    };
-
-    fetchUserDetails();
-  }, [navigate, searchParams]);
+  }, [searchParams]);
 
   // Update URL when step changes
   useEffect(() => {
-    if (!isInitializing) {
-      setSearchParams({ step: currentStep });
-    }
-  }, [currentStep, setSearchParams, isInitializing]);
+    setSearchParams({ step: currentStep });
+  }, [currentStep, setSearchParams]);
 
   const handleUsernameSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -242,7 +218,7 @@ export default function AccountSetup() {
       );
 
       // Step 1: Get comics from Bluesky creators after saving DID  
-      await followComicsFromBlueskyCreators(
+      await getComicsFromBlueskyCreators(
         { userClient: userClientRef.current },
         dispatch
       );
@@ -302,7 +278,7 @@ export default function AccountSetup() {
 
     try {
       // Fetch comics from Patreon creators after successful OAuth connection
-      await followComicsFromPatreonCreators(
+      await getComicsFromPatreonCreators(
         { userClient: userClientRef.current },
         dispatch
       );
@@ -337,21 +313,6 @@ export default function AccountSetup() {
       // Error is handled by dispatch
     }
   };
-
-
-  // Show loading state while fetching initial user data
-  if (isInitializing) {
-    return (
-      <div className="mx-auto sm:p-6 lg:p-8 zoomed-in:max-w-3xl max-w-xl">
-        <div className="p-8 rounded-lg w-full flex justify-center items-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-pink dark:border-taddy-blue mx-auto"></div>
-            <p className="mt-4 text-gray-600 dark:text-gray-400">Loading your profile...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="mx-auto sm:p-6 lg:p-8 zoomed-in:max-w-3xl max-w-xl">

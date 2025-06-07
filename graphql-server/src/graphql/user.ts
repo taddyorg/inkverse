@@ -7,6 +7,9 @@ import { UserAgeRange, type MutationResolvers, LinkType } from '@inkverse/shared
 import { getAllFollows, getProfile, type BlueskyFollower, type BlueskyProfile } from '@inkverse/shared-server/bluesky/index';
 import { getNewAccessToken, TADDY_HOSTING_PROVIDER_UUID } from '@inkverse/public/hosting-providers';
 import { sanitizeUsername, validateUsername } from '@inkverse/public/user';
+import { sendEmail } from '@inkverse/shared-server/messaging/email/index';
+import { inkverseWebsiteUrl } from '@inkverse/public/utils';
+import { isAValidEmail } from '@inkverse/public/utils';
 
 // GraphQL Type Definitions
 export const UserDefinitions = `
@@ -100,6 +103,16 @@ export const UserMutationsDefinitions = `
   ): User
 
   """
+  Update user email
+  """
+  updateUserEmail(email: String!): User
+
+  """
+  Resend verification email
+  """
+  resendVerificationEmail: Boolean!
+
+  """
   Fetch user's OAuth tokens for a specific hosting provider
   """
   fetchRefreshTokenForHostingProvider(
@@ -131,7 +144,7 @@ export const UserMutationsDefinitions = `
   Subscribe to multiple comic series
   """
   subscribeToMultipleComicSeries(seriesUuids: [ID!]!): Boolean!
-  
+
 `;
 
 // Resolvers
@@ -353,6 +366,68 @@ export const UserMutations: MutationResolvers = {
       console.error('Error subscribing to multiple comic series:', error);
       throw new Error('Failed to subscribe to comic series');
     }
+  },
+
+  updateUserEmail: async (_parent: any, { email }: { email: string }, context: any): Promise<UserModel | null> => {
+    if (!context.user) {
+      throw new AuthenticationError('You must be logged in to update your email');
+    }
+
+    if (!isAValidEmail(email)) {
+      throw new UserInputError('Invalid email format');
+    }
+
+    // Check if email is already taken by another user
+    const existingUser = await User.getUserByEmail(email);
+    if (existingUser && existingUser.id !== context.user.id) {
+      throw new UserInputError('This email is already taken');
+    }
+
+    // Update the user's email
+    const updatedUser = await User.updateUserEmail(context.user, email);
+    
+    if (!updatedUser) {
+      throw new Error('Failed to update email');
+    }
+
+    // Send verification email to the new email address
+    const data = {
+      toAddress: email,
+      subject: "Confirm your email address for Inkverse",
+      html: `
+      <p>Click the link below to confirm your email address.</p>
+      <p><a href="${inkverseWebsiteUrl}/reset?token=${updatedUser.resetPasswordToken}" target="_blank" style="color:#35629b; text-decoration:none;">Confirm your email address</a></p>
+      `
+    };
+
+    await sendEmail(data);
+
+    return updatedUser;
+  },
+
+  resendVerificationEmail: async (_parent: any, _args: any, context: any): Promise<boolean> => {
+    if (!context.user) {
+      throw new AuthenticationError('You must be logged in to resend a verification email');
+    }
+
+    const updatedUser = await User.updateUserEmail(context.user);
+    if (!updatedUser) {
+      throw new Error('Failed to to user for email verification');
+    }
+
+    // Send verification email to the new email address
+    const data = {
+      toAddress: updatedUser.email,
+      subject: "Confirm your email address for Inkverse",
+      html: `
+      <p>Click the link below to confirm your email address.</p>
+      <p><a href="${inkverseWebsiteUrl}/reset?token=${updatedUser.resetPasswordToken}" target="_blank" style="color:#35629b; text-decoration:none;">Confirm your email address</a></p>
+      `
+    };
+
+    await sendEmail(data);
+
+    return true;
   },
 };
 

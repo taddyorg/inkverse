@@ -1,73 +1,73 @@
 import { useState, useEffect } from 'react';
 import { type UserDetailsState } from '@inkverse/shared-client/dispatch/user-details';
-import { validateUsername } from '@inkverse/public/user';
+import { isAValidEmail } from '@inkverse/public/utils';
 
-interface SetupUsernameProps {
-  username: string;
-  setUsername: (username: string) => void;
+interface SetupEmailProps {
+  email: string;
+  setEmail: (email: string) => void;
   userDetailsState: UserDetailsState;
   onSubmit: (e: React.FormEvent) => Promise<void>;
   mode?: 'setup' | 'edit';
-  currentUsername?: string;
+  currentEmail?: string;
   onCancel?: () => void;
 }
 
-export function SetupUsername({ username, setUsername, userDetailsState, onSubmit, mode = 'setup', currentUsername, onCancel }: SetupUsernameProps) {
+export function SetupEmail({ email, setEmail, userDetailsState, onSubmit, mode = 'setup', currentEmail, onCancel }: SetupEmailProps) {
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isValid, setIsValid] = useState<boolean>(false);
 
-  // Validate username in real-time
+  // Validate email in real-time
   useEffect(() => {
-    if (username.trim().length === 0) {
+    if (email.trim().length === 0) {
       setValidationError(null);
       setIsValid(false);
       return;
     }
 
-    // If in edit mode and username hasn't changed, it's valid
-    if (mode === 'edit' && username.trim() === currentUsername) {
+    // If in edit mode and email hasn't changed, it's valid
+    if (mode === 'edit' && email.trim() === currentEmail) {
       setValidationError(null);
       setIsValid(true);
       return;
     }
 
-    const validation = validateUsername(username);
-    if (validation.hide) {
+    const emailValid = isAValidEmail(email.trim());
+    if (!emailValid) {
+      setValidationError('Please enter a valid email address');
+      setIsValid(false);
+    } else {
       setValidationError(null);
-      return;
+      setIsValid(true);
     }
-
-    setValidationError(validation.error || null);
-    setIsValid(validation.isValid);
-  }, [username, mode, currentUsername]);
+  }, [email, mode, currentEmail]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Don't submit if validation fails or username hasn't changed in edit mode
-    if (!isValid || validationError || (mode === 'edit' && username.trim() === currentUsername)) {
+    // Don't submit if validation fails or email hasn't changed in edit mode
+    if (!isValid || validationError || (mode === 'edit' && email.trim() === currentEmail)) {
       return;
     }
     
     await onSubmit(e);
   };
 
-  const hasChanges = mode === 'edit' ? username.trim() !== currentUsername : true;
+  const hasChanges = mode === 'edit' ? email.trim() !== currentEmail : true;
 
   return (
     <form onSubmit={handleSubmit}>
-      <label htmlFor="username" className="block text-inkverse-black dark:text-white font-semibold mb-1">
-        Choose a username
+      <label htmlFor="email" className="block text-inkverse-black dark:text-white font-semibold mb-1">
+        Email address
       </label>
       
       <div className="relative">
         <input
-          type="text"
-          id="username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          type="email"
+          id="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           className={`w-full px-2 py-2 border rounded-lg focus:outline-none focus:ring-2 text-inkverse-black bg-white transition-colors border-gray-300 dark:border-gray-600 focus:ring-brand-pink dark:focus:ring-taddy-blue`}
-          placeholder='Enter your username'
+          placeholder='Enter your email address'
           required
           autoFocus
         />

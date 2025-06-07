@@ -1,9 +1,9 @@
 import type { LoaderFunctionArgs, MetaFunction } from 'react-router-dom';
-import { useLoaderData } from 'react-router';
-
+import { useLoaderData, Link } from 'react-router';
 import { loadProfile } from '@/lib/loader/profile.server';
 import { getMetaTags } from '@/lib/seo';
 import { inkverseWebsiteUrl } from '@inkverse/public/utils';
+import { getUserDetails } from '@/lib/auth/user';
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   if (!data) { return []; }
@@ -27,6 +27,8 @@ export const loader = async ({ params, request, context }: LoaderFunctionArgs) =
 function ProfileScreen() {
   const profileData = useLoaderData<typeof loader>();
 
+  const isOwnProfile = getUserDetails() && profileData.user && getUserDetails()?.username === profileData.user.username;
+
   if (!profileData.user) {
     return (
       <div className="max-w-3xl mx-auto sm:p-6 lg:p-8">
@@ -39,31 +41,19 @@ function ProfileScreen() {
 
   return (
     <div className="max-w-3xl mx-auto sm:p-6 lg:p-8">
-      <div className="bg-white rounded-lg shadow-sm border p-6">
-        <h1 className="text-2xl font-bold mb-4">
-          {`${profileData.user.username}'s Profile`}
-        </h1>
-        
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Username</label>
-            <p className="mt-1 text-sm text-gray-900">{profileData.user.username}</p>
-          </div>
+      <div className="rounded-lg p-6">
+        <div className="flex justify-between items-start mb-4">
+          <h1 className="text-2xl font-bold">
+            {profileData.user.username}
+          </h1>
           
-          {profileData.user.email && profileData.user.ageRange && (
-            <>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Email</label>
-                <p className="mt-1 text-sm text-gray-900">{profileData.user.email}</p>
-              </div>
-              
-              {profileData.user.ageRange && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Age Range</label>
-                  <p className="mt-1 text-sm text-gray-900">{profileData.user.ageRange}</p>
-                </div>
-              )}
-            </>
+          {isOwnProfile && (
+            <Link
+              to="/profile/edit"
+              className="bg-brand-pink dark:bg-taddy-blue text-white font-medium px-4 py-2 rounded-3xl transition-colors"
+            >
+              Edit your profile
+            </Link>
           )}
         </div>
       </div>

@@ -6,4 +6,5 @@ fragment UserDetails on User {
   isEmailVerified
   ageRange
   birthYear
+  blueskyDid
 }

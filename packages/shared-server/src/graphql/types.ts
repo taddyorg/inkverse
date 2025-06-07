@@ -878,6 +878,8 @@ export type Mutation = {
   fetchRefreshTokenForHostingProvider?: Maybe<Scalars['String']['output']>;
   /**  Report a comic series  */
   reportComicSeries?: Maybe<Scalars['Boolean']['output']>;
+  /** Resend verification email */
+  resendVerificationEmail: Scalars['Boolean']['output'];
   /** Save or update the user's Bluesky handle */
   saveBlueskyDid?: Maybe<User>;
   /** Subscribe to multiple comic series */
@@ -886,6 +888,8 @@ export type Mutation = {
   subscribeToSeries: Scalars['Boolean']['output'];
   /** Unsubscribe from a comic series */
   unsubscribeFromSeries: Scalars['Boolean']['output'];
+  /** Update user email */
+  updateUserEmail?: Maybe<User>;
   /** Update user profile (username and age) */
   updateUserProfile?: Maybe<User>;
 };
@@ -919,6 +923,11 @@ export type MutationSubscribeToSeriesArgs = {
 
 export type MutationUnsubscribeFromSeriesArgs = {
   seriesUuid: Scalars['ID']['input'];
+};
+
+
+export type MutationUpdateUserEmailArgs = {
+  email: Scalars['String']['input'];
 };
 
 
@@ -1455,10 +1464,12 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   fetchAllHostingProviderTokens?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   fetchRefreshTokenForHostingProvider?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationFetchRefreshTokenForHostingProviderArgs, 'hostingProviderUuid'>>;
   reportComicSeries?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationReportComicSeriesArgs, 'uuid'>>;
+  resendVerificationEmail?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   saveBlueskyDid?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationSaveBlueskyDidArgs, 'did'>>;
   subscribeToMultipleComicSeries?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationSubscribeToMultipleComicSeriesArgs, 'seriesUuids'>>;
   subscribeToSeries?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationSubscribeToSeriesArgs, 'seriesUuid'>>;
   unsubscribeFromSeries?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationUnsubscribeFromSeriesArgs, 'seriesUuid'>>;
+  updateUserEmail?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationUpdateUserEmailArgs, 'email'>>;
   updateUserProfile?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, Partial<MutationUpdateUserProfileArgs>>;
 }>;
 

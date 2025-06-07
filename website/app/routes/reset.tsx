@@ -7,7 +7,7 @@ import {
   authInitialState,
   AuthActionType
 } from '@inkverse/shared-client/dispatch/authentication';
-import { webStorageFunctions } from '@/lib/auth/user';
+import { getUserDetails, webStorageFunctions } from '@/lib/auth/user';
 import { getMetaTags } from '@/lib/seo';
 import config from '@/config';
 
@@ -52,11 +52,13 @@ export default function Reset() {
 
   useEffect(() => {
     if (authState.isAuthenticated && authState.user) {
+      
       // Check if user needs to complete their profile
-      if (!authState.user.username || !authState.user.ageRange) {
+      if (!authState.user.username) {
         navigate('/profile/setup');
       } else {
-        navigate('/');
+        const user = getUserDetails();
+        navigate(`/${user?.username}`);
       }
     }
   }, [authState.isAuthenticated, authState.user, navigate]);
