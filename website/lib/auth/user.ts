@@ -1,31 +1,13 @@
 import config from '@/config';
 import { localStorageSet, localStorageGet, localStorageSetObject, localStorageGetObject, localStorageDeleteMultiple, localStorageDelete } from '../storage/local';
 import type { StorageFunctions } from '@inkverse/shared-client/dispatch/utils';
-import { jwtDecode, type JwtPayload } from 'jwt-decode';
 import type { User } from '@inkverse/shared-client/graphql/operations';
 import { dispatchRefreshAccessToken, dispatchRefreshRefreshToken } from '@inkverse/shared-client/dispatch/authentication';
+import { isTokenExpired } from './utils';
 
 // Key constants
 const ACCESS_TOKEN_KEY = 'inkverse-access-token';
 const USER_DETAILS_KEY = 'inkverse-user-details';
-
-const TOKEN_REFRESH_BUFFER = 5 * 60; // 5 minutes buffer
-
-function isTokenExpired(token: string): boolean {
-  try {
-    const decoded = jwtDecode(token) as JwtPayload;
-    if (!decoded || !decoded.exp) {
-      return true;
-    }
-    
-    const now = Math.floor(Date.now() / 1000);
-    const expirationTime = decoded.exp - TOKEN_REFRESH_BUFFER;
-    
-    return now >= expirationTime;
-  } catch {
-    return true;
-  }
-}
 
 /**
  * Save the access token to localStorage
@@ -58,8 +40,6 @@ export async function getAccessToken(): Promise<string | null> {
 
     if (isTokenExpired(accessToken)) {
       console.warn('Access token expired, attempting to refresh');
-      // Clear invalid token from storage
-      localStorageDelete(ACCESS_TOKEN_KEY);
       return await refreshAccessToken();
     }
 
@@ -73,7 +53,7 @@ export async function getAccessToken(): Promise<string | null> {
 /**
  * Save user details to localStorage
  */
-export function saveUserDetails(user: any): void {
+export function saveUserDetails(user: User): void {
   localStorageSetObject(USER_DETAILS_KEY, user);
 }
 
@@ -90,7 +70,7 @@ export function getUserDetails(): Partial<User> | null {
 export function clearAuthData(): void {
   // Clear access token and user details from localStorage
   localStorageDeleteMultiple([ACCESS_TOKEN_KEY, USER_DETAILS_KEY]);
-  
+
   // Note: Refresh token cookie must be cleared via server response
   // This is typically done by setting the cookie with maxAge: 0
 }
@@ -119,6 +99,8 @@ export async function refreshAccessToken(): Promise<string | null> {
       return newAccessToken;
     }
 
+    // Clear invalid token from storage
+    clearAuthData();
     return null;
   } catch (error) {
     console.error('Failed to refresh access token:', error);
@@ -127,7 +109,7 @@ export async function refreshAccessToken(): Promise<string | null> {
 }
 
 /**
- * Refresh the access token using the refresh token stored in HTTP-only cookie
+ * Refresh the refresh token using the current refresh token stored in HTTP-only cookie
  */
 export async function refreshRefreshToken(): Promise<string | null> {
   try {
@@ -138,14 +120,17 @@ export async function refreshRefreshToken(): Promise<string | null> {
     });   
 
     if (newRefreshToken) {
-      // Save the new access token to localStorage
+      // Save the new refresh token via HTTP-only cookie (server-side)
       saveRefreshToken(newRefreshToken);
       return newRefreshToken;
     }
 
+    // Only clear auth data when we get null response (likely 401/403)
+    // Network errors will throw and be caught below
     return null;
   } catch (error) {
-    console.error('Failed to refresh access token:', error);
+    console.error('Failed to refresh refresh token:', error);
+    // Don't clear auth data on network errors - let the user retry
     return null;
   }
 }

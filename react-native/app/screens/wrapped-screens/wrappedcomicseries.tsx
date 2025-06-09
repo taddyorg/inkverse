@@ -5,7 +5,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { Screen, ThemedActivityIndicator, ThemedText } from '@/app/components/ui';
 
-import { publicClient } from '@/lib/apollo';
+import { getPublicApolloClient } from '@/lib/apollo';
 import { loadComicSeriesUrl, comicSeriesQueryReducerDefault, comicSeriesInitialState } from '@inkverse/shared-client/dispatch/comicseries';
 import { RootStackParamList, WRAPPED_COMICSERIES_SCREEN, COMICSERIES_SCREEN, navigateToDeepLinkAndResetNavigation } from '@/constants/Navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -18,7 +18,8 @@ export function WrappedComicSeriesScreen() {
   const route = useRoute<NativeStackScreenProps<RootStackParamList, typeof WRAPPED_COMICSERIES_SCREEN>['route']>();
   const { shortUrl } = route.params;
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  
+  const publicClient = getPublicApolloClient();
+    
   const [comicSeriesState, dispatch] = useReducer(comicSeriesQueryReducerDefault, comicSeriesInitialState);
 
   const { isComicSeriesLoading, comicseries } = comicSeriesState;

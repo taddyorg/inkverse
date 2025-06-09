@@ -8,7 +8,7 @@ import { RootStackParamList, LIST_SCREEN } from '@/constants/Navigation';
 import { Screen, ThemedText, HeaderShareButton, HeaderBackButton, ScreenHeader, ThemedActivityIndicator, ThemedRefreshControl } from '@/app/components/ui';
 import { ListDetails } from '@/app/components/list/ListDetails';
 
-import { publicClient } from '@/lib/apollo';
+import { getPublicApolloClient } from '@/lib/apollo';
 import { loadList, listQueryReducer, listInitialState } from '@inkverse/shared-client/dispatch/list';
 import { List } from '@inkverse/shared-client/graphql/operations';
 
@@ -23,6 +23,7 @@ export type ListScreenParams = {
 export function ListScreen() {
   const route = useRoute<NativeStackScreenProps<RootStackParamList, typeof LIST_SCREEN>['route']>();
   const { id } = route.params;
+  const publicClient = getPublicApolloClient();
   
   const [listQuery, listQueryDispatch] = useReducer(listQueryReducer, listInitialState);
   const { isListLoading, list } = listQuery;

@@ -10,7 +10,7 @@ import {
   clearHostingProviderError,
   FETCH_USER_TOKENS,
 } from '@inkverse/shared-client/dispatch/hosting-provider';
-import { checkValidHostingProviderRefreshToken, refreshHostingProviderAccessToken, saveHostingProviderRefreshToken } from '@/lib/auth/hosting-provider';
+import { getHostingProviderRefreshToken, refreshHostingProviderAccessToken, saveHostingProviderRefreshToken } from '@/lib/auth/hosting-provider';
 import { localStorageGet } from '@/lib/storage/local';
 
 export const meta: MetaFunction = ({ params }) => {
@@ -60,7 +60,7 @@ export default function HostingProvider() {
     }
 
     //Handle success case - no need to fetch tokens
-    if (successParam === 'true' && uuid && checkValidHostingProviderRefreshToken(uuid)) {
+    if (successParam === 'true' && uuid && getHostingProviderRefreshToken(uuid)) {
       handleSuccessWithoutSavingTokens();
       return;
     }

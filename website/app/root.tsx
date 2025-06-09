@@ -7,11 +7,13 @@ import {
   ScrollRestoration,
   useLoaderData,
   useMatches,
+  useNavigate,
   type LoaderFunction,
 } from "react-router";
 
 import { useEffect, useState } from 'react';
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import { jwtDecode, type JwtPayload } from "jwt-decode";
 import { getSettings } from "@/lib/action/settings";
 import config from "../config";
 
@@ -19,7 +21,7 @@ import type { Route } from "./+types/root";
 import stylesheet from "./app.css?url";
 import { getPublicApolloClient, getUserApolloClient } from "@/lib/apollo/client.client";
 import { Navbar } from './components/ui';
-import { refreshAccessToken, refreshRefreshToken } from '@/lib/auth/user';
+import { refreshAccessToken, refreshRefreshToken, webStorageFunctions } from '@/lib/auth/user';
 import { isAuthenticated } from '@/lib/auth/user';
 
 import 'react-notion-x/src/styles.css'
@@ -27,6 +29,8 @@ import 'prismjs/themes/prism-tomorrow.css'
 import 'katex/dist/katex.min.css'
 import { fetchAllHostingProviderTokens } from "@inkverse/shared-client/dispatch/hosting-provider";
 import { saveHostingProviderRefreshToken, refreshHostingProviderAccessToken } from "@/lib/auth/hosting-provider";
+import { getRefreshToken } from "@/lib/auth/cookie";
+import { getMeDetails } from "@inkverse/shared-client/dispatch/profile";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -47,11 +51,16 @@ export const links: Route.LinksFunction = () => [
 
 export const loader: LoaderFunction = async ({ request }) => {
   const settings = await getSettings(request);
-  return { settings };
+  const refreshToken = await getRefreshToken(request);
+  const decoded = refreshToken ? jwtDecode(refreshToken) as JwtPayload: null;
+  const isExpired = decoded && decoded.exp && decoded.exp < Date.now() / 1000;
+  return { settings, hasRefreshToken: !!refreshToken, hasRefreshTokenExpired: isExpired };
 };
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const { settings: initialSettings } = useLoaderData<{ settings: { theme?: string, zoomMode?: string } }>();
+  const navigate = useNavigate();
+
+  const { settings: initialSettings, hasRefreshToken, hasRefreshTokenExpired } = useLoaderData<{ settings: { theme?: string, zoomMode?: string }, hasRefreshToken: boolean, hasRefreshTokenExpired: boolean }>();
   const [theme, setTheme] = useState(initialSettings?.theme || 'light');
   const [zoomMode, setZoomMode] = useState(initialSettings?.zoomMode || 'out');
 
@@ -61,22 +70,38 @@ export function Layout({ children }: { children: React.ReactNode }) {
   // Refresh access and refresh tokens on app start
   useEffect(() => {
     const refreshTokensOnAppStart = async () => {
-      if (isAuthenticated()) {
-        try {
+      try {
+        if (isAuthenticated()) {
+          // Already authenticated, just refresh tokens
+        
           const userClient = getUserApolloClient();
+          
           await Promise.allSettled([
             refreshAccessToken(),
             refreshRefreshToken(),
             fetchAllHostingProviderTokens({ userClient, saveHostingProviderRefreshToken, refreshHostingProviderAccessToken })
           ]);
-        } catch (error) {
-          console.error('Failed to refresh tokens on app start:', error);
+
+        } else if (hasRefreshToken && !hasRefreshTokenExpired) {
+            // Has valid refresh token, but client-side is not authenticated, get access token and user details
+          
+            const accessToken = await refreshAccessToken();
+            if (accessToken) {
+              const userClient = getUserApolloClient();
+              await getMeDetails({ userClient, storageFunctions: webStorageFunctions });
+            }
+
+        } else if (hasRefreshToken && hasRefreshTokenExpired) {
+          // Expired refresh token, logout
+          navigate('/logout');
         }
+      } catch (error) {
+        console.error('Failed to get access token and user details:', error);
       }
     };
 
     refreshTokensOnAppStart();
-  }, []);
+  }, [hasRefreshToken, hasRefreshTokenExpired]);
 
   // Refresh access token every 15 minutes
   useEffect(() => {

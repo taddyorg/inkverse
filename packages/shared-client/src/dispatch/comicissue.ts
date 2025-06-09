@@ -1,4 +1,4 @@
-import type { ApolloClient, ApolloQueryResult } from '@apollo/client';
+import type { ApolloClient, ApolloQueryResult, NormalizedCacheObject } from '@apollo/client';
 import { asyncAction, ActionTypes, errorHandlerFactory, type Dispatch, type Action } from './utils.js';
 import { type GetComicIssueQuery, type GetComicIssueQueryVariables, SortOrder, GetComicIssue, type ComicIssue, type ComicSeries, GetMiniComicSeries, type GetMiniComicSeriesQuery, type GetMiniComicSeriesQueryVariables } from "../graphql/operations.js";
 
@@ -7,7 +7,7 @@ export const GET_COMICISSUE = asyncAction(ActionTypes.GET_COMICISSUE);
 
 /* Action Creators */
 interface GetComicIssueProps {
-  publicClient: ApolloClient<any>;
+  publicClient: ApolloClient<NormalizedCacheObject>;
   issueUuid: string;
   seriesUuid: string;
   forceRefresh?: boolean;
@@ -15,7 +15,7 @@ interface GetComicIssueProps {
 
 /* Action Creators */
 interface WrappedGetComicIssueProps {
-  publicClient: ApolloClient<any>;
+  publicClient: ApolloClient<NormalizedCacheObject>;
   shortUrl: string;
   episodeId: string;
 }

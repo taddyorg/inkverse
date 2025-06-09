@@ -6,7 +6,7 @@ import DropDownPicker from 'react-native-dropdown-picker';
 
 import { Screen, ScreenHeader, ThemedView, ThemedText, HeaderBackButton, ThemedButton } from '../components/ui';
 import { ReportType, getPrettyReportType } from '@inkverse/public/report';
-import { publicClient } from '@/lib/apollo';
+import { getPublicApolloClient } from '@/lib/apollo';
 import { reportReducer, reportInitialState, submitReportComicSeries } from '@inkverse/shared-client/dispatch/reports';
 import { BLOG_SCREEN } from '@/constants/Navigation';
 
@@ -18,7 +18,8 @@ export type ReportsScreenParams = {
 export function ReportsScreen() {
   const navigation = useNavigation();
   const route = useRoute<RouteProp<RootStackParamList, 'ReportsScreen'>>();
-
+  const publicClient = getPublicApolloClient();
+  
   const { uuid, type } = route.params || {};
   const [selectedReportType, setSelectedReportType] = useState<ReportType | null>(null);
   const [open, setOpen] = useState(false);

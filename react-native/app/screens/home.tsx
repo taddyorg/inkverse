@@ -9,7 +9,7 @@ import { ListDetails } from '@/app/components/list/ListDetails';
 import { Header } from '@/app/components/home/Header';
 import { BLOG_SCREEN, LIST_SCREEN } from '@/constants/Navigation';
 
-import { publicClient } from '@/lib/apollo';
+import { getPublicApolloClient } from '@/lib/apollo';
 import { ComicSeries, List } from '@inkverse/shared-client/graphql/operations';
 import { loadHomeScreen, homefeedQueryReducerDefault, homeScreenInitialState } from '@inkverse/shared-client/dispatch/homefeed';
 import { NewsItem, inkverseNewsItems } from '@inkverse/public/news-items';
@@ -28,6 +28,7 @@ export function HomeScreen() {
   const [homeScreenState, dispatch] = useReducer(homefeedQueryReducerDefault, homeScreenInitialState);
   const [refreshing, setRefreshing] = useState(false);
   const flashListRef = useRef<FlashList<SectionType>>(null);
+  const publicClient = getPublicApolloClient();
   
   useScrollToTop(flashListRef);
 

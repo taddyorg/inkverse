@@ -1,5 +1,6 @@
 import { getNewAccessToken, getNewContentToken, getNewRefreshToken } from '@inkverse/public/hosting-providers';
-import { localStorageSet, localStorageGet, localStorageDeleteMultiple, localStorageDelete } from '../storage/local';
+import { asyncSet, asyncGet, asyncDeleteMultiple, asyncDelete } from '../storage/async';
+import { secureSet, secureGet, secureDeleteMultiple, secureDelete } from '../storage/secure';
 import { isTokenExpired } from './utils';
 
 // Key constants
@@ -11,15 +12,15 @@ const contentTokenForProviderAndSeries: Record<string, string> = {};
 /**
  * Get all connected hosting provider UUIDs
  */
-export function getConnectedHostingProviderUuids(): string[] {
-  return Array.from(getHostingProviderUuids());
+export async function getConnectedHostingProviderUuids(): Promise<string[]> {
+  return Array.from(await getHostingProviderUuids());
 }
 
 /**
- * Get the set of hosting provider UUIDs from localStorage
+ * Get the set of hosting provider UUIDs from AsyncStorage
  */
-function getHostingProviderUuids(): Set<string> {
-  const uuids = localStorageGet(HOSTING_PROVIDER_UUIDS_KEY);
+async function getHostingProviderUuids(): Promise<Set<string>> {
+  const uuids = await asyncGet(HOSTING_PROVIDER_UUIDS_KEY);
   if (!uuids) return new Set();
   try {
     const uuidArray = JSON.parse(uuids);
@@ -30,44 +31,44 @@ function getHostingProviderUuids(): Set<string> {
 }
 
 /**
- * Save the set of hosting provider UUIDs to localStorage
+ * Save the set of hosting provider UUIDs to AsyncStorage
  */
-function saveHostingProviderUuids(uuidSet: Set<string>): void {
-  localStorageSet(HOSTING_PROVIDER_UUIDS_KEY, JSON.stringify(Array.from(uuidSet)));
+async function saveHostingProviderUuids(uuidSet: Set<string>): Promise<void> {
+  await asyncSet(HOSTING_PROVIDER_UUIDS_KEY, JSON.stringify(Array.from(uuidSet)));
 }
 
 /**
- * Add a hosting provider UUID to the set in localStorage
+ * Add a hosting provider UUID to the set in AsyncStorage
  */
-function addHostingProviderUuid(hostingProviderUuid: string): void {
-  const currentUuids = getHostingProviderUuids();
+async function addHostingProviderUuid(hostingProviderUuid: string): Promise<void> {
+  const currentUuids = await getHostingProviderUuids();
   currentUuids.add(hostingProviderUuid);
-  saveHostingProviderUuids(currentUuids);
+  await saveHostingProviderUuids(currentUuids);
 }
 
 /**
- * Remove a hosting provider UUID from the set in localStorage
+ * Remove a hosting provider UUID from the set in AsyncStorage
  */
-function removeHostingProviderUuid(hostingProviderUuid: string): void {
-  const currentUuids = getHostingProviderUuids();
+async function removeHostingProviderUuid(hostingProviderUuid: string): Promise<void> {
+  const currentUuids = await getHostingProviderUuids();
   if (currentUuids.delete(hostingProviderUuid)) {
-    saveHostingProviderUuids(currentUuids);
+    await saveHostingProviderUuids(currentUuids);
   }
 }
 
 /**
- * Save the hosting provider access token to localStorage
+ * Save the hosting provider access token to SecureStore
  */
-export function saveHostingProviderAccessToken(token: string, hostingProviderUuid: string): void {
-  localStorageSet(`${hostingProviderUuid}:${HOSTING_PROVIDER_ACCESS_TOKEN_ENDING}`, token);
+export async function saveHostingProviderAccessToken(token: string, hostingProviderUuid: string): Promise<void> {
+  await secureSet(`${hostingProviderUuid}:${HOSTING_PROVIDER_ACCESS_TOKEN_ENDING}`, token);
 }
 
 /**
- * Save the hosting provider refresh token to localStorage and track the UUID
+ * Save the hosting provider refresh token to SecureStore and track the UUID
  */
-export function saveHostingProviderRefreshToken(token: string, hostingProviderUuid: string): void {
-  localStorageSet(`${hostingProviderUuid}:${HOSTING_PROVIDER_REFRESH_TOKEN_ENDING}`, token);
-  addHostingProviderUuid(hostingProviderUuid);
+export async function saveHostingProviderRefreshToken(token: string, hostingProviderUuid: string): Promise<void> {
+  await secureSet(`${hostingProviderUuid}:${HOSTING_PROVIDER_REFRESH_TOKEN_ENDING}`, token);
+  await addHostingProviderUuid(hostingProviderUuid);
 }
 
 export function saveContentTokenForProviderAndSeries(token: string, hostingProviderUuid: string, seriesUuid: string): void {
@@ -75,30 +76,30 @@ export function saveContentTokenForProviderAndSeries(token: string, hostingProvi
 }
 
 /**
- * Retrieve the hosting provider access token from localStorage
+ * Retrieve the hosting provider access token from SecureStore
  */
 export async function getHostingProviderAccessToken(hostingProviderUuid: string): Promise<string | null> {
-  const accessToken = localStorageGet(`${hostingProviderUuid}:${HOSTING_PROVIDER_ACCESS_TOKEN_ENDING}`);
+  const accessToken = await secureGet(`${hostingProviderUuid}:${HOSTING_PROVIDER_ACCESS_TOKEN_ENDING}`);
   if (!accessToken) {
     return await refreshHostingProviderAccessToken(hostingProviderUuid);
   }
 
   if (isTokenExpired(accessToken)) {
-    localStorageDelete(`${hostingProviderUuid}:${HOSTING_PROVIDER_ACCESS_TOKEN_ENDING}`);
+    await secureDelete(`${hostingProviderUuid}:${HOSTING_PROVIDER_ACCESS_TOKEN_ENDING}`);
     return await refreshHostingProviderAccessToken(hostingProviderUuid);
   }
 
   return accessToken;
 }
 
-export function getHostingProviderRefreshToken(hostingProviderUuid: string): string | null {
-  const refreshToken = localStorageGet(`${hostingProviderUuid}:${HOSTING_PROVIDER_REFRESH_TOKEN_ENDING}`);
+export async function getHostingProviderRefreshToken(hostingProviderUuid: string): Promise<string | null> {
+  const refreshToken = await secureGet(`${hostingProviderUuid}:${HOSTING_PROVIDER_REFRESH_TOKEN_ENDING}`);
   if (!refreshToken) {
     return null;
   }
 
   if (isTokenExpired(refreshToken)) {
-    clearHostingProviderAuthData(hostingProviderUuid);
+    await clearHostingProviderAuthData(hostingProviderUuid);
     return null;
   }
 
@@ -120,11 +121,11 @@ export async function getContentTokenForProviderAndSeries(hostingProviderUuid: s
 }
 
 export async function getNewHostingProviderRefreshToken(hostingProviderUuid: string): Promise<string | null> {
-  const refreshToken = localStorageGet(`${hostingProviderUuid}:${HOSTING_PROVIDER_REFRESH_TOKEN_ENDING}`);
+  const refreshToken = await secureGet(`${hostingProviderUuid}:${HOSTING_PROVIDER_REFRESH_TOKEN_ENDING}`);
   if (!refreshToken) return null;
 
   if (isTokenExpired(refreshToken)) {
-    clearHostingProviderAuthData(hostingProviderUuid);
+    await clearHostingProviderAuthData(hostingProviderUuid);
     return null;
   }
 
@@ -134,10 +135,11 @@ export async function getNewHostingProviderRefreshToken(hostingProviderUuid: str
   });
 
   if (!newRefreshToken) {
+    await clearHostingProviderAuthData(hostingProviderUuid);
     return null;
   }
 
-  saveHostingProviderRefreshToken(newRefreshToken, hostingProviderUuid);
+  await saveHostingProviderRefreshToken(newRefreshToken, hostingProviderUuid);
   return newRefreshToken as string;
 }
 
@@ -151,11 +153,11 @@ export async function refreshHostingProviderAccessToken(hostingProviderUuid: str
   });
 
   if (!newAccessToken) {
-    localStorageDelete(`${hostingProviderUuid}:${HOSTING_PROVIDER_ACCESS_TOKEN_ENDING}`);
+    await secureDelete(`${hostingProviderUuid}:${HOSTING_PROVIDER_ACCESS_TOKEN_ENDING}`);
     return null;
   }
 
-  saveHostingProviderAccessToken(newAccessToken, hostingProviderUuid);
+  await saveHostingProviderAccessToken(newAccessToken, hostingProviderUuid);
   return newAccessToken as string;
 }
 
@@ -169,21 +171,26 @@ async function refreshContentTokenForProviderAndSeries(hostingProviderUuid: stri
     seriesUuid,
   });
 
-  if (!contentToken) return null;
+  if (!contentToken) {
+    delete contentTokenForProviderAndSeries[`${hostingProviderUuid}:${seriesUuid}`];
+    return null;
+  }
 
   saveContentTokenForProviderAndSeries(contentToken, hostingProviderUuid, seriesUuid);
   return contentToken as string;
 }
 
-
 /**
  * Clear all hosting provider authentication data
  */
-export function clearHostingProviderAuthData(hostingProviderUuid: string): void {
-  // Clear access token and hosting provider details from localStorage
-  localStorageDeleteMultiple([`${hostingProviderUuid}:${HOSTING_PROVIDER_ACCESS_TOKEN_ENDING}`, `${hostingProviderUuid}:${HOSTING_PROVIDER_REFRESH_TOKEN_ENDING}`]);
+export async function clearHostingProviderAuthData(hostingProviderUuid: string): Promise<void> {
+  // Clear access token and refresh token from SecureStore
+  await secureDeleteMultiple([
+    `${hostingProviderUuid}:${HOSTING_PROVIDER_ACCESS_TOKEN_ENDING}`, 
+    `${hostingProviderUuid}:${HOSTING_PROVIDER_REFRESH_TOKEN_ENDING}`
+  ]);
   // Remove the UUID from the tracked list
-  removeHostingProviderUuid(hostingProviderUuid);
+  await removeHostingProviderUuid(hostingProviderUuid);
 }
 
 /**

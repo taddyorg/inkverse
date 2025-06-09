@@ -36,6 +36,7 @@ export const WRAPPED_CREATOR_SCREEN = "WrappedCreatorScreen";
 export const WRAPPED_LIST_SCREEN = "WrappedListScreen";
 export const WRAPPED_TAGGED_SCREEN = "WrappedTaggedScreen";
 export const SIGNUP_SCREEN = "SignupScreen";
+export const SIGNUP_MAIN_SCREEN = "SignupMainScreen";
 export const SIGNUP_EMAIL_SCREEN = "SignupEmailScreen";
 export const SIGNUP_RESET_SCREEN = "SignupResetScreen";
 export const SIGNUP_USERNAME_SCREEN = "SignupUsernameScreen";
@@ -63,6 +64,7 @@ export type RootStackParamList = {
   [WRAPPED_LIST_SCREEN]: WrappedListScreenParams;
   [WRAPPED_TAGGED_SCREEN]: WrappedTaggedScreenParams;
   [SIGNUP_SCREEN]: undefined;
+  [SIGNUP_MAIN_SCREEN]: undefined;
   [SIGNUP_EMAIL_SCREEN]: undefined;
   [SIGNUP_RESET_SCREEN]: { token?: string } | undefined;
   [SIGNUP_USERNAME_SCREEN]: undefined;

@@ -4,7 +4,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { FlashList } from '@shopify/flash-list';
 import { useRoute } from '@react-navigation/native';
 import { RootStackParamList, CREATOR_SCREEN } from '@/constants/Navigation';
-import { publicClient } from '@/lib/apollo';
+import { getPublicApolloClient } from '@/lib/apollo';
 
 import { CreatorDetails } from '@/app/components/creator/CreatorDetails';
 import { CreatorComics } from '@/app/components/creator/CreatorComics';
@@ -26,7 +26,8 @@ export function CreatorScreen() {
   const route = useRoute<NativeStackScreenProps<RootStackParamList, typeof CREATOR_SCREEN>['route']>();
   const { uuid } = route.params;
   const [creatorQuery, creatorQueryDispatch] = useReducer(creatorQueryReducer, creatorInitialState);
-
+  const publicClient = getPublicApolloClient();
+  
   const { isLoading, creator, comicseries } = creatorQuery;
 
   useEffect(() => {

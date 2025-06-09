@@ -6,6 +6,7 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
+  AppState,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -28,6 +29,7 @@ export function SignupEmailScreen() {
   const [mode, setMode] = useState<'enter-email' | 'check-email'>('enter-email');
   const [authState, dispatch] = useReducer(authReducer, authInitialState);
   const [isFocused, setIsFocused] = useState(false);
+  const [hasReturnedToApp, setHasReturnedToApp] = useState(false);
   const emailInputRef = useRef<TextInput>(null);
   
   const backgroundColor = useThemeColor(
@@ -49,6 +51,22 @@ export function SignupEmailScreen() {
   useEffect(() => {
     setTimeout(() => emailInputRef.current?.focus(), 100);
   }, []);
+
+  useEffect(() => {
+    if (mode === 'check-email') {
+      const handleAppStateChange = (nextAppState: string) => {
+        if (nextAppState === 'active') {
+          setHasReturnedToApp(true);
+        }
+      };
+
+      const subscription = AppState.addEventListener('change', handleAppStateChange);
+      
+      return () => {
+        subscription?.remove();
+      };
+    }
+  }, [mode]);
 
   const handleEmailSubmit = async () => {
     try {
@@ -82,15 +100,19 @@ export function SignupEmailScreen() {
           <ThemedText style={styles.subtitle}>
             Click the link in the email to verify your email address.
           </ThemedText>
-          <ThemedText style={[styles.smallerSubtitle, { marginTop: SPACING.lg }]}>
-            If the link does not open this app, you can copy and paste the link here:
-          </ThemedText>
-          <TextInput
-            style={[styles.emailInput, { borderColor: textColor + '20', color: textColor }]}
-            value={link}
-            onChangeText={setLink}
-            placeholder="https://inkverse.co/..."
-          />
+          {hasReturnedToApp && (
+            <>
+              <ThemedText style={[styles.smallerSubtitle, { marginTop: SPACING.lg }]}>
+                If the link did not open inside this app, you can copy and paste the link here:
+              </ThemedText>
+              <TextInput
+                style={[styles.emailInput, { borderColor: textColor + '20', color: textColor }]}
+                value={link}
+                onChangeText={setLink}
+                placeholder="https://inkverse.co/..."
+              />
+            </>
+          )}
         </View>
       )}
 

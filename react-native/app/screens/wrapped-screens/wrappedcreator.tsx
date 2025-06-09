@@ -5,7 +5,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { Screen, ThemedActivityIndicator, ThemedText } from '@/app/components/ui';
 
-import { publicClient } from '@/lib/apollo';
+import { getPublicApolloClient } from '@/lib/apollo';
 import { loadCreatorUrl, creatorQueryReducerDefault, creatorInitialState } from '@inkverse/shared-client/dispatch/creator';
 import { RootStackParamList, WRAPPED_CREATOR_SCREEN, CREATOR_SCREEN, navigateToDeepLinkAndResetNavigation } from '@/constants/Navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -18,6 +18,7 @@ export function WrappedCreatorScreen() {
   const route = useRoute<NativeStackScreenProps<RootStackParamList, typeof WRAPPED_CREATOR_SCREEN>['route']>();
   const { shortUrl } = route.params;
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const publicClient = getPublicApolloClient();
   
   const [creatorState, dispatch] = useReducer(creatorQueryReducerDefault, creatorInitialState);
 

@@ -8,7 +8,7 @@ import { Screen, ThemedText, PressableOpacity, ScreenHeader, HeaderBackButton, T
 import { ComicSeries, Genre } from '@inkverse/shared-client/graphql/operations';
 import { Colors } from '@/constants/Colors';
 import { ComicSeriesDetails } from '@/app/components/comics/ComicSeriesDetails';
-import { publicClient } from '@/lib/apollo';
+import { getPublicApolloClient } from '@/lib/apollo';
 import { comicsListReducer, comicsListInitialState, fetchComics } from '@inkverse/shared-client/dispatch/comicslist';
 import { COMICSERIES_SCREEN } from '@/constants/Navigation';
 
@@ -27,6 +27,7 @@ export function ComicsListScreen() {
   const navigation = useNavigation();
   const route = useRoute();
   const { pageType, value } = route.params as ComicsListScreenParams;
+  const publicClient = getPublicApolloClient();
   
   const [currentPage, setCurrentPage] = useState(1);
   

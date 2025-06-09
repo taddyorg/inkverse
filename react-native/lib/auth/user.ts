@@ -3,7 +3,9 @@ import { asyncSetObject, asyncGetObject, asyncDeleteMultiple } from '../storage/
 import type { StorageFunctions } from '@inkverse/shared-client/dispatch/utils';
 import { syncStorageGet, syncStorageSet, syncStorageDelete } from '../storage/sync';
 import { User } from '@inkverse/shared-client/graphql/operations';
-import { jwtDecode } from 'jwt-decode';
+import { dispatchRefreshAccessToken, dispatchRefreshRefreshToken } from '@inkverse/shared-client/dispatch/authentication';
+import config from '@/config';
+import { isTokenExpired } from './utils';
 
 // Key constants
 export const ACCESS_TOKEN_KEY = 'inkverse-access-token';
@@ -22,11 +24,10 @@ export async function saveAccessToken(token: string): Promise<void> {
  */
 export async function getAccessToken(): Promise<string | null> {
   const token = await secureGet(ACCESS_TOKEN_KEY);
-  if (!token) { return await getRefreshToken(); }
+  if (!token) { return null; }
 
-  const decoded = jwtDecode(token);
-  if (decoded.exp && decoded.exp < Date.now() / 1000) {
-    return await getRefreshToken();
+  if (isTokenExpired(token)) {
+    return null;
   }
 
   return token;
@@ -46,12 +47,28 @@ export async function getRefreshToken(): Promise<string | null> {
   const token = await secureGet(REFRESH_TOKEN_KEY);
   if (!token) { return null; }
 
-  const decoded = jwtDecode(token);
-  if (decoded.exp && decoded.exp < Date.now() / 1000) {
+  if (isTokenExpired(token)) {
+    await clearUserData();
     return null;
   }
 
   return token;
+}
+
+export async function getValidToken(): Promise<string | null> {
+  const accessToken = await getAccessToken();
+  
+  if (accessToken && !isTokenExpired(accessToken)) {
+    return accessToken;
+  }
+
+  const refreshToken = await getRefreshToken();
+
+  if (refreshToken && !isTokenExpired(refreshToken)) {
+    return refreshToken;
+  }
+
+  return null;
 }
 
 /**
@@ -95,6 +112,64 @@ export async function clearUserData(): Promise<void> {
 
   // Clear user details from SyncStorage
   syncStorageDelete(USER_DETAILS_KEY);
+}
+
+export async function refreshAccessToken(): Promise<string | null> {
+  try {
+    // Get the current refresh token from secure storage
+    const refreshToken = await getRefreshToken();
+    if (!refreshToken) {
+      return null;
+    }
+
+    // Call the refresh endpoint with the refresh token
+    const newAccessToken = await dispatchRefreshAccessToken({
+      baseUrl: config.AUTH_URL,
+      refreshToken, // Pass the refresh token directly instead of using cookies
+    });
+
+    if (newAccessToken) {
+      // Save the new access token to secure storage
+      await saveAccessToken(newAccessToken);
+      return newAccessToken;
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Failed to refresh access token:', error);
+    return null;
+  }
+}
+
+/**
+ * Refresh the refresh token using the current refresh token stored in secure storage
+ */
+export async function refreshRefreshToken(): Promise<string | null> {
+  try {
+    // Get the current refresh token from secure storage
+    const currentRefreshToken = await getRefreshToken();
+    if (!currentRefreshToken) {
+      console.error('inside refreshRefreshToken - No refresh token available');
+      return null;
+    }
+
+    // Call the refresh endpoint with the current refresh token
+    const newRefreshToken = await dispatchRefreshRefreshToken({
+      baseUrl: config.AUTH_URL,
+      refreshToken: currentRefreshToken, // Pass the refresh token directly instead of using cookies
+    });   
+
+    if (newRefreshToken) {
+      // Save the new refresh token to secure storage
+      await saveRefreshToken(newRefreshToken);
+      return newRefreshToken;
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Failed to refresh refresh token:', error);
+    return null;
+  }
 }
 
 /**

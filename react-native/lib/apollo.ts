@@ -1,11 +1,11 @@
-import { HttpLink, InMemoryCache } from '@apollo/client';
+import { HttpLink, InMemoryCache, NormalizedCacheObject } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
 import { onError } from '@apollo/client/link/error';
 import { ApolloClient, from } from '@apollo/client';
 import * as Sentry from '@sentry/react-native';
 import { typePolicies } from '@inkverse/public/apollo';
 import config from '@/config';
-import { getAccessToken } from '@/lib/auth/user';
+import { getValidToken } from '@/lib/auth/user';
 
 const cache = new InMemoryCache({ typePolicies });
 
@@ -15,7 +15,7 @@ const httpLink = new HttpLink({
 
 const authLink = setContext(async (_, { headers }) => {
   // Get token from secure storage
-  const token = await getAccessToken();
+  const token = await getValidToken();
   if (!token) { throw new Error('No token found'); }
   
   return {
@@ -45,7 +45,7 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
   }
 });
 
-export const publicClient = new ApolloClient({
+const publicClient = new ApolloClient({
   link: from([errorLink, httpLink]),
   cache,
   connectToDevTools: __DEV__,
@@ -55,7 +55,7 @@ export const publicClient = new ApolloClient({
   },
 });
 
-export const userClient = new ApolloClient({
+const userClient = new ApolloClient({
   link: from([errorLink, authLink, httpLink]),
   cache,
   connectToDevTools: __DEV__,
@@ -64,3 +64,17 @@ export const userClient = new ApolloClient({
     'client-version': '3.0.0',
   },
 });
+
+/**
+ * Get the public client
+ */
+export function getPublicApolloClient(): any {
+  return publicClient;
+}
+
+/**
+ * Get the user client
+ */
+export function getUserApolloClient(): any {
+  return userClient;
+}

@@ -8,7 +8,7 @@ import { ComicSeriesDetails } from '@/app/components/comics/ComicSeriesDetails';
 import { ComicIssuesList, ComicIssuesListProps } from '@/app/components/comics/ComicIssuesList';
 import { ComicSeriesInfo } from '@/app/components/comics/ComicSeriesInfo';
 
-import { publicClient } from '@/lib/apollo';
+import { getPublicApolloClient } from '@/lib/apollo';
 import { ComicIssue, ComicSeries } from '@inkverse/shared-client/graphql/operations';
 import { loadComicSeries, comicSeriesQueryReducerDefault, comicSeriesInitialState } from '@inkverse/shared-client/dispatch/comicseries';
 import { RootStackParamList, COMICSERIES_SCREEN, COMICISSUE_SCREEN } from '@/constants/Navigation';
@@ -29,6 +29,7 @@ export function ComicSeriesScreen() {
   const route = useRoute<NativeStackScreenProps<RootStackParamList, typeof COMICSERIES_SCREEN>['route']>();
   const { uuid } = route.params;
   const navigation = useNavigation();
+  const publicClient = getPublicApolloClient();
   
   const [comicSeriesState, dispatch] = useReducer(comicSeriesQueryReducerDefault, comicSeriesInitialState);
   const [refreshing, setRefreshing] = useState(false);

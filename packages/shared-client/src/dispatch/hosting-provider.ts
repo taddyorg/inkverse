@@ -1,4 +1,4 @@
-import type { ApolloClient } from '@apollo/client';
+import type { ApolloClient, NormalizedCacheObject } from '@apollo/client';
 import { asyncAction, ActionTypes, errorHandlerFactory, type Action, type Dispatch } from './utils.js';
 import { FetchAllHostingProviderTokens, FetchRefreshTokenForHostingProvider, type FetchAllHostingProviderTokensMutation, type FetchAllHostingProviderTokensMutationVariables, type FetchRefreshTokenForHostingProviderMutation, type FetchRefreshTokenForHostingProviderMutationVariables } from '../graphql/operations';
 import { jwtDecode } from 'jwt-decode';
@@ -51,7 +51,7 @@ export async function fetchRefreshTokenForHostingProvider(
 
 /* Action Creators */
 interface FetchAllHostingProviderTokensParams {
-  userClient: ApolloClient<any>;
+  userClient: ApolloClient<NormalizedCacheObject>;
   saveHostingProviderRefreshToken: (token: string, hostingProviderUuid: string) => void;
   refreshHostingProviderAccessToken: (hostingProviderUuid: string) => Promise<string | null>;
 }

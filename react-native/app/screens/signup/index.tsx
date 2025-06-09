@@ -4,6 +4,7 @@ import {
   ScrollView,
   StyleSheet,
   Platform,
+  useColorScheme,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -27,6 +28,7 @@ export function SignupScreen() {
   const navigation = useNavigation();
   const { updateSignupData } = useSignupContext();
   const [authState, dispatch] = useReducer(authReducer, authInitialState);
+  const colorScheme = useColorScheme();
   
   const backgroundColor = useThemeColor(
     { light: Colors.light.background, dark: Colors.dark.background },
@@ -114,7 +116,11 @@ export function SignupScreen() {
                   {Platform.OS === 'ios' && (
                     <AppleAuthentication.AppleAuthenticationButton
                       buttonType={AppleAuthentication.AppleAuthenticationButtonType.CONTINUE}
-                      buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+                      buttonStyle={
+                        colorScheme === 'dark' 
+                          ? AppleAuthentication.AppleAuthenticationButtonStyle.BLACK 
+                          : AppleAuthentication.AppleAuthenticationButtonStyle.WHITE_OUTLINE
+                      }
                       cornerRadius={5}
                       style={styles.socialButton}
                       onPress={async () => {

@@ -1,17 +1,7 @@
 import type { Dispatch } from 'react';
 import type { ApolloClient, FetchResult } from '@apollo/client';
-import { 
-  GetUserByUsername,
-  UpdateUserProfile,
-} from '../graphql/operations';
-import type { 
-  GetUserByUsernameQuery,
-  GetUserByUsernameQueryVariables,
-  UpdateUserProfileMutation, 
-  UpdateUserProfileMutationVariables,
-  UserAgeRange,
-} from '../graphql/operations';
 import type { StorageFunctions } from './utils';
+import { GetMeDetails, type GetMeDetailsQuery, type GetMeDetailsQueryVariables, type User } from '../graphql/operations';
 
 export interface ProfileState {
   user: any | null;
@@ -62,93 +52,30 @@ export function clearProfileError(dispatch: Dispatch<ProfileAction>): void {
   dispatch({ type: ProfileActionType.PROFILE_CLEAR_ERROR });
 }
 
-interface GetUserByUsernameParams {
+export interface GetMeDetailsParams {
   userClient: ApolloClient<any>;
-  username: string;
-}
-
-export async function getUserByUsername(
-  { userClient, username }: GetUserByUsernameParams,
-  dispatch?: Dispatch<ProfileAction>
-): Promise<any> {
-  if (dispatch) dispatch({ type: ProfileActionType.PROFILE_START });
-
-  try {
-    const result = await userClient.query<GetUserByUsernameQuery, GetUserByUsernameQueryVariables>({
-      query: GetUserByUsername,
-      variables: { username },
-      fetchPolicy: 'network-only'
-    });
-
-    const { data, errors } = result;
-
-    if (errors) {
-      throw new Error(errors[0]?.message || 'Failed to get user');
-    }
-
-    if (!data?.getUserByUsername) {
-      throw new Error('User not found');
-    }
-
-    if (dispatch) {
-      dispatch({ type: ProfileActionType.PROFILE_SUCCESS, payload: data.getUserByUsername });
-    }
-
-    return data.getUserByUsername;
-  } catch (error: any) {
-    if (dispatch) {
-      dispatch({ type: ProfileActionType.PROFILE_ERROR, payload: error?.message || 'Failed to get user' });
-    }
-    throw error;
-  }
-}
-
-interface UpdateUserProfileParams {
-  userClient: ApolloClient<any>;
-  username?: string;
-  ageRange?: UserAgeRange;
-  birthYear?: number;
   storageFunctions: StorageFunctions;
 }
 
-export async function updateUserProfile(
-  { userClient, username, ageRange, birthYear, storageFunctions }: UpdateUserProfileParams,
-  dispatch?: Dispatch<ProfileAction>
-): Promise<any> {
-  if (dispatch) dispatch({ type: ProfileActionType.PROFILE_START });
-
+export async function getMeDetails(
+  { userClient, storageFunctions }: GetMeDetailsParams): Promise<User | null> {
   try {
-    const result: FetchResult<UpdateUserProfileMutation> = await userClient.mutate<
-      UpdateUserProfileMutation,
-      UpdateUserProfileMutationVariables
+    const { data } = await userClient.query<
+      GetMeDetailsQuery,
+      GetMeDetailsQueryVariables
     >({
-      mutation: UpdateUserProfile,
-      variables: { username, ageRange, birthYear },
+      query: GetMeDetails,
     });
 
-    const { data, errors } = result;
+    const user = data?.me as User | null;
 
-    if (errors) {
-      throw new Error(errors[0]?.message || 'Failed to update profile');
+    if (user) {
+      storageFunctions.saveUserDetails(user);
     }
-
-    if (!data?.updateUserProfile) {
-      throw new Error('Failed to update profile');
-    }
-
-    if (dispatch) {
-      dispatch({ type: ProfileActionType.PROFILE_SUCCESS, payload: data.updateUserProfile });
-    }
-
-    const user = data.updateUserProfile;
-
-    storageFunctions.saveUserDetails(user);
 
     return user;
-  } catch (error: any) {
-    if (dispatch) {
-      dispatch({ type: ProfileActionType.PROFILE_ERROR, payload: error?.message || 'Failed to update profile' });
-    }
-    throw error;
-  }
+  } catch (error: Error | unknown) {
+    console.error('Error fetching me details:', error);
+    return null;
+  } 
 }

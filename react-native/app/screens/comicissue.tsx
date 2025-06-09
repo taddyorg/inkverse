@@ -14,7 +14,7 @@ import { CreatorForIssue } from '../components/creator/CreatorForIssue';
 import { ReadNextEpisode } from '../components/comics/ReadNextEpisode';
 import { Screen, ScrollIndicator, ThemedActivityIndicator, ThemedRefreshControl } from '@/app/components/ui';
 
-import { publicClient } from '@/lib/apollo';
+import { getPublicApolloClient } from '@/lib/apollo';
 import { comicIssueQueryReducer, comicIssueInitialState, loadComicIssue } from '@inkverse/shared-client/dispatch/comicissue';
 import { ComicIssue } from '@inkverse/shared-client/graphql/operations';
 import { getStoryImageUrl } from '@inkverse/public/comicstory';
@@ -65,6 +65,7 @@ export function ComicIssueScreen() {
   const { issueUuid, seriesUuid } = route.params;
   const screenDetails = useWindowDimensions();
   const flatListRef = useRef<FlashList<ListItem>>(null);
+  const publicClient = getPublicApolloClient();
   
   // Header and footer animation state
   const headerTranslateY = useRef(new Animated.Value(HEADER_OPEN_POSITION)).current;

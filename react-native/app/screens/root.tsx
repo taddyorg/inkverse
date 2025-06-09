@@ -57,6 +57,7 @@ import {
   REPORTS_SCREEN, 
   MAIN_SCREEN,
   SIGNUP_SCREEN,
+  SIGNUP_MAIN_SCREEN,
   SIGNUP_EMAIL_SCREEN,
   SIGNUP_RESET_SCREEN,
   SIGNUP_USERNAME_SCREEN,
@@ -357,12 +358,13 @@ function App() {
     return (
       <SignupProvider>
         <SignupStack.Navigator
+          initialRouteName={SIGNUP_MAIN_SCREEN}
           screenOptions={{
             headerShown: false,
           }}
         >
           <SignupStack.Screen 
-            name={SIGNUP_SCREEN} 
+            name={SIGNUP_MAIN_SCREEN} 
             component={SignupScreen}
           />
           <SignupStack.Screen 

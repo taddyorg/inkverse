@@ -1286,6 +1286,11 @@ export type GetListQueryVariables = Exact<{
 
 export type GetListQuery = { __typename?: 'Query', getList?: { __typename?: 'List', id: string, name?: string | null, description?: string | null, bannerImageUrl?: string | null, type: ListType, privacyType: PrivacyType, userId: string, comicSeries?: Array<{ __typename?: 'ComicSeries', description?: string | null, uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null } | null> | null } | null };
 
+export type GetMeDetailsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetMeDetailsQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, username?: string | null } | null };
+
 export type GetMiniComicSeriesQueryVariables = Exact<{
   uuid?: InputMaybe<Scalars['ID']['input']>;
   shortUrl?: InputMaybe<Scalars['String']['input']>;
@@ -1616,6 +1621,13 @@ export const GetList = gql`
   }
 }
     ${ListDetails}`;
+export const GetMeDetails = gql`
+    query GetMeDetails {
+  me {
+    ...MiniUserDetails
+  }
+}
+    ${MiniUserDetails}`;
 export const GetMiniComicSeries = gql`
     query GetMiniComicSeries($uuid: ID, $shortUrl: String) {
   getComicSeries(uuid: $uuid, shortUrl: $shortUrl) {

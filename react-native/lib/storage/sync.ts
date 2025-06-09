@@ -1,4 +1,3 @@
-import { USER_DETAILS_KEY } from '../auth/user';
 import { asyncGetObject } from './async';
 
 let syscStorage: Record<string, any> = {};
@@ -19,8 +18,7 @@ export function syncStorageClear(): void {
   syscStorage = {};
 }
 
-export async function migrateAsyncStorageToSyncStorage(): Promise<void> {
-  const keys = [USER_DETAILS_KEY];
+export async function migrateAsyncStorageToSyncStorage(keys: string[]): Promise<void> {
   for (const key of keys) {
     const value = await asyncGetObject(key);
     if (value) {

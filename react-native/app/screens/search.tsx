@@ -10,7 +10,7 @@ import { Genre, ComicSeries } from '@inkverse/shared-client/graphql/operations';
 import { getPrettyGenre } from '@inkverse/public/genres';
 import { Colors, useThemeColor } from '@/constants/Colors';
 import { ComicSeriesDetails } from '@/app/components/comics/ComicSeriesDetails';
-import { publicClient } from '@/lib/apollo';
+import { getPublicApolloClient } from '@/lib/apollo';
 import { searchQueryReducer, searchInitialState, searchComics, debouncedSearchComics } from '@inkverse/shared-client/dispatch/search';
 import { COMICS_LIST_SCREEN } from '@/constants/Navigation';
 
@@ -79,7 +79,8 @@ function useSearch() {
   // Set up the reducer for search state
   const [state, dispatch] = useReducer(searchQueryReducer, searchInitialState);
   const { isSearchLoading, isLoadingMore, searchResults } = state;
-
+  const publicClient = getPublicApolloClient();
+  
   // Reset pagination when search text changes
   useEffect(() => {
     setCurrentPage(1);
