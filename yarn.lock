@@ -3715,6 +3715,11 @@
   dependencies:
     merge-options "^3.0.4"
 
+"@react-native-google-signin/google-signin@^14.0.1":
+  version "14.0.1"
+  resolved "https://registry.yarnpkg.com/@react-native-google-signin/google-signin/-/google-signin-14.0.1.tgz#1cba5bc4867fef24dd855385be937d590dc5000b"
+  integrity sha512-2f903eaHiv/Ob96vsWZitz+Z0k2J2W0/C7Ygrr6ejAT2JVzJCatmjF/eq62MWhuTNdU2WDX/oePxMbpQW6k2UA==
+
 "@react-native/assets-registry@0.79.2":
   version "0.79.2"
   resolved "https://registry.yarnpkg.com/@react-native/assets-registry/-/assets-registry-0.79.2.tgz#731963e664c8543f5b277e56c058bde612b69f50"
@@ -10966,6 +10971,11 @@ react-modal@^3.16.3:
     prop-types "^15.7.2"
     react-lifecycles-compat "^3.0.0"
     warning "^4.0.3"
+
+react-native-credentials-manager@^0.6.1:
+  version "0.6.1"
+  resolved "https://registry.yarnpkg.com/react-native-credentials-manager/-/react-native-credentials-manager-0.6.1.tgz#a8f193d787c9cb68cef8c0104c58964c61a790b4"
+  integrity sha512-2YHBoE/5ydNPxNsMrYVNuJFrbo4SUdMI5TmvYSUFt7v28wlfYee5+ivWzMzZruEZkx3XFcquvC22HE3G6JqkgA==
 
 react-native-dropdown-picker@^5.4.6:
   version "5.4.6"

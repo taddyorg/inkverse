@@ -11,6 +11,14 @@ import { PressableOpacity, Screen, ScreenHeader, ThemedView, ThemedText, ThemedI
 import { Colors } from '@/constants/Colors';
 import { openURL, openEmail } from '@/lib/utils';
 import { showShareSheet } from '@/lib/share-sheet';
+import { getUserDetails } from '@/lib/auth/user';
+import { getUserApolloClient } from '@/lib/apollo';
+import { clearHostingProviderAuthData, flushContentTokenForProviderAndSeries, getConnectedHostingProviderUuids } from '@/lib/auth/hosting-provider';
+import { getPublicApolloClient } from '@/lib/apollo';
+import { asyncClear } from '@/lib/storage/async';
+import { syncStorageClear } from '@/lib/storage/sync';
+import { inkverseAuthClear } from '@/lib/storage/secure';
+import { SIGNUP_SCREEN } from '@/constants/Navigation';
 
 export type SettingsScreenParams = undefined;
 
@@ -26,6 +34,7 @@ export function SettingsScreen() {
   const navigation = useNavigation();
   const colorScheme = useColorScheme() ?? 'light';
   const [isDarkMode, setIsDarkMode] = useState(colorScheme === 'dark');
+  const user = getUserDetails();
   
   // Section 1: Main settings handlers
   const updateProfilePressed = () => {
@@ -34,8 +43,8 @@ export function SettingsScreen() {
   };
 
   const signupButtonPressed = () => {
-    // Implement signup functionality
-    console.log('Signup pressed');
+    navigation.navigate(SIGNUP_SCREEN);
+    navigation.goBack();
   };
 
   const addYourComicButtonPressed = () => {
@@ -48,22 +57,43 @@ export function SettingsScreen() {
     }
   };
 
-  const logoutButtonPressed = () => {
+  const logoutButtonPressed = async () => {
     // Implement logout functionality
     Image.clearMemoryCache();
     Image.clearDiskCache();
-    AsyncStorage.clear();
+
+    // Clear AsyncStorage 
+    await asyncClear();
+
+    // Clear Inkverse Auth Data
+    await inkverseAuthClear();
+
+    // Clear SyncStorage
+    syncStorageClear();
+
+    // Clear hosting provider data
+    const hostingProviderUuids = await getConnectedHostingProviderUuids();
+    hostingProviderUuids.forEach((hostingProviderUuid) => {
+      clearHostingProviderAuthData(hostingProviderUuid);
+    });
+
+    // Clear content token for provider and series
+    flushContentTokenForProviderAndSeries();
+
+    //clear apollo local store
+    getPublicApolloClient()?.resetStore();
+
+    //clear apollo local store
+    getUserApolloClient()?.resetStore();
+
+    // Go back to home
+    navigation.goBack();
   };
 
   // Section 2: Dev mode handlers
   const clearImageCacheButtonPressed = () => {
     Image.clearMemoryCache();
     Image.clearDiskCache();
-  };
-
-  const clearTaddyTokensButtonPressed = () => {
-    // Implement clear taddy tokens functionality
-    console.log('Clear taddy tokens pressed');
   };
 
   // Section 3: About us handlers
@@ -142,24 +172,20 @@ export function SettingsScreen() {
       Appearance.setColorScheme(newColorScheme);
       AsyncStorage.setItem('userThemePreference', newColorScheme);
     }},
-    // { id: 'update-profile', type: 'button', name: '📸 Edit Profile', onPress: updateProfilePressed },
+    ...(user 
+      ? [{ id: 'update-profile', type: 'button' as const, name: '📸 Edit Your Profile', onPress: updateProfilePressed }] 
+      : [{ id: 'signup', type: 'button' as const, name: '✨ Sign Up / Log In', onPress: signupButtonPressed }]),
     // { id: 'signup', type: 'button', name: '✨ Unlock Your Profile!', onPress: signupButtonPressed },
     { id: 'add-your-comic', type: 'button', name: '✚ Publish your webtoon on Inkverse', onPress: addYourComicButtonPressed },
     { id: 'rate-app', type: 'button', name: `🏅 Rate App (5 stars 🙏)`, onPress: rateAppButtonPressed },
-    // { id: 'logout', type: 'button', name: '✌️ Logout', onPress: logoutButtonPressed },
+    { id: 'clear-image-cache', type: 'button', name: '🗑 Clear Image Cache', onPress: clearImageCacheButtonPressed },
+    ...(user ? [{ id: 'logout', type: 'button' as const, name: '✌️ Logout', onPress: logoutButtonPressed }] : []),
   ];
 
-  const devItems: SettingItem[] = __DEV__
-    ? [
-      { id: 'clear-image-cache', type: 'button', name: '🗑 Clear Image Cache', onPress: clearImageCacheButtonPressed },
-      { id: 'clear-taddy-tokens', type: 'button', name: '🗑 Clear Taddy Tokens', onPress: clearTaddyTokensButtonPressed },
-    ]
-    : [];
-
   const supportItems: SettingItem[] = [
-    { id: 'email-help', type: 'button', name: '📧 Email me', onPress: emailHelpButtonPressed },
-    { id: 'suggest-feature', type: 'button', name: '💡 Suggest a new feature', onPress: suggestFeatureButtonPressed },
-    { id: 'share-inkverse', type: 'button', name: '🤩 Share Inkverse with your friends', onPress: shareInkverseButtonPressed },
+    { id: 'email-help', type: 'button' as const, name: '📧 Email me', onPress: emailHelpButtonPressed },
+    { id: 'suggest-feature', type: 'button' as const, name: '💡 Suggest a new feature', onPress: suggestFeatureButtonPressed },
+    { id: 'share-inkverse', type: 'button' as const, name: '🤩 Share Inkverse with your friends', onPress: shareInkverseButtonPressed },
   ];
 
   // const shareItems: SettingItem[] = [
@@ -168,11 +194,10 @@ export function SettingsScreen() {
   // Combine all items for the main list
   const allSettingsItems: SettingItem[] = [
     ...accountItems,
-    ...devItems,
   ];
 
   const founderAvatar = 'https://ax0.taddy.org/general/danny-avatar-2.jpg';
-  const founderDescription = "👋 Hey! I'm Danny, the founder & developer of Inkverse. I'd love to hear your feedback!";
+  const founderDescription = "👋 Hey! I'm Danny, the founder & developer of Inkverse. I'd love to hear your feedback on the app!";
 
   const renderLightDarkToggle = (item: SettingItem) => {
     return (

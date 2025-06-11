@@ -1,29 +1,22 @@
 import { type LoaderFunctionArgs } from "react-router";
 import { getPublicApolloClient, getUserApolloClient } from "@/lib/apollo/client.server";
-import { type GetUserByUsernameQuery, GetUserByUsername, type GetUserByUsernameQueryVariables, type User, type GetUserByIdQuery, type GetUserByIdQueryVariables, GetUserById, GetMiniUserById } from "@inkverse/shared-client/graphql/operations";
-import { type GetMiniUserByIdQuery, type GetMiniUserByIdQueryVariables } from "@inkverse/shared-client/graphql/operations";
+import { type GetUserByUsernameQuery, GetUserByUsername, type GetUserByUsernameQueryVariables } from "@inkverse/shared-client/graphql/operations";
 import { handleLoaderError } from "./error-handler";
 import { getRefreshToken } from "@/lib/auth/cookie";
 import { jwtDecode, type JwtPayload } from 'jwt-decode';
+import { type ProfileState, fetchUserData, parseProfileData } from "@inkverse/shared-client/dispatch/profile";
 
-export type ProfileLoaderData = {
-  user: User | null;
-  apolloState: Record<string, any>;
-};
-
-export async function loadProfile({ params, request }: LoaderFunctionArgs): Promise<ProfileLoaderData> {
+export async function loadProfile({ params, request }: LoaderFunctionArgs): Promise<ProfileState> {
   const { username } = params;
   
   if (!username) {
     throw new Response("Bad Request", { status: 400 });
   }
 
-  
   try {
-    let user;
-    let apolloState;
-
     const publicClient = getPublicApolloClient(request);
+    
+    // Step 1: Get user ID from username
     const publicUserResult = await publicClient.query<GetUserByUsernameQuery, GetUserByUsernameQueryVariables>({
       query: GetUserByUsername,
       variables: { username },
@@ -33,81 +26,52 @@ export async function loadProfile({ params, request }: LoaderFunctionArgs): Prom
     if (!userIdFromUsername) {
       return {
         user: null,
-        apolloState: {},
+        isLoading: false,
+        error: null,
+        apolloState: publicClient.extract(),
       };
     }
 
-    // Check if user is authenticated by looking at the refresh token cookie
+    // Check if user is authenticated
     const refreshToken = await getRefreshToken(request);
-    
-    if (refreshToken) { // User is authenticated
+    let currentUserId: string | undefined;
+    let userClient;
+
+    if (refreshToken) {
       const decoded = jwtDecode(refreshToken) as JwtPayload & { sub?: string };
-
-      const shouldUseUserClient = decoded?.sub === userIdFromUsername;
-
-      if (shouldUseUserClient) { // User is authenticated and its thier profile
-        // Use user client to get full profile data
-        const userClient = getUserApolloClient(request);
-        
-        const userResult = await userClient.query<GetMiniUserByIdQuery, GetMiniUserByIdQueryVariables>({
-          query: GetMiniUserById,
-          variables: { id: userIdFromUsername },
-        });
-    
-        if (!userResult.data?.getUserById) {
-          return {
-            user: null,
-            apolloState: {},
-          };
-        }
-  
-        user = userResult.data.getUserById;
-        apolloState = userClient.extract();
-      } else { // User is authenticated but its not thier profile
-        // Use public client to get limited profile data for other users
-        const publicClient = getPublicApolloClient(request);
-        
-        const userResult = await publicClient.query<GetMiniUserByIdQuery, GetMiniUserByIdQueryVariables>({
-          query: GetMiniUserById,
-          variables: { id: userIdFromUsername },
-        });
-
-        if (!userResult.data?.getUserById) {
-          return {
-            user: null,
-            apolloState: {},
-          };
-        }
-
-        user = userResult.data.getUserById;
-        apolloState = publicClient.extract();
-      }
-    } else { // User is unauthenticated
-      // Use public client to get limited profile data for unauthenticated users
-      
-      const publicResult = await publicClient.query<GetUserByIdQuery, GetUserByIdQueryVariables>({
-        query: GetUserById,
-        variables: { id: userIdFromUsername },
-      });
-
-      if (!publicResult.data?.getUserById) {
-        return {
-          user: null,
-          apolloState: {},
-        };
-      }
-
-      user = publicResult.data.getUserById;
-      apolloState = publicClient.extract();
+      currentUserId = decoded?.sub;
+      userClient = getUserApolloClient(request);
     }
 
+    // Step 2: Fetch user data using the helper function
+    const profileData = await fetchUserData({
+      publicClient,
+      userClient,
+      userId: userIdFromUsername,
+      currentUserId,
+    });
+
+    // Step 3: Parse the profile data
+    const parsedData = parseProfileData(profileData);
+
+    // Step 4: Extract Apollo state from the appropriate client
+    const apolloState = (currentUserId && userClient && currentUserId === userIdFromUsername)
+      ? userClient.extract()
+      : publicClient.extract();
+
     return {
-      user,
+      ...parsedData,
       apolloState,
     };
     
   } catch (error) {
     console.log('error', error);
-    return handleLoaderError(error, 'Profile');
+    const errorResult = handleLoaderError(error, 'Profile');
+    return {
+      user: null,
+      isLoading: false,
+      error: errorResult,
+      apolloState: {},
+    };
   }
 }

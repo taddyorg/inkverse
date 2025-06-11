@@ -78,4 +78,20 @@ export async function secureDeleteMultiple(keys: string[]): Promise<boolean> {
     console.error('Failed to delete multiple keys from SecureStore:', error);
     return false;
   }
+}   
+
+/**
+ * Clear all Inkverse Auth data from SecureStore
+ */
+export async function inkverseAuthClear(): Promise<boolean> {
+  try {
+    await secureDeleteMultiple([
+      'inkverse-access-token',
+      'inkverse-refresh-token',
+    ]);
+    return true;
+  } catch (error) {
+    console.error('Failed to clear SecureStore:', error);
+    return false;
+  }
 }

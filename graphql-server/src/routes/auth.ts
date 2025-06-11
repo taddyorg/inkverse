@@ -28,13 +28,6 @@ function getRefreshTokenFromCookie(cookies: any): string | null {
   return cookies?.['inkverse-refresh-token'] || null;
 }
 
-// Initialize Google OAuth client
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
-
-// Apple Sign-In credentials
-const APPLE_CLIENT_ID = process.env.APPLE_CLIENT_ID;
-
 // Cookie options for refresh token
 const REFRESH_TOKEN_COOKIE_OPTIONS = {
   httpOnly: true,
@@ -112,18 +105,35 @@ router.post('/login-with-email', async (req: Request, res: Response) => {
   }
 });
 
+function getGoogleClientID(source: 'web' | 'ios' | 'android'): string | undefined {
+  switch (source) {
+    case 'web':
+      return process.env.GOOGLE_CLIENT_ID_WEB;
+    case 'ios':
+      return process.env.GOOGLE_CLIENT_ID_IOS;
+    case 'android':
+      return process.env.GOOGLE_CLIENT_ID_ANDROID;
+    default:
+      throw new Error(`Invalid source: ${source}`);
+  }
+}
+
 // Login with Google
 router.post('/login-with-google', async (req: Request, res: Response) => {
   try {
-    const { googleIdToken } = req.body;
+    const { googleIdToken, source = 'web' } = req.body;
 
     if (!googleIdToken) {
       return res.status(400).json({ error: 'Google ID token is required' });
     }
 
+    const GOOGLE_CLIENT_ID = getGoogleClientID(source);
+
     if (!GOOGLE_CLIENT_ID) {
       return res.status(500).json({ error: 'Server configuration error: Missing Google Client ID' });
     }
+
+    const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 
     // Verify the Google ID token with Google's OAuth API
     const ticket = await googleClient.verifyIdToken({
@@ -154,6 +164,10 @@ router.post('/login-with-google', async (req: Request, res: Response) => {
     const googleId = payload.sub; // Google user ID
     const email = payload.email; // User's email from Google
     const isEmailVerified = payload.email_verified || false;
+
+    if (!email || !googleId) {
+      return res.status(401).json({ error: 'Invalid Google token: missing email or user ID' });
+    }
         
     // Check if user exists with this Google ID
     const alreadyGoogleUser = await User.getUserByGoogleId(googleId);
@@ -280,11 +294,13 @@ router.post('/login-with-google', async (req: Request, res: Response) => {
 // Apple Sign-In Callback
 router.post('/login-with-apple', async (req: Request, res: Response) => {
   try {
-    const { code, id_token } = req.body;
+    const { id_token } = req.body;
     
     if (!id_token) {
       return res.status(400).json({ error: 'ID token is required' });
     }
+
+    const APPLE_CLIENT_ID = process.env.APPLE_CLIENT_ID;
     
     if (!APPLE_CLIENT_ID) {
       return res.status(500).json({ error: 'Server configuration error: Missing Apple Client ID' });
@@ -298,7 +314,7 @@ router.post('/login-with-apple', async (req: Request, res: Response) => {
 
     // Extract user information from verified token
     const appleUserId = appleIdTokenClaims.sub; // Apple user ID
-    let email = appleIdTokenClaims.email;
+    const email = appleIdTokenClaims.email;
     const isEmailVerified = !!appleIdTokenClaims.email_verified;
 
     if (!appleUserId) {
@@ -306,13 +322,7 @@ router.post('/login-with-apple', async (req: Request, res: Response) => {
     }
 
     // Check if user exists with this Apple ID
-    let user = await User.getUserByAppleId(appleUserId);
-    
-    // For subsequent sign-ins, Apple doesn't include email in the token
-    // Use the email from our database if available
-    if (!email && user && user.email) {
-      email = user.email;
-    }
+    const user = await User.getUserByAppleId(appleUserId);
     
     if (user) {
       // User exists, generate tokens

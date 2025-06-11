@@ -77,3 +77,13 @@ export async function asyncDeleteMultiple(keys: string[]): Promise<boolean> {
     return false;
   }
 }
+
+export async function asyncClear(): Promise<boolean> {
+  try {
+    await AsyncStorage.clear();
+    return true;
+  } catch (error) {
+    console.error('Failed to clear AsyncStorage:', error);
+    return false;
+  }
+}

@@ -1,6 +1,7 @@
 import axios from 'axios';
 import type { StorageFunctions } from './utils';
 import type { User } from '@inkverse/shared-client/graphql/operations';
+import { AuthProvider } from '@inkverse/public/graphql/types';
 
 export interface AuthState {
   user: any | null;
@@ -8,6 +9,7 @@ export interface AuthState {
   refreshToken: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  loadingProvider: AuthProvider | null;
   error: string | null;
 }
 
@@ -17,11 +19,13 @@ export const authInitialState: AuthState = {
   refreshToken: null,
   isAuthenticated: false,
   isLoading: false,
+  loadingProvider: null,
   error: null,
 };
 
 export enum AuthActionType {
   AUTH_START = 'AUTH_START',
+  AUTH_START_PROVIDER = 'AUTH_START_PROVIDER',
   AUTH_SUCCESS = 'AUTH_SUCCESS',
   AUTH_ERROR = 'AUTH_ERROR',
   AUTH_LOGOUT = 'AUTH_LOGOUT',
@@ -31,6 +35,7 @@ export enum AuthActionType {
 
 type AuthAction =
   | { type: AuthActionType.AUTH_START }
+  | { type: AuthActionType.AUTH_START_PROVIDER; payload: AuthProvider }
   | { type: AuthActionType.AUTH_SUCCESS; payload: { accessToken: string; refreshToken: string; user: User } }
   | { type: AuthActionType.AUTH_ERROR; payload: string }
   | { type: AuthActionType.AUTH_LOGOUT }
@@ -41,6 +46,8 @@ export const authReducer = (state: AuthState, action: AuthAction): AuthState => 
   switch (action.type) {
     case AuthActionType.AUTH_START:
       return { ...state, isLoading: true, error: null };
+    case AuthActionType.AUTH_START_PROVIDER:
+      return { ...state, isLoading: true, loadingProvider: action.payload, error: null };
     case AuthActionType.AUTH_SUCCESS:
       return {
         ...state,
@@ -49,10 +56,11 @@ export const authReducer = (state: AuthState, action: AuthAction): AuthState => 
         refreshToken: action.payload.refreshToken,
         isAuthenticated: true,
         isLoading: false,
+        loadingProvider: null,
         error: null,
       };
     case AuthActionType.AUTH_ERROR:
-      return { ...state, isLoading: false, error: action.payload };
+      return { ...state, isLoading: false, loadingProvider: null, error: action.payload };
     case AuthActionType.AUTH_RESET:
     case AuthActionType.AUTH_LOGOUT:
       return authInitialState;
@@ -137,7 +145,9 @@ export async function dispatchExchangeOTPForTokens(
 interface DispatchLoginWithGoogleParams {
   baseUrl: string;
   googleIdToken: string;
+  source: 'ios' | 'android' | 'web';
   storageFunctions?: StorageFunctions;
+  onSuccessFunction?: () => void;
   includeCredentials?: boolean; // For web - to receive Set-Cookie headers
 }
 
@@ -145,15 +155,15 @@ interface DispatchLoginWithGoogleParams {
  * Authenticates a user with Google and stores tokens using provided storage functions
  */
 export async function dispatchLoginWithGoogle(
-  { baseUrl, googleIdToken, storageFunctions, includeCredentials = false }: DispatchLoginWithGoogleParams,
+  { baseUrl, googleIdToken, source, storageFunctions, onSuccessFunction, includeCredentials = false }: DispatchLoginWithGoogleParams,
   dispatch?: React.Dispatch<AuthAction>
 ): Promise<void> {
-  if (dispatch) dispatch({ type: AuthActionType.AUTH_START });
+  if (dispatch) { dispatch({ type: AuthActionType.AUTH_START_PROVIDER, payload: AuthProvider.GOOGLE }); }
 
   try {
     const response = await axios.post(
       `${baseUrl}/login-with-google`, 
-      { googleIdToken },
+      { googleIdToken, source },
       { withCredentials: includeCredentials }
     );
 
@@ -172,6 +182,9 @@ export async function dispatchLoginWithGoogle(
 
     if (dispatch) {
       dispatch({ type: AuthActionType.AUTH_SUCCESS, payload: response.data });
+      if (onSuccessFunction) {
+        onSuccessFunction();
+      }
     }
   } catch (error: any) {
     if (dispatch) {
@@ -184,21 +197,21 @@ export async function dispatchLoginWithGoogle(
 interface DispatchLoginWithAppleParams {
   baseUrl: string;
   idToken: string;
-  code?: string;
   storageFunctions?: StorageFunctions;
   includeCredentials?: boolean; // For web - to receive Set-Cookie headers
+  onSuccessFunction?: () => void;
 }
 
 export async function dispatchLoginWithApple(
-  { baseUrl, idToken, code, storageFunctions, includeCredentials = false }: DispatchLoginWithAppleParams,
+  { baseUrl, idToken, storageFunctions, includeCredentials = false, onSuccessFunction }: DispatchLoginWithAppleParams,
   dispatch?: React.Dispatch<AuthAction>
 ): Promise<void> {
-  if (dispatch) dispatch({ type: AuthActionType.AUTH_START });
+  if (dispatch) dispatch({ type: AuthActionType.AUTH_START_PROVIDER, payload: AuthProvider.APPLE });
 
   try {
     const response = await axios.post(
       `${baseUrl}/login-with-apple`, 
-      { id_token: idToken, code },
+      { id_token: idToken },
       { withCredentials: includeCredentials }
     );
 
@@ -217,6 +230,9 @@ export async function dispatchLoginWithApple(
 
     if (dispatch) {
       dispatch({ type: AuthActionType.AUTH_SUCCESS, payload: response.data });
+      if (onSuccessFunction) {
+        onSuccessFunction();
+      }
     }
   } catch (error: any) {
     if (dispatch) {

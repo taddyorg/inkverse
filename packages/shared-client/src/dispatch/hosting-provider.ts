@@ -67,7 +67,6 @@ export async function fetchAllHostingProviderTokens(
       fetchPolicy: 'no-cache'
     });
 
-
     const refreshTokens = data?.fetchAllHostingProviderTokens || [];
     refreshTokens.forEach((refreshToken) => {
       const decodedToken = jwtDecode(refreshToken);

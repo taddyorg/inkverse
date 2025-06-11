@@ -34,6 +34,7 @@ import { WrappedComicIssueScreen } from './wrapped-screens/wrappedcomicissue';
 import { WrappedCreatorScreen } from './wrapped-screens/wrappedcreator';
 import { WrappedListScreen } from './wrapped-screens/wrappedlist';
 import { WrappedTaggedScreen } from './wrapped-screens/wrappedtagged';
+import { WrappedProfileScreen } from './wrapped-screens/wrappedprofile';
 
 import { 
   HOME_TAB, 
@@ -48,6 +49,7 @@ import {
   WRAPPED_CREATOR_SCREEN,
   WRAPPED_LIST_SCREEN,
   WRAPPED_TAGGED_SCREEN,
+  WRAPPED_PROFILE_SCREEN,
   COMICISSUE_SCREEN, 
   CREATOR_SCREEN, 
   SETTINGS_SCREEN,
@@ -125,6 +127,15 @@ const comicsListScreenConfig = {
   }
 };
 
+const profileScreenConfig = {
+  name: PROFILE_SCREEN,
+  component: ProfileScreen,
+  options: {
+    title: '',
+    headerShown: false,
+  }
+};
+
 const stackScreenOptions = {
   ...Platform.select({
     android: {
@@ -150,6 +161,7 @@ function HomeStack() {
       <Stack.Screen {...creatorScreenConfig} />
       <Stack.Screen {...listScreenConfig} />
       <Stack.Screen {...comicsListScreenConfig} />
+      <Stack.Screen {...profileScreenConfig} />
     </Stack.Navigator>
   );
 }
@@ -170,6 +182,7 @@ function SearchStack() {
       <Stack.Screen {...creatorScreenConfig} />
       <Stack.Screen {...listScreenConfig} />
       <Stack.Screen {...comicsListScreenConfig} />
+      <Stack.Screen {...profileScreenConfig} />
     </Stack.Navigator>
   );
 }
@@ -329,6 +342,7 @@ function App() {
         [WRAPPED_CREATOR_SCREEN]: 'creators/:shortUrl',
         [WRAPPED_LIST_SCREEN]: 'lists/:idAndName',
         [WRAPPED_TAGGED_SCREEN]: 'tagged/:tag',
+        [WRAPPED_PROFILE_SCREEN]: ':username',
         [SIGNUP_RESET_SCREEN]: 'reset',
       },
     },
@@ -448,6 +462,11 @@ function App() {
             <Stack.Screen 
               name={WRAPPED_TAGGED_SCREEN} 
               component={WrappedTaggedScreen}
+              options={modalScreenOptions}
+            />
+            <Stack.Screen 
+              name={WRAPPED_PROFILE_SCREEN} 
+              component={WrappedProfileScreen}
               options={modalScreenOptions}
             />
             <Stack.Screen 

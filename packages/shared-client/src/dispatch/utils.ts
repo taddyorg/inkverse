@@ -11,6 +11,7 @@ export enum ActionTypes {
   REPORT_COMIC_SERIES = 'REPORT_COMIC_SERIES',
   CONNECT_HOSTING_PROVIDER = 'CONNECT_HOSTING_PROVIDER',
   FETCH_USER_TOKENS = 'FETCH_USER_TOKENS',
+  GET_PROFILE = 'GET_PROFILE',
 }
 
 export type Dispatch = (action: Action | { type: string; payload?: any }) => void;

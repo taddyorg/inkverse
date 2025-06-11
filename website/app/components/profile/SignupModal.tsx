@@ -44,7 +44,8 @@ export function SignupModal({ isOpen, onClose, hideComponent = true }: AuthModal
       
       await dispatchLoginWithGoogle(
         { 
-          baseUrl: config.AUTH_URL, 
+          baseUrl: config.AUTH_URL,
+          source: 'web',
           googleIdToken: credentialResponse.credential,
           storageFunctions: webStorageFunctions,
           includeCredentials: true
@@ -178,7 +179,6 @@ export function SignupModal({ isOpen, onClose, hideComponent = true }: AuthModal
         { 
           baseUrl: config.AUTH_URL, 
           idToken: response.authorization.id_token,
-          code: response.authorization.code,
           storageFunctions: webStorageFunctions,
           includeCredentials: true
         },
