@@ -102,11 +102,12 @@ interface DispatchExchangeOTPParams {
   baseUrl: string;
   otp: string;
   storageFunctions?: StorageFunctions;
+  onSuccessFunction?: () => void;
   includeCredentials?: boolean; // For web - to receive Set-Cookie headers
 }
 
 export async function dispatchExchangeOTPForTokens(
-  { baseUrl, otp, storageFunctions, includeCredentials = false }: DispatchExchangeOTPParams,
+  { baseUrl, otp, storageFunctions, onSuccessFunction, includeCredentials = false }: DispatchExchangeOTPParams,
   dispatch?: React.Dispatch<AuthAction>
 ): Promise<void> {
   if (dispatch) dispatch({ type: AuthActionType.AUTH_START });
@@ -133,6 +134,9 @@ export async function dispatchExchangeOTPForTokens(
 
     if (dispatch) {
       dispatch({ type: AuthActionType.AUTH_SUCCESS, payload: response.data });
+      if (onSuccessFunction) {
+        onSuccessFunction();
+      }
     }
   } catch (error: any) {
     if (dispatch) {

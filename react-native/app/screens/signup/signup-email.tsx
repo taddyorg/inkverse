@@ -18,9 +18,27 @@ import {
   AuthActionType
 } from '@inkverse/shared-client/dispatch/authentication';
 import config from '@/config';
-import { ThemedView, ThemedText, ThemedButton, PressableOpacity } from '@/app/components/ui';
+import { ThemedView, ThemedText, ThemedButton, PressableOpacity, HeaderBackButton } from '@/app/components/ui';
 import { Colors, useThemeColor } from '@/constants/Colors';
 import { SPACING } from '@/constants/Spacing';
+import { SIGNUP_RESET_SCREEN } from '@/constants/Navigation';
+
+function getOTP(url: string): string | null {
+  try {
+    const parsedUrl = new URL(url);
+    
+    // Check if it's the correct domain and path
+    if (parsedUrl.hostname === 'inkverse.co' && parsedUrl.pathname === '/reset') {
+      // Extract the token from the search parameters
+      return parsedUrl.searchParams.get('token');
+    }
+    
+    return null;
+  } catch (error) {
+    // If URL parsing fails, return null
+    return null;
+  }
+}
 
 export function SignupEmailScreen() {
   const navigation = useNavigation();
@@ -86,6 +104,19 @@ export function SignupEmailScreen() {
     }
   };
 
+  const onLinkTextChanged = (text: string) => {
+    setLink(text);
+    const otp = getOTP(text);
+    if (otp) {
+      onOTPReceived(otp);
+    }
+  };
+
+  const onOTPReceived = (otp: string) => {
+    // Navigate to signup-reset screen with the OTP token
+    (navigation as any).navigate(SIGNUP_RESET_SCREEN, { token: otp });
+  };
+
   return (
     <View style={[styles.container, { backgroundColor }]}>
       <KeyboardAvoidingView
@@ -94,6 +125,9 @@ export function SignupEmailScreen() {
       >
       {mode === 'check-email' && (
         <View style={styles.centerContent}>
+          {hasReturnedToApp && (
+            <HeaderBackButton />
+          )}
           <ThemedText size="title" style={styles.centerTitle}>
             {email ? `We have sent an email to ${email}` : 'We have sent an email to you'}
           </ThemedText>
@@ -106,10 +140,13 @@ export function SignupEmailScreen() {
                 If the link did not open inside this app, you can copy and paste the link here:
               </ThemedText>
               <TextInput
-                style={[styles.emailInput, { borderColor: textColor + '20', color: textColor }]}
+                style={[styles.emailInput, { borderColor: textColor, color: textColor }]}
                 value={link}
-                onChangeText={setLink}
+                onChangeText={onLinkTextChanged}
                 placeholder="https://inkverse.co/..."
+                keyboardType="url"
+                autoCapitalize="none"
+                autoCorrect={false}
               />
             </>
           )}
@@ -203,6 +240,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: SPACING.md,
+    marginHorizontal: SPACING.md,
   },
   keyboardAvoidingView: {
     flex: 1,

@@ -34,8 +34,8 @@ export function SetupAge({ ageRange, setAgeRange, birthYear, setBirthYear, userD
 
   return (
     <form onSubmit={handleSubmit} className="mt-6">
-      <label className="block text-inkverse-black dark:text-white font-semibold mb-1">
-        Select your age range
+      <label className="block text-inkverse-black dark:text-white font-semibold mb-3">
+        How old are you?
       </label>
       <div className="grid grid-cols-2 gap-2 mb-4">
         <button

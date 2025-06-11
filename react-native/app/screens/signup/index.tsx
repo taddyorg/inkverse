@@ -27,11 +27,14 @@ import { SIGNUP_EMAIL_SCREEN, SIGNUP_USERNAME_SCREEN } from '@/constants/Navigat
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import config from '@/config';
-import { mobileStorageFunctions } from '@/lib/auth/user';
+import { getUserDetails, mobileStorageFunctions } from '@/lib/auth/user';
+import { saveHostingProviderRefreshToken, refreshHostingProviderAccessToken } from '@/lib/auth/hosting-provider';
 
 import {
   signUpWithGoogle,
 } from "react-native-credentials-manager";
+import { getUserApolloClient } from '@/lib/apollo';
+import { fetchAllHostingProviderTokens } from '@inkverse/shared-client/dispatch/hosting-provider';
 
 export function SignupScreen() {
   const navigation = useNavigation();
@@ -56,6 +59,24 @@ export function SignupScreen() {
     'text'
   );
 
+  const onTokenSuccessfullyReceived = async () => {
+    const user = await getUserDetails();
+    const userClient = getUserApolloClient();
+    
+    await fetchAllHostingProviderTokens({ 
+      userClient: userClient as any, 
+      saveHostingProviderRefreshToken, 
+      refreshHostingProviderAccessToken 
+    })
+
+    if (!user?.username) {
+      navigation.navigate(SIGNUP_USERNAME_SCREEN);
+    } else if (user) {
+      //close modal
+      navigation.getParent()?.goBack();
+    }
+  }
+
   const handleGoogleLogin = async () => {
     try {
       dispatch({ type: AuthActionType.AUTH_START_PROVIDER, payload: AuthProvider.GOOGLE });
@@ -70,9 +91,7 @@ export function SignupScreen() {
               source: 'ios',
               googleIdToken: user.data.idToken,
               storageFunctions: mobileStorageFunctions,
-              onSuccessFunction: () => {
-                navigation.navigate(SIGNUP_USERNAME_SCREEN);
-              }
+              onSuccessFunction: onTokenSuccessfullyReceived
             }, 
             dispatch
           );
@@ -92,9 +111,7 @@ export function SignupScreen() {
               source: 'android',
               googleIdToken: googleCredential.idToken,
               storageFunctions: mobileStorageFunctions,
-              onSuccessFunction: () => {
-                navigation.navigate(SIGNUP_USERNAME_SCREEN);
-              }
+              onSuccessFunction: onTokenSuccessfullyReceived
             },
             dispatch
           );

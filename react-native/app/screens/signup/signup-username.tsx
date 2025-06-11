@@ -1,13 +1,14 @@
 import { useState, useReducer } from 'react';
-import { StyleSheet, View, TextInput } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { 
   authReducer, 
   authInitialState,
   AuthActionType
 } from '@inkverse/shared-client/dispatch/authentication';
-import { Screen, ThemedView, ThemedText, ThemedButton } from '@/app/components/ui';
-import { Colors, useThemeColor } from '@/constants/Colors';
+import { Screen, ThemedView, ThemedText, PressableOpacity } from '@/app/components/ui';
+import { SetupUsername } from '@/app/components/profile/SetupUsername';
+import { useThemeColor } from '@/constants/Colors';
 import { SIGNUP_AGE_SCREEN } from '@/constants/Navigation';
 
 export function SignupUsernameScreen() {
@@ -16,25 +17,11 @@ export function SignupUsernameScreen() {
   const [authState, dispatch] = useReducer(authReducer, authInitialState);
   
   const backgroundColor = useThemeColor({}, 'background');
-  const textColor = useThemeColor({}, 'text');
-  const borderColor = useThemeColor(
-    { light: Colors.light.background, dark: Colors.dark.background },
-    'background'
-  );
-  const errorColor = useThemeColor(
-    { light: '#dc2626', dark: '#ef4444' },
-    'text'
-  );
-
+  const textColor = useThemeColor({}, 'text'); 
   const handleSubmit = async () => {
     dispatch({ type: AuthActionType.AUTH_CLEAR_ERROR });
 
     try {
-      // Validate input
-      if (!username.trim()) {
-        throw new Error('Username is required');
-      }
-
       // For now, just store username in state and navigate to age selection
       // The actual mutation will be called after both steps are complete
       navigation.navigate(SIGNUP_AGE_SCREEN);
@@ -47,42 +34,16 @@ export function SignupUsernameScreen() {
   return (
     <Screen>
       <View style={styles.container}>
-        <ThemedView style={[styles.card, { backgroundColor }]}>
+        <ThemedView style={{flex: 1, backgroundColor, width: '100%' }}>
           <ThemedText size="title" style={styles.title}>
-            Choose your username
+            Complete your profile
           </ThemedText>
-          
-          <ThemedText style={styles.subtitle}>
-            This is how other users will see you on Inkverse
-          </ThemedText>
-          
-          {authState.error && (
-            <View style={[styles.errorContainer, { backgroundColor: errorColor + '20' }]}>
-              <ThemedText style={[styles.errorText, { color: errorColor }]}>
-                {authState.error}
-              </ThemedText>
-            </View>
-          )}
-
-          <TextInput
-            style={[styles.input, { color: textColor, borderColor }]}
-            value={username}
-            onChangeText={setUsername}
-            placeholder="Enter username"
-            placeholderTextColor={textColor + '80'}
-            autoCapitalize="none"
-            autoCorrect={false}
-            autoFocus={true}
-          />
-
-          <ThemedButton
-            buttonText="Next"
-            onPress={handleSubmit}
-            disabled={authState.isLoading || !username.trim()}
-            style={[
-              styles.submitButton,
-              (authState.isLoading || !username.trim()) && styles.submitButtonDisabled
-            ]}
+          <SetupUsername
+            username={username}
+            setUsername={setUsername}
+            authState={authState}
+            onSubmit={handleSubmit}
+            mode="setup"
           />
         </ThemedView>
       </View>
@@ -97,20 +58,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 16,
   },
-  card: {
-    borderRadius: 12,
-    padding: 24,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 5,
-    maxWidth: 400,
-    width: '100%',
-  },
   title: {
     fontSize: 24,
     fontWeight: '700',
@@ -123,26 +70,9 @@ const styles = StyleSheet.create({
     marginBottom: 32,
     opacity: 0.8,
   },
-  errorContainer: {
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
-  },
-  errorText: {
-    fontSize: 14,
-  },
-  input: {
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
-    marginBottom: 24,
-  },
-  submitButton: {
-    marginTop: 8,
-  },
-  submitButtonDisabled: {
-    opacity: 0.5,
+  closeButton: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
   },
 });

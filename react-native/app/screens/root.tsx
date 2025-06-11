@@ -343,7 +343,11 @@ function App() {
         [WRAPPED_LIST_SCREEN]: 'lists/:idAndName',
         [WRAPPED_TAGGED_SCREEN]: 'tagged/:tag',
         [WRAPPED_PROFILE_SCREEN]: ':username',
-        [SIGNUP_RESET_SCREEN]: 'reset',
+        [SIGNUP_SCREEN]: {
+          screens: {
+            [SIGNUP_RESET_SCREEN]: 'reset',
+          },
+        },
       },
     },
   };

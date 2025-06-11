@@ -8,16 +8,20 @@ import {
   authInitialState,
   AuthActionType
 } from '@inkverse/shared-client/dispatch/authentication';
-import { Screen, ThemedView, ThemedText, ThemedButton } from '@/app/components/ui';
+import { Screen, ThemedView, ThemedText, PressableOpacity } from '@/app/components/ui';
 import { useThemeColor } from '@/constants/Colors';
 import config from '@/config';
 import { RootStackParamList, SIGNUP_RESET_SCREEN, SIGNUP_USERNAME_SCREEN } from '@/constants/Navigation';
+import { getUserDetails, mobileStorageFunctions } from '@/lib/auth/user';
+import { getUserApolloClient } from '@/lib/apollo';
+import { fetchAllHostingProviderTokens } from '@inkverse/shared-client/dispatch/hosting-provider';
+import { saveHostingProviderRefreshToken, refreshHostingProviderAccessToken } from '@/lib/auth/hosting-provider';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 export function SignupResetScreen() {
   const route = useRoute<NativeStackScreenProps<RootStackParamList, typeof SIGNUP_RESET_SCREEN>['route']>();
   const navigation = useNavigation();
   const [authState, dispatch] = useReducer(authReducer, authInitialState);
-
   
   const backgroundColor = useThemeColor({}, 'background');
   const errorColor = useThemeColor(
@@ -25,9 +29,29 @@ export function SignupResetScreen() {
     'text'
   );
 
+  const textColor = useThemeColor({}, 'text');
+
+  const onTokenSuccessfullyReceived = async () => {
+    const user = await getUserDetails();
+    const userClient = getUserApolloClient();
+    
+    await fetchAllHostingProviderTokens({ 
+      userClient: userClient as any, 
+      saveHostingProviderRefreshToken, 
+      refreshHostingProviderAccessToken 
+    })
+
+    if (!user?.username) {
+      navigation.navigate(SIGNUP_USERNAME_SCREEN);
+    } else if (user) {
+      // Dismiss the entire modal by navigating to parent
+      navigation.getParent()?.goBack();
+    }
+  }
+
   useEffect(() => {
     const handleTokenExchange = async () => {
-      const token = route.params?.token;
+      const token = route.params?.token
       
       if (!token) {
         // navigation.reset({ index: 0, routes: [{ name: HOME_SCREEN }] });
@@ -38,7 +62,12 @@ export function SignupResetScreen() {
 
       try {
         await dispatchExchangeOTPForTokens(
-          { baseUrl: config.AUTH_URL, otp: token },
+          { 
+            baseUrl: config.AUTH_URL, 
+            otp: token, 
+            storageFunctions: mobileStorageFunctions,
+            onSuccessFunction: onTokenSuccessfullyReceived
+          },
           dispatch
         );
       } catch (error: any) {
@@ -49,21 +78,16 @@ export function SignupResetScreen() {
     handleTokenExchange();
   }, [route.params, navigation]);
 
-  useEffect(() => {
-    if (authState.isAuthenticated && authState.user) {
-      // Check if user needs to complete their profile
-      if (!authState.user.username) {
-        navigation.navigate(SIGNUP_USERNAME_SCREEN);
-      } else {
-        // navigation.reset({ index: 0, routes: [{ name: HOME_SCREEN }] });
-      }
-    }
-  }, [authState.isAuthenticated, authState.user, navigation]);
-
   if (authState.error) {
     return (
       <Screen>
         <ThemedView style={styles.container}>
+          {/* Close button */}
+          <PressableOpacity 
+            onPress={() => navigation.goBack()}
+            style={styles.closeButton}>
+            <MaterialCommunityIcons name="close" size={28} color={textColor} />
+          </PressableOpacity>
           <ThemedView style={[styles.card, { backgroundColor }]}>
             <ThemedText size="title" style={[styles.errorTitle, { color: errorColor }]}>
               Authentication Error
@@ -136,5 +160,10 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: 16,
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
   },
 });
