@@ -17,8 +17,9 @@ import {
 import { fetchAllHostingProviderTokens } from '@inkverse/shared-client/dispatch/hosting-provider';
 import { Screen, ThemedView } from '@/app/components/ui';
 import { PubSub, PubSubEvents, HostingProviderConnectedData } from '@/lib/pubsub';
-
-const TADDY_PROVIDER_UUID = 'e9957105-80e4-46e3-8e82-20472b9d7512';
+import { SIGNUP_BLUESKY_SCREEN } from '@/constants/Navigation';
+import { saveHostingProviderRefreshToken, refreshHostingProviderAccessToken } from '@/lib/auth/hosting-provider';
+import { TADDY_HOSTING_PROVIDER_UUID } from '@inkverse/public/hosting-providers';
 
 export default function SignupPatreonScreen() {
   const navigation = useNavigation();
@@ -34,15 +35,14 @@ export default function SignupPatreonScreen() {
       PubSubEvents.HOSTING_PROVIDER_CONNECTED,
       async (data) => {
         // Check if this is the Patreon provider
-        if (data.hostingProviderUuid === TADDY_PROVIDER_UUID && data.success) {
-          console.log('Patreon connected, fetching comics...');
+        if (data.hostingProviderUuid === TADDY_HOSTING_PROVIDER_UUID && data.success) {
           setCurrentStep('patreon-connected');
           
           // Fetch hosting provider tokens to ensure we have the latest connection
           await fetchAllHostingProviderTokens({ 
             userClient: userClientRef.current, 
-            saveHostingProviderRefreshToken: () => {}, 
-            refreshHostingProviderAccessToken: () => Promise.resolve(null) 
+            saveHostingProviderRefreshToken, 
+            refreshHostingProviderAccessToken 
           });
           
           // Fetch comics from Patreon creators
@@ -69,7 +69,7 @@ export default function SignupPatreonScreen() {
     }
 
     const url = getAuthorizationCodeUrl({
-      hostingProviderUuid: TADDY_PROVIDER_UUID,
+      hostingProviderUuid: TADDY_HOSTING_PROVIDER_UUID,
       clientId: config.TADDY_CLIENT_ID,
       clientUserId: user.id,
     });
@@ -79,7 +79,7 @@ export default function SignupPatreonScreen() {
   }, []);
 
   const handleSkip = useCallback(() => {
-    navigation.goBack();
+    navigation.navigate(SIGNUP_BLUESKY_SCREEN);
   }, [navigation]);
 
   const handleBack = useCallback(() => {
@@ -104,7 +104,7 @@ export default function SignupPatreonScreen() {
         }, dispatch);
       }
 
-      navigation.goBack();
+      navigation.navigate(SIGNUP_BLUESKY_SCREEN);
     } catch (err) {
       console.error('Error subscribing to Patreon comics:', err);
     }

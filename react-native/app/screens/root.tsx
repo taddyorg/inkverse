@@ -27,6 +27,8 @@ import { SignupResetScreen } from './signup/signup-reset';
 import { SignupUsernameScreen } from './signup/signup-username';
 import { SignupAgeScreen } from './signup/signup-age';
 import SignupPatreonScreen from './signup/signup-patreon';
+import SignupBlueskyScreen from './signup/signup-bluesky';
+import { SignupCompleteScreen } from './signup/signup-complete';
 import { AppLoaderProvider } from '../components/providers/AppLoaderProvider';
 import { AuthRefreshProvider } from '../components/providers/AuthRefreshProvider';
 import { WrappedComicSeriesScreen } from './wrapped-screens/wrappedcomicseries';
@@ -67,6 +69,8 @@ import {
   SIGNUP_USERNAME_SCREEN,
   SIGNUP_AGE_SCREEN,
   SIGNUP_PATREON_SCREEN,
+  SIGNUP_BLUESKY_SCREEN,
+  SIGNUP_COMPLETE_SCREEN,
 } from '../../constants/Navigation';
 
 Sentry.init({
@@ -407,6 +411,14 @@ function App() {
         <SignupStack.Screen 
           name={SIGNUP_PATREON_SCREEN} 
           component={SignupPatreonScreen}
+        />
+        <SignupStack.Screen 
+          name={SIGNUP_BLUESKY_SCREEN} 
+          component={SignupBlueskyScreen}
+        />
+        <SignupStack.Screen 
+          name={SIGNUP_COMPLETE_SCREEN} 
+          component={SignupCompleteScreen}
         />
       </SignupStack.Navigator>
     );

@@ -7,6 +7,7 @@ import { HeaderBackButton } from '../ui/HeaderBackButton';
 import { WRAPPED_HOSTING_PROVIDER_SCREEN } from '@/constants/Navigation';
 import { useNavigation } from '@react-navigation/native';
 import { TADDY_HOSTING_PROVIDER_UUID } from '@inkverse/public/hosting-providers';
+import { SPACING } from '@/constants/Spacing';
 
 interface SetupPatreonProps {
   currentStep: 'patreon' | 'patreon-connected';
@@ -25,7 +26,7 @@ export function SetupPatreon({ currentStep, onConnect, onSkip, onBack, onContinu
         <ThemedText style={[styles.title]} size="title">
           Connect your Patreon
         </ThemedText>
-        <ThemedText style={[styles.description]}>
+        <ThemedText style={[styles.description]} font="bold">
           Find Inkverse creators that you follow on Patreon
         </ThemedText>
       </View>
@@ -67,20 +68,19 @@ export function SetupPatreon({ currentStep, onConnect, onSkip, onBack, onContinu
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    padding: SPACING.lg,
   },
   contentContainer: {
     alignItems: 'center',
-    marginTop: 80,
+    marginTop: SPACING.xxl * 2,
   },
   title: {
-    marginBottom: 8,
+    marginBottom: SPACING.sm,
     textAlign: 'center',
   },
   description: {
-    marginBottom: 24,
+    marginBottom: SPACING.xl,
     fontSize: 16,
-    fontWeight: '700',
     textAlign: 'center',
   },
   buttonContainer: {
@@ -89,19 +89,19 @@ const styles = StyleSheet.create({
   connectButton: {
     backgroundColor: '#FF424D',
     borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.md,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: SPACING.sm,
   },
   connectButtonText: {
     color: 'white',
     fontSize: 16,
   },
   skipButton: {
-    marginTop: 16,
+    marginTop: SPACING.md,
     alignItems: 'center',
   },
   skipButtonText: {

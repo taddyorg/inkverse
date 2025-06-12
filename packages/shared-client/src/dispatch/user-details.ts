@@ -404,10 +404,10 @@ export async function getComicsFromBlueskyCreators(
       throw new Error('Failed to get comics from Bluesky creators');
     }
 
-    const comicSeries = data.getComicsFromBlueskyCreators;
+    const comicSeries = data.getComicsFromBlueskyCreators?.filter((series): series is ComicSeries => series !== null) || [];
 
     if (dispatch) {
-      dispatch({ type: UserDetailsActionType.BLUESKY_FOLLOWERS_SUCCESS, payload: comicSeries });
+      dispatch({ type: UserDetailsActionType.BLUESKY_COMIC_SERIES_SUCCESS, payload: comicSeries });
     }
 
     return comicSeries;
@@ -546,7 +546,6 @@ export async function subscribeToComics(
     // Filter out null/undefined values and duplicate UUIDs
     const uniqueSeriesUuids = [...new Set(seriesUuids.filter(Boolean))];
 
-    console.log('uniqueSeriesUuids', uniqueSeriesUuids);
     // Subscribe to all the comic series
     const result = await userClient.mutate<
       SubscribeToMultipleComicSeriesMutation,
@@ -557,8 +556,6 @@ export async function subscribeToComics(
         seriesUuids: uniqueSeriesUuids
       }
     });
-
-    console.log('result', result);
 
     const success = !!result.data?.subscribeToMultipleComicSeries;
 

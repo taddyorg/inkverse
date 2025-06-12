@@ -11,6 +11,7 @@ import { UserAgeRange } from '@inkverse/public/graphql/types';
 import { type AuthState } from '@inkverse/shared-client/dispatch/authentication';
 import { ThemedText, ThemedButton, PressableOpacity } from '@/app/components/ui';
 import { Colors, useThemeColor } from '@/constants/Colors';
+import { SPACING } from '@/constants/Spacing';
 
 interface SetupAgeProps {
   ageRange: UserAgeRange | '';
@@ -106,8 +107,9 @@ export function SetupAge({
             <ThemedText
               style={[
                 styles.ageRangeButtonText,
-                ageRange === option.value && { color: tintColor, fontWeight: '700' }
+                ageRange === option.value && { color: tintColor }
               ]}
+              font={ageRange === option.value ? 'bold' : 'semiBold'}
             >
               {option.label}
             </ThemedText>
@@ -143,12 +145,12 @@ export function SetupAge({
           <View style={[styles.modalContent, { backgroundColor }]}>
             <SafeAreaView>
               <View style={styles.modalHeader}>
-                <ThemedText style={styles.modalTitle}>Select Birth Year</ThemedText>
+                <ThemedText style={styles.modalTitle} font="semiBold">Select Birth Year</ThemedText>
                 <TouchableOpacity
                   onPress={() => setShowYearPicker(false)}
                   style={styles.modalCloseButton}
                 >
-                  <ThemedText style={[styles.modalCloseText, { color: tintColor }]}>
+                  <ThemedText style={[styles.modalCloseText, { color: tintColor }]} font="semiBold">
                     Done
                   </ThemedText>
                 </TouchableOpacity>
@@ -170,8 +172,9 @@ export function SetupAge({
                     <ThemedText
                       style={[
                         styles.yearOptionText,
-                        birthYear === year.toString() && { color: tintColor, fontWeight: '600' }
+                        birthYear === year.toString() && { color: tintColor }
                       ]}
+                      font={birthYear === year.toString() ? 'semiBold' : 'regular'}
                     >
                       {year}
                     </ThemedText>
@@ -189,7 +192,7 @@ export function SetupAge({
             onPress={onCancel}
             style={[styles.cancelButton, { borderColor }]}
           >
-            <ThemedText style={styles.cancelButtonText}>Cancel</ThemedText>
+            <ThemedText style={styles.cancelButtonText} font="semiBold">Cancel</ThemedText>
           </TouchableOpacity>
           <ThemedButton
             buttonText={authState.isLoading ? 'Saving...' : 'Save Changes'}
@@ -231,12 +234,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    marginBottom: 16,
+    marginBottom: SPACING.md,
   },
   ageRangeButton: {
     width: '48%',
-    padding: 16,
-    marginBottom: 8,
+    padding: SPACING.md,
+    marginBottom: SPACING.sm,
     borderRadius: 12,
     borderWidth: 2,
     alignItems: 'center',
@@ -244,13 +247,12 @@ const styles = StyleSheet.create({
   },
   ageRangeButtonText: {
     fontSize: 16,
-    fontWeight: '500',
   },
   birthYearContainer: {
-    marginTop: 8,
+    marginTop: SPACING.sm,
   },
   birthYearButton: {
-    padding: 12,
+    padding: SPACING.md,
     borderRadius: 8,
     borderWidth: 1,
     alignItems: 'center',
@@ -273,24 +275,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
+    padding: SPACING.md,
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: '600',
   },
   modalCloseButton: {
-    padding: 8,
+    padding: SPACING.sm,
   },
   modalCloseText: {
     fontSize: 16,
-    fontWeight: '600',
   },
   yearScrollView: {
     maxHeight: 300,
   },
   yearOption: {
-    padding: 8,
+    padding: SPACING.sm,
   },
   yearOptionText: {
     fontSize: 16,
@@ -306,11 +306,11 @@ const styles = StyleSheet.create({
   },
   editButton: {
     flex: 1,
-    marginLeft: 6,
+    marginLeft: SPACING.xs,
   },
   cancelButton: {
     flex: 1,
-    marginRight: 6,
+    marginRight: SPACING.xs,
     paddingVertical: 14,
     paddingHorizontal: 14,
     borderRadius: 100,
@@ -320,12 +320,11 @@ const styles = StyleSheet.create({
   },
   cancelButtonText: {
     fontSize: 18,
-    fontWeight: '600',
   },
   errorContainer: {
     borderRadius: 8,
-    padding: 12,
-    marginTop: 16,
+    padding: SPACING.md,
+    marginTop: SPACING.md,
   },
   errorText: {
     fontSize: 14,

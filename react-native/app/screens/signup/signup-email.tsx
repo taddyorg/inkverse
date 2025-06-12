@@ -86,6 +86,13 @@ export function SignupEmailScreen() {
     }
   }, [mode]);
 
+  const updateEmailState = (email: string) => {
+    if (authState.error) {
+      dispatch({ type: AuthActionType.AUTH_CLEAR_ERROR });
+    }
+    setEmail(email);
+  };
+
   const handleEmailSubmit = async () => {
     try {
       if (!isAValidEmail(email)) {
@@ -192,7 +199,7 @@ export function SignupEmailScreen() {
                 ]}
                 placeholder="your@email.com"
                 value={email}
-                onChangeText={setEmail}
+                onChangeText={updateEmailState}
                 onSubmitEditing={handleEmailSubmit}
                 onFocus={() => setIsFocused(true)}
                 onBlur={() => setIsFocused(false)}
@@ -205,7 +212,6 @@ export function SignupEmailScreen() {
 
               <ThemedButton
                 buttonText={authState.isLoading ? 'Sending...' : 'Submit'}
-                buttonTextProps={{ color: 'white' }}
                 onPress={handleEmailSubmit}
                 disabled={authState.isLoading || !email}
                 style={[

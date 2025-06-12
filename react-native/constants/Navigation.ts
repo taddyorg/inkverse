@@ -47,6 +47,8 @@ export const SIGNUP_RESET_SCREEN = "SignupResetScreen";
 export const SIGNUP_USERNAME_SCREEN = "SignupUsernameScreen";
 export const SIGNUP_AGE_SCREEN = "SignupAgeScreen";
 export const SIGNUP_PATREON_SCREEN = "SignupPatreonScreen";
+export const SIGNUP_BLUESKY_SCREEN = "SignupBlueskyScreen";
+export const SIGNUP_COMPLETE_SCREEN = "SignupCompleteScreen";
 
 export type RootStackParamList = {
   [HOME_TAB]: undefined;
@@ -78,6 +80,8 @@ export type RootStackParamList = {
   [SIGNUP_USERNAME_SCREEN]: undefined;
   [SIGNUP_AGE_SCREEN]: undefined;
   [SIGNUP_PATREON_SCREEN]: { context?: 'signup' | 'profile' } | undefined;
+  [SIGNUP_BLUESKY_SCREEN]: { context?: 'signup' | 'profile' } | undefined;
+  [SIGNUP_COMPLETE_SCREEN]: undefined;
 };
 
 interface ResetNavigationToContentScreenParams {

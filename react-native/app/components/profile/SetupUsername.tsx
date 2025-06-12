@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { StyleSheet, View, TextInput } from 'react-native';
 import { validateUsername } from '@inkverse/public/user';
-import { type AuthState } from '@inkverse/shared-client/dispatch/authentication';
-import { ThemedView, ThemedText, ThemedButton } from '@/app/components/ui';
+import { ThemedText, ThemedButton } from '@/app/components/ui';
 import { Colors, useThemeColor } from '@/constants/Colors';
 import { UserDetailsState } from '@inkverse/shared-client/dispatch/user-details';
+import { SPACING } from '@/constants/Spacing';
 
 interface SetupUsernameProps {
   username: string;
@@ -37,11 +37,7 @@ export function SetupUsername({
     { light: '#dc2626', dark: '#ef4444' },
     'text'
   );
-  const cancelButtonColor = useThemeColor(
-    { light: '#6b7280', dark: '#9ca3af' },
-    'text'
-  );
-
+  
   // Validate username in real-time
   useEffect(() => {
     if (username.trim().length === 0) {
@@ -80,7 +76,7 @@ export function SetupUsername({
 
   return (
     <View>
-      <ThemedText size="subtitle" style={styles.label}>
+      <ThemedText size="subtitle" style={styles.label} font="bold">
         Choose a username
       </ThemedText>
       
@@ -142,41 +138,38 @@ export function SetupUsername({
 const styles = StyleSheet.create({
   label: {
     fontSize: 16,
-    fontWeight: '700',
-    marginTop: 16,
-    marginBottom: 8,
+    marginTop: SPACING.md,
+    marginBottom: SPACING.sm,
   },
   input: {
     borderWidth: 1,
-    borderRadius: 16,
-    paddingHorizontal: 10,
-    paddingVertical: 12,
+    borderRadius: SPACING.md,
+    paddingHorizontal: SPACING.sm + 2,
+    paddingVertical: SPACING.md,
     fontSize: 16,
-    marginBottom: 8,
+    marginBottom: SPACING.sm,
   },
   errorContainer: {
-    borderRadius: 16,
-    padding: 12,
-    marginTop: 8,
-    marginBottom: 8,
+    borderRadius: SPACING.md,
+    padding: SPACING.md,
+    marginTop: SPACING.sm,
+    marginBottom: SPACING.sm,
   },
   errorText: {
     fontSize: 14,
   },
   submitButton: {
-    marginTop: 16,
+    marginTop: SPACING.md,
   },
   buttonRow: {
     flexDirection: 'row',
-    gap: 12,
-    marginTop: 16,
+    gap: SPACING.md,
+    marginTop: SPACING.md,
   },
   button: {
     flex: 1,
   },
   cancelButton: {
     backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: '#d1d5db',
   },
 });

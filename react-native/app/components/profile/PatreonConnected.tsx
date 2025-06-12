@@ -6,6 +6,8 @@ import { ComicSeriesDetails } from '../comics/ComicSeriesDetails';
 import { Colors, useThemeColor } from '@/constants/Colors';
 import { ThemedText } from '../ui/ThemedText';
 import { HeaderBackButton } from '../ui/HeaderBackButton';
+import { SPACING } from '@/constants/Spacing';
+import { ThemedButton } from '../ui/ThemedButton';
 
 interface PatreonConnectedProps {
   loading: boolean;
@@ -22,11 +24,6 @@ interface ComicsFoundProps {
 }
 
 function ComicsFound({ comicSeries, onContinue }: ComicsFoundProps) {
-  const buttonColor = useThemeColor(
-    { light: Colors.light.button, dark: Colors.dark.button },
-    'button'
-  );
-
   return (
     <>
       <ThemedText style={[styles.foundText]}>
@@ -36,18 +33,16 @@ function ComicsFound({ comicSeries, onContinue }: ComicsFoundProps) {
         {comicSeries?.map((series) => {
           return (
             <View key={series.uuid} style={styles.comicItem}>
-              <ComicSeriesDetails comicseries={series} pageType="most-popular" />
+              <ComicSeriesDetails comicseries={series} pageType="list-item-no-link" />
             </View>
           );
         })}
       </ScrollView>
-      <TouchableOpacity
+      <ThemedButton
+        style={styles.continueButton}
         onPress={onContinue}
-        style={[styles.continueButton, { backgroundColor: buttonColor }]}
-        activeOpacity={0.8}
-      >
-        <ThemedText style={styles.continueButtonText}>Add these comics to your profile</ThemedText>
-      </TouchableOpacity>
+        buttonText="Add these comics to your profile"
+      />
     </>
   );
 }
@@ -65,7 +60,7 @@ export function PatreonConnected({ loading, error, comicSeries, onContinue, onSk
     { light: Colors.light.button, dark: Colors.dark.button },
     'button'
   );
-  
+    
   const textColor = useThemeColor(
     { light: Colors.light.text, dark: Colors.dark.text },
     'text'
@@ -110,60 +105,52 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    padding: 20,
+    padding: SPACING.lg,
   },
   iconContainer: {
-    marginBottom: 24,
+    marginBottom: SPACING.xl,
   },
   title: {
-    marginBottom: 16,
+    marginBottom: SPACING.md,
     textAlign: 'center',
   },
   loadingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 32,
+    gap: SPACING.sm,
+    marginBottom: SPACING.xl,
   },
   errorContainer: {
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: SPACING.xl,
   },
   errorText: {
-    marginBottom: 8,
+    marginBottom: SPACING.sm,
     textAlign: 'center',
   },
   foundText: {
-    marginBottom: 32,
+    marginBottom: SPACING.xl,
     textAlign: 'center',
   },
   noComicsText: {
-    marginBottom: 32,
+    marginBottom: SPACING.xl,
     textAlign: 'center',
   },
   comicsList: {
     flex: 1,
     width: '100%',
-    marginBottom: 16,
+    marginBottom: SPACING.md,
   },
   comicItem: {
-    marginBottom: 16,
+    marginBottom: SPACING.md,
   },
   continueButton: {
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    alignItems: 'center',
-    marginBottom: 16,
-    width: '100%',
-  },
-  continueButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '500',
+    paddingHorizontal: SPACING.xl,
+    marginBottom: SPACING.md,
   },
   skipButton: {
     alignItems: 'center',
+    marginBottom: SPACING.md,
   },
   skipButtonText: {
     fontSize: 14,
