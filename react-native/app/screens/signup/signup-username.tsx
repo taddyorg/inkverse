@@ -1,47 +1,66 @@
-import { useState, useReducer } from 'react';
+import { useState, useReducer, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { 
-  authReducer, 
-  authInitialState,
-  AuthActionType
-} from '@inkverse/shared-client/dispatch/authentication';
+  userDetailsReducer, 
+  userDetailsInitialState,
+  UserDetailsActionType 
+} from '@inkverse/shared-client/dispatch/user-details';
 import { Screen, ThemedView, ThemedText, PressableOpacity } from '@/app/components/ui';
 import { SetupUsername } from '@/app/components/profile/SetupUsername';
-import { useThemeColor } from '@/constants/Colors';
 import { SIGNUP_AGE_SCREEN } from '@/constants/Navigation';
+import { getUserApolloClient } from '@/lib/apollo';
+import { mobileStorageFunctions } from '@/lib/auth/user';
+import { updateUsername } from '@inkverse/shared-client/dispatch/user-details';
 
 export function SignupUsernameScreen() {
   const navigation = useNavigation();
   const [username, setUsername] = useState('');
-  const [authState, dispatch] = useReducer(authReducer, authInitialState);
+  const [userDetailsState, dispatch] = useReducer(userDetailsReducer, userDetailsInitialState);
+
+  const userClient = getUserApolloClient();
+  const userClientRef = useRef(userClient);
   
-  const backgroundColor = useThemeColor({}, 'background');
-  const textColor = useThemeColor({}, 'text'); 
   const handleSubmit = async () => {
-    dispatch({ type: AuthActionType.AUTH_CLEAR_ERROR });
+    dispatch({ type: UserDetailsActionType.USER_DETAILS_CLEAR_ERROR });
+
+    if (!userClientRef.current) return;
 
     try {
-      // For now, just store username in state and navigate to age selection
-      // The actual mutation will be called after both steps are complete
+      // Validate username
+      if (!username.trim()) {
+        throw new Error('Username is required');
+      }
+
+      // Update username via API
+      await updateUsername(
+        { 
+          userClient: userClientRef.current,
+          username: username.trim(),
+          storageFunctions: mobileStorageFunctions,
+        },
+        dispatch
+      );
+
+      // Save username and move to next step
       navigation.navigate(SIGNUP_AGE_SCREEN);
-      
     } catch (err: any) {
-      dispatch({ type: AuthActionType.AUTH_ERROR, payload: err.message });
+      // Error is handled by the dispatch function
+      console.error(err);
     }
   };
 
   return (
     <Screen>
       <View style={styles.container}>
-        <ThemedView style={{flex: 1, backgroundColor, width: '100%' }}>
+        <ThemedView style={{flex: 1, width: '100%' }}>
           <ThemedText size="title" style={styles.title}>
             Complete your profile
           </ThemedText>
           <SetupUsername
             username={username}
             setUsername={setUsername}
-            authState={authState}
+            userDetailsState={userDetailsState}
             onSubmit={handleSubmit}
             mode="setup"
           />

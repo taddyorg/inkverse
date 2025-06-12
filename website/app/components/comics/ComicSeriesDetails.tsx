@@ -12,7 +12,8 @@ export type ComicSeriesPageType =
   | 'most-popular'
   | 'cover'
   | 'search'
-  | 'list-item';
+  | 'list-item'
+  | 'list-item-no-link';
 
 type ComicSeriesDetailsProps = {
   comicseries: ComicSeries | null | undefined;
@@ -101,6 +102,25 @@ export function ComicSeriesDetails(props: ComicSeriesDetailsProps){
       </Link>
     );
   }
+
+  else if (pageType === 'list-item-no-link') {
+    return (
+      <div className="block w-full">
+        <div className="flex gap-6 py-6">
+          <span className="text-lg font-semibold">{props.index || 1}.</span>
+          <div className="flex flex-1 gap-6">
+            <CoverArt comicseries={comicseries} pageType={pageType} />
+            <div className="flex-1">
+              <Name comicseries={comicseries} pageType={pageType}/>
+              <Genre comicseries={comicseries} pageType={pageType}/>
+              <p className='mt-3'>{comicseries?.description}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   
   return (
     <div className="py-6 mt-2 px-4 sm:px-6 lg:px-8 rounded-md">
@@ -126,6 +146,7 @@ const Name = ({ comicseries, pageType }: { comicseries: ComicSeries, pageType: C
     case 'comicseries-screen':
       return <h1 className="mt-4 sm:mt-0 font-bold text-xl">{comicseries.name}</h1>;
     case 'list-item':
+    case 'list-item-no-link':
       return <h2 className="font-bold text-xl">{comicseries.name}</h2>;
     default:
       return <h2 className="mt-4 sm:mt-0 font-bold text-xl">{comicseries.name}</h2>;
@@ -160,6 +181,7 @@ const CoverArt = ({ comicseries, pageType }: { comicseries: ComicSeries, pageTyp
     );
     case 'search':
     case 'list-item':
+    case 'list-item-no-link':
       return (
         <img
           src={getThumbnailImageUrl({ thumbnailImageAsString: comicseries.thumbnailImageAsString }) || undefined}

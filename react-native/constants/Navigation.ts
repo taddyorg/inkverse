@@ -16,6 +16,7 @@ import { WrappedCreatorScreenParams } from "@/app/screens/wrapped-screens/wrappe
 import { WrappedListScreenParams } from "@/app/screens/wrapped-screens/wrappedlist";
 import { WrappedTaggedScreenParams } from "@/app/screens/wrapped-screens/wrappedtagged";
 import { WrappedProfileScreenParams } from "@/app/screens/wrapped-screens/wrappedprofile";
+import { WrappedHostingProviderScreenParams } from "@/app/screens/wrapped-screens/wrappedhostingprovider";
 
 export const HOME_TAB = "HomeTab";
 export const SEARCH_TAB = "SearchTab";
@@ -38,12 +39,14 @@ export const WRAPPED_CREATOR_SCREEN = "WrappedCreatorScreen";
 export const WRAPPED_LIST_SCREEN = "WrappedListScreen";
 export const WRAPPED_TAGGED_SCREEN = "WrappedTaggedScreen";
 export const WRAPPED_PROFILE_SCREEN = "WrappedProfileScreen";
+export const WRAPPED_HOSTING_PROVIDER_SCREEN = "WrappedHostingProviderScreen";
 export const SIGNUP_SCREEN = "SignupScreen";
 export const SIGNUP_MAIN_SCREEN = "SignupMainScreen";
 export const SIGNUP_EMAIL_SCREEN = "SignupEmailScreen";
 export const SIGNUP_RESET_SCREEN = "SignupResetScreen";
 export const SIGNUP_USERNAME_SCREEN = "SignupUsernameScreen";
 export const SIGNUP_AGE_SCREEN = "SignupAgeScreen";
+export const SIGNUP_PATREON_SCREEN = "SignupPatreonScreen";
 
 export type RootStackParamList = {
   [HOME_TAB]: undefined;
@@ -67,12 +70,14 @@ export type RootStackParamList = {
   [WRAPPED_LIST_SCREEN]: WrappedListScreenParams;
   [WRAPPED_TAGGED_SCREEN]: WrappedTaggedScreenParams;
   [WRAPPED_PROFILE_SCREEN]: WrappedProfileScreenParams;
+  [WRAPPED_HOSTING_PROVIDER_SCREEN]: WrappedHostingProviderScreenParams;
   [SIGNUP_SCREEN]: undefined;
   [SIGNUP_MAIN_SCREEN]: undefined;
   [SIGNUP_EMAIL_SCREEN]: undefined;
   [SIGNUP_RESET_SCREEN]: { token?: string } | undefined;
   [SIGNUP_USERNAME_SCREEN]: undefined;
   [SIGNUP_AGE_SCREEN]: undefined;
+  [SIGNUP_PATREON_SCREEN]: { context?: 'signup' | 'profile' } | undefined;
 };
 
 interface ResetNavigationToContentScreenParams {

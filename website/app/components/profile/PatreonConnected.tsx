@@ -25,7 +25,7 @@ function ComicsFound({ comicSeries, onContinue }: ComicsFoundProps) {
       <div className="flex flex-col gap-4">
         {comicSeries?.map((series) => {
           return (
-            <ComicSeriesDetails key={series.uuid} comicseries={series} pageType="list-item" />
+            <ComicSeriesDetails key={series.uuid} comicseries={series} pageType="list-item-no-link" />
           );
         })}
       </div>
