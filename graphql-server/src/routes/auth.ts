@@ -57,7 +57,9 @@ router.post('/login-with-email', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Invalid email address' });
     }
 
-    const user = await User.getUserByEmail(email);
+    const safeEmail = email.toLowerCase().trim();
+
+    const user = await User.getUserByEmail(safeEmail);
     
     if (user) {
       // Existing user - generate login token
@@ -67,7 +69,7 @@ router.post('/login-with-email', async (req: Request, res: Response) => {
       }
 
       const data = {
-        toAddress: email,
+        toAddress: safeEmail,
         subject: "Inkverse Login Link",
         html: `
         <p>Click the link below to log into your Inkverse account.</p>
@@ -78,7 +80,7 @@ router.post('/login-with-email', async (req: Request, res: Response) => {
       await sendEmail(data);
     } else {
       // New user - create account with just email
-      const newUser = await User.createUser({ email });
+      const newUser = await User.createUser({ email: safeEmail });
 
       // Generate token for new user
       const userWithOTP = await User.checkOrResetPasswordReset(newUser);
@@ -87,7 +89,7 @@ router.post('/login-with-email', async (req: Request, res: Response) => {
       }
 
       const data = {
-        toAddress: email,
+        toAddress: safeEmail,
         subject: "Welcome to Inkverse - Complete Your Sign Up",
         html: `
         <p>Click the link below to log into your Inkverse account.</p>

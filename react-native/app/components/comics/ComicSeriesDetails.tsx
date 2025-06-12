@@ -19,6 +19,7 @@ type ComicSeriesPageType =
   | 'cover'
   | 'search'
   | 'list-item'
+  | 'list-item-no-link'
   | 'grid-item';
 
 interface ComicSeriesDetailsProps {
@@ -118,6 +119,23 @@ export function ComicSeriesDetails({ comicseries, pageType, isHeaderVisible, onH
             </View>
         </PressableOpacity>
       );
+
+    case 'list-item-no-link':
+        return (
+          <View style={styles.popularContainer}>
+            <Image
+              source={getThumbnailImageUrl({ thumbnailImageAsString: comicseries.thumbnailImageAsString })}
+              style={styles.popularImage}
+              contentFit="contain"
+              recyclingKey={comicseries.uuid}
+              priority={imagePriority}
+            />
+            <View style={styles.popularContent}>
+              <ThemedText style={styles.popularTitle}>{comicseries.name}</ThemedText>
+              <ThemedText style={styles.genreTextAlt}>{formatGenres(comicseries)}</ThemedText>
+            </View>
+          </View>
+        );
 
     case 'grid-item':
       return (

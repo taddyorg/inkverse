@@ -26,15 +26,16 @@ import { SignupEmailScreen } from './signup/signup-email';
 import { SignupResetScreen } from './signup/signup-reset';
 import { SignupUsernameScreen } from './signup/signup-username';
 import { SignupAgeScreen } from './signup/signup-age';
+import SignupPatreonScreen from './signup/signup-patreon';
 import { AppLoaderProvider } from '../components/providers/AppLoaderProvider';
 import { AuthRefreshProvider } from '../components/providers/AuthRefreshProvider';
-import { SignupProvider } from '../contexts/SignupContext';
 import { WrappedComicSeriesScreen } from './wrapped-screens/wrappedcomicseries';
 import { WrappedComicIssueScreen } from './wrapped-screens/wrappedcomicissue';
 import { WrappedCreatorScreen } from './wrapped-screens/wrappedcreator';
 import { WrappedListScreen } from './wrapped-screens/wrappedlist';
 import { WrappedTaggedScreen } from './wrapped-screens/wrappedtagged';
 import { WrappedProfileScreen } from './wrapped-screens/wrappedprofile';
+import { WrappedHostingProviderScreen } from './wrapped-screens/wrappedhostingprovider';
 
 import { 
   HOME_TAB, 
@@ -50,6 +51,7 @@ import {
   WRAPPED_LIST_SCREEN,
   WRAPPED_TAGGED_SCREEN,
   WRAPPED_PROFILE_SCREEN,
+  WRAPPED_HOSTING_PROVIDER_SCREEN,
   COMICISSUE_SCREEN, 
   CREATOR_SCREEN, 
   SETTINGS_SCREEN,
@@ -64,6 +66,7 @@ import {
   SIGNUP_RESET_SCREEN,
   SIGNUP_USERNAME_SCREEN,
   SIGNUP_AGE_SCREEN,
+  SIGNUP_PATREON_SCREEN,
 } from '../../constants/Navigation';
 
 Sentry.init({
@@ -343,6 +346,7 @@ function App() {
         [WRAPPED_LIST_SCREEN]: 'lists/:idAndName',
         [WRAPPED_TAGGED_SCREEN]: 'tagged/:tag',
         [WRAPPED_PROFILE_SCREEN]: ':username',
+        [WRAPPED_HOSTING_PROVIDER_SCREEN]: 'hosting-provider/:uuid',
         [SIGNUP_SCREEN]: {
           screens: {
             [SIGNUP_RESET_SCREEN]: 'reset',
@@ -374,35 +378,37 @@ function App() {
   
   function SignupNavigator() {
     return (
-      <SignupProvider>
-        <SignupStack.Navigator
-          initialRouteName={SIGNUP_MAIN_SCREEN}
-          screenOptions={{
-            headerShown: false,
-          }}
-        >
-          <SignupStack.Screen 
-            name={SIGNUP_MAIN_SCREEN} 
-            component={SignupScreen}
-          />
-          <SignupStack.Screen 
-            name={SIGNUP_EMAIL_SCREEN} 
-            component={SignupEmailScreen}
-          />
-          <SignupStack.Screen 
-            name={SIGNUP_RESET_SCREEN} 
-            component={SignupResetScreen}
-          />
-          <SignupStack.Screen 
-            name={SIGNUP_USERNAME_SCREEN} 
-            component={SignupUsernameScreen}
-          />
-          <SignupStack.Screen 
-            name={SIGNUP_AGE_SCREEN} 
-            component={SignupAgeScreen}
-          />
-        </SignupStack.Navigator>
-      </SignupProvider>
+      <SignupStack.Navigator
+        initialRouteName={SIGNUP_MAIN_SCREEN}
+        screenOptions={{
+          headerShown: false,
+        }}
+      >
+        <SignupStack.Screen 
+          name={SIGNUP_MAIN_SCREEN} 
+          component={SignupScreen}
+        />
+        <SignupStack.Screen 
+          name={SIGNUP_EMAIL_SCREEN} 
+          component={SignupEmailScreen}
+        />
+        <SignupStack.Screen 
+          name={SIGNUP_RESET_SCREEN} 
+          component={SignupResetScreen}
+        />
+        <SignupStack.Screen 
+          name={SIGNUP_USERNAME_SCREEN} 
+          component={SignupUsernameScreen}
+        />
+        <SignupStack.Screen 
+          name={SIGNUP_AGE_SCREEN} 
+          component={SignupAgeScreen}
+        />
+        <SignupStack.Screen 
+          name={SIGNUP_PATREON_SCREEN} 
+          component={SignupPatreonScreen}
+        />
+      </SignupStack.Navigator>
     );
   }
 
@@ -471,6 +477,11 @@ function App() {
             <Stack.Screen 
               name={WRAPPED_PROFILE_SCREEN} 
               component={WrappedProfileScreen}
+              options={modalScreenOptions}
+            />
+            <Stack.Screen 
+              name={WRAPPED_HOSTING_PROVIDER_SCREEN} 
+              component={WrappedHostingProviderScreen}
               options={modalScreenOptions}
             />
             <Stack.Screen 

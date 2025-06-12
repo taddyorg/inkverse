@@ -22,7 +22,6 @@ import { ThemedView, ThemedText, PressableOpacity } from '@/app/components/ui';
 import { Colors, useThemeColor } from '@/constants/Colors';
 import { SPACING } from '@/constants/Spacing';
 import { SvgXml } from 'react-native-svg';
-import { useSignupContext } from '@/app/contexts/SignupContext';
 import { SIGNUP_EMAIL_SCREEN, SIGNUP_USERNAME_SCREEN } from '@/constants/Navigation';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
@@ -38,7 +37,6 @@ import { fetchAllHostingProviderTokens } from '@inkverse/shared-client/dispatch/
 
 export function SignupScreen() {
   const navigation = useNavigation();
-  const { updateSignupData } = useSignupContext();
   const [authState, dispatch] = useReducer(authReducer, authInitialState);
   const colorScheme = useColorScheme();
 
@@ -128,7 +126,6 @@ export function SignupScreen() {
 
   const handleEmailSelection = () => {
     dispatch({ type: AuthActionType.AUTH_CLEAR_ERROR });
-    updateSignupData({ provider: AuthProvider.EMAIL });
     navigation.navigate(SIGNUP_EMAIL_SCREEN);
   };
 
