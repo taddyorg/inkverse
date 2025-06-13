@@ -18,6 +18,9 @@ import { WrappedListScreenParams } from "@/app/screens/wrapped-screens/wrappedli
 import { WrappedTaggedScreenParams } from "@/app/screens/wrapped-screens/wrappedtagged";
 import { WrappedProfileScreenParams } from "@/app/screens/wrapped-screens/wrappedprofile";
 import { WrappedHostingProviderScreenParams } from "@/app/screens/wrapped-screens/wrappedhostingprovider";
+import { SignupResetScreenParams } from "@/app/screens/signup/signup-reset";
+import { SignupPatreonScreenParams } from "@/app/screens/signup/signup-patreon";
+import { SignupBlueskyScreenParams } from "@/app/screens/signup/signup-bluesky";
 
 export const HOME_TAB = "HomeTab";
 export const SEARCH_TAB = "SearchTab";
@@ -57,9 +60,6 @@ export const EDIT_EMAIL_SCREEN = "EditEmailScreen";
 export const EDIT_PATREON_SCREEN = "EditPatreonScreen";
 export const EDIT_BLUESKY_SCREEN = "EditBlueskyScreen";
 
-export type ProfileStackParamList = {
-};
-
 export type RootStackParamList = {
   [HOME_TAB]: undefined;
   [SEARCH_TAB]: undefined;
@@ -86,11 +86,11 @@ export type RootStackParamList = {
   [SIGNUP_SCREEN]: undefined;
   [SIGNUP_MAIN_SCREEN]: undefined;
   [SIGNUP_EMAIL_SCREEN]: undefined;
-  [SIGNUP_RESET_SCREEN]: { token?: string } | undefined;
+  [SIGNUP_RESET_SCREEN]: SignupResetScreenParams | undefined;
   [SIGNUP_USERNAME_SCREEN]: undefined;
   [SIGNUP_AGE_SCREEN]: undefined;
-  [SIGNUP_PATREON_SCREEN]: { context?: 'signup' | 'profile' } | undefined;
-  [SIGNUP_BLUESKY_SCREEN]: { context?: 'signup' | 'profile' } | undefined;
+  [SIGNUP_PATREON_SCREEN]: SignupPatreonScreenParams | undefined;
+  [SIGNUP_BLUESKY_SCREEN]: SignupBlueskyScreenParams | undefined;
   [SIGNUP_COMPLETE_SCREEN]: undefined;
   [EDIT_PROFILE_SCREEN]: undefined;
   [EDIT_USERNAME_SCREEN]: { passedInUsername?: string } | undefined;
@@ -98,12 +98,6 @@ export type RootStackParamList = {
   [EDIT_EMAIL_SCREEN]: { passedInEmail?: string } | undefined;
   [EDIT_PATREON_SCREEN]: { context?: 'signup' | 'profile' } | undefined;
   [EDIT_BLUESKY_SCREEN]: { context?: 'signup' | 'profile' } | undefined;
-  [PROFILE_SCREEN]: ProfileScreenParams;
-  [COMICSERIES_SCREEN]: ComicSeriesScreenParams;
-  [COMICISSUE_SCREEN]: ComicIssueScreenParams;
-  [CREATOR_SCREEN]: CreatorScreenParams;
-  [LIST_SCREEN]: ListScreenParams;
-  [SETTINGS_SCREEN]: SettingsScreenParams;
 };
 
 interface ResetNavigationToContentScreenParams {

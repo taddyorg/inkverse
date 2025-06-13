@@ -21,7 +21,7 @@ import { SIGNUP_BLUESKY_SCREEN } from '@/constants/Navigation';
 import { saveHostingProviderRefreshToken, refreshHostingProviderAccessToken } from '@/lib/auth/hosting-provider';
 import { TADDY_HOSTING_PROVIDER_UUID } from '@inkverse/public/hosting-providers';
 
-export default function SignupPatreonScreen() {
+export function SignupPatreonScreen() {
   const navigation = useNavigation();
   const [currentStep, setCurrentStep] = useState<'patreon' | 'patreon-connected'>('patreon');
   

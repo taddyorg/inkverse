@@ -1,4 +1,5 @@
 import React, { useReducer, useRef, useState } from 'react';
+import { View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { EDIT_EMAIL_SCREEN, RootStackParamList } from '@/constants/Navigation';
 import { HeaderBackButton, ThemedView } from '@/app/components/ui';
@@ -6,13 +7,15 @@ import { SetupEmail } from '@/app/components/profile/SetupEmail';
 import { getUserApolloClient } from '@/lib/apollo';
 import { userDetailsReducer, userDetailsInitialState, updateUserEmail } from '@inkverse/shared-client/dispatch/user-details';
 import type { ApolloClient, NormalizedCacheObject } from '@apollo/client';
-import { useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { mobileStorageFunctions } from '@/lib/auth/user';
-import { View } from 'react-native';
 
-type Props = NativeStackScreenProps<RootStackParamList, typeof EDIT_EMAIL_SCREEN>;
+export interface EditEmailScreenParams {
+  passedInEmail?: string;
+}
 
-export function EditEmailScreen({ navigation }: Props) {
+export function EditEmailScreen() {
+  const navigation = useNavigation();
   const route = useRoute<NativeStackScreenProps<RootStackParamList, typeof EDIT_EMAIL_SCREEN>['route']>();
   const { passedInEmail } = route.params || {};
   const [email, setEmail] = useState(passedInEmail || '');

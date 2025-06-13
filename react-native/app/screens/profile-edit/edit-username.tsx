@@ -7,12 +7,15 @@ import { SetupUsername } from '@/app/components/profile/SetupUsername';
 import { getUserApolloClient } from '@/lib/apollo';
 import { userDetailsReducer, userDetailsInitialState, updateUsername } from '@inkverse/shared-client/dispatch/user-details';
 import type { ApolloClient, NormalizedCacheObject } from '@apollo/client';
-import { useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { mobileStorageFunctions } from '@/lib/auth/user';
 
-type Props = NativeStackScreenProps<RootStackParamList, typeof EDIT_USERNAME_SCREEN>;
+export interface EditUsernameScreenParams {
+  passedInUsername?: string;
+}
 
-export function EditUsernameScreen({ navigation }: Props) {
+export function EditUsernameScreen() {
+  const navigation = useNavigation();
   const route = useRoute<NativeStackScreenProps<RootStackParamList, typeof EDIT_USERNAME_SCREEN>['route']>();
   const { passedInUsername } = route.params || {};
   const [username, setUsername] = useState(passedInUsername || '');

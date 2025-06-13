@@ -18,6 +18,10 @@ import { fetchAllHostingProviderTokens } from '@inkverse/shared-client/dispatch/
 import { saveHostingProviderRefreshToken, refreshHostingProviderAccessToken } from '@/lib/auth/hosting-provider';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
+export interface SignupResetScreenParams {
+  token?: string;
+}
+
 export function SignupResetScreen() {
   const route = useRoute<NativeStackScreenProps<RootStackParamList, typeof SIGNUP_RESET_SCREEN>['route']>();
   const navigation = useNavigation();

@@ -35,8 +35,8 @@ import { SignupEmailScreen } from './signup/signup-email';
 import { SignupResetScreen } from './signup/signup-reset';
 import { SignupUsernameScreen } from './signup/signup-username';
 import { SignupAgeScreen } from './signup/signup-age';
-import SignupPatreonScreen from './signup/signup-patreon';
-import SignupBlueskyScreen from './signup/signup-bluesky';
+import { SignupPatreonScreen } from './signup/signup-patreon';
+import { SignupBlueskyScreen } from './signup/signup-bluesky';
 import { SignupCompleteScreen } from './signup/signup-complete';
 import { AppLoaderProvider } from '../components/providers/AppLoaderProvider';
 import { AuthRefreshProvider } from '../components/providers/AuthRefreshProvider';
@@ -86,17 +86,18 @@ import {
   EDIT_EMAIL_SCREEN,
   EDIT_PATREON_SCREEN,
   EDIT_BLUESKY_SCREEN,
+  RootStackParamList,
 } from '../../constants/Navigation';
 
 Sentry.init({
   dsn: config.SENTRY_URL,
 });
 
-const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator();
 
 const comicSeriesScreenConfig = {
-  name: COMICSERIES_SCREEN,
+  name: COMICSERIES_SCREEN as keyof RootStackParamList,
   component: ComicSeriesScreen,
   options: {
     title: '',
@@ -105,7 +106,7 @@ const comicSeriesScreenConfig = {
 };
 
 const comicIssueScreenConfig = {
-  name: COMICISSUE_SCREEN,
+  name: COMICISSUE_SCREEN as keyof RootStackParamList,
   component: ComicIssueScreen,
   options: {
     title: '',
@@ -114,7 +115,7 @@ const comicIssueScreenConfig = {
 };
 
 const creatorScreenConfig = {
-  name: CREATOR_SCREEN,
+  name: CREATOR_SCREEN as keyof RootStackParamList,
   component: CreatorScreen,
   options: {
     title: '',
@@ -123,7 +124,7 @@ const creatorScreenConfig = {
 };
 
 const settingsScreenConfig = {
-  name: SETTINGS_SCREEN,
+  name: SETTINGS_SCREEN as keyof RootStackParamList,
   component: SettingsScreen,
   options: {
     title: '',
@@ -132,7 +133,7 @@ const settingsScreenConfig = {
 };
 
 const listScreenConfig = {
-  name: LIST_SCREEN,
+  name: LIST_SCREEN as keyof RootStackParamList,
   component: ListScreen,
   options: {
     title: '',
@@ -141,7 +142,7 @@ const listScreenConfig = {
 };
 
 const comicsListScreenConfig = {
-  name: COMICS_LIST_SCREEN,
+  name: COMICS_LIST_SCREEN as keyof RootStackParamList,
   component: ComicsListScreen,
   options: {
     title: '',
@@ -150,7 +151,7 @@ const comicsListScreenConfig = {
 };
 
 const profileScreenConfig = {
-  name: PROFILE_SCREEN,
+  name: PROFILE_SCREEN as keyof RootStackParamList,
   component: ProfileScreen,
   options: {
     title: '',
@@ -159,7 +160,7 @@ const profileScreenConfig = {
 };
 
 const editProfileScreenConfig = {
-  name: EDIT_PROFILE_SCREEN,
+  name: EDIT_PROFILE_SCREEN as typeof EDIT_PROFILE_SCREEN,
   component: EditProfileScreen,
   options: {
     title: '',
