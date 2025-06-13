@@ -7,18 +7,18 @@ import {
   TouchableOpacity,
   SafeAreaView 
 } from 'react-native';
-import { UserAgeRange } from '@inkverse/public/graphql/types';
-import { type AuthState } from '@inkverse/shared-client/dispatch/authentication';
+import { UserAgeRange } from '@inkverse/shared-client/graphql/operations';
 import { ThemedText, ThemedButton, PressableOpacity } from '@/app/components/ui';
 import { Colors, useThemeColor } from '@/constants/Colors';
 import { SPACING } from '@/constants/Spacing';
+import { UserDetailsState } from '@inkverse/shared-client/dispatch/user-details';
 
 interface SetupAgeProps {
   ageRange: UserAgeRange | '';
   setAgeRange: (ageRange: UserAgeRange | '') => void;
   birthYear: string;
   setBirthYear: (birthYear: string) => void;
-  authState: AuthState;
+  userDetailsState: UserDetailsState;
   onSubmit: () => Promise<void>;
   mode?: 'setup' | 'edit';
   currentAgeRange?: UserAgeRange | null;
@@ -31,7 +31,7 @@ export function SetupAge({
   setAgeRange, 
   birthYear, 
   setBirthYear, 
-  authState, 
+  userDetailsState, 
   onSubmit, 
   mode = 'setup', 
   currentAgeRange, 
@@ -188,33 +188,27 @@ export function SetupAge({
 
       {mode === 'edit' ? (
         <View style={styles.editButtonContainer}>
-          <TouchableOpacity
-            onPress={onCancel}
-            style={[styles.cancelButton, { borderColor }]}
-          >
-            <ThemedText style={styles.cancelButtonText} font="semiBold">Cancel</ThemedText>
-          </TouchableOpacity>
           <ThemedButton
-            buttonText={authState.isLoading ? 'Saving...' : 'Save Changes'}
+            buttonText={userDetailsState.isLoading ? 'Saving...' : 'Save'}
             onPress={handleSubmit}
-            disabled={authState.isLoading || !ageRange || !hasChanges}
+            disabled={userDetailsState.isLoading || !ageRange || !hasChanges}
             style={styles.editButton}
           />
         </View>
       ) : (
         <ThemedButton
-          buttonText={authState.isLoading ? 'Saving...' : 'Continue'}
+          buttonText={userDetailsState.isLoading ? 'Saving...' : 'Continue'}
           onPress={handleSubmit}
-          disabled={authState.isLoading || !ageRange || (ageRange === UserAgeRange.UNDER_18 && !birthYear)}
+          disabled={userDetailsState.isLoading || !ageRange || (ageRange === UserAgeRange.UNDER_18 && !birthYear)}
           style={styles.submitButton}
         />
       )}
 
       {/* Server-side errors */}
-      {authState.error && (
+      {userDetailsState.error && (
         <View style={[styles.errorContainer, { backgroundColor: errorColor + '20' }]}>
           <ThemedText style={[styles.errorText, { color: errorColor }]}>
-            {authState.error}
+            {userDetailsState.error}
           </ThemedText>
         </View>
       )}

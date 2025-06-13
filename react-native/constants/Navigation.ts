@@ -1,5 +1,6 @@
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { CommonActions } from "@react-navigation/native";
+import { UserAgeRange } from "@inkverse/shared-client/graphql/operations";
 
 import { ComicSeriesScreenParams } from "@/app/screens/comicseries";
 import { ComicIssueScreenParams } from "@/app/screens/comicissue";
@@ -49,6 +50,15 @@ export const SIGNUP_AGE_SCREEN = "SignupAgeScreen";
 export const SIGNUP_PATREON_SCREEN = "SignupPatreonScreen";
 export const SIGNUP_BLUESKY_SCREEN = "SignupBlueskyScreen";
 export const SIGNUP_COMPLETE_SCREEN = "SignupCompleteScreen";
+export const EDIT_PROFILE_SCREEN = "EditProfileScreen";
+export const EDIT_USERNAME_SCREEN = "EditUsernameScreen";
+export const EDIT_AGE_SCREEN = "EditAgeScreen";
+export const EDIT_EMAIL_SCREEN = "EditEmailScreen";
+export const EDIT_PATREON_SCREEN = "EditPatreonScreen";
+export const EDIT_BLUESKY_SCREEN = "EditBlueskyScreen";
+
+export type ProfileStackParamList = {
+};
 
 export type RootStackParamList = {
   [HOME_TAB]: undefined;
@@ -82,6 +92,18 @@ export type RootStackParamList = {
   [SIGNUP_PATREON_SCREEN]: { context?: 'signup' | 'profile' } | undefined;
   [SIGNUP_BLUESKY_SCREEN]: { context?: 'signup' | 'profile' } | undefined;
   [SIGNUP_COMPLETE_SCREEN]: undefined;
+  [EDIT_PROFILE_SCREEN]: undefined;
+  [EDIT_USERNAME_SCREEN]: { passedInUsername?: string } | undefined;
+  [EDIT_AGE_SCREEN]: { passedInAgeRange?: UserAgeRange; passedInBirthYear?: number } | undefined;
+  [EDIT_EMAIL_SCREEN]: { passedInEmail?: string } | undefined;
+  [EDIT_PATREON_SCREEN]: { context?: 'signup' | 'profile' } | undefined;
+  [EDIT_BLUESKY_SCREEN]: { context?: 'signup' | 'profile' } | undefined;
+  [PROFILE_SCREEN]: ProfileScreenParams;
+  [COMICSERIES_SCREEN]: ComicSeriesScreenParams;
+  [COMICISSUE_SCREEN]: ComicIssueScreenParams;
+  [CREATOR_SCREEN]: CreatorScreenParams;
+  [LIST_SCREEN]: ListScreenParams;
+  [SETTINGS_SCREEN]: SettingsScreenParams;
 };
 
 interface ResetNavigationToContentScreenParams {

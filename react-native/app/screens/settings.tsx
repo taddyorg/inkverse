@@ -18,7 +18,7 @@ import { getPublicApolloClient } from '@/lib/apollo';
 import { asyncClear } from '@/lib/storage/async';
 import { syncStorageClear } from '@/lib/storage/sync';
 import { inkverseAuthClear } from '@/lib/storage/secure';
-import { SIGNUP_SCREEN } from '@/constants/Navigation';
+import { SIGNUP_SCREEN, EDIT_PROFILE_SCREEN } from '@/constants/Navigation';
 
 export type SettingsScreenParams = undefined;
 
@@ -38,8 +38,7 @@ export function SettingsScreen() {
   
   // Section 1: Main settings handlers
   const updateProfilePressed = () => {
-    // Implement profile update functionality
-    console.log('Update profile pressed');
+    navigation.navigate(EDIT_PROFILE_SCREEN);
   };
 
   const signupButtonPressed = () => {

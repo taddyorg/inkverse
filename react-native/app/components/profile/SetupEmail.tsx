@@ -1,30 +1,30 @@
 import { useState, useEffect } from 'react';
 import { StyleSheet, View, TextInput } from 'react-native';
-import { validateUsername } from '@inkverse/public/user';
 import { ThemedText, ThemedButton } from '@/app/components/ui';
 import { Colors, useThemeColor } from '@/constants/Colors';
 import { UserDetailsState } from '@inkverse/shared-client/dispatch/user-details';
 import { SPACING } from '@/constants/Spacing';
+import { isAValidEmail } from '@inkverse/public/utils';
 
-interface SetupUsernameProps {
-  username: string;
-  setUsername: (username: string) => void;
+interface SetupEmailProps {
+  email: string;
+  setEmail: (email: string) => void;
   userDetailsState: UserDetailsState;
   onSubmit: () => Promise<void>;
   mode?: 'setup' | 'edit';
-  currentUsername?: string;
+  currentEmail?: string;
   onCancel?: () => void;
 }
 
-export function SetupUsername({ 
-  username, 
-  setUsername, 
-  userDetailsState, 
-  onSubmit, 
-  mode = 'setup', 
-  currentUsername, 
-  onCancel 
-}: SetupUsernameProps) {
+export function SetupEmail({
+  email,
+  setEmail,
+  userDetailsState,
+  onSubmit,
+  mode = 'setup',
+  currentEmail,
+  onCancel,
+}: SetupEmailProps) {
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isValid, setIsValid] = useState<boolean>(false);
 
@@ -37,55 +37,56 @@ export function SetupUsername({
     { light: '#dc2626', dark: '#ef4444' },
     'text'
   );
-  
-  // Validate username in real-time
+
+  // Validate email in real-time
   useEffect(() => {
-    if (username.trim().length === 0) {
+    if (email.trim().length === 0) {
       setValidationError(null);
       setIsValid(false);
       return;
     }
 
-    // If in edit mode and username hasn't changed, it's valid
-    if (mode === 'edit' && username.trim() === currentUsername) {
+    // If in edit mode and email hasn't changed, it's valid
+    if (mode === 'edit' && email.trim() === currentEmail) {
       setValidationError(null);
       setIsValid(true);
       return;
     }
 
-    const validation = validateUsername(username);
-    if (validation.hide) {
+    const validation = isAValidEmail(email);
+    if (!validation) {
       setValidationError(null);
       return;
     }
 
-    setValidationError(validation.error || null);
-    setIsValid(validation.isValid);
-  }, [username, mode, currentUsername]);
+    setValidationError(null);
+    setIsValid(true);
+  }, [email, mode, currentEmail]);
 
   const handleSubmit = async () => {
-    // Don't submit if validation fails or username hasn't changed in edit mode
-    if (!isValid || validationError || (mode === 'edit' && username.trim() === currentUsername)) {
+    // Don't submit if validation fails or email hasn't changed in edit mode
+    if (!isValid || validationError || (mode === 'edit' && email.trim() === currentEmail)) {
       return;
     }
     
     await onSubmit();
   };
 
-  const hasChanges = mode === 'edit' ? username.trim() !== currentUsername : true;
+  const hasChanges = mode === 'edit' ? email.trim() !== currentEmail : true;
 
   return (
     <View>
       <ThemedText size="subtitle" style={styles.label} font="bold">
-        Choose a username
+        {mode === 'setup' ? 'Enter your email' : 'Update your email'}
       </ThemedText>
       
       <TextInput
-        style={[styles.input, { color: textColor, borderColor}]}
-        value={username}
-        onChangeText={setUsername}
-        placeholder="Enter username"
+        style={[styles.input, { color: textColor, borderColor }]}
+        value={email}
+        onChangeText={setEmail}
+        placeholder="Enter email address"
         placeholderTextColor={textColor + '80'}
+        keyboardType="email-address"
         autoCapitalize="none"
         autoCorrect={false}
         autoFocus={true}

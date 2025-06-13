@@ -9,6 +9,7 @@ import {
   GetBlueskyProfile,
   SubscribeToMultipleComicSeries,
   UserAgeRange,
+  GetUserById,
 } from '../graphql/operations';
 import type { 
   UpdateUserProfileMutation, 
@@ -25,7 +26,9 @@ import type {
   GetComicsFromPatreonCreatorsQueryVariables,
   SubscribeToMultipleComicSeriesMutation,
   SubscribeToMultipleComicSeriesMutationVariables,
-  ComicSeries
+  ComicSeries,
+  GetUserByIdQueryVariables,
+  GetUserByIdQuery
 } from '../graphql/operations';
 import type { StorageFunctions } from './utils';
 import axios from 'axios';
@@ -197,6 +200,53 @@ interface UpdateUsernameParams {
   userClient: ApolloClient<any>;
   username: string;
   storageFunctions: StorageFunctions;
+}
+
+interface GetMeDetailsParams {
+  userClient: ApolloClient<any>;
+  userId: string;
+  forceRefresh?: boolean;
+}
+
+export async function getMeDetails(
+  { userClient, userId, forceRefresh }: GetMeDetailsParams,
+  dispatch?: Dispatch<UserDetailsAction>
+): Promise<any> {
+  if (dispatch) dispatch({ type: UserDetailsActionType.USER_DETAILS_START });
+
+  try {
+    const result = await userClient.query<
+      GetUserByIdQuery,
+      GetUserByIdQueryVariables
+    >({
+      query: GetUserById,
+      variables: { id: userId },
+      ...(forceRefresh ? { fetchPolicy: 'network-only' } : {}),
+    });
+
+    const { data, errors } = result;
+
+    if (errors) {
+      throw new Error(errors[0]?.message || 'Failed to get user details');
+    }
+
+    if (!data?.getUserById) {
+      throw new Error('Failed to get user details');
+    }
+
+    const user = data.getUserById;
+
+    if (dispatch) {
+      dispatch({ type: UserDetailsActionType.USER_DETAILS_SUCCESS, payload: user });
+    }
+
+    return user;  
+  } catch (error: any) {
+    if (dispatch) {
+      dispatch({ type: UserDetailsActionType.USER_DETAILS_ERROR, payload: error?.message || 'Failed to get user details' });
+    }
+    throw error;
+  }
 }
 
 export async function updateUsername(

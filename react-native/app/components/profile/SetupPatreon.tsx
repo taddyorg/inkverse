@@ -50,16 +50,18 @@ export function SetupPatreon({ currentStep, onConnect, onSkip, onBack, onContinu
         >
           <ThemedText style={styles.skipButtonText}>Skip for now</ThemedText>
         </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => navigation.navigate(WRAPPED_HOSTING_PROVIDER_SCREEN, {
-            uuid: TADDY_HOSTING_PROVIDER_UUID,
-            success: 'true',
-          })}
-          style={styles.skipButton}
-          activeOpacity={0.7}
-        >
-          <ThemedText style={styles.skipButtonText}>Open Hosting Provider</ThemedText>
-        </TouchableOpacity>
+        {__DEV__ && 
+          <TouchableOpacity
+            onPress={() => navigation.navigate(WRAPPED_HOSTING_PROVIDER_SCREEN, {
+              uuid: TADDY_HOSTING_PROVIDER_UUID,
+              success: 'true',
+            })}
+            style={styles.skipButton}
+            activeOpacity={0.7}
+          >
+            <ThemedText style={styles.skipButtonText}>Open Hosting Provider</ThemedText>
+          </TouchableOpacity>
+        }
       </View>
     </View>
   );

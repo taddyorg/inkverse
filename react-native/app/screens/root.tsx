@@ -21,7 +21,16 @@ import { ListScreen } from './list';
 import { ComicsListScreen } from './comicslist';
 import { BlogScreen } from './blog';
 import { ReportsScreen } from './reports';
-import { SignupScreen } from './signup';
+import { EditProfileScreen } from './profile-edit/index';
+import { EditUsernameScreen } from './profile-edit/edit-username';
+import { EditAgeScreen } from './profile-edit/edit-age';
+import { EditEmailScreen } from './profile-edit/edit-email';
+import { EditPatreonScreen } from './profile-edit/edit-patreon';
+import { EditBlueskyScreen } from './profile-edit/edit-bluesky';
+
+// import { SignupScreen } from './signup';
+import { SignupScreen } from './signup/index-for-dev';
+
 import { SignupEmailScreen } from './signup/signup-email';
 import { SignupResetScreen } from './signup/signup-reset';
 import { SignupUsernameScreen } from './signup/signup-username';
@@ -71,6 +80,12 @@ import {
   SIGNUP_PATREON_SCREEN,
   SIGNUP_BLUESKY_SCREEN,
   SIGNUP_COMPLETE_SCREEN,
+  EDIT_PROFILE_SCREEN,
+  EDIT_USERNAME_SCREEN,
+  EDIT_AGE_SCREEN,
+  EDIT_EMAIL_SCREEN,
+  EDIT_PATREON_SCREEN,
+  EDIT_BLUESKY_SCREEN,
 } from '../../constants/Navigation';
 
 Sentry.init({
@@ -137,6 +152,60 @@ const comicsListScreenConfig = {
 const profileScreenConfig = {
   name: PROFILE_SCREEN,
   component: ProfileScreen,
+  options: {
+    title: '',
+    headerShown: false,
+  }
+};
+
+const editProfileScreenConfig = {
+  name: EDIT_PROFILE_SCREEN,
+  component: EditProfileScreen,
+  options: {
+    title: '',
+    headerShown: false,
+  }
+};
+
+const editUsernameScreenConfig = {
+  name: EDIT_USERNAME_SCREEN as typeof EDIT_USERNAME_SCREEN,
+  component: EditUsernameScreen,
+  options: {
+    title: '',
+    headerShown: false,
+  }
+};
+
+const editAgeScreenConfig = {
+  name: EDIT_AGE_SCREEN as typeof EDIT_AGE_SCREEN,
+  component: EditAgeScreen,
+  options: {
+    title: '',
+    headerShown: false,
+  }
+};
+
+const editEmailScreenConfig = {
+  name: EDIT_EMAIL_SCREEN as typeof EDIT_EMAIL_SCREEN,
+  component: EditEmailScreen,
+  options: {
+    title: '',
+    headerShown: false,
+  }
+};
+
+const editPatreonScreenConfig = {
+  name: EDIT_PATREON_SCREEN as typeof EDIT_PATREON_SCREEN,
+  component: EditPatreonScreen,
+  options: {
+    title: '',
+    headerShown: false,
+  }
+};
+
+const editBlueskyScreenConfig = {
+  name: EDIT_BLUESKY_SCREEN as typeof EDIT_BLUESKY_SCREEN,
+  component: EditBlueskyScreen,
   options: {
     title: '',
     headerShown: false,
@@ -210,6 +279,12 @@ function ProfileStack() {
       <Stack.Screen {...creatorScreenConfig} />
       <Stack.Screen {...listScreenConfig} />
       <Stack.Screen {...settingsScreenConfig} />
+      <Stack.Screen {...editProfileScreenConfig} />
+      <Stack.Screen {...editUsernameScreenConfig} />
+      <Stack.Screen {...editAgeScreenConfig} />
+      <Stack.Screen {...editEmailScreenConfig} />
+      <Stack.Screen {...editPatreonScreenConfig} />
+      <Stack.Screen {...editBlueskyScreenConfig} />
     </Stack.Navigator>
   );
 }
