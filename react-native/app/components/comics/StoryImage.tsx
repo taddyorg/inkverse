@@ -21,7 +21,7 @@ export const StoryImage = ({ story, screenDetails }: StoryImageProps) => {
 
   return (
     <Image
-      style={{ width: screenDetails.width, height: screenDetails.width / aspectRatio }}
+      style={{ width: screenDetails.width, height: Math.floor(screenDetails.width / aspectRatio) }}
       source={{ uri: storyImageUrl }}
       onLoad={handleImageLoad}
       recyclingKey={story?.uuid}
