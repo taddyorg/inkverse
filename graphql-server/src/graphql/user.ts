@@ -48,6 +48,7 @@ export const UserDefinitions = `
     EMAIL
   }
 
+
   """
   Bluesky profile information
   """
@@ -99,6 +100,7 @@ export const UserQueriesDefinitions = `
     limitPerPage: Int
     page: Int
   ): [ComicSeries]
+
 `;
 
 export const UserMutationsDefinitions = `
@@ -138,16 +140,6 @@ export const UserMutationsDefinitions = `
   Save or update the user's Bluesky handle
   """
   saveBlueskyDid(did: String!): User
-
-  """
-  Subscribe to a comic series
-  """
-  subscribeToSeries(seriesUuid: ID!): Boolean!
-
-  """
-  Unsubscribe from a comic series
-  """
-  unsubscribeFromSeries(seriesUuid: ID!): Boolean!
 
   """
   Subscribe to multiple comic series
@@ -265,17 +257,19 @@ export const UserQueries = {
     return await ComicSeries.getComicsFromCreatorUuids(creatorUuids);
   },
 
-  getUserSubscribedComics: async (_parent: any, { limitPerPage = 20, page = 1 }: { limitPerPage?: number; page?: number }, context: any): Promise<ComicSeriesModel[]> => {
+  getUserSubscribedComics: async (_parent: any, { limitPerPage = 20, page = 1 }: { limitPerPage?: number | null; page?: number | null }, context: any): Promise<ComicSeriesModel[]> => {
     try {
+      const actualLimitPerPage = limitPerPage ?? 20;
+      const actualPage = page ?? 1;
 
-      if (limitPerPage > 1000) {
+      if (actualLimitPerPage > 1000) {
         throw new UserInputError('Limit per page cannot be greater than 100');
       }
 
-      const offset = Math.max(0, (page - 1) * limitPerPage);
+      const offset = Math.max(0, (actualPage - 1) * actualLimitPerPage);
 
       // Get user subscriptions
-      const subscriptions = await UserSeriesSubscription.getUserSubscriptions(Number(context.user.id), limitPerPage, offset);
+      const subscriptions = await UserSeriesSubscription.getUserSubscriptions(Number(context.user.id), actualLimitPerPage, offset);
       
       if (!subscriptions || subscriptions.length === 0) {
         return [];
@@ -368,23 +362,6 @@ export const UserMutations: MutationResolvers = {
 
     // Update the user's Bluesky DID
     return await User.updateUser(context.user.id, { blueskyDid: did });
-  },
-
-  subscribeToSeries: async (_parent: any, { seriesUuid }: { seriesUuid: string }, context: any): Promise<boolean> => {
-    if (!context.user) {
-      throw new AuthenticationError('You must be logged in to subscribe to a series');
-    }
-
-    const subscription = await UserSeriesSubscription.subscribeToComicSeries(Number(context.user.id), seriesUuid);
-    return !!subscription;
-  },
-
-  unsubscribeFromSeries: async (_parent: any, { seriesUuid }: { seriesUuid: string }, context: any): Promise<boolean> => {
-    if (!context.user) {
-      throw new AuthenticationError('You must be logged in to unsubscribe from a series');
-    }
-
-    return await UserSeriesSubscription.unsubscribeFromComicSeries(Number(context.user.id), seriesUuid);
   },
 
   subscribeToMultipleComicSeries: async (_parent: any, { seriesUuids }: { seriesUuids: string[] }, context: any): Promise<boolean> => {

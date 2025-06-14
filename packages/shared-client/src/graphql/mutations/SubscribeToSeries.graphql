@@ -1,0 +1,7 @@
+mutation SubscribeToSeries($seriesUuid: ID!) {
+  subscribeToSeries(seriesUuid: $seriesUuid) {
+    seriesUuid
+    isSubscribed
+    isRecommended
+  }
+}

@@ -75,6 +75,14 @@ import {
   UserMutationsDefinitions,
 } from './user.js';
 
+import {
+  UserComicSeriesDefinitions,
+  UserComicSeriesQueriesDefinitions,
+  UserComicSeriesQueries,
+  UserComicSeriesMutationsDefinitions,
+  UserComicSeriesMutations,
+} from './usercomicseries.js';
+
 export const typeDefs = gql`#graphql
   ${CommonDefinitions}
   ${ComicSeriesDefinitions}
@@ -89,6 +97,7 @@ export const typeDefs = gql`#graphql
   ${ListDefinitions}
   ${SearchDefinitions}
   ${UserDefinitions}
+  ${UserComicSeriesDefinitions}
 
   type Query {
     ${ComicSeriesQueriesDefinitions}
@@ -101,11 +110,13 @@ export const typeDefs = gql`#graphql
     ${ListQueriesDefinitions}
     ${SearchQueriesDefinitions}
     ${UserQueriesDefinitions}
+    ${UserComicSeriesQueriesDefinitions}
   }
 
   type Mutation {
     ${ComicSeriesMutationsDefinitions}
     ${UserMutationsDefinitions}
+    ${UserComicSeriesMutationsDefinitions}
   }
 `;
 
@@ -122,10 +133,12 @@ export const resolvers: Resolvers = {
     ...ListQueries,
     ...SearchQueries,
     ...UserQueries,
+    ...UserComicSeriesQueries,
   },
   Mutation: {
     ...UserMutations,
     ...ComicSeriesMutations,
+    ...UserComicSeriesMutations,
   },
   ...ComicSeriesFieldResolvers,
   ...ComicIssueFieldResolvers,

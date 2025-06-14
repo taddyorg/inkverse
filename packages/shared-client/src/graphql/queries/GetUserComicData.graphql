@@ -1,0 +1,7 @@
+query GetUserComicData($seriesUuid: ID!) {
+  userComicSeriesData(seriesUuid: $seriesUuid) {
+    seriesUuid
+    isSubscribed
+    isRecommended
+  }
+}

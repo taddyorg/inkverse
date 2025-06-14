@@ -885,9 +885,9 @@ export type Mutation = {
   /** Subscribe to multiple comic series */
   subscribeToMultipleComicSeries: Scalars['Boolean']['output'];
   /** Subscribe to a comic series */
-  subscribeToSeries: Scalars['Boolean']['output'];
+  subscribeToSeries: UserComicSeries;
   /** Unsubscribe from a comic series */
-  unsubscribeFromSeries: Scalars['Boolean']['output'];
+  unsubscribeFromSeries: UserComicSeries;
   /** Update user email */
   updateUserEmail?: Maybe<User>;
   /** Update user profile (username and age) */
@@ -997,6 +997,8 @@ export type Query = {
   me?: Maybe<User>;
   /**  Search for a term  */
   search?: Maybe<SearchResults>;
+  /** Get user's relationship data for a specific comic series */
+  userComicSeriesData?: Maybe<UserComicSeries>;
 };
 
 
@@ -1113,6 +1115,11 @@ export type QuerySearchArgs = {
   term?: InputMaybe<Scalars['String']['input']>;
 };
 
+
+export type QueryUserComicSeriesDataArgs = {
+  seriesUuid: Scalars['ID']['input'];
+};
+
 /**  A search result  */
 export type SearchResults = {
   __typename?: 'SearchResults';
@@ -1178,6 +1185,14 @@ export enum UserAgeRange {
   AGE_35_PLUS = 'AGE_35_PLUS',
   UNDER_18 = 'UNDER_18'
 }
+
+/** User's relationship with a comic series, including subscription status and reading progress */
+export type UserComicSeries = {
+  __typename?: 'UserComicSeries';
+  isRecommended: Scalars['Boolean']['output'];
+  isSubscribed: Scalars['Boolean']['output'];
+  seriesUuid: Scalars['ID']['output'];
+};
 
 export type WithIndex<TObject> = TObject & Record<string, any>;
 export type ResolversObject<TObject> = WithIndex<TObject>;
@@ -1287,6 +1302,7 @@ export type ResolversTypes = ResolversObject<{
   TaddyType: TaddyType;
   User: ResolverTypeWrapper<User>;
   UserAgeRange: UserAgeRange;
+  UserComicSeries: ResolverTypeWrapper<UserComicSeries>;
 }>;
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -1312,6 +1328,7 @@ export type ResolversParentTypes = ResolversObject<{
   SearchResults: SearchResults;
   String: Scalars['String']['output'];
   User: User;
+  UserComicSeries: UserComicSeries;
 }>;
 
 export type BlueskyProfileResolvers<ContextType = any, ParentType extends ResolversParentTypes['BlueskyProfile'] = ResolversParentTypes['BlueskyProfile']> = ResolversObject<{
@@ -1490,8 +1507,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   saveBlueskyDid?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationSaveBlueskyDidArgs, 'did'>>;
   savePushToken?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationSavePushTokenArgs, 'fcmToken' | 'platform'>>;
   subscribeToMultipleComicSeries?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationSubscribeToMultipleComicSeriesArgs, 'seriesUuids'>>;
-  subscribeToSeries?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationSubscribeToSeriesArgs, 'seriesUuid'>>;
-  unsubscribeFromSeries?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationUnsubscribeFromSeriesArgs, 'seriesUuid'>>;
+  subscribeToSeries?: Resolver<ResolversTypes['UserComicSeries'], ParentType, ContextType, RequireFields<MutationSubscribeToSeriesArgs, 'seriesUuid'>>;
+  unsubscribeFromSeries?: Resolver<ResolversTypes['UserComicSeries'], ParentType, ContextType, RequireFields<MutationUnsubscribeFromSeriesArgs, 'seriesUuid'>>;
   updateUserEmail?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationUpdateUserEmailArgs, 'email'>>;
   updateUserProfile?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, Partial<MutationUpdateUserProfileArgs>>;
 }>;
@@ -1519,6 +1536,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getUserSubscribedComics?: Resolver<Maybe<Array<Maybe<ResolversTypes['ComicSeries']>>>, ParentType, ContextType, Partial<QueryGetUserSubscribedComicsArgs>>;
   me?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   search?: Resolver<Maybe<ResolversTypes['SearchResults']>, ParentType, ContextType, Partial<QuerySearchArgs>>;
+  userComicSeriesData?: Resolver<Maybe<ResolversTypes['UserComicSeries']>, ParentType, ContextType, RequireFields<QueryUserComicSeriesDataArgs, 'seriesUuid'>>;
 }>;
 
 export type SearchResultsResolvers<ContextType = any, ParentType extends ResolversParentTypes['SearchResults'] = ResolversParentTypes['SearchResults']> = ResolversObject<{
@@ -1542,6 +1560,13 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type UserComicSeriesResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserComicSeries'] = ResolversParentTypes['UserComicSeries']> = ResolversObject<{
+  isRecommended?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  isSubscribed?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  seriesUuid?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type Resolvers<ContextType = any> = ResolversObject<{
   BlueskyProfile?: BlueskyProfileResolvers<ContextType>;
   ComicIssue?: ComicIssueResolvers<ContextType>;
@@ -1560,5 +1585,6 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Query?: QueryResolvers<ContextType>;
   SearchResults?: SearchResultsResolvers<ContextType>;
   User?: UserResolvers<ContextType>;
+  UserComicSeries?: UserComicSeriesResolvers<ContextType>;
 }>;
 

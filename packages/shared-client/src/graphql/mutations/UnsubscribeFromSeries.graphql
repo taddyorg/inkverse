@@ -1,0 +1,7 @@
+mutation UnsubscribeFromSeries($seriesUuid: ID!) {
+  unsubscribeFromSeries(seriesUuid: $seriesUuid) {
+    seriesUuid
+    isSubscribed
+    isRecommended
+  }
+}

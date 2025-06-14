@@ -884,9 +884,9 @@ export type Mutation = {
   /** Subscribe to multiple comic series */
   subscribeToMultipleComicSeries: Scalars['Boolean']['output'];
   /** Subscribe to a comic series */
-  subscribeToSeries: Scalars['Boolean']['output'];
+  subscribeToSeries: UserComicSeries;
   /** Unsubscribe from a comic series */
-  unsubscribeFromSeries: Scalars['Boolean']['output'];
+  unsubscribeFromSeries: UserComicSeries;
   /** Update user email */
   updateUserEmail?: Maybe<User>;
   /** Update user profile (username and age) */
@@ -996,6 +996,8 @@ export type Query = {
   me?: Maybe<User>;
   /**  Search for a term  */
   search?: Maybe<SearchResults>;
+  /** Get user's relationship data for a specific comic series */
+  userComicSeriesData?: Maybe<UserComicSeries>;
 };
 
 
@@ -1112,6 +1114,11 @@ export type QuerySearchArgs = {
   term?: InputMaybe<Scalars['String']['input']>;
 };
 
+
+export type QueryUserComicSeriesDataArgs = {
+  seriesUuid: Scalars['ID']['input'];
+};
+
 /**  A search result  */
 export type SearchResults = {
   __typename?: 'SearchResults';
@@ -1178,6 +1185,14 @@ export enum UserAgeRange {
   UNDER_18 = 'UNDER_18'
 }
 
+/** User's relationship with a comic series, including subscription status and reading progress */
+export type UserComicSeries = {
+  __typename?: 'UserComicSeries';
+  isRecommended: Scalars['Boolean']['output'];
+  isSubscribed: Scalars['Boolean']['output'];
+  seriesUuid: Scalars['ID']['output'];
+};
+
 export type ComicIssueDetailsFragment = { __typename?: 'ComicIssue', bannerImageAsString?: string | null, creatorNote?: string | null, uuid: string, seriesUuid: string, name?: string | null, position?: number | null, thumbnailImageAsString?: string | null, datePublished?: number | null, scopesForExclusiveContent?: Array<string | null> | null, dateExclusiveContentAvailable?: number | null, stories?: Array<{ __typename?: 'ComicStory', uuid: string, issueUuid: string, seriesUuid: string, storyImageAsString?: string | null, width?: number | null, height?: number | null } | null> | null, nextIssue?: { __typename?: 'ComicIssue', uuid: string, seriesUuid: string, name?: string | null, position?: number | null, thumbnailImageAsString?: string | null, datePublished?: number | null, scopesForExclusiveContent?: Array<string | null> | null, dateExclusiveContentAvailable?: number | null } | null };
 
 export type ComicSeriesDetailsFragment = { __typename?: 'ComicSeries', uuid: string, name?: string | null, description?: string | null, datePublished?: number | null, hash?: string | null, issuesHash?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, tags?: Array<string | null> | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null, language?: Language | null, status?: SeriesStatus | null, contentRating?: ContentRating | null, seriesType?: ComicSeriesType | null, isCompleted?: boolean | null, issueCount?: number | null };
@@ -1242,6 +1257,20 @@ export type SubscribeToMultipleComicSeriesMutationVariables = Exact<{
 
 
 export type SubscribeToMultipleComicSeriesMutation = { __typename?: 'Mutation', subscribeToMultipleComicSeries: boolean };
+
+export type SubscribeToSeriesMutationVariables = Exact<{
+  seriesUuid: Scalars['ID']['input'];
+}>;
+
+
+export type SubscribeToSeriesMutation = { __typename?: 'Mutation', subscribeToSeries: { __typename?: 'UserComicSeries', seriesUuid: string, isSubscribed: boolean, isRecommended: boolean } };
+
+export type UnsubscribeFromSeriesMutationVariables = Exact<{
+  seriesUuid: Scalars['ID']['input'];
+}>;
+
+
+export type UnsubscribeFromSeriesMutation = { __typename?: 'Mutation', unsubscribeFromSeries: { __typename?: 'UserComicSeries', seriesUuid: string, isSubscribed: boolean, isRecommended: boolean } };
 
 export type UpdateUserEmailMutationVariables = Exact<{
   email: Scalars['String']['input'];
@@ -1352,6 +1381,13 @@ export type GetUserByUsernameQueryVariables = Exact<{
 
 
 export type GetUserByUsernameQuery = { __typename?: 'Query', getUserByUsername?: { __typename?: 'User', id: string, username?: string | null } | null };
+
+export type GetUserComicDataQueryVariables = Exact<{
+  seriesUuid: Scalars['ID']['input'];
+}>;
+
+
+export type GetUserComicDataQuery = { __typename?: 'Query', userComicSeriesData?: { __typename?: 'UserComicSeries', seriesUuid: string, isSubscribed: boolean, isRecommended: boolean } | null };
 
 export type HomeScreenQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1532,6 +1568,24 @@ export const SubscribeToMultipleComicSeries = gql`
   subscribeToMultipleComicSeries(seriesUuids: $seriesUuids)
 }
     `;
+export const SubscribeToSeries = gql`
+    mutation SubscribeToSeries($seriesUuid: ID!) {
+  subscribeToSeries(seriesUuid: $seriesUuid) {
+    seriesUuid
+    isSubscribed
+    isRecommended
+  }
+}
+    `;
+export const UnsubscribeFromSeries = gql`
+    mutation UnsubscribeFromSeries($seriesUuid: ID!) {
+  unsubscribeFromSeries(seriesUuid: $seriesUuid) {
+    seriesUuid
+    isSubscribed
+    isRecommended
+  }
+}
+    `;
 export const UpdateUserEmail = gql`
     mutation UpdateUserEmail($email: String!) {
   updateUserEmail(email: $email) {
@@ -1690,6 +1744,15 @@ export const GetUserByUsername = gql`
   }
 }
     ${MiniUserDetails}`;
+export const GetUserComicData = gql`
+    query GetUserComicData($seriesUuid: ID!) {
+  userComicSeriesData(seriesUuid: $seriesUuid) {
+    seriesUuid
+    isSubscribed
+    isRecommended
+  }
+}
+    `;
 export const HomeScreen = gql`
     query HomeScreen {
   getFeaturedComicSeries {

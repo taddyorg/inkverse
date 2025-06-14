@@ -23,7 +23,9 @@ const cacheKeyForType: Record<string, string> = {
   "SearchQueryResponseInfo": "searchId",
   "SearchQueryResponseInfoDetails": "searchId",
   "HomeScreenComicSeries": "id",
-  "ComicIssueForSeries": "seriesUuid"
+  "ComicIssueForSeries": "seriesUuid",
+  "UserComicSeries": "seriesUuid",
+  "BlueskyProfile": "did"
 }
 
 const cacheTypesSet = new Set(Object.keys(cacheKeyForType));

@@ -1,4 +1,4 @@
-import { UserAgeRange } from "@inkverse/shared-server/graphql/types";
+import { UserAgeRange } from "./graphql/types.js";
 
 /**
  * Authentication token payload (JWT)
