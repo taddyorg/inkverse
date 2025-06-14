@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react';
-import { StyleSheet, View, BackHandler, StatusBar } from 'react-native';
+import { StyleSheet, View, BackHandler } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useRoute, useFocusEffect, useNavigation } from '@react-navigation/native';
@@ -48,8 +48,7 @@ export function BlogScreen() {
   }, [navigation]);
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="dark-content" />
+    <View style={[styles.container]}>
       <View style={styles.header}>
         {canGoBack && <HeaderBackButton onPress={handleBackPress} />}
         <PressableOpacity style={styles.closeButton} onPress={handleClosePress}>

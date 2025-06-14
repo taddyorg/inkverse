@@ -7,6 +7,7 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import * as Sentry from '@sentry/react-native';
 import { PostHogProvider } from 'posthog-react-native'
 import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Colors } from '../../constants/Colors';
 
 import config from '@/config';
@@ -505,27 +506,28 @@ function App() {
   }
 
   return (
-    <AppLoaderProvider>
-      <AuthRefreshProvider>
-        <NavigationContainer 
-          ref={navigationRef}
-          linking={linking}
-        >
-          <PostHogProvider 
-            apiKey={config.POST_HOG_INFO.API_KEY}
-            options={{
-              host: config.POST_HOG_INFO.HOST_URL,
-              // enableSessionReplay: true,
-              // sessionReplayConfig: {
-              //   maskAllTextInputs: true,
-              //   maskAllImages: true,
-              //   captureLog: true,
-              //   captureNetworkTelemetry: true,
-              //   androidDebouncerDelayMs: 500,
-              //   iOSdebouncerDelayMs: 1000,
-              // },
-            }}
+    <SafeAreaProvider>
+      <AppLoaderProvider>
+        <AuthRefreshProvider>
+          <NavigationContainer 
+            ref={navigationRef}
+            linking={linking}
           >
+            <PostHogProvider 
+              apiKey={config.POST_HOG_INFO.API_KEY}
+              options={{
+                host: config.POST_HOG_INFO.HOST_URL,
+                // enableSessionReplay: true,
+                // sessionReplayConfig: {
+                //   maskAllTextInputs: true,
+                //   maskAllImages: true,
+                //   captureLog: true,
+                //   captureNetworkTelemetry: true,
+                //   androidDebouncerDelayMs: 500,
+                //   iOSdebouncerDelayMs: 1000,
+                // },
+              }}
+            >
           <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen 
               name={MAIN_SCREEN} 
@@ -586,6 +588,7 @@ function App() {
       </NavigationContainer>
       </AuthRefreshProvider>
     </AppLoaderProvider>
+    </SafeAreaProvider>
   );
 }
 
