@@ -1,5 +1,5 @@
 # Minimal user details fragment with just essential user information
-fragment MiniUserDetails on User {
+fragment miniUserDetails on User {
   id
   username
 }

@@ -10,7 +10,7 @@ import {
   GetBlueskyProfile,
   SubscribeToMultipleComicSeries,
   UserAgeRange,
-  GetUserById,
+  GetProfileByUserId,
 } from '../graphql/operations';
 import type { 
   UpdateUserProfileMutation, 
@@ -30,8 +30,8 @@ import type {
   SubscribeToMultipleComicSeriesMutation,
   SubscribeToMultipleComicSeriesMutationVariables,
   ComicSeries,
-  GetUserByIdQueryVariables,
-  GetUserByIdQuery
+  GetProfileByUserIdQueryVariables,
+  GetProfileByUserIdQuery,
 } from '../graphql/operations';
 import type { StorageFunctions } from './utils';
 import axios from 'axios';
@@ -248,10 +248,10 @@ export async function getMeDetails(
 
   try {
     const result = await userClient.query<
-      GetUserByIdQuery,
-      GetUserByIdQueryVariables
+      GetProfileByUserIdQuery,
+      GetProfileByUserIdQueryVariables
     >({
-      query: GetUserById,
+      query: GetProfileByUserId,
       variables: { id: userId },
       ...(forceRefresh ? { fetchPolicy: 'network-only' } : {}),
     });

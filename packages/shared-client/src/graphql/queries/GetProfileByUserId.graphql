@@ -1,0 +1,8 @@
+query GetProfileByUserId($id: ID!) {
+  getUserById(id: $id) {
+    ...miniUserDetails
+  }
+  getUserSubscribedComics(limitPerPage: 1000, page: 1) {
+    ...miniComicSeriesDetails
+  }
+}

@@ -26,6 +26,7 @@ export const UserDefinitions = `
     ageRange: UserAgeRange
     birthYear: Int
     blueskyDid: String
+    subscriptions(limitPerPage: Int, page: Int): [ComicSeries]
   }
 
   """
@@ -90,6 +91,14 @@ export const UserQueriesDefinitions = `
   Get all comics from Patreon creators
   """
   getComicsFromPatreonCreators: [ComicSeries]
+
+  """
+  Get the current user's subscribed comics
+  """
+  getUserSubscribedComics(
+    limitPerPage: Int
+    page: Int
+  ): [ComicSeries]
 `;
 
 export const UserMutationsDefinitions = `
@@ -254,6 +263,39 @@ export const UserQueries = {
 
     // Use the same method as Bluesky to get comics
     return await ComicSeries.getComicsFromCreatorUuids(creatorUuids);
+  },
+
+  getUserSubscribedComics: async (_parent: any, { limitPerPage = 20, page = 1 }: { limitPerPage?: number; page?: number }, context: any): Promise<ComicSeriesModel[]> => {
+    try {
+
+      if (limitPerPage > 1000) {
+        throw new UserInputError('Limit per page cannot be greater than 100');
+      }
+
+      const offset = Math.max(0, (page - 1) * limitPerPage);
+
+      // Get user subscriptions
+      const subscriptions = await UserSeriesSubscription.getUserSubscriptions(Number(context.user.id), limitPerPage, offset);
+      
+      if (!subscriptions || subscriptions.length === 0) {
+        return [];
+      }
+
+      // Extract series UUIDs from subscriptions
+      const seriesUuids = subscriptions.map(sub => sub.seriesUuid);
+
+      // Get the comic series details
+      const comicSeries = await ComicSeries.getComicSeriesByUuids(seriesUuids);
+      const comicSeriesObject: Record<string, ComicSeriesModel> = comicSeries.reduce((acc: Record<string, ComicSeriesModel>, series: ComicSeriesModel) => { 
+        acc[series.uuid] = series;
+        return acc;
+      }, {});
+      
+      return seriesUuids.map(uuid => comicSeriesObject[uuid]).filter(Boolean) as ComicSeriesModel[];
+    } catch (error) {
+      console.error('Error getting user subscribed comics:', error);
+      throw new Error('Failed to get subscribed comics');
+    }
   },
 };
 

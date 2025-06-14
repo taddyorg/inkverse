@@ -46,13 +46,10 @@ export function SignupNotificationsScreen() {
     dispatch({ type: UserDetailsActionType.USER_DETAILS_CLEAR_ERROR });
     
     try {
-      console.log('Requesting notification permissions');
       const { status } = await Notifications.requestPermissionsAsync();
-      console.log('Notification permissions status:', status, Notifications.PermissionStatus.GRANTED);
       
       if (status === Notifications.PermissionStatus.GRANTED) {
         const tokenData = await Notifications.getExpoPushTokenAsync();
-        console.log('Token data:', tokenData);
         const platform = Platform.OS;
         
         // savePushToken will dispatch PUSH_NOTIFICATION_SUCCESS on success
@@ -62,7 +59,6 @@ export function SignupNotificationsScreen() {
           fcmToken: tokenData.data,
           platform: platform
         }, dispatch);
-        console.log('Push token saved successfully');
       } else {
         // If permission denied, go to next screen anyway
         loadNextScreen();
@@ -92,7 +88,6 @@ export function SignupNotificationsScreen() {
   return (
     <Screen>
       <View style={styles.container}>
-        <HeaderBackButton />
         <ThemedView style={[styles.card, { backgroundColor }]}>
           <View style={styles.content}>
             {/* Icon */}

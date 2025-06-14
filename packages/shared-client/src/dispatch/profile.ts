@@ -10,12 +10,10 @@ import {
   GetUserByUsername,
   type GetUserByUsernameQuery,
   type GetUserByUsernameQueryVariables,
-  GetMiniUserById,
-  type GetMiniUserByIdQuery,
-  type GetMiniUserByIdQueryVariables,
-  GetUserById,
-  type GetUserByIdQuery,
-  type GetUserByIdQueryVariables,
+  GetProfileByUserId,
+  type GetProfileByUserIdQuery,
+  type GetProfileByUserIdQueryVariables,
+  type ComicSeries,
 } from '../graphql/operations';
 
 /* Actions */
@@ -23,6 +21,7 @@ export const GET_PROFILE = asyncAction(ActionTypes.GET_PROFILE);
 
 export interface ProfileState {
   user: any | null;
+  subscribedComics: ComicSeries[] | null;
   isLoading: boolean;
   error: string | null;
   apolloState?: Record<string, any>;
@@ -30,6 +29,7 @@ export interface ProfileState {
 
 export const profileInitialState: ProfileState = {
   user: null,
+  subscribedComics: null,
   isLoading: false,
   error: null,
 };
@@ -110,15 +110,7 @@ interface LoadProfileByIdProps {
   userClient?: ApolloClient<any>;
   userId: string;
   currentUserId?: string;
-}
-
-// Parser function
-export function parseProfileData(data: any): ProfileState {
-  return {
-    user: data?.user || null,
-    isLoading: false,
-    error: null,
-  };
+  forceRefresh?: boolean;
 }
 
 export async function loadProfileByUsername(
@@ -146,53 +138,37 @@ export async function loadProfileByUsername(
 
 // Load profile by ID (for React Native)
 export async function loadProfileById(
-  { publicClient, userClient, userId, currentUserId }: LoadProfileByIdProps,
+  { publicClient, userClient, userId, currentUserId, forceRefresh = false }: LoadProfileByIdProps,
   dispatch: UtilsDispatch
 ) {
   dispatch(GET_PROFILE.request());
   
   try {
-    await loadProfileByIdInternal({ publicClient, userClient, userId, currentUserId }, dispatch);
+    const client = currentUserId && userClient && currentUserId === userId ? userClient : publicClient;
+    const { data } = await client.query<
+      GetProfileByUserIdQuery,
+      GetProfileByUserIdQueryVariables
+    >({
+      query: GetProfileByUserId,
+      variables: { id: userId },
+      ...(forceRefresh ? { fetchPolicy: 'network-only' } : {}),
+    });
+
+    const parsedData = parseProfileData(data);
+
+    dispatch(GET_PROFILE.success(parsedData));
   } catch (error: Error | unknown) {
     errorHandlerFactory(dispatch, GET_PROFILE)(error);
   }
 }
 
-// Internal function to load profile by ID (shared logic)
-async function loadProfileByIdInternal(
-  props: LoadProfileByIdProps,
-  dispatch: UtilsDispatch
-) {
-  const profileData = await fetchUserData(props);
-  const parsedData = parseProfileData(profileData);
-  dispatch(GET_PROFILE.success(parsedData));
-}
-
-// Helper function to fetch user data
-export async function fetchUserData(
-  { publicClient, userClient, userId, currentUserId }: LoadProfileByIdProps
-): Promise<{ user: any }> {
-  if (currentUserId && userClient && currentUserId === userId) {
-    // It's the current user's profile
-    const { data } = await userClient.query<
-      GetMiniUserByIdQuery,
-      GetMiniUserByIdQueryVariables
-    >({
-      query: GetMiniUserById,
-      variables: { id: userId },
-    });
-    return { user: data?.getUserById };
-  } else {
-    // Unauthenticated user or viewing another user's profile
-    const { data } = await publicClient.query<
-      GetUserByIdQuery,
-      GetUserByIdQueryVariables
-    >({
-      query: GetUserById,
-      variables: { id: userId },
-    });
-    return { user: data?.getUserById };
-  }
+function parseProfileData(data: GetProfileByUserIdQuery): ProfileState {
+  return {
+    user: data?.getUserById,
+    subscribedComics: data?.getUserSubscribedComics?.filter((comic): comic is ComicSeries => comic !== null) || null,
+    isLoading: false,
+    error: null,
+  };
 }
 
 // New reducer for profile loading

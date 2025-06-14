@@ -24,10 +24,10 @@ export function HeaderSettingsButton({ onPress }: HeaderSettingsButtonProps) {
 const styles = StyleSheet.create({
   settingsButton: {
     position: 'absolute',
-    top: 44,
-    right: 16,
-    zIndex: 1,
-    padding: 8,
+    top: 20,
+    right: 20,
+    zIndex: 10,
+    padding: 12,
     borderRadius: 20,
   },
 }); 

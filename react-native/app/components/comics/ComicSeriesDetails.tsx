@@ -139,7 +139,7 @@ export function ComicSeriesDetails({ comicseries, pageType, isHeaderVisible, onH
 
     case 'grid-item':
       return (
-        <View style={styles.gridItemContainer}>
+        <PressableOpacity style={styles.gridItemContainer} onPress={handlePressForNavigation}>
           <Image
             source={getCoverImageUrl({ coverImageAsString: comicseries.coverImageAsString })}
             style={styles.gridItemImage}
@@ -147,7 +147,7 @@ export function ComicSeriesDetails({ comicseries, pageType, isHeaderVisible, onH
             recyclingKey={comicseries.uuid}
             priority={imagePriority || 'normal'}
           />
-        </View>
+        </PressableOpacity>
       );
 
     case 'comicseries-screen':
@@ -350,17 +350,12 @@ const styles = StyleSheet.create({
   },
   gridItemContainer: {
     flex: 1,
+    marginHorizontal: 2,
+    marginBottom: 4,
   },
   gridItemImage: {
     width: '100%',
     aspectRatio: 2/3,
     borderRadius: 8,
-  },
-  gridItemContent: {
-    padding: 4,
-    paddingTop: 6,
-  },
-  gridItemTitle: {
-    textAlign: 'center',
   },
 }); 

@@ -993,6 +993,8 @@ export type Query = {
   getUserById?: Maybe<User>;
   /** Get a user by their username */
   getUserByUsername?: Maybe<User>;
+  /** Get the current user's subscribed comics */
+  getUserSubscribedComics?: Maybe<Array<Maybe<ComicSeries>>>;
   /** Get the current authenticated user */
   me?: Maybe<User>;
   /**  Search for a term  */
@@ -1098,6 +1100,12 @@ export type QueryGetUserByUsernameArgs = {
 };
 
 
+export type QueryGetUserSubscribedComicsArgs = {
+  limitPerPage?: InputMaybe<Scalars['Int']['input']>;
+  page?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
 export type QuerySearchArgs = {
   filterForGenres?: InputMaybe<Array<InputMaybe<Genre>>>;
   filterForTags?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -1153,8 +1161,16 @@ export type User = {
   email?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   isEmailVerified?: Maybe<Scalars['Boolean']['output']>;
+  subscriptions?: Maybe<Array<Maybe<ComicSeries>>>;
   updatedAt?: Maybe<Scalars['Int']['output']>;
   username?: Maybe<Scalars['String']['output']>;
+};
+
+
+/** User Type */
+export type UserSubscriptionsArgs = {
+  limitPerPage?: InputMaybe<Scalars['Int']['input']>;
+  page?: InputMaybe<Scalars['Int']['input']>;
 };
 
 /** Age range buckets for users */
@@ -1502,6 +1518,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getRecentlyUpdatedComicSeries?: Resolver<Maybe<ResolversTypes['HomeScreenComicSeries']>, ParentType, ContextType, Partial<QueryGetRecentlyUpdatedComicSeriesArgs>>;
   getUserById?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryGetUserByIdArgs, 'id'>>;
   getUserByUsername?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryGetUserByUsernameArgs, 'username'>>;
+  getUserSubscribedComics?: Resolver<Maybe<Array<Maybe<ResolversTypes['ComicSeries']>>>, ParentType, ContextType, Partial<QueryGetUserSubscribedComicsArgs>>;
   me?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   search?: Resolver<Maybe<ResolversTypes['SearchResults']>, ParentType, ContextType, Partial<QuerySearchArgs>>;
 }>;
@@ -1521,6 +1538,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   isEmailVerified?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  subscriptions?: Resolver<Maybe<Array<Maybe<ResolversTypes['ComicSeries']>>>, ParentType, ContextType, Partial<UserSubscriptionsArgs>>;
   updatedAt?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   username?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

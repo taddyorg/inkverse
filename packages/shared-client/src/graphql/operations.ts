@@ -990,6 +990,8 @@ export type Query = {
   getUserById?: Maybe<User>;
   /** Get a user by their username */
   getUserByUsername?: Maybe<User>;
+  /** Get the current user's subscribed comics */
+  getUserSubscribedComics?: Maybe<Array<Maybe<ComicSeries>>>;
   /** Get the current authenticated user */
   me?: Maybe<User>;
   /**  Search for a term  */
@@ -1095,6 +1097,12 @@ export type QueryGetUserByUsernameArgs = {
 };
 
 
+export type QueryGetUserSubscribedComicsArgs = {
+  limitPerPage?: InputMaybe<Scalars['Int']['input']>;
+  page?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
 export type QuerySearchArgs = {
   filterForGenres?: InputMaybe<Array<InputMaybe<Genre>>>;
   filterForTags?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -1150,8 +1158,16 @@ export type User = {
   email?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   isEmailVerified?: Maybe<Scalars['Boolean']['output']>;
+  subscriptions?: Maybe<Array<Maybe<ComicSeries>>>;
   updatedAt?: Maybe<Scalars['Int']['output']>;
   username?: Maybe<Scalars['String']['output']>;
+};
+
+
+/** User Type */
+export type UserSubscriptionsArgs = {
+  limitPerPage?: InputMaybe<Scalars['Int']['input']>;
+  page?: InputMaybe<Scalars['Int']['input']>;
 };
 
 /** Age range buckets for users */
@@ -1323,19 +1339,12 @@ export type GetMiniCreatorQueryVariables = Exact<{
 
 export type GetMiniCreatorQuery = { __typename?: 'Query', getCreator?: { __typename?: 'Creator', uuid: string, name?: string | null, shortUrl?: string | null, avatarImageAsString?: string | null, links?: Array<{ __typename?: 'LinkDetails', url?: string | null, type?: LinkType | null } | null> | null } | null };
 
-export type GetMiniUserByIdQueryVariables = Exact<{
+export type GetProfileByUserIdQueryVariables = Exact<{
   id: Scalars['ID']['input'];
 }>;
 
 
-export type GetMiniUserByIdQuery = { __typename?: 'Query', getUserById?: { __typename?: 'User', id: string, username?: string | null } | null };
-
-export type GetUserByIdQueryVariables = Exact<{
-  id: Scalars['ID']['input'];
-}>;
-
-
-export type GetUserByIdQuery = { __typename?: 'Query', getUserById?: { __typename?: 'User', id: string, username?: string | null, email?: string | null, isEmailVerified?: boolean | null, ageRange?: UserAgeRange | null, birthYear?: number | null, blueskyDid?: string | null } | null };
+export type GetProfileByUserIdQuery = { __typename?: 'Query', getUserById?: { __typename?: 'User', id: string, username?: string | null } | null, getUserSubscribedComics?: Array<{ __typename?: 'ComicSeries', uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null } | null> | null };
 
 export type GetUserByUsernameQueryVariables = Exact<{
   username: Scalars['String']['input'];
@@ -1469,13 +1478,13 @@ export const MiniCreatorDetails = gql`
 }
     `;
 export const MiniUserDetails = gql`
-    fragment MiniUserDetails on User {
+    fragment miniUserDetails on User {
   id
   username
 }
     `;
 export const UserDetails = gql`
-    fragment UserDetails on User {
+    fragment userDetails on User {
   id
   username
   email
@@ -1526,7 +1535,7 @@ export const SubscribeToMultipleComicSeries = gql`
 export const UpdateUserEmail = gql`
     mutation UpdateUserEmail($email: String!) {
   updateUserEmail(email: $email) {
-    ...UserDetails
+    ...userDetails
   }
 }
     ${UserDetails}`;
@@ -1537,7 +1546,7 @@ export const UpdateUserProfile = gql`
     ageRange: $ageRange
     birthYear: $birthYear
   ) {
-    ...UserDetails
+    ...userDetails
   }
 }
     ${UserDetails}`;
@@ -1645,7 +1654,7 @@ export const GetList = gql`
 export const GetMeDetails = gql`
     query GetMeDetails {
   me {
-    ...MiniUserDetails
+    ...miniUserDetails
   }
 }
     ${MiniUserDetails}`;
@@ -1663,24 +1672,21 @@ export const GetMiniCreator = gql`
   }
 }
     ${MiniCreatorDetails}`;
-export const GetMiniUserById = gql`
-    query GetMiniUserById($id: ID!) {
+export const GetProfileByUserId = gql`
+    query GetProfileByUserId($id: ID!) {
   getUserById(id: $id) {
-    ...MiniUserDetails
+    ...miniUserDetails
+  }
+  getUserSubscribedComics(limitPerPage: 100, page: 1) {
+    ...miniComicSeriesDetails
   }
 }
-    ${MiniUserDetails}`;
-export const GetUserById = gql`
-    query GetUserById($id: ID!) {
-  getUserById(id: $id) {
-    ...UserDetails
-  }
-}
-    ${UserDetails}`;
+    ${MiniUserDetails}
+${MiniComicSeriesDetails}`;
 export const GetUserByUsername = gql`
     query GetUserByUsername($username: String!) {
   getUserByUsername(username: $username) {
-    ...MiniUserDetails
+    ...miniUserDetails
   }
 }
     ${MiniUserDetails}`;

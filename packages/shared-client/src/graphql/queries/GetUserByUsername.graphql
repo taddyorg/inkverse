@@ -1,5 +1,5 @@
 query GetUserByUsername($username: String!) {
   getUserByUsername(username: $username) {
-    ...MiniUserDetails
+    ...miniUserDetails
   }
 }

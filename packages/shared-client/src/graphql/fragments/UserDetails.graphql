@@ -1,5 +1,5 @@
 # Complete user details fragment with all user information
-fragment UserDetails on User {
+fragment userDetails on User {
   id
   username
   email
