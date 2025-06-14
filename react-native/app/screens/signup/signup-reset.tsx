@@ -11,7 +11,7 @@ import {
 import { Screen, ThemedView, ThemedText, PressableOpacity } from '@/app/components/ui';
 import { useThemeColor } from '@/constants/Colors';
 import config from '@/config';
-import { RootStackParamList, SIGNUP_RESET_SCREEN, SIGNUP_USERNAME_SCREEN } from '@/constants/Navigation';
+import { RootStackParamList, SIGNUP_NOTIFICATIONS_SCREEN, SIGNUP_RESET_SCREEN, SIGNUP_USERNAME_SCREEN } from '@/constants/Navigation';
 import { getUserDetails, mobileStorageFunctions } from '@/lib/auth/user';
 import { getUserApolloClient } from '@/lib/apollo';
 import { fetchAllHostingProviderTokens } from '@inkverse/shared-client/dispatch/hosting-provider';
@@ -49,7 +49,7 @@ export function SignupResetScreen() {
       navigation.navigate(SIGNUP_USERNAME_SCREEN);
     } else if (user) {
       // Dismiss the entire modal by navigating to parent
-      navigation.getParent()?.goBack();
+      navigation.navigate(SIGNUP_NOTIFICATIONS_SCREEN, { isReturningUser: true });
     }
   }
 

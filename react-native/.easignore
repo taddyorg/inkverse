@@ -43,9 +43,3 @@ yarn-error.*
 
 # vscode
 .vscode/
-
-# google services
-google-services.json
-
-/ios
-/android

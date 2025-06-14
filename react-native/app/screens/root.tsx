@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Platform, useColorScheme, ColorSchemeName, Linking } from 'react-native';
+import { Platform, useColorScheme, ColorSchemeName } from 'react-native';
 import { NavigationContainer, ParamListBase, RouteProp, LinkingOptions, NavigationContainerRef } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -28,9 +28,7 @@ import { EditEmailScreen } from './profile-edit/edit-email';
 import { EditPatreonScreen } from './profile-edit/edit-patreon';
 import { EditBlueskyScreen } from './profile-edit/edit-bluesky';
 
-// import { SignupScreen } from './signup';
-import { SignupScreen } from './signup/index-for-dev';
-
+import { SignupScreen } from './signup';
 import { SignupEmailScreen } from './signup/signup-email';
 import { SignupResetScreen } from './signup/signup-reset';
 import { SignupUsernameScreen } from './signup/signup-username';
@@ -38,6 +36,7 @@ import { SignupAgeScreen } from './signup/signup-age';
 import { SignupPatreonScreen } from './signup/signup-patreon';
 import { SignupBlueskyScreen } from './signup/signup-bluesky';
 import { SignupCompleteScreen } from './signup/signup-complete';
+import { SignupNotificationsScreen } from './signup/signup-notifications';
 import { AppLoaderProvider } from '../components/providers/AppLoaderProvider';
 import { AuthRefreshProvider } from '../components/providers/AuthRefreshProvider';
 import { WrappedComicSeriesScreen } from './wrapped-screens/wrappedcomicseries';
@@ -80,6 +79,7 @@ import {
   SIGNUP_PATREON_SCREEN,
   SIGNUP_BLUESKY_SCREEN,
   SIGNUP_COMPLETE_SCREEN,
+  SIGNUP_NOTIFICATIONS_SCREEN,
   EDIT_PROFILE_SCREEN,
   EDIT_USERNAME_SCREEN,
   EDIT_AGE_SCREEN,
@@ -160,7 +160,7 @@ const profileScreenConfig = {
 };
 
 const editProfileScreenConfig = {
-  name: EDIT_PROFILE_SCREEN as typeof EDIT_PROFILE_SCREEN,
+  name: EDIT_PROFILE_SCREEN as keyof RootStackParamList,
   component: EditProfileScreen,
   options: {
     title: '',
@@ -169,7 +169,7 @@ const editProfileScreenConfig = {
 };
 
 const editUsernameScreenConfig = {
-  name: EDIT_USERNAME_SCREEN as typeof EDIT_USERNAME_SCREEN,
+  name: EDIT_USERNAME_SCREEN as keyof RootStackParamList,
   component: EditUsernameScreen,
   options: {
     title: '',
@@ -178,7 +178,7 @@ const editUsernameScreenConfig = {
 };
 
 const editAgeScreenConfig = {
-  name: EDIT_AGE_SCREEN as typeof EDIT_AGE_SCREEN,
+  name: EDIT_AGE_SCREEN as keyof RootStackParamList,
   component: EditAgeScreen,
   options: {
     title: '',
@@ -187,7 +187,7 @@ const editAgeScreenConfig = {
 };
 
 const editEmailScreenConfig = {
-  name: EDIT_EMAIL_SCREEN as typeof EDIT_EMAIL_SCREEN,
+  name: EDIT_EMAIL_SCREEN as keyof RootStackParamList,
   component: EditEmailScreen,
   options: {
     title: '',
@@ -196,7 +196,7 @@ const editEmailScreenConfig = {
 };
 
 const editPatreonScreenConfig = {
-  name: EDIT_PATREON_SCREEN as typeof EDIT_PATREON_SCREEN,
+  name: EDIT_PATREON_SCREEN as keyof RootStackParamList,
   component: EditPatreonScreen,
   options: {
     title: '',
@@ -205,7 +205,7 @@ const editPatreonScreenConfig = {
 };
 
 const editBlueskyScreenConfig = {
-  name: EDIT_BLUESKY_SCREEN as typeof EDIT_BLUESKY_SCREEN,
+  name: EDIT_BLUESKY_SCREEN as keyof RootStackParamList,
   component: EditBlueskyScreen,
   options: {
     title: '',
@@ -483,6 +483,10 @@ function App() {
         <SignupStack.Screen 
           name={SIGNUP_AGE_SCREEN} 
           component={SignupAgeScreen}
+        />
+        <SignupStack.Screen 
+          name={SIGNUP_NOTIFICATIONS_SCREEN} 
+          component={SignupNotificationsScreen}
         />
         <SignupStack.Screen 
           name={SIGNUP_PATREON_SCREEN} 

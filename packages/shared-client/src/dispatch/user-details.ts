@@ -4,6 +4,7 @@ import {
   UpdateUserProfile, 
   UpdateUserEmail,
   SaveBlueskyDid,
+  SavePushToken,
   GetComicsFromBlueskyCreators,
   GetComicsFromPatreonCreators,
   GetBlueskyProfile,
@@ -18,6 +19,8 @@ import type {
   UpdateUserEmailMutationVariables,
   SaveBlueskyDidMutation,
   SaveBlueskyDidMutationVariables,
+  SavePushTokenMutation,
+  SavePushTokenMutationVariables,
   GetBlueskyProfileQuery,
   GetBlueskyProfileQueryVariables,
   GetComicsFromBlueskyCreatorsQuery,
@@ -44,6 +47,7 @@ export interface UserDetailsState {
   patreonComicSeries: ComicSeries[] | null;
   patreonSubscriptionLoading: boolean;
   patreonSubscriptionError: string | null;
+  pushNotificationSuccess: boolean;
   isLoading: boolean;
   error: string | null;
 }
@@ -59,6 +63,7 @@ export const userDetailsInitialState: UserDetailsState = {
   patreonComicSeries: null,
   patreonSubscriptionLoading: false,
   patreonSubscriptionError: null,
+  pushNotificationSuccess: false,
   isLoading: false,
   error: null,
 };
@@ -79,6 +84,9 @@ export enum UserDetailsActionType {
   PATREON_SUBSCRIPTION_START = 'PATREON_SUBSCRIPTION_START',
   PATREON_SUBSCRIPTION_SUCCESS = 'PATREON_SUBSCRIPTION_SUCCESS',
   PATREON_SUBSCRIPTION_ERROR = 'PATREON_SUBSCRIPTION_ERROR',
+  PUSH_NOTIFICATION_START = 'PUSH_NOTIFICATION_START',
+  PUSH_NOTIFICATION_SUCCESS = 'PUSH_NOTIFICATION_SUCCESS',
+  PUSH_NOTIFICATION_ERROR = 'PUSH_NOTIFICATION_ERROR',
 }
 
 type UserDetailsAction =
@@ -96,7 +104,10 @@ type UserDetailsAction =
   | { type: UserDetailsActionType.PATREON_COMIC_SERIES_SUCCESS; payload: ComicSeries[] }
   | { type: UserDetailsActionType.PATREON_SUBSCRIPTION_START }
   | { type: UserDetailsActionType.PATREON_SUBSCRIPTION_SUCCESS }
-  | { type: UserDetailsActionType.PATREON_SUBSCRIPTION_ERROR; payload: string };
+  | { type: UserDetailsActionType.PATREON_SUBSCRIPTION_ERROR; payload: string }
+  | { type: UserDetailsActionType.PUSH_NOTIFICATION_START }
+  | { type: UserDetailsActionType.PUSH_NOTIFICATION_SUCCESS }
+  | { type: UserDetailsActionType.PUSH_NOTIFICATION_ERROR; payload: string };
 
 export const userDetailsReducer = (state: UserDetailsState, action: UserDetailsAction): UserDetailsState => {
   switch (action.type) {
@@ -186,6 +197,27 @@ export const userDetailsReducer = (state: UserDetailsState, action: UserDetailsA
         ...state,
         patreonSubscriptionLoading: false,
         patreonSubscriptionError: action.payload,
+      };
+    case UserDetailsActionType.PUSH_NOTIFICATION_START:
+      return {
+        ...state,
+        isLoading: true,
+        error: null,
+        pushNotificationSuccess: false,
+      };
+    case UserDetailsActionType.PUSH_NOTIFICATION_SUCCESS:
+      return {
+        ...state,
+        isLoading: false,
+        error: null,
+        pushNotificationSuccess: true,
+      };
+    case UserDetailsActionType.PUSH_NOTIFICATION_ERROR:
+      return {
+        ...state,
+        isLoading: false,
+        error: action.payload,
+        pushNotificationSuccess: false,
       };
     default:
       return state;
@@ -734,5 +766,49 @@ export async function subscribeToPatreonComics(
     }
     console.error('Failed to subscribe to Patreon comics:', error);
     throw new Error(error?.message || 'Failed to subscribe to Patreon comics');
+  }
+}
+
+interface SavePushTokenParams {
+  userClient: ApolloClient<any>;
+  fcmToken: string;
+  platform: string;
+}
+
+export async function savePushToken(
+  { userClient, fcmToken, platform }: SavePushTokenParams,
+  dispatch?: Dispatch<UserDetailsAction>
+): Promise<boolean> {
+  if (dispatch) dispatch({ type: UserDetailsActionType.PUSH_NOTIFICATION_START });
+
+  try {
+    const result: FetchResult<SavePushTokenMutation> = await userClient.mutate<
+      SavePushTokenMutation,
+      SavePushTokenMutationVariables
+    >({
+      mutation: SavePushToken,
+      variables: { fcmToken, platform },
+    });
+
+    const { data, errors } = result;
+
+    if (errors) {
+      throw new Error(errors[0]?.message || 'Failed to save push token');
+    }
+
+    if (data?.savePushToken === undefined) {
+      throw new Error('Failed to save push token');
+    }
+
+    if (dispatch) {
+      dispatch({ type: UserDetailsActionType.PUSH_NOTIFICATION_SUCCESS });
+    }
+
+    return data.savePushToken;
+  } catch (error: any) {
+    if (dispatch) {
+      dispatch({ type: UserDetailsActionType.PUSH_NOTIFICATION_ERROR, payload: error?.message || 'Failed to save push token' });
+    }
+    throw error;
   }
 }

@@ -21,6 +21,12 @@ import { WrappedHostingProviderScreenParams } from "@/app/screens/wrapped-screen
 import { SignupResetScreenParams } from "@/app/screens/signup/signup-reset";
 import { SignupPatreonScreenParams } from "@/app/screens/signup/signup-patreon";
 import { SignupBlueskyScreenParams } from "@/app/screens/signup/signup-bluesky";
+import { EditUsernameScreenParams } from "@/app/screens/profile-edit/edit-username";
+import { EditAgeScreenParams } from "@/app/screens/profile-edit/edit-age";
+import { EditEmailScreenParams } from "@/app/screens/profile-edit/edit-email";
+import { EditPatreonScreenParams } from "@/app/screens/profile-edit/edit-patreon";
+import { EditBlueskyScreenParams } from "@/app/screens/profile-edit/edit-bluesky";
+import { SignupNotificationsScreenParams } from "@/app/screens/signup/signup-notifications";
 
 export const HOME_TAB = "HomeTab";
 export const SEARCH_TAB = "SearchTab";
@@ -50,6 +56,7 @@ export const SIGNUP_EMAIL_SCREEN = "SignupEmailScreen";
 export const SIGNUP_RESET_SCREEN = "SignupResetScreen";
 export const SIGNUP_USERNAME_SCREEN = "SignupUsernameScreen";
 export const SIGNUP_AGE_SCREEN = "SignupAgeScreen";
+export const SIGNUP_NOTIFICATIONS_SCREEN = "SignupNotificationsScreen";
 export const SIGNUP_PATREON_SCREEN = "SignupPatreonScreen";
 export const SIGNUP_BLUESKY_SCREEN = "SignupBlueskyScreen";
 export const SIGNUP_COMPLETE_SCREEN = "SignupCompleteScreen";
@@ -89,15 +96,16 @@ export type RootStackParamList = {
   [SIGNUP_RESET_SCREEN]: SignupResetScreenParams | undefined;
   [SIGNUP_USERNAME_SCREEN]: undefined;
   [SIGNUP_AGE_SCREEN]: undefined;
+  [SIGNUP_NOTIFICATIONS_SCREEN]: SignupNotificationsScreenParams | undefined;
   [SIGNUP_PATREON_SCREEN]: SignupPatreonScreenParams | undefined;
   [SIGNUP_BLUESKY_SCREEN]: SignupBlueskyScreenParams | undefined;
   [SIGNUP_COMPLETE_SCREEN]: undefined;
   [EDIT_PROFILE_SCREEN]: undefined;
-  [EDIT_USERNAME_SCREEN]: { passedInUsername?: string } | undefined;
-  [EDIT_AGE_SCREEN]: { passedInAgeRange?: UserAgeRange; passedInBirthYear?: number } | undefined;
-  [EDIT_EMAIL_SCREEN]: { passedInEmail?: string } | undefined;
-  [EDIT_PATREON_SCREEN]: { context?: 'signup' | 'profile' } | undefined;
-  [EDIT_BLUESKY_SCREEN]: { context?: 'signup' | 'profile' } | undefined;
+  [EDIT_USERNAME_SCREEN]: EditUsernameScreenParams | undefined;
+  [EDIT_AGE_SCREEN]: EditAgeScreenParams | undefined;
+  [EDIT_EMAIL_SCREEN]: EditEmailScreenParams | undefined;
+  [EDIT_PATREON_SCREEN]: EditPatreonScreenParams | undefined;
+  [EDIT_BLUESKY_SCREEN]: EditBlueskyScreenParams | undefined;
 };
 
 interface ResetNavigationToContentScreenParams {

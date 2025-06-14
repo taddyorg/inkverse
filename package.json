@@ -24,8 +24,8 @@
     "@graphql-codegen/typescript-document-nodes": "4.0.16",
     "@graphql-codegen/typescript-operations": "4.6.1",
     "@graphql-codegen/typescript-resolvers": "4.5.1",
-    "typescript": "^5.7.2",
-    "concurrently": "^9.1.2"
+    "concurrently": "^9.1.2",
+    "typescript": "^5.7.2"
   },
   "scripts": {
     "graphql-codegen": "echo 'Generating GraphQL types for @inkverse/public...' && graphql-codegen --config packages/public/src/graphql/codegen.ts && echo 'Generating GraphQL types for @inkverse/shared-client...' && graphql-codegen --config packages/shared-client/src/graphql/codegen.ts && echo 'Generating GraphQL types for @inkverse/shared-server...' && graphql-codegen --config packages/shared-server/src/graphql/codegen.ts",

@@ -2,7 +2,7 @@ import axios from 'axios';
 
 import { AuthenticationError, UserInputError } from './error.js';
 import type { ComicSeriesModel, UserModel } from '@inkverse/shared-server/database/types';
-import { User, OAuthToken, CreatorLink, ComicSeries, UserSeriesSubscription } from '@inkverse/shared-server/models/index';
+import { User, OAuthToken, CreatorLink, ComicSeries, UserSeriesSubscription, UserDevice } from '@inkverse/shared-server/models/index';
 import { UserAgeRange, type MutationResolvers, LinkType } from '@inkverse/shared-server/graphql/types';
 import { getAllFollows, getProfile, type BlueskyFollower, type BlueskyProfile } from '@inkverse/shared-server/bluesky/index';
 import { getNewAccessToken, TADDY_HOSTING_PROVIDER_UUID } from '@inkverse/public/hosting-providers';
@@ -144,6 +144,11 @@ export const UserMutationsDefinitions = `
   Subscribe to multiple comic series
   """
   subscribeToMultipleComicSeries(seriesUuids: [ID!]!): Boolean!
+
+  """
+  Save a push notification token for the user's device
+  """
+  savePushToken(fcmToken: String!, platform: String!): Boolean!
 
 `;
 
@@ -428,6 +433,24 @@ export const UserMutations: MutationResolvers = {
     await sendEmail(data);
 
     return true;
+  },
+
+  savePushToken: async (_parent: any, { fcmToken, platform }: { fcmToken: string, platform: string }, context: any): Promise<boolean> => {
+    if (!context.user) {
+      throw new AuthenticationError('You must be logged in to save a push token');
+    }
+
+    if (!fcmToken || !platform) {
+      throw new UserInputError('FCM token and platform are required');
+    }
+
+    try {
+      await UserDevice.savePushToken(context.user.id, fcmToken, platform);
+      return true;
+    } catch (error) {
+      console.error('Error saving push token:', error);
+      throw new Error('Failed to save push token');
+    }
   },
 };
 

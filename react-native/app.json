@@ -24,6 +24,7 @@
       "associatedDomains": [
         "applinks:inkverse.co"
       ],
+      "appleTeamId": "4AF4P2U4ZF",
       "usesAppleSignIn": true
     },
     "android": {
@@ -36,6 +37,7 @@
       "permissions": [
         "android.permission.INTERNET"
       ],
+      "googleServicesFile": "./google-services.json",
       "intentFilters": [
         {
           "action": "VIEW",
@@ -54,6 +56,7 @@
       ]
     },
     "plugins": [
+      "@bacons/apple-targets",
       [
         "@sentry/react-native/expo",
         {
@@ -91,6 +94,12 @@
         }
       ],
       "expo-apple-authentication",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icons/android-push.png",
+        }
+      ],
       [
         "expo-secure-store",
         {

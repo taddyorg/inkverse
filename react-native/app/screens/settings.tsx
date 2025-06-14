@@ -1,5 +1,5 @@
-import React, { memo, useState } from 'react';
-import { StyleSheet, Platform, Appearance, useColorScheme, Switch, View } from 'react-native';
+import React, { memo, useState, useRef } from 'react';
+import { StyleSheet, Platform, Appearance, useColorScheme, Switch, View, Animated } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { useNavigation } from '@react-navigation/native';
@@ -35,6 +35,7 @@ export function SettingsScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const [isDarkMode, setIsDarkMode] = useState(colorScheme === 'dark');
   const user = getUserDetails();
+  const checkmarkOpacity = useRef(new Animated.Value(0)).current;
   
   // Section 1: Main settings handlers
   const updateProfilePressed = () => {
@@ -93,6 +94,22 @@ export function SettingsScreen() {
   const clearImageCacheButtonPressed = () => {
     Image.clearMemoryCache();
     Image.clearDiskCache();
+    
+    // Show checkmark animation
+    checkmarkOpacity.setValue(1);
+    Animated.sequence([
+      Animated.timing(checkmarkOpacity, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(checkmarkOpacity, {
+        toValue: 0,
+        duration: 200,
+        delay: 500,
+        useNativeDriver: true,
+      }),
+    ]).start();
   };
 
   // Section 3: About us handlers
@@ -177,7 +194,7 @@ export function SettingsScreen() {
     // { id: 'signup', type: 'button', name: '✨ Unlock Your Profile!', onPress: signupButtonPressed },
     { id: 'add-your-comic', type: 'button', name: '✚ Publish your webtoon on Inkverse', onPress: addYourComicButtonPressed },
     { id: 'rate-app', type: 'button', name: `🏅 Rate App (5 stars 🙏)`, onPress: rateAppButtonPressed },
-    { id: 'clear-image-cache', type: 'button', name: '🗑 Clear Image Cache', onPress: clearImageCacheButtonPressed },
+    { id: 'clear-image-cache', type: 'button', name: '🗑️ Manually clear Image Cache', onPress: clearImageCacheButtonPressed },
     ...(user ? [{ id: 'logout', type: 'button' as const, name: '✌️ Logout', onPress: logoutButtonPressed }] : []),
   ];
 
@@ -228,7 +245,7 @@ export function SettingsScreen() {
   const renderSettingItem = ({ item, index }: { item: SettingItem; index: number }) => {
     if (item.type === 'light-dark-toggle') {
       return renderLightDarkToggle(item);
-    }else if (item.type === 'screen-header') {
+    } else if (item.type === 'screen-header') {
       return renderScreenHeader();
     } else {
       return (
@@ -241,9 +258,26 @@ export function SettingsScreen() {
             <ThemedText style={styles.settingText} numberOfLines={1}>
               {item.name}
             </ThemedText>
-            <ThemedIcon size="small" style={styles.chevronIcon}>
-              <FontAwesome5 name="chevron-right" />
-            </ThemedIcon>
+            <View style={styles.iconStack}>
+              {item.id === 'clear-image-cache' ? (
+                <>
+                  <Animated.View style={[styles.iconAbsolute, { opacity: checkmarkOpacity }]}>
+                    <ThemedIcon size="small">
+                      <FontAwesome5 name="check" />
+                    </ThemedIcon>
+                  </Animated.View>
+                  <Animated.View style={[styles.iconAbsolute, { opacity: Animated.subtract(1, checkmarkOpacity) }]}>
+                    <ThemedIcon size="small">
+                      <FontAwesome5 name="chevron-right" />
+                    </ThemedIcon>
+                  </Animated.View>
+                </>
+              ) : (
+                <ThemedIcon size="small">
+                  <FontAwesome5 name="chevron-right" />
+                </ThemedIcon>
+              )}
+            </View>
           </ThemedView>
         </PressableOpacity>
       );
@@ -347,7 +381,27 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   chevronIcon: {
-    alignSelf: 'center',
+    // Remove alignSelf, let container handle alignment
+    // alignSelf: 'center', // REMOVE THIS
+    // If you want to add a right margin to all icons, do it here:
+    // marginRight: 0,
+  },
+  iconStack: {
+    width: 28, // slightly larger to match the visual space of the chevron
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 0, // match chevronIcon if it has margin
+    marginRight: 0, // match chevronIcon if it has margin
+  },
+  iconAbsolute: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    bottom: 0,
+    left: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   combinedSectionContainer: {
     marginTop: 32,

@@ -882,6 +882,8 @@ export type Mutation = {
   resendVerificationEmail: Scalars['Boolean']['output'];
   /** Save or update the user's Bluesky handle */
   saveBlueskyDid?: Maybe<User>;
+  /** Save a push notification token for the user's device */
+  savePushToken: Scalars['Boolean']['output'];
   /** Subscribe to multiple comic series */
   subscribeToMultipleComicSeries: Scalars['Boolean']['output'];
   /** Subscribe to a comic series */
@@ -908,6 +910,12 @@ export type MutationReportComicSeriesArgs = {
 
 export type MutationSaveBlueskyDidArgs = {
   did: Scalars['String']['input'];
+};
+
+
+export type MutationSavePushTokenArgs = {
+  fcmToken: Scalars['String']['input'];
+  platform: Scalars['String']['input'];
 };
 
 
@@ -1466,6 +1474,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   reportComicSeries?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationReportComicSeriesArgs, 'uuid'>>;
   resendVerificationEmail?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   saveBlueskyDid?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationSaveBlueskyDidArgs, 'did'>>;
+  savePushToken?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationSavePushTokenArgs, 'fcmToken' | 'platform'>>;
   subscribeToMultipleComicSeries?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationSubscribeToMultipleComicSeriesArgs, 'seriesUuids'>>;
   subscribeToSeries?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationSubscribeToSeriesArgs, 'seriesUuid'>>;
   unsubscribeFromSeries?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationUnsubscribeFromSeriesArgs, 'seriesUuid'>>;

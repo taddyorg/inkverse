@@ -11,7 +11,7 @@ import { updateAgeRange } from '@inkverse/shared-client/dispatch/user-details';
 import { Screen, ThemedView, HeaderBackButton } from '@/app/components/ui';
 import { SetupAge } from '@/app/components/profile/SetupAge';
 import { useThemeColor } from '@/constants/Colors';
-import { SIGNUP_PATREON_SCREEN } from '@/constants/Navigation';
+import { SIGNUP_NOTIFICATIONS_SCREEN } from '@/constants/Navigation';
 import { getUserApolloClient } from '@/lib/apollo';
 
 export function SignupAgeScreen() {
@@ -45,8 +45,8 @@ export function SignupAgeScreen() {
         dispatch as any
       );
 
-      // Navigate to Patreon screen after successful update
-      navigation.navigate(SIGNUP_PATREON_SCREEN);
+      // Navigate to Notifications screen after successful update
+      navigation.navigate(SIGNUP_NOTIFICATIONS_SCREEN);
     } catch (err: any) {
       dispatch({ type: AuthActionType.AUTH_ERROR, payload: err.message });
     }

@@ -181,3 +181,13 @@ export type UserSeriesSubscriptionModel = {
   userId: number;
   seriesUuid: string;
 }
+
+export type UserDeviceModel = {
+  id: number;
+  createdAt: Date;
+  updatedAt: Date | null;
+  userId: number;
+  fcmToken: string;
+  platform: string;
+  isProvisional: boolean | null;
+}

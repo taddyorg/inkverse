@@ -879,6 +879,8 @@ export type Mutation = {
   resendVerificationEmail: Scalars['Boolean']['output'];
   /** Save or update the user's Bluesky handle */
   saveBlueskyDid?: Maybe<User>;
+  /** Save a push notification token for the user's device */
+  savePushToken: Scalars['Boolean']['output'];
   /** Subscribe to multiple comic series */
   subscribeToMultipleComicSeries: Scalars['Boolean']['output'];
   /** Subscribe to a comic series */
@@ -905,6 +907,12 @@ export type MutationReportComicSeriesArgs = {
 
 export type MutationSaveBlueskyDidArgs = {
   did: Scalars['String']['input'];
+};
+
+
+export type MutationSavePushTokenArgs = {
+  fcmToken: Scalars['String']['input'];
+  platform: Scalars['String']['input'];
 };
 
 
@@ -1204,6 +1212,14 @@ export type SaveBlueskyDidMutationVariables = Exact<{
 
 export type SaveBlueskyDidMutation = { __typename?: 'Mutation', saveBlueskyDid?: { __typename?: 'User', id: string, blueskyDid?: string | null } | null };
 
+export type SavePushTokenMutationVariables = Exact<{
+  fcmToken: Scalars['String']['input'];
+  platform: Scalars['String']['input'];
+}>;
+
+
+export type SavePushTokenMutation = { __typename?: 'Mutation', savePushToken: boolean };
+
 export type SubscribeToMultipleComicSeriesMutationVariables = Exact<{
   seriesUuids: Array<Scalars['ID']['input']> | Scalars['ID']['input'];
 }>;
@@ -1495,6 +1511,11 @@ export const SaveBlueskyDid = gql`
     id
     blueskyDid
   }
+}
+    `;
+export const SavePushToken = gql`
+    mutation SavePushToken($fcmToken: String!, $platform: String!) {
+  savePushToken(fcmToken: $fcmToken, platform: $platform)
 }
     `;
 export const SubscribeToMultipleComicSeries = gql`

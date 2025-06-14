@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useReducer, useRef } from 'react';
 import { View, ScrollView, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { RootStackParamList, EDIT_PROFILE_SCREEN, EDIT_USERNAME_SCREEN, EDIT_AGE_SCREEN, EDIT_EMAIL_SCREEN, EDIT_PATREON_SCREEN, EDIT_BLUESKY_SCREEN } from '@/constants/Navigation';
+import { useNavigation } from '@react-navigation/native';
+import { RootStackParamList, EDIT_USERNAME_SCREEN, EDIT_AGE_SCREEN, EDIT_EMAIL_SCREEN, EDIT_PATREON_SCREEN, EDIT_BLUESKY_SCREEN } from '@/constants/Navigation';
 import { HeaderBackButton, ThemedRefreshControl, ThemedText, ThemedView } from '@/app/components/ui';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useThemeColor, Colors } from '@/constants/Colors';
@@ -15,8 +15,6 @@ import { userDetailsReducer, userDetailsInitialState, getMeDetails } from '@inkv
 import type { ApolloClient, NormalizedCacheObject } from '@apollo/client';
 import { getUserDetails } from '@/lib/auth/user';
 
-type Props = NativeStackScreenProps<RootStackParamList, typeof EDIT_PROFILE_SCREEN>;
-
 interface ProfileProperty {
   type: 'list' | 'action';
   label: string;
@@ -25,7 +23,8 @@ interface ProfileProperty {
   navigateParams?: any;
 }
 
-export function EditProfileScreen({ navigation }: Props) {
+export function EditProfileScreen() {
+  const navigation = useNavigation();
   const userClient = getUserApolloClient();
   const userClientRef = useRef<ApolloClient<NormalizedCacheObject> | null>(null);
   userClientRef.current = userClient;

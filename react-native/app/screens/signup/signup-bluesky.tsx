@@ -17,6 +17,10 @@ import { BlueskyConnected } from '@/app/components/profile/BlueskyConnected';
 import { getUserApolloClient } from '@/lib/apollo';
 import { SIGNUP_COMPLETE_SCREEN } from '@/constants/Navigation';
 
+export interface SignupBlueskyScreenParams {
+  context?: 'signup' | 'profile';
+}
+
 export function SignupBlueskyScreen() {
   const navigation = useNavigation();
   const [currentStep, setCurrentStep] = useState<'bluesky' | 'bluesky-verify' | 'bluesky-connected'>('bluesky');

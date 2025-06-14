@@ -1,0 +1,3 @@
+mutation SavePushToken($fcmToken: String!, $platform: String!) {
+  savePushToken(fcmToken: $fcmToken, platform: $platform)
+}

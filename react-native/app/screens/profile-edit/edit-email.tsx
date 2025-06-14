@@ -7,7 +7,7 @@ import { SetupEmail } from '@/app/components/profile/SetupEmail';
 import { getUserApolloClient } from '@/lib/apollo';
 import { userDetailsReducer, userDetailsInitialState, updateUserEmail } from '@inkverse/shared-client/dispatch/user-details';
 import type { ApolloClient, NormalizedCacheObject } from '@apollo/client';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { mobileStorageFunctions } from '@/lib/auth/user';
 
 export interface EditEmailScreenParams {
@@ -16,7 +16,7 @@ export interface EditEmailScreenParams {
 
 export function EditEmailScreen() {
   const navigation = useNavigation();
-  const route = useRoute<NativeStackScreenProps<RootStackParamList, typeof EDIT_EMAIL_SCREEN>['route']>();
+  const route = useRoute<RouteProp<{ params: EditEmailScreenParams }, 'params'>>();
   const { passedInEmail } = route.params || {};
   const [email, setEmail] = useState(passedInEmail || '');
 

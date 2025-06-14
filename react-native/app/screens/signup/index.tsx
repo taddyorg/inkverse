@@ -22,16 +22,11 @@ import { ThemedView, ThemedText, PressableOpacity } from '@/app/components/ui';
 import { Colors, useThemeColor } from '@/constants/Colors';
 import { SPACING } from '@/constants/Spacing';
 import { SvgXml } from 'react-native-svg';
-import { SIGNUP_EMAIL_SCREEN, SIGNUP_USERNAME_SCREEN } from '@/constants/Navigation';
+import { SIGNUP_EMAIL_SCREEN, SIGNUP_NOTIFICATIONS_SCREEN, SIGNUP_USERNAME_SCREEN } from '@/constants/Navigation';
 import * as AppleAuthentication from 'expo-apple-authentication';
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import config from '@/config';
 import { getUserDetails, mobileStorageFunctions } from '@/lib/auth/user';
 import { saveHostingProviderRefreshToken, refreshHostingProviderAccessToken } from '@/lib/auth/hosting-provider';
-
-import {
-  signUpWithGoogle,
-} from "react-native-credentials-manager";
 import { getUserApolloClient } from '@/lib/apollo';
 import { fetchAllHostingProviderTokens } from '@inkverse/shared-client/dispatch/hosting-provider';
 
@@ -40,9 +35,10 @@ export function SignupScreen() {
   const [authState, dispatch] = useReducer(authReducer, authInitialState);
   const colorScheme = useColorScheme();
 
-  if (Platform.OS === 'ios') {
+  if (Platform.OS === 'ios' && !__DEV__) {
+    const { GoogleSignin } = require('@react-native-google-signin/google-signin');
     GoogleSignin.configure({
-      scopes: ['email'], // what API you want to access on behalf of the user, default is email and profile
+      scopes: ['email'],
       iosClientId: config.GOOGLE_CLIENT_ID_IOS,
     });
   }
@@ -71,7 +67,7 @@ export function SignupScreen() {
       navigation.navigate(SIGNUP_USERNAME_SCREEN);
     } else if (user) {
       //close modal
-      navigation.getParent()?.goBack();
+      navigation.navigate(SIGNUP_NOTIFICATIONS_SCREEN, { isReturningUser: true });
     }
   }
 
@@ -79,8 +75,8 @@ export function SignupScreen() {
     try {
       dispatch({ type: AuthActionType.AUTH_START_PROVIDER, payload: AuthProvider.GOOGLE });
       
-      // TODO: Implement actual Google OAuth flow
-      if (Platform.OS === 'ios') {
+      if (Platform.OS === 'ios' && !__DEV__) {
+        const { GoogleSignin } = require('@react-native-google-signin/google-signin');
         const user = await GoogleSignin.signIn();
         if (user?.data?.idToken) {
           dispatchLoginWithGoogle(
@@ -97,6 +93,7 @@ export function SignupScreen() {
           dispatch({ type: AuthActionType.AUTH_ERROR, payload: 'Google login failed' });
         }
       } else {
+        const { signUpWithGoogle } = require('react-native-credentials-manager');
         const googleCredential = await signUpWithGoogle({
           serverClientId: config.GOOGLE_CLIENT_ID_ANDROID,
           autoSelectEnabled: true,
