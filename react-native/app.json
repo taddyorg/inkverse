@@ -93,11 +93,17 @@
           }
         }
       ],
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.485860487313-mecvs6na5ih575klndmmiu3li1ikjiod"
+        }
+      ],
       "expo-apple-authentication",
       [
         "expo-notifications",
         {
-          "icon": "./assets/icons/android-push.png",
+          "icon": "./assets/icons/android-push.png"
         }
       ],
       [

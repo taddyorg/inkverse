@@ -16,7 +16,7 @@ const httpLink = new HttpLink({
 const authLink = setContext(async (_, { headers }) => {
   // Get token from secure storage
   const token = await getValidToken();
-  if (!token) { throw new Error('No token found'); }
+  if (!token) { throw new Error('setContext - No refresh or access token found'); }
   
   return {
     headers: {

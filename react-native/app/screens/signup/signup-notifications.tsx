@@ -39,6 +39,8 @@ export function SignupNotificationsScreen() {
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
   const primaryColor = useThemeColor({}, 'tint');
+  const errorColor = useThemeColor({}, 'error');
+  const buttonTextColor = useThemeColor({}, 'buttonText');
 
   const handleEnableNotifications = async () => {
     dispatch({ type: UserDetailsActionType.USER_DETAILS_CLEAR_ERROR });
@@ -116,8 +118,8 @@ export function SignupNotificationsScreen() {
             {/* Buttons */}
             {/* Error Display */}
             {userDetailsState.error && (
-              <View style={[styles.errorContainer, { backgroundColor: '#ff4444' + '20' }]}>
-                <ThemedText style={[styles.errorText, { color: '#ff4444' }]}>
+              <View style={[styles.errorContainer, { backgroundColor: errorColor + '20' }]}>
+                <ThemedText style={[styles.errorText, { color: errorColor }]}>
                   {userDetailsState.error}
                 </ThemedText>
               </View>
@@ -135,13 +137,19 @@ export function SignupNotificationsScreen() {
                 accessibilityLabel="Enable notifications"
                 accessibilityHint="Double tap to enable push notifications"
               >
-                {userDetailsState.isLoading ? (
-                  <ThemedActivityIndicator />
-                ) : (
-                  <ThemedText style={[styles.primaryButtonText, { color: 'white' }]}>
+                <View style={styles.buttonContent}>
+                  {userDetailsState.isLoading && (
+                    <ThemedActivityIndicator 
+                      size='small'
+                      passedInLightColor={buttonTextColor} 
+                      passedInDarkColor={buttonTextColor}
+                      style={styles.loadingIndicator}
+                    />
+                  )}
+                  <ThemedText style={[styles.primaryButtonText, { color: buttonTextColor }]}>
                     Enable Notifications
                   </ThemedText>
-                )}
+                </View>
               </PressableOpacity>
 
               <PressableOpacity
@@ -242,6 +250,7 @@ const styles = StyleSheet.create({
   },
   primaryButtonText: {
     fontSize: 17,
+    fontFamily: ThemedTextFontFamilyMap.semiBold,
   },
   secondaryButton: {
     paddingVertical: SPACING.md,
@@ -259,5 +268,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     opacity: 0.6,
     lineHeight: 16,
+  },
+  buttonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: SPACING.sm,
+  },
+  loadingIndicator: {
+    marginLeft: SPACING.xs,
   },
 });
