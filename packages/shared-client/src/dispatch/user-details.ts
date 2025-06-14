@@ -11,6 +11,7 @@ import {
   SubscribeToMultipleComicSeries,
   UserAgeRange,
   GetProfileByUserId,
+  GetMeDetails,
 } from '../graphql/operations';
 import type { 
   UpdateUserProfileMutation, 
@@ -32,6 +33,8 @@ import type {
   ComicSeries,
   GetProfileByUserIdQueryVariables,
   GetProfileByUserIdQuery,
+  GetMeDetailsQuery,
+  GetMeDetailsQueryVariables,
 } from '../graphql/operations';
 import type { StorageFunctions } from './utils';
 import axios from 'axios';
@@ -236,23 +239,21 @@ interface UpdateUsernameParams {
 
 interface GetMeDetailsParams {
   userClient: ApolloClient<any>;
-  userId: string;
   forceRefresh?: boolean;
 }
 
 export async function getMeDetails(
-  { userClient, userId, forceRefresh }: GetMeDetailsParams,
+  { userClient, forceRefresh }: GetMeDetailsParams,
   dispatch?: Dispatch<UserDetailsAction>
 ): Promise<any> {
   if (dispatch) dispatch({ type: UserDetailsActionType.USER_DETAILS_START });
 
   try {
     const result = await userClient.query<
-      GetProfileByUserIdQuery,
-      GetProfileByUserIdQueryVariables
+      GetMeDetailsQuery,
+      GetMeDetailsQueryVariables
     >({
-      query: GetProfileByUserId,
-      variables: { id: userId },
+      query: GetMeDetails,
       ...(forceRefresh ? { fetchPolicy: 'network-only' } : {}),
     });
 
@@ -262,11 +263,11 @@ export async function getMeDetails(
       throw new Error(errors[0]?.message || 'Failed to get user details');
     }
 
-    if (!data?.getUserById) {
+    if (!data?.me) {
       throw new Error('Failed to get user details');
     }
 
-    const user = data.getUserById;
+    const user = data.me;
 
     if (dispatch) {
       dispatch({ type: UserDetailsActionType.USER_DETAILS_SUCCESS, payload: user });

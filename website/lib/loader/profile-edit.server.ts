@@ -1,7 +1,7 @@
 import type { LoaderFunctionArgs } from 'react-router';
 import { redirect } from 'react-router';
 import { getUserApolloClient } from '@/lib/apollo/client.server';
-import { GetUserById, type User } from '@inkverse/shared-client/graphql/operations';
+import { GetMeDetails, GetProfileByUserId, type User } from '@inkverse/shared-client/graphql/operations';
 import { jwtDecode, type JwtPayload } from 'jwt-decode';
 import { getRefreshToken } from '../auth/cookie';
 
@@ -29,16 +29,16 @@ export async function loadProfileEdit({ request }: LoaderFunctionArgs): Promise<
     const userClient = getUserApolloClient(request);
 
     const { data } = await userClient.query({
-      query: GetUserById,
-      variables: { id: userId },
+      query: GetMeDetails,
     });
 
-    if (!data?.getUserById) {
+    if (!data?.me) {
+      console.log('User not found');
       throw redirect('/');
     }
 
     return {
-      user: data.getUserById
+      user: data.me
     };
   } catch (error) {
     console.error('Error fetching user for profile edit:', error);

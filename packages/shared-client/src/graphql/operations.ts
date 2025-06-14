@@ -1321,7 +1321,7 @@ export type GetListQuery = { __typename?: 'Query', getList?: { __typename?: 'Lis
 export type GetMeDetailsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetMeDetailsQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, username?: string | null } | null };
+export type GetMeDetailsQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, username?: string | null, email?: string | null, isEmailVerified?: boolean | null, ageRange?: UserAgeRange | null, birthYear?: number | null, blueskyDid?: string | null } | null };
 
 export type GetMiniComicSeriesQueryVariables = Exact<{
   uuid?: InputMaybe<Scalars['ID']['input']>;
@@ -1654,10 +1654,10 @@ export const GetList = gql`
 export const GetMeDetails = gql`
     query GetMeDetails {
   me {
-    ...miniUserDetails
+    ...userDetails
   }
 }
-    ${MiniUserDetails}`;
+    ${UserDetails}`;
 export const GetMiniComicSeries = gql`
     query GetMiniComicSeries($uuid: ID, $shortUrl: String) {
   getComicSeries(uuid: $uuid, shortUrl: $shortUrl) {
@@ -1677,7 +1677,7 @@ export const GetProfileByUserId = gql`
   getUserById(id: $id) {
     ...miniUserDetails
   }
-  getUserSubscribedComics(limitPerPage: 100, page: 1) {
+  getUserSubscribedComics(limitPerPage: 1000, page: 1) {
     ...miniComicSeriesDetails
   }
 }

@@ -4,9 +4,9 @@ import { type GetUserByUsernameQuery, GetUserByUsername, type GetUserByUsernameQ
 import { handleLoaderError } from "./error-handler";
 import { getRefreshToken } from "@/lib/auth/cookie";
 import { jwtDecode, type JwtPayload } from 'jwt-decode';
-import { type ProfileState, fetchUserData, parseProfileData } from "@inkverse/shared-client/dispatch/profile";
+import { type ProfileState, loadProfileById } from "@inkverse/shared-client/dispatch/profile";
 
-export async function loadProfile({ params, request }: LoaderFunctionArgs): Promise<ProfileState> {
+export async function loadProfile({ params, request, context }: LoaderFunctionArgs): Promise<ProfileState> {
   const { username } = params;
   
   if (!username) {
@@ -26,6 +26,7 @@ export async function loadProfile({ params, request }: LoaderFunctionArgs): Prom
     if (!userIdFromUsername) {
       return {
         user: null,
+        subscribedComics: null,
         isLoading: false,
         error: null,
         apolloState: publicClient.extract(),
@@ -44,15 +45,22 @@ export async function loadProfile({ params, request }: LoaderFunctionArgs): Prom
     }
 
     // Step 2: Fetch user data using the helper function
-    const profileData = await fetchUserData({
+    const profileData = await loadProfileById({
       publicClient,
       userClient,
       userId: userIdFromUsername,
       currentUserId,
     });
 
-    // Step 3: Parse the profile data
-    const parsedData = parseProfileData(profileData);
+    if (!profileData) {
+      return {
+        user: null,
+        subscribedComics: null,
+        isLoading: false,
+        error: null,
+        apolloState: publicClient.extract(),
+      };
+    }
 
     // Step 4: Extract Apollo state from the appropriate client
     const apolloState = (currentUserId && userClient && currentUserId === userIdFromUsername)
@@ -60,7 +68,7 @@ export async function loadProfile({ params, request }: LoaderFunctionArgs): Prom
       : publicClient.extract();
 
     return {
-      ...parsedData,
+      ...profileData,
       apolloState,
     };
     
@@ -69,6 +77,7 @@ export async function loadProfile({ params, request }: LoaderFunctionArgs): Prom
     const errorResult = handleLoaderError(error, 'Profile');
     return {
       user: null,
+      subscribedComics: null,
       isLoading: false,
       error: errorResult,
       apolloState: {},

@@ -30,7 +30,7 @@ import 'katex/dist/katex.min.css'
 import { fetchAllHostingProviderTokens } from "@inkverse/shared-client/dispatch/hosting-provider";
 import { saveHostingProviderRefreshToken, refreshHostingProviderAccessToken } from "@/lib/auth/hosting-provider";
 import { getRefreshToken } from "@/lib/auth/cookie";
-import { getMeDetails } from "@inkverse/shared-client/dispatch/profile";
+import { getAndSaveMeDetails } from "@inkverse/shared-client/dispatch/profile";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -88,7 +88,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             const accessToken = await refreshAccessToken();
             if (accessToken) {
               const userClient = getUserApolloClient();
-              await getMeDetails({ userClient, storageFunctions: webStorageFunctions });
+              await getAndSaveMeDetails({ userClient, storageFunctions: webStorageFunctions });
             }
 
         } else if (hasRefreshToken && hasRefreshTokenExpired) {

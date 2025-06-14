@@ -4,6 +4,8 @@ import { loadProfile } from '@/lib/loader/profile.server';
 import { getMetaTags } from '@/lib/seo';
 import { inkverseWebsiteUrl } from '@inkverse/public/utils';
 import { getUserDetails } from '@/lib/auth/user';
+import type { ComicSeries } from '@inkverse/shared-client/graphql/operations';
+import { ComicSeriesDetails } from '../components/comics/ComicSeriesDetails';
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   if (!data) { return []; }
@@ -39,6 +41,8 @@ function ProfileScreen() {
     );
   }
 
+  const subscriptions = profileData.subscribedComics || [];
+
   return (
     <div className="max-w-3xl mx-auto sm:p-6 lg:p-8">
       <div className="rounded-lg p-6">
@@ -54,6 +58,35 @@ function ProfileScreen() {
             >
               Edit your profile
             </Link>
+          )}
+        </div>
+
+        {/* Your Comics Section */}
+        <div className="mt-8">          
+          {subscriptions.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-gray-600 dark:text-gray-400">
+                {isOwnProfile 
+                  ? "When you add a comic to your profile, it will show up here"
+                  : `No comics added to ${profileData.user.username}'s profile, yet...`
+                }
+              </p>
+            </div>
+          ) : (
+            <>
+              <h2 className="text-xl font-semibold mb-4">Your Comics</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                {subscriptions.map((comic: ComicSeries) => {
+                  return (
+                    <ComicSeriesDetails
+                      key={comic.uuid}
+                      comicseries={comic}
+                      pageType="cover"
+                    />
+                  );
+                })}
+              </div>
+            </>
           )}
         </div>
       </div>

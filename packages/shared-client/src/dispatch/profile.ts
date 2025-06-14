@@ -76,7 +76,7 @@ export interface GetMeDetailsParams {
   storageFunctions: StorageFunctions;
 }
 
-export async function getMeDetails(
+export async function getAndSaveMeDetails(
   { userClient, storageFunctions }: GetMeDetailsParams): Promise<User | null> {
   try {
     const { data } = await userClient.query<
@@ -139,9 +139,9 @@ export async function loadProfileByUsername(
 // Load profile by ID (for React Native)
 export async function loadProfileById(
   { publicClient, userClient, userId, currentUserId, forceRefresh = false }: LoadProfileByIdProps,
-  dispatch: UtilsDispatch
-) {
-  dispatch(GET_PROFILE.request());
+  dispatch?: UtilsDispatch
+): Promise<ProfileState | null> {
+  dispatch?.(GET_PROFILE.request());
   
   try {
     const client = currentUserId && userClient && currentUserId === userId ? userClient : publicClient;
@@ -156,9 +156,14 @@ export async function loadProfileById(
 
     const parsedData = parseProfileData(data);
 
-    dispatch(GET_PROFILE.success(parsedData));
+    dispatch?.(GET_PROFILE.success(parsedData));
+
+    return parsedData;
   } catch (error: Error | unknown) {
-    errorHandlerFactory(dispatch, GET_PROFILE)(error);
+    if (dispatch) {
+      errorHandlerFactory(dispatch, GET_PROFILE)(error);
+    }
+    return null;
   }
 }
 

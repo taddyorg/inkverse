@@ -64,7 +64,6 @@ export function EditProfileScreen() {
       if (userClientRef.current) {
         await getMeDetails({
           userClient: userClientRef.current as any,
-          userId: user.id,
           forceRefresh,
         }, userDetailsDispatch);
       }
