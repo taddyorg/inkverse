@@ -19,7 +19,7 @@ export const UserComicSeriesQueriesDefinitions = `
   """
   Get user's relationship data for a specific comic series
   """
-  userComicSeriesData(seriesUuid: ID!): UserComicSeries
+  getUserComicSeries(seriesUuid: ID!): UserComicSeries
 `;
 
 // Mutation Definitions
@@ -37,7 +37,7 @@ export const UserComicSeriesMutationsDefinitions = `
 
 // Resolvers
 export const UserComicSeriesQueries = {
-  userComicSeriesData: async (_parent: any, { seriesUuid }: { seriesUuid: string }, context: any) => {
+  getUserComicSeries: async (_parent: any, { seriesUuid }: { seriesUuid: string }, context: any) => {
     if (!context.user) {
       throw new AuthenticationError('You must be logged in to get user comic data');
     }

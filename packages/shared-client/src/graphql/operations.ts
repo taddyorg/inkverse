@@ -990,14 +990,14 @@ export type Query = {
   getUserById?: Maybe<User>;
   /** Get a user by their username */
   getUserByUsername?: Maybe<User>;
+  /** Get user's relationship data for a specific comic series */
+  getUserComicSeries?: Maybe<UserComicSeries>;
   /** Get the current user's subscribed comics */
   getUserSubscribedComics?: Maybe<Array<Maybe<ComicSeries>>>;
   /** Get the current authenticated user */
   me?: Maybe<User>;
   /**  Search for a term  */
   search?: Maybe<SearchResults>;
-  /** Get user's relationship data for a specific comic series */
-  userComicSeriesData?: Maybe<UserComicSeries>;
 };
 
 
@@ -1099,6 +1099,11 @@ export type QueryGetUserByUsernameArgs = {
 };
 
 
+export type QueryGetUserComicSeriesArgs = {
+  seriesUuid: Scalars['ID']['input'];
+};
+
+
 export type QueryGetUserSubscribedComicsArgs = {
   limitPerPage?: InputMaybe<Scalars['Int']['input']>;
   page?: InputMaybe<Scalars['Int']['input']>;
@@ -1112,11 +1117,6 @@ export type QuerySearchArgs = {
   limitPerPage?: InputMaybe<Scalars['Int']['input']>;
   page?: InputMaybe<Scalars['Int']['input']>;
   term?: InputMaybe<Scalars['String']['input']>;
-};
-
-
-export type QueryUserComicSeriesDataArgs = {
-  seriesUuid: Scalars['ID']['input'];
 };
 
 /**  A search result  */
@@ -1382,12 +1382,12 @@ export type GetUserByUsernameQueryVariables = Exact<{
 
 export type GetUserByUsernameQuery = { __typename?: 'Query', getUserByUsername?: { __typename?: 'User', id: string, username?: string | null } | null };
 
-export type GetUserComicDataQueryVariables = Exact<{
+export type GetUserComicSeriesQueryVariables = Exact<{
   seriesUuid: Scalars['ID']['input'];
 }>;
 
 
-export type GetUserComicDataQuery = { __typename?: 'Query', userComicSeriesData?: { __typename?: 'UserComicSeries', seriesUuid: string, isSubscribed: boolean, isRecommended: boolean } | null };
+export type GetUserComicSeriesQuery = { __typename?: 'Query', getUserComicSeries?: { __typename?: 'UserComicSeries', seriesUuid: string, isSubscribed: boolean, isRecommended: boolean } | null };
 
 export type HomeScreenQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1744,9 +1744,9 @@ export const GetUserByUsername = gql`
   }
 }
     ${MiniUserDetails}`;
-export const GetUserComicData = gql`
-    query GetUserComicData($seriesUuid: ID!) {
-  userComicSeriesData(seriesUuid: $seriesUuid) {
+export const GetUserComicSeries = gql`
+    query GetUserComicSeries($seriesUuid: ID!) {
+  getUserComicSeries(seriesUuid: $seriesUuid) {
     seriesUuid
     isSubscribed
     isRecommended

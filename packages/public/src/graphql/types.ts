@@ -991,14 +991,14 @@ export type Query = {
   getUserById?: Maybe<User>;
   /** Get a user by their username */
   getUserByUsername?: Maybe<User>;
+  /** Get user's relationship data for a specific comic series */
+  getUserComicSeries?: Maybe<UserComicSeries>;
   /** Get the current user's subscribed comics */
   getUserSubscribedComics?: Maybe<Array<Maybe<ComicSeries>>>;
   /** Get the current authenticated user */
   me?: Maybe<User>;
   /**  Search for a term  */
   search?: Maybe<SearchResults>;
-  /** Get user's relationship data for a specific comic series */
-  userComicSeriesData?: Maybe<UserComicSeries>;
 };
 
 
@@ -1100,6 +1100,11 @@ export type QueryGetUserByUsernameArgs = {
 };
 
 
+export type QueryGetUserComicSeriesArgs = {
+  seriesUuid: Scalars['ID']['input'];
+};
+
+
 export type QueryGetUserSubscribedComicsArgs = {
   limitPerPage?: InputMaybe<Scalars['Int']['input']>;
   page?: InputMaybe<Scalars['Int']['input']>;
@@ -1113,11 +1118,6 @@ export type QuerySearchArgs = {
   limitPerPage?: InputMaybe<Scalars['Int']['input']>;
   page?: InputMaybe<Scalars['Int']['input']>;
   term?: InputMaybe<Scalars['String']['input']>;
-};
-
-
-export type QueryUserComicSeriesDataArgs = {
-  seriesUuid: Scalars['ID']['input'];
 };
 
 /**  A search result  */
@@ -1533,10 +1533,10 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getRecentlyUpdatedComicSeries?: Resolver<Maybe<ResolversTypes['HomeScreenComicSeries']>, ParentType, ContextType, Partial<QueryGetRecentlyUpdatedComicSeriesArgs>>;
   getUserById?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryGetUserByIdArgs, 'id'>>;
   getUserByUsername?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryGetUserByUsernameArgs, 'username'>>;
+  getUserComicSeries?: Resolver<Maybe<ResolversTypes['UserComicSeries']>, ParentType, ContextType, RequireFields<QueryGetUserComicSeriesArgs, 'seriesUuid'>>;
   getUserSubscribedComics?: Resolver<Maybe<Array<Maybe<ResolversTypes['ComicSeries']>>>, ParentType, ContextType, Partial<QueryGetUserSubscribedComicsArgs>>;
   me?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   search?: Resolver<Maybe<ResolversTypes['SearchResults']>, ParentType, ContextType, Partial<QuerySearchArgs>>;
-  userComicSeriesData?: Resolver<Maybe<ResolversTypes['UserComicSeries']>, ParentType, ContextType, RequireFields<QueryUserComicSeriesDataArgs, 'seriesUuid'>>;
 }>;
 
 export type SearchResultsResolvers<ContextType = any, ParentType extends ResolversParentTypes['SearchResults'] = ResolversParentTypes['SearchResults']> = ResolversObject<{

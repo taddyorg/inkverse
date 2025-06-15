@@ -1,6 +1,6 @@
 import type { ApolloClient, ApolloQueryResult } from '@apollo/client';
 import { asyncAction, ActionTypes, errorHandlerFactory, type Dispatch, type Action } from './utils.js';
-import { type GetComicSeriesQuery, type GetComicSeriesQueryVariables, SortOrder, GetComicSeries, type ComicIssue, type ComicSeries, GetMiniComicSeries, type GetMiniComicSeriesQuery, type GetMiniComicSeriesQueryVariables, type GetUserComicDataQuery, type GetUserComicDataQueryVariables, GetUserComicData, type SubscribeToSeriesMutation, type SubscribeToSeriesMutationVariables, SubscribeToSeries, type UnsubscribeFromSeriesMutation, type UnsubscribeFromSeriesMutationVariables, UnsubscribeFromSeries } from "../graphql/operations.js";
+import { type GetComicSeriesQuery, type GetComicSeriesQueryVariables, SortOrder, GetComicSeries, type ComicIssue, type ComicSeries, GetMiniComicSeries, type GetMiniComicSeriesQuery, type GetMiniComicSeriesQueryVariables, type SubscribeToSeriesMutation, type SubscribeToSeriesMutationVariables, SubscribeToSeries, type UnsubscribeFromSeriesMutation, type UnsubscribeFromSeriesMutationVariables, UnsubscribeFromSeries, GetUserComicSeries, type GetUserComicSeriesQuery, type GetUserComicSeriesQueryVariables } from "../graphql/operations.js";
 
 /* Actions */
 export const GET_COMICSERIES = asyncAction(ActionTypes.GET_COMICSERIES);
@@ -92,15 +92,15 @@ export async function loadUserComicData({ userClient, seriesUuid, forceRefresh =
   dispatch(GET_USER_COMIC_DATA.request());
 
   try {
-    const result = await userClient.query<GetUserComicDataQuery, GetUserComicDataQueryVariables>({
-      query: GetUserComicData,
+    const result = await userClient.query<GetUserComicSeriesQuery, GetUserComicSeriesQueryVariables>({
+      query: GetUserComicSeries,
       variables: { seriesUuid },
       ...(!!forceRefresh && { fetchPolicy: 'network-only' })
     });
 
-    const userComicData = result.data?.userComicSeriesData ? {
-      isSubscribed: result.data.userComicSeriesData.isSubscribed,
-      isRecommended: result.data.userComicSeriesData.isRecommended,
+    const userComicData = result.data?.getUserComicSeries ? {
+      isSubscribed: result.data.getUserComicSeries.isSubscribed,
+      isRecommended: result.data.getUserComicSeries.isRecommended,
     } : null;
 
     dispatch(GET_USER_COMIC_DATA.success({ userComicData }));
