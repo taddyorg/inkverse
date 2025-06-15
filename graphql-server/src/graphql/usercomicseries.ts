@@ -1,6 +1,6 @@
 import { AuthenticationError } from './error.js';
-import { UserSeriesSubscription } from '@inkverse/shared-server/models/index';
-import type { MutationResolvers } from '@inkverse/shared-server/graphql/types';
+import { UserSeriesSubscription, NotificationPreference } from '@inkverse/shared-server/models/index';
+import { NotificationType, type MutationResolvers } from '@inkverse/shared-server/graphql/types';
 
 // GraphQL Type Definitions
 export const UserComicSeriesDefinitions = `
@@ -11,6 +11,7 @@ export const UserComicSeriesDefinitions = `
     seriesUuid: ID!
     isSubscribed: Boolean!
     isRecommended: Boolean!
+    hasNotificationEnabled: Boolean!
   }
 `;
 
@@ -33,6 +34,16 @@ export const UserComicSeriesMutationsDefinitions = `
   Unsubscribe from a comic series
   """
   unsubscribeFromSeries(seriesUuid: ID!): UserComicSeries!
+
+  """
+  Enable notifications for a comic series
+  """
+  enableNotificationsForSeries(seriesUuid: ID!): UserComicSeries!
+  
+  """
+  Disable notifications for a comic series
+  """
+  disableNotificationsForSeries(seriesUuid: ID!): UserComicSeries!
 `;
 
 // Resolvers
@@ -44,12 +55,20 @@ export const UserComicSeriesQueries = {
 
     try {
       // Get subscription status
-      const subscription = await UserSeriesSubscription.getSubscription(context.user.id, seriesUuid);
+      const [subscription, hasNotificationEnabled] = await Promise.all([
+        UserSeriesSubscription.getSubscription(context.user.id, seriesUuid),
+        NotificationPreference.hasNotificationEnabled(
+          context.user.id,
+          NotificationType.NEW_EPISODE_RELEASED,
+          seriesUuid
+        ),
+      ]);
       
       return {
         seriesUuid,
         isSubscribed: !!subscription,
         isRecommended: false, // Future implementation
+        hasNotificationEnabled,
       };
     } catch (error) {
       console.error('Error getting user comic data:', error);
@@ -66,10 +85,18 @@ export const UserComicSeriesMutations: MutationResolvers = {
 
     await UserSeriesSubscription.subscribeToComicSeries(context.user.id, seriesUuid);
     
+    // Get notification preference
+    const hasNotificationEnabled = await NotificationPreference.hasNotificationEnabled(
+      context.user.id,
+      NotificationType.NEW_EPISODE_RELEASED,
+      seriesUuid
+    );
+    
     return {
       seriesUuid,
       isSubscribed: true,
       isRecommended: false,
+      hasNotificationEnabled,
     };
   },
 
@@ -80,10 +107,70 @@ export const UserComicSeriesMutations: MutationResolvers = {
 
     await UserSeriesSubscription.unsubscribeFromComicSeries(context.user.id, seriesUuid);
     
+    // When unsubscribing, also disable notifications
+    await NotificationPreference.disableNotification(
+      context.user.id,
+      NotificationType.NEW_EPISODE_RELEASED,
+      seriesUuid
+    );
+    
     return {
       seriesUuid,
       isSubscribed: false,
       isRecommended: false,
+      hasNotificationEnabled: false,
+    };
+  },
+
+  enableNotificationsForSeries: async (
+    _parent: any, 
+    { seriesUuid }: { seriesUuid: string }, 
+    context: any
+  ) => {
+    if (!context.user) {
+      throw new AuthenticationError('You must be logged in to enable notifications');
+    }
+
+    await NotificationPreference.enableNotification(
+      context.user.id,
+      NotificationType.NEW_EPISODE_RELEASED,
+      seriesUuid
+    );
+
+    // Get updated subscription status
+    const subscription = await UserSeriesSubscription.getSubscription(context.user.id, seriesUuid);
+
+    return {
+      seriesUuid,
+      isSubscribed: !!subscription,
+      isRecommended: false,
+      hasNotificationEnabled: true,
+    };
+  },
+
+  disableNotificationsForSeries: async (
+    _parent: any, 
+    { seriesUuid }: { seriesUuid: string }, 
+    context: any
+  ) => {
+    if (!context.user) {
+      throw new AuthenticationError('You must be logged in to disable notifications');
+    }
+
+    await NotificationPreference.disableNotification(
+      context.user.id,
+      NotificationType.NEW_EPISODE_RELEASED,
+      seriesUuid
+    );
+
+    // Get updated subscription status
+    const subscription = await UserSeriesSubscription.getSubscription(context.user.id, seriesUuid);
+
+    return {
+      seriesUuid,
+      isSubscribed: !!subscription,
+      isRecommended: false,
+      hasNotificationEnabled: false,
     };
   },
 };

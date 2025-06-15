@@ -12,7 +12,7 @@ import { AddToProfileButton, NotificationButton } from '@/app/components/comics/
 import { getPublicApolloClient, getUserApolloClient } from '@/lib/apollo';
 import { getUserDetails } from '@/lib/auth/user';
 import { ComicIssue, ComicSeries } from '@inkverse/shared-client/graphql/operations';
-import { loadComicSeries, loadUserComicData, subscribeToSeries, unsubscribeFromSeries, comicSeriesQueryReducerDefault, comicSeriesInitialState } from '@inkverse/shared-client/dispatch/comicseries';
+import { loadComicSeries, loadUserComicData, subscribeToSeries, unsubscribeFromSeries, enableNotificationsForSeries, disableNotificationsForSeries, comicSeriesQueryReducerDefault, comicSeriesInitialState } from '@inkverse/shared-client/dispatch/comicseries';
 import { RootStackParamList, COMICSERIES_SCREEN, COMICISSUE_SCREEN, SIGNUP_SCREEN } from '@/constants/Navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ReadNextEpisode } from '../components/comics/ReadNextEpisode';
@@ -43,7 +43,7 @@ export function ComicSeriesScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
 
-  const { isComicSeriesLoading, comicseries, issues, userComicData, isUserDataLoading, isSubscriptionLoading } = comicSeriesState;
+  const { isComicSeriesLoading, comicseries, issues, userComicData, isUserDataLoading, isSubscriptionLoading, isNotificationLoading } = comicSeriesState;
 
   useEffect(() => {
     // Always load public comic series data
@@ -93,17 +93,23 @@ export function ComicSeriesScreen() {
   }, [isLoggedIn, userClient, userComicData?.isSubscribed, uuid]);
 
   const handleGetNotifications = useCallback(async () => {
-    setIsLoadingNotifications(true);
-    
-    try {
-      
-      const newState = !isSubscribedToNotifications;
-      setIsSubscribedToNotifications(newState);
-      
-    } finally {
-      setIsLoadingNotifications(false);
+    if (!isLoggedIn || !userClient) {
+      navigation.navigate(SIGNUP_SCREEN);
+      return;
     }
-  }, [isSubscribedToNotifications, comicseries?.name]);
+
+    try {
+      const hasNotifications = userComicData?.hasNotificationEnabled || false;
+      
+      if (hasNotifications) {
+        await disableNotificationsForSeries({ userClient, seriesUuid: uuid }, dispatch);
+      } else {
+        await enableNotificationsForSeries({ userClient, seriesUuid: uuid }, dispatch);
+      }
+    } catch (error) {
+      console.error('Error updating notifications:', error);
+    }
+  }, [isLoggedIn, userClient, userComicData?.hasNotificationEnabled, uuid]);
 
   const renderItem = useCallback(({ item }: { item: ListItem }) => {
     switch (item.type) {
@@ -127,8 +133,8 @@ export function ComicSeriesScreen() {
               unselectedText='SAVE'
             />
             <NotificationButton
-              isReceivingNotifications={isSubscribedToNotifications}
-              isLoading={isLoadingNotifications}
+              isReceivingNotifications={userComicData?.hasNotificationEnabled || false}
+              isLoading={isNotificationLoading}
               onPress={handleGetNotifications}
             />
           </View>
@@ -157,7 +163,7 @@ export function ComicSeriesScreen() {
       default:
         return null;
     }
-  }, [comicseries, issues, userComicData, isUserDataLoading, isSubscriptionLoading, isSubscribedToNotifications, isLoadingNotifications, isHeaderVisible, setIsHeaderVisible, handleAddToProfile, handleGetNotifications, handleNavigateToIssue]);
+  }, [comicseries, issues, userComicData, isUserDataLoading, isSubscriptionLoading, isNotificationLoading, isHeaderVisible, setIsHeaderVisible, handleAddToProfile, handleGetNotifications, handleNavigateToIssue]);
 
   const keyExtractor = useCallback((item: ListItem) => {
     switch (item.type) {

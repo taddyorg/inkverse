@@ -5,7 +5,7 @@
 
 import { database } from "../database/index.js";
 import type { UserModel } from '@inkverse/shared-server/database/types';
-import { AuthProvider, type UserAgeRange } from "@inkverse/public/graphql/types";
+import { type UserAgeRange } from "@inkverse/public/graphql/types";
 import { generateRandomString } from "../utils/crypto.js";
 import { currentDate } from "../utils/date.js";
 import { addContactToList, removeContactFromList } from "../messaging/email/octopus.js";
@@ -201,6 +201,7 @@ export class User {
         await trx('user_device').where({ user_id: id }).del();
         await trx('oauth_token').where({ user_id: id }).del();
         await trx('userseries_subscriptions').where({ userId: id }).del();
+        await trx('notification_preferences').where({ user_id: id }).del();
         
         // Finally delete the user
         await trx('users').where({ id }).del();

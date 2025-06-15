@@ -1,0 +1,8 @@
+mutation DisableNotificationsForSeries($seriesUuid: ID!) {
+  disableNotificationsForSeries(seriesUuid: $seriesUuid) {
+    seriesUuid
+    isSubscribed
+    isRecommended
+    hasNotificationEnabled
+  }
+}

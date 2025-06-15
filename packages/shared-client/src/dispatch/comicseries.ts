@@ -1,12 +1,14 @@
 import type { ApolloClient, ApolloQueryResult } from '@apollo/client';
 import { asyncAction, ActionTypes, errorHandlerFactory, type Dispatch, type Action } from './utils.js';
-import { type GetComicSeriesQuery, type GetComicSeriesQueryVariables, SortOrder, GetComicSeries, type ComicIssue, type ComicSeries, GetMiniComicSeries, type GetMiniComicSeriesQuery, type GetMiniComicSeriesQueryVariables, type SubscribeToSeriesMutation, type SubscribeToSeriesMutationVariables, SubscribeToSeries, type UnsubscribeFromSeriesMutation, type UnsubscribeFromSeriesMutationVariables, UnsubscribeFromSeries, GetUserComicSeries, type GetUserComicSeriesQuery, type GetUserComicSeriesQueryVariables } from "../graphql/operations.js";
+import { type GetComicSeriesQuery, type GetComicSeriesQueryVariables, SortOrder, GetComicSeries, type ComicIssue, type ComicSeries, GetMiniComicSeries, type GetMiniComicSeriesQuery, type GetMiniComicSeriesQueryVariables, type SubscribeToSeriesMutation, type SubscribeToSeriesMutationVariables, SubscribeToSeries, type UnsubscribeFromSeriesMutation, type UnsubscribeFromSeriesMutationVariables, UnsubscribeFromSeries, GetUserComicSeries, type GetUserComicSeriesQuery, type GetUserComicSeriesQueryVariables, type EnableNotificationsForSeriesMutation, type EnableNotificationsForSeriesMutationVariables, EnableNotificationsForSeries, type DisableNotificationsForSeriesMutation, type DisableNotificationsForSeriesMutationVariables, DisableNotificationsForSeries } from "../graphql/operations.js";
 
 /* Actions */
 export const GET_COMICSERIES = asyncAction(ActionTypes.GET_COMICSERIES);
 export const GET_USER_COMIC_DATA = asyncAction(ActionTypes.GET_USER_COMIC_DATA);
 export const SUBSCRIBE_TO_SERIES = asyncAction(ActionTypes.SUBSCRIBE_TO_SERIES);
 export const UNSUBSCRIBE_FROM_SERIES = asyncAction(ActionTypes.UNSUBSCRIBE_FROM_SERIES);
+export const ENABLE_NOTIFICATIONS_FOR_SERIES = asyncAction(ActionTypes.ENABLE_NOTIFICATIONS_FOR_SERIES);
+export const DISABLE_NOTIFICATIONS_FOR_SERIES = asyncAction(ActionTypes.DISABLE_NOTIFICATIONS_FOR_SERIES);
 
 /* Action Creators */
 interface GetComicSeriesProps {
@@ -101,6 +103,7 @@ export async function loadUserComicData({ userClient, seriesUuid, forceRefresh =
     const userComicData = result.data?.getUserComicSeries ? {
       isSubscribed: result.data.getUserComicSeries.isSubscribed,
       isRecommended: result.data.getUserComicSeries.isRecommended,
+      hasNotificationEnabled: result.data.getUserComicSeries.hasNotificationEnabled,
     } : null;
 
     dispatch(GET_USER_COMIC_DATA.success({ userComicData }));
@@ -151,6 +154,67 @@ export async function unsubscribeFromSeries({ userClient, seriesUuid }: Unsubscr
   }
 }
 
+/* Notification Actions */
+interface EnableNotificationsProps {
+  userClient: ApolloClient<any>;
+  seriesUuid: string;
+}
+
+interface DisableNotificationsProps {
+  userClient: ApolloClient<any>;
+  seriesUuid: string;
+}
+
+export async function enableNotificationsForSeries({ userClient, seriesUuid }: EnableNotificationsProps, dispatch: Dispatch) {
+  dispatch(ENABLE_NOTIFICATIONS_FOR_SERIES.request());
+
+  try {
+    const result = await userClient.mutate<EnableNotificationsForSeriesMutation, EnableNotificationsForSeriesMutationVariables>({
+      mutation: EnableNotificationsForSeries,
+      variables: { seriesUuid }
+    });
+
+    if (result.data?.enableNotificationsForSeries) {
+      dispatch(ENABLE_NOTIFICATIONS_FOR_SERIES.success({ 
+        userComicData: {
+          isSubscribed: result.data.enableNotificationsForSeries.isSubscribed,
+          isRecommended: result.data.enableNotificationsForSeries.isRecommended,
+          hasNotificationEnabled: result.data.enableNotificationsForSeries.hasNotificationEnabled,
+        }
+      }));
+    } else {
+      throw new Error('Failed to enable notifications for series');
+    }
+  } catch (error: Error | unknown) {
+    errorHandlerFactory(dispatch, ENABLE_NOTIFICATIONS_FOR_SERIES)(error);
+  }
+}
+
+export async function disableNotificationsForSeries({ userClient, seriesUuid }: DisableNotificationsProps, dispatch: Dispatch) {
+  dispatch(DISABLE_NOTIFICATIONS_FOR_SERIES.request());
+
+  try {
+    const result = await userClient.mutate<DisableNotificationsForSeriesMutation, DisableNotificationsForSeriesMutationVariables>({
+      mutation: DisableNotificationsForSeries,
+      variables: { seriesUuid }
+    });
+
+    if (result.data?.disableNotificationsForSeries) {
+      dispatch(DISABLE_NOTIFICATIONS_FOR_SERIES.success({ 
+        userComicData: {
+          isSubscribed: result.data.disableNotificationsForSeries.isSubscribed,
+          isRecommended: result.data.disableNotificationsForSeries.isRecommended,
+          hasNotificationEnabled: result.data.disableNotificationsForSeries.hasNotificationEnabled,
+        }
+      }));
+    } else {
+      throw new Error('Failed to disable notifications for series');
+    }
+  } catch (error: Error | unknown) {
+    errorHandlerFactory(dispatch, DISABLE_NOTIFICATIONS_FOR_SERIES)(error);
+  }
+}
+
 export function parseLoaderComicSeries(data: GetComicSeriesQuery): ComicSeriesLoaderData {
   return {
     isComicSeriesLoading: false,
@@ -163,6 +227,8 @@ export function parseLoaderComicSeries(data: GetComicSeriesQuery): ComicSeriesLo
     userDataError: null,
     isSubscriptionLoading: false,
     subscriptionError: null,
+    isNotificationLoading: false,
+    notificationError: null,
   };
 }
 
@@ -173,11 +239,14 @@ export type ComicSeriesLoaderData = {
   userComicData: {
     isSubscribed: boolean;
     isRecommended: boolean;
+    hasNotificationEnabled: boolean;
   } | null;
   isUserDataLoading: boolean;
   userDataError: string | null;
   isSubscriptionLoading: boolean;
   subscriptionError: string | null;
+  isNotificationLoading: boolean;
+  notificationError: string | null;
   apolloState?: Record<string, any>;
 };
 
@@ -190,6 +259,8 @@ export const comicSeriesInitialState: ComicSeriesLoaderData = {
   userDataError: null,
   isSubscriptionLoading: false,
   subscriptionError: null,
+  isNotificationLoading: false,
+  notificationError: null,
 }
 
 /* Reducers */
@@ -262,6 +333,44 @@ export function comicSeriesQueryReducerDefault(state = comicSeriesInitialState, 
         ...state,
         isSubscriptionLoading: false,
         subscriptionError: action.payload?.message || 'Failed to unsubscribe from series',
+      };
+    case ENABLE_NOTIFICATIONS_FOR_SERIES.REQUEST:
+      return {
+        ...state,
+        isNotificationLoading: true,
+        notificationError: null,
+      };
+    case ENABLE_NOTIFICATIONS_FOR_SERIES.SUCCESS:
+      return {
+        ...state,
+        ...action.payload,
+        isNotificationLoading: false,
+        notificationError: null,
+      };
+    case ENABLE_NOTIFICATIONS_FOR_SERIES.FAILURE:
+      return {
+        ...state,
+        isNotificationLoading: false,
+        notificationError: action.payload?.message || 'Failed to enable notifications for series',
+      };
+    case DISABLE_NOTIFICATIONS_FOR_SERIES.REQUEST:
+      return {
+        ...state,
+        isNotificationLoading: true,
+        notificationError: null,
+      };
+    case DISABLE_NOTIFICATIONS_FOR_SERIES.SUCCESS:
+      return {
+        ...state,
+        ...action.payload,
+        isNotificationLoading: false,
+        notificationError: null,
+      };
+    case DISABLE_NOTIFICATIONS_FOR_SERIES.FAILURE:
+      return {
+        ...state,
+        isNotificationLoading: false,
+        notificationError: action.payload?.message || 'Failed to disable notifications for series',
       };
     default:
       return state;

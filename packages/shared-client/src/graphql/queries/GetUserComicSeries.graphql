@@ -3,5 +3,6 @@ query GetUserComicSeries($seriesUuid: ID!) {
     seriesUuid
     isSubscribed
     isRecommended
+    hasNotificationEnabled
   }
 }

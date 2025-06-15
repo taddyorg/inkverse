@@ -872,6 +872,10 @@ export enum ListType {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  /** Disable notifications for a comic series */
+  disableNotificationsForSeries: UserComicSeries;
+  /** Enable notifications for a comic series */
+  enableNotificationsForSeries: UserComicSeries;
   /** Fetch all hosting provider tokens for the user */
   fetchAllHostingProviderTokens?: Maybe<Array<Scalars['String']['output']>>;
   /** Fetch user's OAuth tokens for a specific hosting provider */
@@ -894,6 +898,16 @@ export type Mutation = {
   updateUserEmail?: Maybe<User>;
   /** Update user profile (username and age) */
   updateUserProfile?: Maybe<User>;
+};
+
+
+export type MutationDisableNotificationsForSeriesArgs = {
+  seriesUuid: Scalars['ID']['input'];
+};
+
+
+export type MutationEnableNotificationsForSeriesArgs = {
+  seriesUuid: Scalars['ID']['input'];
 };
 
 
@@ -944,6 +958,27 @@ export type MutationUpdateUserProfileArgs = {
   birthYear?: InputMaybe<Scalars['Int']['input']>;
   username?: InputMaybe<Scalars['String']['input']>;
 };
+
+/** User's preference for a specific notification type */
+export type NotificationPreference = {
+  __typename?: 'NotificationPreference';
+  createdAt?: Maybe<Scalars['Int']['output']>;
+  id: Scalars['ID']['output'];
+  notificationType: NotificationType;
+  updatedAt?: Maybe<Scalars['Int']['output']>;
+  userId: Scalars['ID']['output'];
+  value?: Maybe<Scalars['String']['output']>;
+};
+
+/** Input for updating notification preferences */
+export type NotificationPreferenceInput = {
+  notificationType: NotificationType;
+};
+
+/** Types of notifications users can receive */
+export enum NotificationType {
+  NEW_EPISODE_RELEASED = 'NEW_EPISODE_RELEASED'
+}
 
 /**  The privacy types for a list  */
 export enum PrivacyType {
@@ -1191,6 +1226,7 @@ export enum UserAgeRange {
 /** User's relationship with a comic series, including subscription status and reading progress */
 export type UserComicSeries = {
   __typename?: 'UserComicSeries';
+  hasNotificationEnabled: Scalars['Boolean']['output'];
   isRecommended: Scalars['Boolean']['output'];
   isSubscribed: Scalars['Boolean']['output'];
   seriesUuid: Scalars['ID']['output'];
@@ -1295,6 +1331,9 @@ export type ResolversTypes = ResolversObject<{
   List: ResolverTypeWrapper<ListModel>;
   ListType: ListType;
   Mutation: ResolverTypeWrapper<{}>;
+  NotificationPreference: ResolverTypeWrapper<NotificationPreference>;
+  NotificationPreferenceInput: NotificationPreferenceInput;
+  NotificationType: NotificationType;
   PrivacyType: PrivacyType;
   Query: ResolverTypeWrapper<{}>;
   SearchResults: ResolverTypeWrapper<Omit<SearchResults, 'comicSeries' | 'creators'> & { comicSeries?: Maybe<Array<Maybe<ResolversTypes['ComicSeries']>>>, creators?: Maybe<Array<Maybe<ResolversTypes['Creator']>>> }>;
@@ -1326,6 +1365,8 @@ export type ResolversParentTypes = ResolversObject<{
   LinkDetails: LinkDetails;
   List: ListModel;
   Mutation: {};
+  NotificationPreference: NotificationPreference;
+  NotificationPreferenceInput: NotificationPreferenceInput;
   Query: {};
   SearchResults: Omit<SearchResults, 'comicSeries' | 'creators'> & { comicSeries?: Maybe<Array<Maybe<ResolversParentTypes['ComicSeries']>>>, creators?: Maybe<Array<Maybe<ResolversParentTypes['Creator']>>> };
   String: Scalars['String']['output'];
@@ -1502,6 +1543,8 @@ export type ListResolvers<ContextType = any, ParentType extends ResolversParentT
 }>;
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
+  disableNotificationsForSeries?: Resolver<ResolversTypes['UserComicSeries'], ParentType, ContextType, RequireFields<MutationDisableNotificationsForSeriesArgs, 'seriesUuid'>>;
+  enableNotificationsForSeries?: Resolver<ResolversTypes['UserComicSeries'], ParentType, ContextType, RequireFields<MutationEnableNotificationsForSeriesArgs, 'seriesUuid'>>;
   fetchAllHostingProviderTokens?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   fetchRefreshTokenForHostingProvider?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationFetchRefreshTokenForHostingProviderArgs, 'hostingProviderUuid'>>;
   reportComicSeries?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationReportComicSeriesArgs, 'uuid'>>;
@@ -1513,6 +1556,16 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   unsubscribeFromSeries?: Resolver<ResolversTypes['UserComicSeries'], ParentType, ContextType, RequireFields<MutationUnsubscribeFromSeriesArgs, 'seriesUuid'>>;
   updateUserEmail?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationUpdateUserEmailArgs, 'email'>>;
   updateUserProfile?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, Partial<MutationUpdateUserProfileArgs>>;
+}>;
+
+export type NotificationPreferenceResolvers<ContextType = any, ParentType extends ResolversParentTypes['NotificationPreference'] = ResolversParentTypes['NotificationPreference']> = ResolversObject<{
+  createdAt?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  notificationType?: Resolver<ResolversTypes['NotificationType'], ParentType, ContextType>;
+  updatedAt?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  userId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
@@ -1563,6 +1616,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
 }>;
 
 export type UserComicSeriesResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserComicSeries'] = ResolversParentTypes['UserComicSeries']> = ResolversObject<{
+  hasNotificationEnabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   isRecommended?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   isSubscribed?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   seriesUuid?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -1584,6 +1638,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   LinkDetails?: LinkDetailsResolvers<ContextType>;
   List?: ListResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
+  NotificationPreference?: NotificationPreferenceResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   SearchResults?: SearchResultsResolvers<ContextType>;
   User?: UserResolvers<ContextType>;

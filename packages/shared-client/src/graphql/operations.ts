@@ -869,6 +869,10 @@ export enum ListType {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  /** Disable notifications for a comic series */
+  disableNotificationsForSeries: UserComicSeries;
+  /** Enable notifications for a comic series */
+  enableNotificationsForSeries: UserComicSeries;
   /** Fetch all hosting provider tokens for the user */
   fetchAllHostingProviderTokens?: Maybe<Array<Scalars['String']['output']>>;
   /** Fetch user's OAuth tokens for a specific hosting provider */
@@ -891,6 +895,16 @@ export type Mutation = {
   updateUserEmail?: Maybe<User>;
   /** Update user profile (username and age) */
   updateUserProfile?: Maybe<User>;
+};
+
+
+export type MutationDisableNotificationsForSeriesArgs = {
+  seriesUuid: Scalars['ID']['input'];
+};
+
+
+export type MutationEnableNotificationsForSeriesArgs = {
+  seriesUuid: Scalars['ID']['input'];
 };
 
 
@@ -941,6 +955,27 @@ export type MutationUpdateUserProfileArgs = {
   birthYear?: InputMaybe<Scalars['Int']['input']>;
   username?: InputMaybe<Scalars['String']['input']>;
 };
+
+/** User's preference for a specific notification type */
+export type NotificationPreference = {
+  __typename?: 'NotificationPreference';
+  createdAt?: Maybe<Scalars['Int']['output']>;
+  id: Scalars['ID']['output'];
+  notificationType: NotificationType;
+  updatedAt?: Maybe<Scalars['Int']['output']>;
+  userId: Scalars['ID']['output'];
+  value?: Maybe<Scalars['String']['output']>;
+};
+
+/** Input for updating notification preferences */
+export type NotificationPreferenceInput = {
+  notificationType: NotificationType;
+};
+
+/** Types of notifications users can receive */
+export enum NotificationType {
+  NEW_EPISODE_RELEASED = 'NEW_EPISODE_RELEASED'
+}
 
 /**  The privacy types for a list  */
 export enum PrivacyType {
@@ -1188,6 +1223,7 @@ export enum UserAgeRange {
 /** User's relationship with a comic series, including subscription status and reading progress */
 export type UserComicSeries = {
   __typename?: 'UserComicSeries';
+  hasNotificationEnabled: Scalars['Boolean']['output'];
   isRecommended: Scalars['Boolean']['output'];
   isSubscribed: Scalars['Boolean']['output'];
   seriesUuid: Scalars['ID']['output'];
@@ -1210,6 +1246,20 @@ export type MiniCreatorDetailsFragment = { __typename?: 'Creator', uuid: string,
 export type MiniUserDetailsFragment = { __typename?: 'User', id: string, username?: string | null };
 
 export type UserDetailsFragment = { __typename?: 'User', id: string, username?: string | null, email?: string | null, isEmailVerified?: boolean | null, ageRange?: UserAgeRange | null, birthYear?: number | null, blueskyDid?: string | null };
+
+export type DisableNotificationsForSeriesMutationVariables = Exact<{
+  seriesUuid: Scalars['ID']['input'];
+}>;
+
+
+export type DisableNotificationsForSeriesMutation = { __typename?: 'Mutation', disableNotificationsForSeries: { __typename?: 'UserComicSeries', seriesUuid: string, isSubscribed: boolean, isRecommended: boolean, hasNotificationEnabled: boolean } };
+
+export type EnableNotificationsForSeriesMutationVariables = Exact<{
+  seriesUuid: Scalars['ID']['input'];
+}>;
+
+
+export type EnableNotificationsForSeriesMutation = { __typename?: 'Mutation', enableNotificationsForSeries: { __typename?: 'UserComicSeries', seriesUuid: string, isSubscribed: boolean, isRecommended: boolean, hasNotificationEnabled: boolean } };
 
 export type FetchAllHostingProviderTokensMutationVariables = Exact<{ [key: string]: never; }>;
 
@@ -1387,7 +1437,7 @@ export type GetUserComicSeriesQueryVariables = Exact<{
 }>;
 
 
-export type GetUserComicSeriesQuery = { __typename?: 'Query', getUserComicSeries?: { __typename?: 'UserComicSeries', seriesUuid: string, isSubscribed: boolean, isRecommended: boolean } | null };
+export type GetUserComicSeriesQuery = { __typename?: 'Query', getUserComicSeries?: { __typename?: 'UserComicSeries', seriesUuid: string, isSubscribed: boolean, isRecommended: boolean, hasNotificationEnabled: boolean } | null };
 
 export type HomeScreenQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1528,6 +1578,26 @@ export const UserDetails = gql`
   ageRange
   birthYear
   blueskyDid
+}
+    `;
+export const DisableNotificationsForSeries = gql`
+    mutation DisableNotificationsForSeries($seriesUuid: ID!) {
+  disableNotificationsForSeries(seriesUuid: $seriesUuid) {
+    seriesUuid
+    isSubscribed
+    isRecommended
+    hasNotificationEnabled
+  }
+}
+    `;
+export const EnableNotificationsForSeries = gql`
+    mutation EnableNotificationsForSeries($seriesUuid: ID!) {
+  enableNotificationsForSeries(seriesUuid: $seriesUuid) {
+    seriesUuid
+    isSubscribed
+    isRecommended
+    hasNotificationEnabled
+  }
 }
     `;
 export const FetchAllHostingProviderTokens = gql`
@@ -1750,6 +1820,7 @@ export const GetUserComicSeries = gql`
     seriesUuid
     isSubscribed
     isRecommended
+    hasNotificationEnabled
   }
 }
     `;

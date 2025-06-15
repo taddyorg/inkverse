@@ -7,7 +7,8 @@ import type {
   LinkType, 
   SeriesStatus,
   TaddyType,
-  UserAgeRange
+  UserAgeRange,
+  NotificationType,
 } from "../graphql/types.js";
 
 export type ComicSeriesModel = {
@@ -190,4 +191,13 @@ export type UserDeviceModel = {
   fcmToken: string;
   platform: string;
   isProvisional: boolean | null;
+}
+
+export type NotificationPreferenceModel = {
+  id: number;
+  createdAt: number;
+  updatedAt: number | null;
+  userId: number;
+  notificationType: NotificationType;
+  value: string | null;
 }

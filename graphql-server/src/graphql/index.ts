@@ -83,6 +83,10 @@ import {
   UserComicSeriesMutations,
 } from './usercomicseries.js';
 
+import {
+  NotificationPreferenceDefinitions,
+} from './notificationPreference.js';
+
 export const typeDefs = gql`#graphql
   ${CommonDefinitions}
   ${ComicSeriesDefinitions}
@@ -98,6 +102,7 @@ export const typeDefs = gql`#graphql
   ${SearchDefinitions}
   ${UserDefinitions}
   ${UserComicSeriesDefinitions}
+  ${NotificationPreferenceDefinitions}
 
   type Query {
     ${ComicSeriesQueriesDefinitions}

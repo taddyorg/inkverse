@@ -10,3 +10,4 @@ export { User } from './user.js';
 export { UserDevice } from './user_device.js';
 export { OAuthToken } from './oauth_token.js';
 export { UserSeriesSubscription } from './userseries_subscription.js';
+export { NotificationPreference } from './notification_preference.js';
