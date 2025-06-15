@@ -1245,6 +1245,8 @@ export type MiniCreatorDetailsFragment = { __typename?: 'Creator', uuid: string,
 
 export type MiniUserDetailsFragment = { __typename?: 'User', id: string, username?: string | null };
 
+export type UserComicSeriesDetailsFragment = { __typename?: 'UserComicSeries', seriesUuid: string, isSubscribed: boolean, isRecommended: boolean, hasNotificationEnabled: boolean };
+
 export type UserDetailsFragment = { __typename?: 'User', id: string, username?: string | null, email?: string | null, isEmailVerified?: boolean | null, ageRange?: UserAgeRange | null, birthYear?: number | null, blueskyDid?: string | null };
 
 export type DisableNotificationsForSeriesMutationVariables = Exact<{
@@ -1313,14 +1315,14 @@ export type SubscribeToSeriesMutationVariables = Exact<{
 }>;
 
 
-export type SubscribeToSeriesMutation = { __typename?: 'Mutation', subscribeToSeries: { __typename?: 'UserComicSeries', seriesUuid: string, isSubscribed: boolean, isRecommended: boolean } };
+export type SubscribeToSeriesMutation = { __typename?: 'Mutation', subscribeToSeries: { __typename?: 'UserComicSeries', seriesUuid: string, isSubscribed: boolean, isRecommended: boolean, hasNotificationEnabled: boolean } };
 
 export type UnsubscribeFromSeriesMutationVariables = Exact<{
   seriesUuid: Scalars['ID']['input'];
 }>;
 
 
-export type UnsubscribeFromSeriesMutation = { __typename?: 'Mutation', unsubscribeFromSeries: { __typename?: 'UserComicSeries', seriesUuid: string, isSubscribed: boolean, isRecommended: boolean } };
+export type UnsubscribeFromSeriesMutation = { __typename?: 'Mutation', unsubscribeFromSeries: { __typename?: 'UserComicSeries', seriesUuid: string, isSubscribed: boolean, isRecommended: boolean, hasNotificationEnabled: boolean } };
 
 export type UpdateUserEmailMutationVariables = Exact<{
   email: Scalars['String']['input'];
@@ -1569,6 +1571,14 @@ export const MiniUserDetails = gql`
   username
 }
     `;
+export const UserComicSeriesDetails = gql`
+    fragment userComicSeriesDetails on UserComicSeries {
+  seriesUuid
+  isSubscribed
+  isRecommended
+  hasNotificationEnabled
+}
+    `;
 export const UserDetails = gql`
     fragment userDetails on User {
   id
@@ -1583,23 +1593,17 @@ export const UserDetails = gql`
 export const DisableNotificationsForSeries = gql`
     mutation DisableNotificationsForSeries($seriesUuid: ID!) {
   disableNotificationsForSeries(seriesUuid: $seriesUuid) {
-    seriesUuid
-    isSubscribed
-    isRecommended
-    hasNotificationEnabled
+    ...userComicSeriesDetails
   }
 }
-    `;
+    ${UserComicSeriesDetails}`;
 export const EnableNotificationsForSeries = gql`
     mutation EnableNotificationsForSeries($seriesUuid: ID!) {
   enableNotificationsForSeries(seriesUuid: $seriesUuid) {
-    seriesUuid
-    isSubscribed
-    isRecommended
-    hasNotificationEnabled
+    ...userComicSeriesDetails
   }
 }
-    `;
+    ${UserComicSeriesDetails}`;
 export const FetchAllHostingProviderTokens = gql`
     mutation FetchAllHostingProviderTokens {
   fetchAllHostingProviderTokens
@@ -1641,21 +1645,17 @@ export const SubscribeToMultipleComicSeries = gql`
 export const SubscribeToSeries = gql`
     mutation SubscribeToSeries($seriesUuid: ID!) {
   subscribeToSeries(seriesUuid: $seriesUuid) {
-    seriesUuid
-    isSubscribed
-    isRecommended
+    ...userComicSeriesDetails
   }
 }
-    `;
+    ${UserComicSeriesDetails}`;
 export const UnsubscribeFromSeries = gql`
     mutation UnsubscribeFromSeries($seriesUuid: ID!) {
   unsubscribeFromSeries(seriesUuid: $seriesUuid) {
-    seriesUuid
-    isSubscribed
-    isRecommended
+    ...userComicSeriesDetails
   }
 }
-    `;
+    ${UserComicSeriesDetails}`;
 export const UpdateUserEmail = gql`
     mutation UpdateUserEmail($email: String!) {
   updateUserEmail(email: $email) {

@@ -1,0 +1,6 @@
+fragment userComicSeriesDetails on UserComicSeries {
+    seriesUuid
+    isSubscribed
+    isRecommended
+    hasNotificationEnabled
+}

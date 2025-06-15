@@ -10,6 +10,37 @@ export const UNSUBSCRIBE_FROM_SERIES = asyncAction(ActionTypes.UNSUBSCRIBE_FROM_
 export const ENABLE_NOTIFICATIONS_FOR_SERIES = asyncAction(ActionTypes.ENABLE_NOTIFICATIONS_FOR_SERIES);
 export const DISABLE_NOTIFICATIONS_FOR_SERIES = asyncAction(ActionTypes.DISABLE_NOTIFICATIONS_FOR_SERIES);
 
+export type ComicSeriesLoaderData = {
+  isComicSeriesLoading: boolean;
+  comicseries: ComicSeries | null;
+  issues: ComicIssue[];
+  userComicData: {
+    isSubscribed: boolean;
+    isRecommended: boolean;
+    hasNotificationEnabled: boolean;
+  } | null;
+  isUserDataLoading: boolean;
+  userDataError: string | null;
+  isSubscriptionLoading: boolean;
+  subscriptionError: string | null;
+  isNotificationLoading: boolean;
+  notificationError: string | null;
+  apolloState?: Record<string, any>;
+};
+
+export const comicSeriesInitialState: ComicSeriesLoaderData = {
+  isComicSeriesLoading: false,
+  comicseries: null,
+  issues: [],
+  userComicData: null,
+  isUserDataLoading: false,
+  userDataError: null,
+  isSubscriptionLoading: false,
+  subscriptionError: null,
+  isNotificationLoading: false,
+  notificationError: null,
+}
+
 /* Action Creators */
 interface GetComicSeriesProps {
   publicClient: ApolloClient<any>;
@@ -21,6 +52,34 @@ interface GetComicSeriesProps {
 interface WrappedGetComicSeriesProps {
   publicClient: ApolloClient<any>;
   shortUrl: string;
+}
+
+/* User Comic Data Actions */
+interface GetUserComicDataProps {
+  userClient: ApolloClient<any>;
+  seriesUuid: string;
+  forceRefresh?: boolean;
+}
+
+interface SubscribeToSeriesProps {
+  userClient: ApolloClient<any>;
+  seriesUuid: string;
+}
+
+interface UnsubscribeFromSeriesProps {
+  userClient: ApolloClient<any>;
+  seriesUuid: string;
+}
+
+/* Notification Actions */
+interface EnableNotificationsProps {
+  userClient: ApolloClient<any>;
+  seriesUuid: string;
+}
+
+interface DisableNotificationsProps {
+  userClient: ApolloClient<any>;
+  seriesUuid: string;
 }
 
 export async function loadComicSeriesUrl({ publicClient, shortUrl }: WrappedGetComicSeriesProps, dispatch: Dispatch) {
@@ -73,23 +132,6 @@ export async function loadComicSeries({ publicClient, uuid, forceRefresh = false
   }
 }
 
-/* User Comic Data Actions */
-interface GetUserComicDataProps {
-  userClient: ApolloClient<any>;
-  seriesUuid: string;
-  forceRefresh?: boolean;
-}
-
-interface SubscribeToSeriesProps {
-  userClient: ApolloClient<any>;
-  seriesUuid: string;
-}
-
-interface UnsubscribeFromSeriesProps {
-  userClient: ApolloClient<any>;
-  seriesUuid: string;
-}
-
 export async function loadUserComicData({ userClient, seriesUuid, forceRefresh = false }: GetUserComicDataProps, dispatch: Dispatch) {
   dispatch(GET_USER_COMIC_DATA.request());
 
@@ -100,13 +142,10 @@ export async function loadUserComicData({ userClient, seriesUuid, forceRefresh =
       ...(!!forceRefresh && { fetchPolicy: 'network-only' })
     });
 
-    const userComicData = result.data?.getUserComicSeries ? {
-      isSubscribed: result.data.getUserComicSeries.isSubscribed,
-      isRecommended: result.data.getUserComicSeries.isRecommended,
-      hasNotificationEnabled: result.data.getUserComicSeries.hasNotificationEnabled,
-    } : null;
 
-    dispatch(GET_USER_COMIC_DATA.success({ userComicData }));
+    const parsedData = parseLoaderUserComicSeries(result.data);
+
+    dispatch(GET_USER_COMIC_DATA.success(parsedData));
   } catch (error: Error | unknown) {
     errorHandlerFactory(dispatch, GET_USER_COMIC_DATA)(error);
   }
@@ -123,7 +162,11 @@ export async function subscribeToSeries({ userClient, seriesUuid }: SubscribeToS
 
     if (result.data?.subscribeToSeries) {
       dispatch(SUBSCRIBE_TO_SERIES.success({ 
-        userComicData: { isSubscribed: true } 
+        userComicData: {
+          isSubscribed: result.data.subscribeToSeries.isSubscribed,
+          isRecommended: result.data.subscribeToSeries.isRecommended,
+          hasNotificationEnabled: result.data.subscribeToSeries.hasNotificationEnabled,
+        }
       }));
     } else {
       throw new Error('Failed to subscribe to series');
@@ -144,7 +187,11 @@ export async function unsubscribeFromSeries({ userClient, seriesUuid }: Unsubscr
 
     if (result.data?.unsubscribeFromSeries) {
       dispatch(UNSUBSCRIBE_FROM_SERIES.success({ 
-        userComicData: { isSubscribed: false } 
+        userComicData: {
+          isSubscribed: result.data.unsubscribeFromSeries.isSubscribed,
+          isRecommended: result.data.unsubscribeFromSeries.isRecommended,
+          hasNotificationEnabled: result.data.unsubscribeFromSeries.hasNotificationEnabled,
+        }
       }));
     } else {
       throw new Error('Failed to unsubscribe from series');
@@ -154,16 +201,6 @@ export async function unsubscribeFromSeries({ userClient, seriesUuid }: Unsubscr
   }
 }
 
-/* Notification Actions */
-interface EnableNotificationsProps {
-  userClient: ApolloClient<any>;
-  seriesUuid: string;
-}
-
-interface DisableNotificationsProps {
-  userClient: ApolloClient<any>;
-  seriesUuid: string;
-}
 
 export async function enableNotificationsForSeries({ userClient, seriesUuid }: EnableNotificationsProps, dispatch: Dispatch) {
   dispatch(ENABLE_NOTIFICATIONS_FOR_SERIES.request());
@@ -215,52 +252,22 @@ export async function disableNotificationsForSeries({ userClient, seriesUuid }: 
   }
 }
 
-export function parseLoaderComicSeries(data: GetComicSeriesQuery): ComicSeriesLoaderData {
+export function parseLoaderComicSeries(data: GetComicSeriesQuery): Partial<ComicSeriesLoaderData> {
   return {
     isComicSeriesLoading: false,
     comicseries: data.getComicSeries || null,
     issues: data.getIssuesForComicSeries?.issues?.filter(
       (issue: ComicIssue | null): issue is ComicIssue => issue !== null
     ) || [],
-    userComicData: null,
-    isUserDataLoading: false,
-    userDataError: null,
-    isSubscriptionLoading: false,
-    subscriptionError: null,
-    isNotificationLoading: false,
-    notificationError: null,
+    // Don't include user-related loading states to avoid overwriting them
   };
 }
 
-export type ComicSeriesLoaderData = {
-  isComicSeriesLoading: boolean;
-  comicseries: ComicSeries | null;
-  issues: ComicIssue[];
-  userComicData: {
-    isSubscribed: boolean;
-    isRecommended: boolean;
-    hasNotificationEnabled: boolean;
-  } | null;
-  isUserDataLoading: boolean;
-  userDataError: string | null;
-  isSubscriptionLoading: boolean;
-  subscriptionError: string | null;
-  isNotificationLoading: boolean;
-  notificationError: string | null;
-  apolloState?: Record<string, any>;
-};
-
-export const comicSeriesInitialState: ComicSeriesLoaderData = {
-  isComicSeriesLoading: false,
-  comicseries: null,
-  issues: [],
-  userComicData: null,
-  isUserDataLoading: false,
-  userDataError: null,
-  isSubscriptionLoading: false,
-  subscriptionError: null,
-  isNotificationLoading: false,
-  notificationError: null,
+export function parseLoaderUserComicSeries(data: GetUserComicSeriesQuery): Partial<ComicSeriesLoaderData> {
+  return {
+    isUserDataLoading: false,
+    userComicData: data.getUserComicSeries
+  };
 }
 
 /* Reducers */
@@ -373,6 +380,7 @@ export function comicSeriesQueryReducerDefault(state = comicSeriesInitialState, 
         notificationError: action.payload?.message || 'Failed to disable notifications for series',
       };
     default:
+      console.log('No matching case for action type:', action.type);
       return state;
   }
 }

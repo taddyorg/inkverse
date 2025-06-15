@@ -127,14 +127,14 @@ export function ComicSeriesScreen() {
           <View style={styles.actionButtonsContainer}>
             <AddToProfileButton
               isSubscribed={userComicData?.isSubscribed || false}
-              isLoading={isSubscriptionLoading}
+              isLoading={isSubscriptionLoading || isUserDataLoading}
               onPress={handleAddToProfile}
               selectedText='SAVED'
               unselectedText='SAVE'
             />
             <NotificationButton
               isReceivingNotifications={userComicData?.hasNotificationEnabled || false}
-              isLoading={isNotificationLoading}
+              isLoading={isNotificationLoading || isUserDataLoading}
               onPress={handleGetNotifications}
             />
           </View>
@@ -174,7 +174,7 @@ export function ComicSeriesScreen() {
       case 'next-episode':
         return item.type;
     }
-  }, [comicseries, issues, userComicData, isSubscriptionLoading]);
+  }, [comicseries, issues, userComicData, isSubscriptionLoading, isNotificationLoading]);
 
   const getListData = useCallback((): ListItem[] => {
     if (!comicseries) return [];
@@ -185,7 +185,7 @@ export function ComicSeriesScreen() {
       { type: 'info', data: comicseries },
       ...(issues.length > 3 ? [{ type: 'next-episode' as const, data: issues[0] }] : []),
     ];
-  }, [comicseries, issues, userComicData, isSubscriptionLoading]);
+  }, [comicseries, issues, userComicData, isSubscriptionLoading, isNotificationLoading]);
 
   if (isComicSeriesLoading) {
     return (

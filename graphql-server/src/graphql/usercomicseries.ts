@@ -107,8 +107,8 @@ export const UserComicSeriesMutations: MutationResolvers = {
 
     await UserSeriesSubscription.unsubscribeFromComicSeries(context.user.id, seriesUuid);
     
-    // When unsubscribing, also disable notifications
-    await NotificationPreference.disableNotification(
+    // Get notification preference
+    const hasNotificationEnabled = await NotificationPreference.hasNotificationEnabled(
       context.user.id,
       NotificationType.NEW_EPISODE_RELEASED,
       seriesUuid
@@ -118,7 +118,7 @@ export const UserComicSeriesMutations: MutationResolvers = {
       seriesUuid,
       isSubscribed: false,
       isRecommended: false,
-      hasNotificationEnabled: false,
+      hasNotificationEnabled,
     };
   },
 

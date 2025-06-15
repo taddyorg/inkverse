@@ -1,8 +1,5 @@
 mutation EnableNotificationsForSeries($seriesUuid: ID!) {
   enableNotificationsForSeries(seriesUuid: $seriesUuid) {
-    seriesUuid
-    isSubscribed
-    isRecommended
-    hasNotificationEnabled
+    ...userComicSeriesDetails
   }
 }
