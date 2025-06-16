@@ -55,11 +55,15 @@ export function Navbar({ theme, zoomMode, onThemeChange, onZoomModeChange }: Nav
 
   useEffect(() => {
     const handleCloseSearchBox = () => setShowSearchBox(false);
-    window.addEventListener('closeSearchBox', handleCloseSearchBox);
+    const handleOpenSignupModal = () => setShowSignupModal(true);
     
-    // Cleanup listener on component unmount
+    window.addEventListener('closeSearchBox', handleCloseSearchBox);
+    window.addEventListener('openSignupModal', handleOpenSignupModal);
+    
+    // Cleanup listeners on component unmount
     return () => {
       window.removeEventListener('closeSearchBox', handleCloseSearchBox);
+      window.removeEventListener('openSignupModal', handleOpenSignupModal);
     };
   }, []);
 

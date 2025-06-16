@@ -119,6 +119,11 @@ export default function ProfileEdit() {
 
   const profileProperties: ProfileProperty[] = [
     {
+      type: 'switch',
+      label: 'Theme',
+      value: theme === 'dark' ? 'Dark' : 'Light',
+    },
+    {
       type: 'list',
       label: 'Username',
       value: user.username,
@@ -135,11 +140,6 @@ export default function ProfileEdit() {
       label: 'Email',
       value: user.email,
       editPath: '/profile/edit/email'
-    },
-    {
-      type: 'switch',
-      label: 'Theme',
-      value: theme === 'dark' ? 'Dark' : 'Light',
     },
     {
       type: 'list',

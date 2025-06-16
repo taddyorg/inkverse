@@ -142,7 +142,6 @@ export async function loadUserComicData({ userClient, seriesUuid, forceRefresh =
       ...(!!forceRefresh && { fetchPolicy: 'network-only' })
     });
 
-
     const parsedData = parseLoaderUserComicSeries(result.data);
 
     dispatch(GET_USER_COMIC_DATA.success(parsedData));

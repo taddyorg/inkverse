@@ -67,8 +67,8 @@ function ProfileScreen() {
             <div className="text-center py-8">
               <p className="text-gray-600 dark:text-gray-400">
                 {isOwnProfile 
-                  ? "When you add a comic to your profile, it will show up here"
-                  : `No comics added to ${profileData.user.username}'s profile, yet...`
+                  ? "When you save a comic to your profile, it will show up here"
+                  : `No comics saved to ${profileData.user.username}'s profile, yet...`
                 }
               </p>
             </div>

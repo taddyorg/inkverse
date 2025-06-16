@@ -32,7 +32,8 @@ export const AddToProfileButton = ({
   return (
     <PressableOpacity
       onPress={onPress}
-      style={styles.button}
+      disabled={isLoading}
+      style={[styles.button, isLoading && styles.disabledButton]}
     >
       <View style={styles.buttonContainer}>
         {isLoading ? (
@@ -62,7 +63,8 @@ export const NotificationButton = ({
   return (
     <PressableOpacity
       onPress={onPress}
-      style={styles.button}
+      disabled={isLoading}
+      style={[styles.button, isLoading && styles.disabledButton]}
     >
       <View style={styles.buttonContainer}>
         {isLoading 
@@ -88,6 +90,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: 'rgba(255, 255, 255, 0.8)',
+  },
+  disabledButton: {
+    opacity: 0.5,
   },
   buttonContainer: {
     flexDirection: "row",

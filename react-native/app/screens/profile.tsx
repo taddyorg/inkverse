@@ -209,8 +209,8 @@ export function ProfileScreen() {
             <ThemedView style={styles.emptyComicsContainer}>
               <ThemedText style={styles.emptyComicsText}>
                 {isOwnProfile 
-                  ? "When you add a comic to your profile, it will show up here"
-                  : `No comics added to ${user?.username}'s profile, yet...`
+                  ? "When you save a comic to your profile, it will show up here"
+                  : `No comics saved to ${user?.username}'s profile, yet...`
                 }
               </ThemedText>
             </ThemedView>
