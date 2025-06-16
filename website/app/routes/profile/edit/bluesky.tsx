@@ -57,7 +57,7 @@ export default function EditBlueskyPage() {
     if (!userClientRef.current) return;
 
     if (!isValidDomain(blueskyHandle)) {
-      dispatch({ type: UserDetailsActionType.USER_DETAILS_ERROR, payload: 'Invalid Bluesky handle. Make sure you use your full handle (ex: yourhandle.bsky.social)' });
+      dispatch({ type: UserDetailsActionType.USER_DETAILS_ERROR, payload: 'Invalid Bluesky handle. Make sure you use your handle (ex: bsky.app/profile/yourhandle)' });
       return;
     }
 

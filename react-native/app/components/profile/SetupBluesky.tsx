@@ -73,7 +73,7 @@ export function SetupBluesky({
             ]}
             value={blueskyHandle}
             onChangeText={setBlueskyHandle}
-            placeholder="yourhandle.bsky.social"
+            placeholder="bsky.app/profile/yourhandle"
             placeholderTextColor={textColor + '80'}
             autoCapitalize="none"
             autoCorrect={false}

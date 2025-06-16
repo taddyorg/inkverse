@@ -179,8 +179,17 @@ export const UserQueries = {
       throw new UserInputError('Bluesky handle cannot be empty');
     }
 
-    // Remove @ if present at the beginning
-    const cleanHandle = handle.startsWith('@') ? handle.slice(1) : handle;
+    // Remove bsky.app/profile/ or profile/ or @ if present at the beginning
+    let cleanHandle = handle;
+    if (cleanHandle.startsWith('bsky.app/profile/')) {
+      cleanHandle = cleanHandle.slice(18);
+    }
+    if (cleanHandle.startsWith('profile/')) {
+      cleanHandle = cleanHandle.slice(8);
+    }
+    if (cleanHandle.startsWith('@')) {
+      cleanHandle = cleanHandle.slice(1);
+    }
 
     try {
       // Get profile from Bluesky API
@@ -196,7 +205,7 @@ export const UserQueries = {
       };
     } catch (error: any) {
       console.error('Error getting Bluesky profile:', error?.response?.data?.message);
-      throw new UserInputError('Error getting Bluesky profile. Make sure you use your full handle (ex: yourhandle.bsky.social)');
+      throw new UserInputError('Error getting Bluesky profile. Make sure you use your handle (ex: bsky.app/profile/yourhandle)');
     }
   },
 

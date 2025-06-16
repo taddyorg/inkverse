@@ -71,7 +71,7 @@ export function getLinkBase(linkType: LinkType): string | undefined {
     case LinkType.ETSY:
       return "etsy.com/shop/"
     case LinkType.BLUESKY:
-      return "bsky.social/"
+      return "bsky.app/profile/"
     case LinkType.EMAIL:
     default:
       return 
