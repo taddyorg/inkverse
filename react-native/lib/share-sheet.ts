@@ -1,4 +1,4 @@
-import { Share } from 'react-native';
+import { Share, Platform } from 'react-native';
 import { getInkverseUrl, InkverseUrlType } from '@inkverse/public/utils';
 
 export type ShareItem = {
@@ -64,13 +64,31 @@ function getUrl({ type, item, parentItem }: ShareItem) {
 
 export async function showShareSheet({ type, item, parentItem }: ShareItem) {
   try {
-    const options = {
-      url: `https://inkverse.co${getUrl({ type, item, parentItem })}`,
-      title: getTitle({ type, item, parentItem }),
-      message: getMessage({ type, item, parentItem }),
+    const message = getMessage({ type, item, parentItem });
+    const title = getTitle({ type, item, parentItem });
+    const urlPath = getUrl({ type, item, parentItem });
+    const fullUrl = `https://inkverse.co${urlPath}`;
+
+    const options = Platform.OS === 'ios' 
+      ? {
+          message: message,
+          url: fullUrl,
+          title: title,
+        } 
+      : {
+          message: `${message}\n\n${fullUrl}`,
+          title: title,
+        };
+
+    const result = await Share.share(options);
+    
+    // Optional: Handle result for analytics or user feedback
+    if (result.action === Share.sharedAction) {
+      console.log('Content shared successfully');
+    } else if (result.action === Share.dismissedAction) {
+      console.log('Share dialog dismissed');
     }
-    await Share.share(options);
   } catch (err) {
-    console.log('error', err)
+    console.log('Share error:', err);
   }
 }
