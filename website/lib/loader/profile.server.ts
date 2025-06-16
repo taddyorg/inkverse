@@ -1,9 +1,7 @@
 import { type LoaderFunctionArgs } from "react-router";
-import { getPublicApolloClient, getUserApolloClient } from "@/lib/apollo/client.server";
+import { getPublicApolloClient } from "@/lib/apollo/client.server";
 import { type GetUserByUsernameQuery, GetUserByUsername, type GetUserByUsernameQueryVariables } from "@inkverse/shared-client/graphql/operations";
 import { handleLoaderError } from "./error-handler";
-import { getRefreshToken } from "@/lib/auth/cookie";
-import { jwtDecode, type JwtPayload } from 'jwt-decode';
 import { type ProfileState, loadProfileById } from "@inkverse/shared-client/dispatch/profile";
 
 export async function loadProfile({ params, request, context }: LoaderFunctionArgs): Promise<ProfileState> {
@@ -33,23 +31,10 @@ export async function loadProfile({ params, request, context }: LoaderFunctionAr
       };
     }
 
-    // Check if user is authenticated
-    const refreshToken = await getRefreshToken(request);
-    let currentUserId: string | undefined;
-    let userClient;
-
-    if (refreshToken) {
-      const decoded = jwtDecode(refreshToken) as JwtPayload & { sub?: string };
-      currentUserId = decoded?.sub;
-      userClient = getUserApolloClient(request);
-    }
-
     // Step 2: Fetch user data using the helper function
     const profileData = await loadProfileById({
       publicClient,
-      userClient,
       userId: userIdFromUsername,
-      currentUserId,
     });
 
     if (!profileData) {
@@ -62,14 +47,9 @@ export async function loadProfile({ params, request, context }: LoaderFunctionAr
       };
     }
 
-    // Step 4: Extract Apollo state from the appropriate client
-    const apolloState = (currentUserId && userClient && currentUserId === userIdFromUsername)
-      ? userClient.extract()
-      : publicClient.extract();
-
     const result = {
       ...profileData,
-      apolloState,
+      apolloState: publicClient.extract(),
     };
 
     return result;
