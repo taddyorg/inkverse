@@ -46,7 +46,7 @@ function ProfileScreen() {
   return (
     <div className="max-w-3xl mx-auto sm:p-6 lg:p-8">
       <div className="rounded-lg p-6">
-        <div className="flex justify-between items-start mb-4">
+        <div className="flex justify-between items-start mb-4 sm:mb-2">
           <h1 className="text-2xl font-bold">
             {profileData.user.username}
           </h1>
@@ -62,7 +62,7 @@ function ProfileScreen() {
         </div>
 
         {/* Your Comics Section */}
-        <div className="mt-8">          
+        <div className="mt-4 sm:mt-6">          
           {subscriptions.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-gray-600 dark:text-gray-400">
@@ -74,8 +74,8 @@ function ProfileScreen() {
             </div>
           ) : (
             <>
-              <h2 className="text-xl font-semibold mb-4">Your Comics</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              <h2 className="text-xl font-semibold mb-4 sm:mb-2">Your Comics</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
                 {subscriptions.map((comic: ComicSeries) => {
                   return (
                     <ComicSeriesDetails

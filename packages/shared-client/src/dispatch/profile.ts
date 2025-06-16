@@ -144,7 +144,7 @@ export async function loadProfileById(
   dispatch?.(GET_PROFILE.request());
   
   try {
-    const client = currentUserId && userClient && currentUserId === userId ? userClient : publicClient;
+    const client = (currentUserId && userClient && currentUserId === userId) ? userClient : publicClient;
     const { data } = await client.query<
       GetProfileByUserIdQuery,
       GetProfileByUserIdQueryVariables

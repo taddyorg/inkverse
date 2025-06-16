@@ -67,13 +67,14 @@ export async function loadProfile({ params, request, context }: LoaderFunctionAr
       ? userClient.extract()
       : publicClient.extract();
 
-    return {
+    const result = {
       ...profileData,
       apolloState,
     };
+
+    return result;
     
   } catch (error) {
-    console.log('error', error);
     const errorResult = handleLoaderError(error, 'Profile');
     return {
       user: null,

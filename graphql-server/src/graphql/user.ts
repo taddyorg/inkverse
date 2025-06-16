@@ -97,6 +97,7 @@ export const UserQueriesDefinitions = `
   Get the current user's subscribed comics
   """
   getUserSubscribedComics(
+    userId: ID!
     limitPerPage: Int
     page: Int
   ): [ComicSeries]
@@ -257,7 +258,7 @@ export const UserQueries = {
     return await ComicSeries.getComicsFromCreatorUuids(creatorUuids);
   },
 
-  getUserSubscribedComics: async (_parent: any, { limitPerPage = 20, page = 1 }: { limitPerPage?: number | null; page?: number | null }, context: any): Promise<ComicSeriesModel[]> => {
+  getUserSubscribedComics: async (_parent: any, { userId, limitPerPage = 20, page = 1 }: { userId: string; limitPerPage?: number | null; page?: number | null }, context: any): Promise<ComicSeriesModel[]> => {
     try {
       const actualLimitPerPage = limitPerPage ?? 20;
       const actualPage = page ?? 1;
@@ -269,7 +270,7 @@ export const UserQueries = {
       const offset = Math.max(0, (actualPage - 1) * actualLimitPerPage);
 
       // Get user subscriptions
-      const subscriptions = await UserSeriesSubscription.getUserSubscriptions(Number(context.user.id), actualLimitPerPage, offset);
+      const subscriptions = await UserSeriesSubscription.getUserSubscriptions(Number(userId), actualLimitPerPage, offset);
       
       if (!subscriptions || subscriptions.length === 0) {
         return [];

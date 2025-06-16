@@ -1142,6 +1142,7 @@ export type QueryGetUserComicSeriesArgs = {
 export type QueryGetUserSubscribedComicsArgs = {
   limitPerPage?: InputMaybe<Scalars['Int']['input']>;
   page?: InputMaybe<Scalars['Int']['input']>;
+  userId: Scalars['ID']['input'];
 };
 
 
@@ -1801,7 +1802,7 @@ export const GetProfileByUserId = gql`
   getUserById(id: $id) {
     ...miniUserDetails
   }
-  getUserSubscribedComics(limitPerPage: 1000, page: 1) {
+  getUserSubscribedComics(userId: $id, limitPerPage: 1000, page: 1) {
     ...miniComicSeriesDetails
   }
 }
