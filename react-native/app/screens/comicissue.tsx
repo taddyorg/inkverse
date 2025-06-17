@@ -26,7 +26,7 @@ import { getUserDetails } from '@/lib/auth/user';
 import { getConnectedHostingProviderUuids, getContentTokenForProviderAndSeries } from '@/lib/auth/hosting-provider';
 import { useThemeColor } from '@/constants/Colors';
 
-type ListItemType = 'story' | 'grid' | 'creator' | 'next-episode' | 'exclusive-signup' | 'exclusive-connect-patreon' | 'exclusive-checking-access' | 'exclusive-no-access';
+type ListItemType = 'story' | 'grid' | 'creator' | 'next-episode' | 'exclusive-signup' | 'exclusive-connect-patreon' | 'exclusive-checking-access' | 'exclusive-no-access' | 'patreon-exclusive';
 
 interface ListItem {
   type: ListItemType;
@@ -260,6 +260,13 @@ export function ComicIssueScreen() {
             />
           </View>
         );
+      case 'patreon-exclusive':
+        const creatorName = comicseries?.creators?.[0]?.name;
+        return (
+          <View style={styles.patreonExclusiveContainer}>
+            <ThemedText style={styles.patreonExclusiveText}>Yay! As a Patreon backer{creatorName ? ` of ${creatorName}` : ''}, you get early access to this episode!</ThemedText>
+          </View>
+        );
       default:
         return null;
     }
@@ -300,6 +307,12 @@ export function ComicIssueScreen() {
       }
     }
 
+    const patreonExclusiveItem: ListItem[] = isPatreonExclusive ? [{
+      type: 'patreon-exclusive' as const,
+      key: 'patreon-exclusive',
+      data: {},
+    }] : [];
+
     const storyItems: ListItem[] = comicissue.stories?.map((story) => ({
       type: 'story' as const,
       key: `story-${story?.uuid ?? ''}`,
@@ -324,6 +337,7 @@ export function ComicIssueScreen() {
     };
 
     const items = [
+      ...patreonExclusiveItem,
       ...storyItems,
       creatorItem,
       nextEpisodeItem
@@ -576,5 +590,16 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  patreonExclusiveContainer: {
+    marginTop: 50,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderRadius: 10,
+  },
+  patreonExclusiveText: {
+    textAlign: 'center',
+    fontSize: 18,
+    fontFamily: ThemedTextFontFamilyMap.semiBold,
   },
 });

@@ -149,9 +149,11 @@ function ComicIssueContent({ initialData }: { initialData: Partial<ComicIssueLoa
     );
   }
 
+  const creatorName = comicseries?.creators?.[0]?.name;
+
   return (
     <div className={`mx-auto sm:p-6 lg:p-8 zoomed-in:max-w-3xl max-w-xl`}>      
-      <div className='flex flex-col p y-4 sm:py-0'>
+      <div className='flex flex-col py-4 sm:py-2'>
         <div className="flex items-center mb-2">
           {comicSeriesLink && (
             <Link to={comicSeriesLink} className="flex flex-row mr-2">
@@ -160,6 +162,13 @@ function ComicIssueContent({ initialData }: { initialData: Partial<ComicIssueLoa
             </Link>
           )}
         </div>
+        {isPatreonExclusive &&
+          <div className="flex items-center justify-center mt-4">
+            <div className="text-center">
+              <p className="text-lg text-center mb-6 px-4 font-semibold">Yay! As a Patreon backer{creatorName ? ` of ${creatorName}` : ''}, you get early access to this episode!</p>
+            </div>
+          </div>
+        }
         {comicissue?.stories && comicissue.stories.map((story, index) => {
           const storyImageUrl = getStoryImageUrl({ storyImageAsString: story?.storyImageAsString, token: contentToken || undefined });
           if (!storyImageUrl) return null;
