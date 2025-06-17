@@ -1,9 +1,40 @@
 import type { ApolloClient } from '@apollo/client';
-import { asyncAction, ActionTypes, errorHandlerFactory, type Dispatch, type Action } from './utils.js';
+import type { Dispatch } from 'react';
 import { HomeScreen, type ComicSeries, type HomeScreenQuery, type List } from "../graphql/operations.js";
 
-/* Actions */
-export const GET_HOMESCREEN = asyncAction(ActionTypes.GET_HOMEFEED);
+/* Action Type Enum */
+export enum HomefeedActionType {
+  GET_HOMESCREEN_START = 'GET_HOMESCREEN_START',
+  GET_HOMESCREEN_SUCCESS = 'GET_HOMESCREEN_SUCCESS',
+  GET_HOMESCREEN_ERROR = 'GET_HOMESCREEN_ERROR',
+}
+
+/* Action Types */
+export type HomefeedAction =
+  // Homescreen Loading
+  | { type: HomefeedActionType.GET_HOMESCREEN_START }
+  | { type: HomefeedActionType.GET_HOMESCREEN_SUCCESS; payload: HomeScreenLoaderData }
+  | { type: HomefeedActionType.GET_HOMESCREEN_ERROR; payload: string }
+
+export type HomeScreenLoaderData = {
+  isHomeScreenLoading: boolean;
+  featuredComicSeries: ComicSeries[] | null | undefined;
+  curatedLists: List[] | null | undefined;
+  mostPopularComicSeries: ComicSeries[] | null | undefined;
+  recentlyAddedComicSeries: ComicSeries[] | null | undefined;
+  recentlyUpdatedComicSeries: ComicSeries[] | null | undefined;
+  error?: string | null;
+};
+
+export const homeScreenInitialState: HomeScreenLoaderData = {
+  isHomeScreenLoading: false,
+  featuredComicSeries: [],
+  curatedLists: [],
+  mostPopularComicSeries: [],
+  recentlyAddedComicSeries: [],
+  recentlyUpdatedComicSeries: [],
+  error: null,
+}
 
 /* Action Creators */
 interface GetHomeScreenProps {
@@ -11,8 +42,11 @@ interface GetHomeScreenProps {
   forceRefresh?: boolean;
 }
 
-export async function loadHomeScreen({ publicClient, forceRefresh = false }: GetHomeScreenProps, dispatch: Dispatch) {
-  dispatch(GET_HOMESCREEN.request());
+export async function loadHomeScreen(
+  { publicClient, forceRefresh = false }: GetHomeScreenProps,
+  dispatch?: Dispatch<HomefeedAction>
+): Promise<HomeScreenLoaderData | null> {
+  if (dispatch) dispatch({ type: HomefeedActionType.GET_HOMESCREEN_START });
 
   try {
     const result = await publicClient.query<HomeScreenQuery>({
@@ -21,9 +55,27 @@ export async function loadHomeScreen({ publicClient, forceRefresh = false }: Get
     });
     
     const data = parseLoaderHomeScreen(result?.data);
-    dispatch(GET_HOMESCREEN.success(data));
-  } catch (error: Error | unknown) {
-    errorHandlerFactory(dispatch, GET_HOMESCREEN)(error);
+    
+    if (dispatch) {
+      dispatch({ 
+        type: HomefeedActionType.GET_HOMESCREEN_SUCCESS, 
+        payload: data 
+      });
+    }
+    
+    return data;
+  } catch (error: any) {
+    const errorMessage = error?.response?.data?.error || 
+                        error?.message || 
+                        'Failed to load home screen';
+    
+    if (dispatch) {
+      dispatch({ 
+        type: HomefeedActionType.GET_HOMESCREEN_ERROR, 
+        payload: errorMessage 
+      });
+    }
+    return null;
   }
 }
 
@@ -60,42 +112,32 @@ function shuffleAndLimitMostPopular(series: ComicSeries[] | null | undefined, li
     .slice(0, limit);
 }
 
-export type HomeScreenLoaderData = {
-  isHomeScreenLoading: boolean;
-  featuredComicSeries: ComicSeries[] | null | undefined;
-  curatedLists: List[] | null | undefined;
-  mostPopularComicSeries: ComicSeries[] | null | undefined;
-  recentlyAddedComicSeries: ComicSeries[] | null | undefined;
-  recentlyUpdatedComicSeries: ComicSeries[] | null | undefined;
-  apolloState?: Record<string, any>;
-};
-
-export const homeScreenInitialState: HomeScreenLoaderData = {
-  isHomeScreenLoading: false,
-  featuredComicSeries: [],
-  curatedLists: [],
-  mostPopularComicSeries: [],
-  recentlyAddedComicSeries: [],
-  recentlyUpdatedComicSeries: [],
-}
-
-/* Reducers */
-export function homefeedQueryReducerDefault(state = homeScreenInitialState, action: Action): HomeScreenLoaderData {
+/* Reducer */
+export function homefeedReducer(
+  state: HomeScreenLoaderData = homeScreenInitialState,
+  action: HomefeedAction
+): HomeScreenLoaderData {
   switch (action.type) {
-    case GET_HOMESCREEN.REQUEST:
+    case HomefeedActionType.GET_HOMESCREEN_START:
       return {
         ...state,
         isHomeScreenLoading: true,
+        error: null,
       };
-    case GET_HOMESCREEN.SUCCESS:
+    case HomefeedActionType.GET_HOMESCREEN_SUCCESS:
       return {
         ...state,
         ...action.payload,
         isHomeScreenLoading: false,
+        error: null,
+      };
+    case HomefeedActionType.GET_HOMESCREEN_ERROR:
+      return {
+        ...state,
+        isHomeScreenLoading: false,
+        error: action.payload,
       };
     default:
       return state;
   }
 }
-
-export const homefeedQueryReducer = (state: HomeScreenLoaderData, action: Action) => homefeedQueryReducerDefault(state, action);

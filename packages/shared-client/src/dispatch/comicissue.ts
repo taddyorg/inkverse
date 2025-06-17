@@ -1,9 +1,57 @@
 import type { ApolloClient, ApolloQueryResult, NormalizedCacheObject } from '@apollo/client';
-import { asyncAction, ActionTypes, errorHandlerFactory, type Dispatch, type Action } from './utils.js';
-import { type GetComicIssueQuery, type GetComicIssueQueryVariables, SortOrder, GetComicIssue, type ComicIssue, type ComicSeries, GetMiniComicSeries, type GetMiniComicSeriesQuery, type GetMiniComicSeriesQueryVariables } from "../graphql/operations.js";
+import type { Dispatch } from 'react';
+import { type GetComicIssueQuery, type GetComicIssueQueryVariables, SortOrder, GetComicIssue, type ComicIssue, type ComicSeries, GetMiniComicSeries, type GetMiniComicSeriesQuery, type GetMiniComicSeriesQueryVariables, type CreatorLinkDetails } from "../graphql/operations.js";
 
-/* Actions */
-export const GET_COMICISSUE = asyncAction(ActionTypes.GET_COMICISSUE);
+/* Action Type Enum */
+export enum ComicIssueActionType {
+  GET_COMICISSUE_START = 'GET_COMICISSUE_START',
+  GET_COMICISSUE_SUCCESS = 'GET_COMICISSUE_SUCCESS',
+  GET_COMICISSUE_ERROR = 'GET_COMICISSUE_ERROR',
+  
+  // Patreon Access Actions
+  CHECK_PATREON_ACCESS_START = 'CHECK_PATREON_ACCESS_START',
+  CHECK_PATREON_ACCESS_SUCCESS = 'CHECK_PATREON_ACCESS_SUCCESS',
+  CHECK_PATREON_ACCESS_NO_ACCESS = 'CHECK_PATREON_ACCESS_NO_ACCESS',
+  CHECK_PATREON_ACCESS_ERROR = 'CHECK_PATREON_ACCESS_ERROR',
+}
+
+/* Action Types */
+export type ComicIssueAction =
+  // Comic Issue Loading
+  | { type: ComicIssueActionType.GET_COMICISSUE_START }
+  | { type: ComicIssueActionType.GET_COMICISSUE_SUCCESS; payload: Partial<ComicIssueLoaderData> }
+  | { type: ComicIssueActionType.GET_COMICISSUE_ERROR; payload: string }
+  
+  // Patreon Access Actions
+  | { type: ComicIssueActionType.CHECK_PATREON_ACCESS_START }
+  | { 
+      type: ComicIssueActionType.CHECK_PATREON_ACCESS_SUCCESS; 
+      payload: { contentToken: string; hasConnectedPatreon: boolean } 
+    }
+  | { 
+      type: ComicIssueActionType.CHECK_PATREON_ACCESS_NO_ACCESS; 
+      payload: { hasConnectedPatreon: boolean } 
+    }
+  | { type: ComicIssueActionType.CHECK_PATREON_ACCESS_ERROR; payload: string }
+
+export type ComicIssueLoaderData = {
+  isComicIssueLoading: boolean;
+  comicissue: ComicIssue | null;
+  comicseries: ComicSeries | null;
+  creatorLinks: CreatorLinkDetails[] | [];
+  // Patreon Access State
+  contentToken: string | null;
+  isCheckingAccess: boolean;
+  hasConnectedPatreon: boolean;
+  accessError: string | null;
+};
+
+export const comicIssueInitialState: Partial<ComicIssueLoaderData> = {
+  isComicIssueLoading: false,
+  comicissue: null,
+  comicseries: null,
+  creatorLinks: [],
+}
 
 /* Action Creators */
 interface GetComicIssueProps {
@@ -20,8 +68,11 @@ interface WrappedGetComicIssueProps {
   episodeId: string;
 }
 
-export async function loadComicIssueUrl({ publicClient, shortUrl, episodeId }: WrappedGetComicIssueProps, dispatch: Dispatch) {
-  dispatch(GET_COMICISSUE.request());
+export async function loadComicIssueUrl(
+  { publicClient, shortUrl, episodeId }: WrappedGetComicIssueProps,
+  dispatch?: Dispatch<ComicIssueAction>
+): Promise<Partial<ComicIssueLoaderData> | null> {
+  if (dispatch) dispatch({ type: ComicIssueActionType.GET_COMICISSUE_START });
 
   try {
     // First get the comic series uuid from the shortUrl
@@ -45,7 +96,7 @@ export async function loadComicIssueUrl({ publicClient, shortUrl, episodeId }: W
     // Get comic issue data
     const comicIssueResult = await publicClient.query<GetComicIssueQuery, GetComicIssueQueryVariables>({
       query: GetComicIssue,
-      variables: { issueUuid: safeIssueUuid, seriesUuid: getComicSeriesUuid.data?.getComicSeries.uuid, sortOrderForIssues: SortOrder.OLDEST, limitPerPageForIssues: 1000, pageForIssues: 1 },
+      variables: { issueUuid: safeIssueUuid, seriesUuid: getComicSeriesUuid.data?.getComicSeries.uuid },
     });
 
     if (!comicIssueResult.data?.getComicIssue) {
@@ -54,14 +105,35 @@ export async function loadComicIssueUrl({ publicClient, shortUrl, episodeId }: W
 
     const parsedData = parseLoaderComicIssue(comicIssueResult.data);
 
-    dispatch(GET_COMICISSUE.success(parsedData));
-  } catch (error: Error | unknown) {
-    errorHandlerFactory(dispatch, GET_COMICISSUE)(error);
+    if (dispatch) {
+      dispatch({ 
+        type: ComicIssueActionType.GET_COMICISSUE_SUCCESS, 
+        payload: parsedData 
+      });
+    }
+    
+    return parsedData;
+  } catch (error: any) {
+    const errorMessage = error?.response?.data?.error || 
+                        error?.message || 
+                        'Failed to load comic issue';
+    
+    if (dispatch) {
+      dispatch({ 
+        type: ComicIssueActionType.GET_COMICISSUE_ERROR, 
+        payload: errorMessage 
+      });
+    }
+
+    return null;
   }
 }
 
-export async function loadComicIssue({ publicClient, issueUuid, seriesUuid, forceRefresh = false }: GetComicIssueProps, dispatch: Dispatch) {
-  dispatch(GET_COMICISSUE.request());
+export async function loadComicIssue(
+  { publicClient, issueUuid, seriesUuid, forceRefresh = false }: GetComicIssueProps,
+  dispatch?: Dispatch<ComicIssueAction>
+): Promise<Partial<ComicIssueLoaderData> | null> {
+  if (dispatch) dispatch({ type: ComicIssueActionType.GET_COMICISSUE_START });
 
   try {
     const comicIssueResult = await publicClient.query<GetComicIssueQuery, GetComicIssueQueryVariables>({
@@ -69,9 +141,6 @@ export async function loadComicIssue({ publicClient, issueUuid, seriesUuid, forc
       variables: { 
         issueUuid,
         seriesUuid,
-        sortOrderForIssues: SortOrder.OLDEST,
-        limitPerPageForIssues: 1000,
-        pageForIssues: 1
       },
       ...(!!forceRefresh && { fetchPolicy: 'network-only' })
     });
@@ -82,55 +151,149 @@ export async function loadComicIssue({ publicClient, issueUuid, seriesUuid, forc
 
     const parsedData = parseLoaderComicIssue(comicIssueResult.data);
 
-    dispatch(GET_COMICISSUE.success(parsedData));
-  } catch (error: Error | unknown) {
-    errorHandlerFactory(dispatch, GET_COMICISSUE)(error);
+    if (dispatch) {
+      dispatch({ 
+        type: ComicIssueActionType.GET_COMICISSUE_SUCCESS, 
+        payload: parsedData 
+      });
+    }
+    
+    return parsedData;
+  } catch (error: any) {
+    const errorMessage = error?.response?.data?.error || 
+                        error?.message || 
+                        'Failed to load comic issue';
+    
+    if (dispatch) {
+      dispatch({ 
+        type: ComicIssueActionType.GET_COMICISSUE_ERROR, 
+        payload: errorMessage 
+      });
+    }
+    return null;
   }
 }
 
-export function parseLoaderComicIssue(data: GetComicIssueQuery): ComicIssueLoaderData {
+export function parseLoaderComicIssue(data: GetComicIssueQuery): Partial<ComicIssueLoaderData> {
   return {
     isComicIssueLoading: false,
     comicissue: data.getComicIssue || null,
     comicseries: data.getComicSeries || null,
-    allIssues: data.getIssuesForComicSeries?.issues?.filter(
-      (issue: ComicIssue | null): issue is ComicIssue => issue !== null
+    creatorLinks: data.getCreatorLinksForSeries?.filter(
+      (link: CreatorLinkDetails | null): link is CreatorLinkDetails => link !== null
     ) || [],
   };
 }
 
-export type ComicIssueLoaderData = {
-  isComicIssueLoading: boolean;
-  comicissue: ComicIssue | null;
-  comicseries: ComicSeries | null;
-  allIssues: ComicIssue[];
-  apolloState?: Record<string, any>;
-};
-
-export const comicIssueInitialState: ComicIssueLoaderData = {
-  isComicIssueLoading: false,
-  comicissue: null,
-  comicseries: null,
-  allIssues: [],
+/* Patreon Access Action Creators */
+interface CheckPatreonAccessProps {
+  isPatreonExclusive: boolean;
+  hostingProviderUuid?: string | null;
+  seriesUuid?: string | null;
+  getContentTokenForProviderAndSeries: (
+    hostingProviderUuid: string,
+    seriesUuid: string
+  ) => Promise<string | null>;
 }
 
-/* Reducers */
-export function comicIssueQueryReducerDefault(state = comicIssueInitialState, action: Action): ComicIssueLoaderData {
+export async function checkPatreonAccess({ 
+    isPatreonExclusive, 
+    hostingProviderUuid, 
+    seriesUuid,
+    getContentTokenForProviderAndSeries
+  }: CheckPatreonAccessProps,
+  dispatch: Dispatch<ComicIssueAction>
+): Promise<void> {
+  // If not exclusive content, no need to check
+  if (!isPatreonExclusive || !hostingProviderUuid || !seriesUuid) {
+    return;
+  }
+
+  dispatch({ type: ComicIssueActionType.CHECK_PATREON_ACCESS_START });
+
+  try {
+    const token = await getContentTokenForProviderAndSeries(
+      hostingProviderUuid,
+      seriesUuid
+    );
+    
+    if (token) {
+      dispatch({ 
+        type: ComicIssueActionType.CHECK_PATREON_ACCESS_SUCCESS, 
+        payload: { contentToken: token, hasConnectedPatreon: true }
+      });
+    } else {
+      // Connected but no access (not a backer)
+      dispatch({ 
+        type: ComicIssueActionType.CHECK_PATREON_ACCESS_NO_ACCESS,
+        payload: { hasConnectedPatreon: true }
+      });
+    }
+  } catch (error: any) {
+    const errorMessage = error?.message || 'Failed to check Patreon access';
+    dispatch({ 
+      type: ComicIssueActionType.CHECK_PATREON_ACCESS_ERROR,
+      payload: errorMessage
+    });
+  }
+}
+
+/* Reducer */
+export function comicIssueReducer(
+  state: Partial<ComicIssueLoaderData>,
+  action: ComicIssueAction
+): Partial<ComicIssueLoaderData> {
   switch (action.type) {
-    case GET_COMICISSUE.REQUEST:
+    case ComicIssueActionType.GET_COMICISSUE_START:
       return {
         ...state,
         isComicIssueLoading: true,
       };
-    case GET_COMICISSUE.SUCCESS:
+    case ComicIssueActionType.GET_COMICISSUE_SUCCESS:
       return {
         ...state,
         ...action.payload,
         isComicIssueLoading: false,
       };
+    case ComicIssueActionType.GET_COMICISSUE_ERROR:
+      return {
+        ...state,
+        isComicIssueLoading: false,
+        // Could add error field if needed
+      };
+      
+    // Patreon Access Actions
+    case ComicIssueActionType.CHECK_PATREON_ACCESS_START:
+      return {
+        ...state,
+        isCheckingAccess: true,
+        accessError: null,
+      };
+      
+    case ComicIssueActionType.CHECK_PATREON_ACCESS_SUCCESS:
+      return {
+        ...state,
+        isCheckingAccess: false,
+        contentToken: action.payload.contentToken,
+        hasConnectedPatreon: action.payload.hasConnectedPatreon,
+        accessError: null,
+      };
+      
+    case ComicIssueActionType.CHECK_PATREON_ACCESS_NO_ACCESS:
+      return {
+        ...state,
+        isCheckingAccess: false,
+        hasConnectedPatreon: action.payload.hasConnectedPatreon,
+        accessError: null,
+      };
+      
+    case ComicIssueActionType.CHECK_PATREON_ACCESS_ERROR:
+      return {
+        ...state,
+        isCheckingAccess: false,
+        accessError: action.payload,
+      };
     default:
       return state;
   }
 }
-
-export const comicIssueQueryReducer = (state: ComicIssueLoaderData, action: Action) => comicIssueQueryReducerDefault(state, action); 

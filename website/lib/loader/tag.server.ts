@@ -8,7 +8,6 @@ export type ComicsListPageType = 'tag' | 'genre';
 
 export type ComicsListLoaderData = {
   comicseries: ComicSeries[];
-  apolloState: Record<string, any>;
 };
 
 const LIMIT_PER_PAGE = 12;
@@ -51,11 +50,8 @@ export async function loadComicsList({ params, request, context }: LoaderFunctio
 
     const parsedData = parseComicsListResults(searchResult.data, LIMIT_PER_PAGE);
 
-    const state = client.extract();
-
     return {
       comicseries: parsedData.comics,
-      apolloState: state,
     };
 
   } catch (error) {

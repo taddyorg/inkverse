@@ -5,7 +5,7 @@ import { handleLoaderError } from "./error-handler";
 import type { ApolloQueryResult } from "@apollo/client";
 import { parseLoaderComicSeries, type ComicSeriesLoaderData } from "@inkverse/shared-client/dispatch/comicseries";
 
-export async function loadComicSeries({ params, request, context }: LoaderFunctionArgs): Promise<ComicSeriesLoaderData> {
+export async function loadComicSeries({ params, request, context }: LoaderFunctionArgs): Promise<Partial<ComicSeriesLoaderData>> {
   const { shortUrl } = params;
 
   const client = getPublicApolloClient(request);
@@ -18,7 +18,11 @@ export async function loadComicSeries({ params, request, context }: LoaderFuncti
     });
 
     if (!getComicSeriesUuid.data?.getComicSeries?.uuid) {
-      throw new Response("Not Found", { status: 404 });
+      return {
+        isComicSeriesLoading: false,
+        comicseries: null,
+        issues: [],
+      };
     }
 
     // Get comic series data first
@@ -38,13 +42,7 @@ export async function loadComicSeries({ params, request, context }: LoaderFuncti
       throw new Response("Not Found", { status: 404 });
     }
 
-    const state = client.extract();
-
-    // Return immediately with comic series, but defer user data
-    return {
-      ...parsedData,
-      apolloState: state,
-    };
+    return parsedData;
     
   } catch (error) {
     handleLoaderError(error, 'Comic Series');

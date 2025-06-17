@@ -19,13 +19,7 @@ export async function loadHomeScreen({ params, request, context }: LoaderFunctio
       throw new Response("Not Found", { status: 404 });
     }
 
-    const state = client.extract();
-
-    return {
-      ...data,
-      apolloState: state,
-    };
-    
+    return data;
   } catch (error) {
     handleLoaderError(error, 'Home Screen');
   }

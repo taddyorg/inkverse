@@ -9,7 +9,7 @@ import { PROFILE_SCREEN, RootStackParamList, SETTINGS_SCREEN, SIGNUP_SCREEN } fr
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { getUserDetails } from '@/lib/auth/user';
 import { User, ComicSeries } from '@inkverse/shared-client/graphql/operations';
-import { loadProfileById, profileLoaderReducer, profileInitialState } from '@inkverse/shared-client/dispatch/profile';
+import { loadProfileById, profileReducer, profileInitialState } from '@inkverse/shared-client/dispatch/profile';
 import { getPublicApolloClient, getUserApolloClient } from '@/lib/apollo';
 import { ComicSeriesDetails } from '../components/comics/ComicSeriesDetails';
 
@@ -33,7 +33,7 @@ export function ProfileScreen() {
   const navigation = useNavigation();
   
   // Set up reducer for profile data
-  const [state, dispatch] = useReducer(profileLoaderReducer, profileInitialState);
+  const [state, dispatch] = useReducer(profileReducer, profileInitialState);
   const { user, subscribedComics, isLoading, error } = state;
   
   // Pull to refresh state
@@ -191,7 +191,7 @@ export function ProfileScreen() {
       
       return (
         <ThemedView style={styles.profileContainer}>
-          <ThemedView style={styles.profileHeader}>
+          <ThemedView style={[styles.profileHeader, { paddingHorizontal: 16 }]}>
             <ThemedText size='title' style={styles.username}>
               {user?.username}
             </ThemedText>
@@ -216,16 +216,17 @@ export function ProfileScreen() {
             </ThemedView>
           )}
           {subscriptions && subscriptions.length > 0 && (
-            <View>
-              <ThemedText size='subtitle' style={styles.sectionTitle}>
+            <View style={{ paddingHorizontal: 8 }}>
+              <ThemedText size='subtitle' style={[styles.sectionTitle]}>
                 Your Comics
               </ThemedText>
               <FlashList
                 data={subscriptions}
                 renderItem={renderComicItem}
-                numColumns={3}
+                numColumns={2}
                 keyExtractor={(item) => item.uuid.toString()}
                 showsVerticalScrollIndicator={false}
+                // contentContainerStyle={{ paddingHorizontal: 4 }}
               />
             </View>
           )}
@@ -252,7 +253,7 @@ export function ProfileScreen() {
         renderItem={renderItem}
         keyExtractor={(item) => item.type}
         estimatedItemSize={100}
-        contentContainerStyle={{ padding: 8 }}
+        contentContainerStyle={styles.screenPadding}
         refreshControl={
           <ThemedRefreshControl
             refreshing={refreshing}
@@ -282,6 +283,9 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
     marginBottom: 16,
     alignSelf: 'center',
+  },
+  screenPadding: {
+    paddingBottom: 20,
   },
   heading: {
     fontSize: 24,
@@ -343,7 +347,8 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: '600',
-    marginBottom: 16,
+    paddingHorizontal: 8,
+    marginBottom: 20,
   },
   emptyComicsContainer: {
     alignItems: 'center',

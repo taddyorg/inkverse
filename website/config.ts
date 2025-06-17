@@ -10,6 +10,7 @@ const developmentConfig = {
   "APPLE_CLIENT_ID": "art.bamcomics.taddy", 
   "APPLE_REDIRECT_URI": "https://inkverse.test:3010/api/auth/login-with-apple",
   "TADDY_CLIENT_ID":"151",
+  "SHOW_THEME_TOGGLE_ON_NAVBAR": true,
 }
 
 const developmentConfigButProductionData = {
@@ -24,6 +25,7 @@ const developmentConfigButProductionData = {
   "APPLE_CLIENT_ID": "art.bamcomics.taddy", 
   "APPLE_REDIRECT_URI": "https://inkverse.co/api/auth/login-with-apple", 
   "TADDY_CLIENT_ID":"151",
+  "SHOW_THEME_TOGGLE_ON_NAVBAR": false,
 }
 
 const productionConfig = {
@@ -38,6 +40,7 @@ const productionConfig = {
   "APPLE_CLIENT_ID": "art.bamcomics.taddy", 
   "APPLE_REDIRECT_URI": "https://inkverse.co/api/auth/login-with-apple", 
   "TADDY_CLIENT_ID":"151",
+  "SHOW_THEME_TOGGLE_ON_NAVBAR": false,
 }
 
 export default process.env.NODE_ENV === 'production'  

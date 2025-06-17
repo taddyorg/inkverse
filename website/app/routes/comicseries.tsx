@@ -2,7 +2,6 @@ import type { LoaderFunctionArgs, MetaFunction } from 'react-router-dom';
 import { useLoaderData } from 'react-router';
 import { useReducer, useEffect } from 'react';
 
-// import { SimpleLoadingComponent } from '@/components/ui';
 import { ComicSeriesDetails } from '../components/comics/ComicSeriesDetails';
 import { ComicIssuesList } from '../components/comics/ComicIssuesList';
 import { ComicSeriesInfo } from '../components/comics/ComicSeriesInfo';
@@ -21,8 +20,7 @@ import {
   unsubscribeFromSeries, 
   enableNotificationsForSeries, 
   disableNotificationsForSeries, 
-  comicSeriesQueryReducerDefault, 
-  comicSeriesInitialState 
+  comicSeriesReducer, 
 } from '@inkverse/shared-client/dispatch/comicseries';
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
@@ -43,21 +41,29 @@ export const loader = async ({ params, request, context }: LoaderFunctionArgs) =
 
 function ComicSeriesScreen() {
   const comicSeriesData = useLoaderData<typeof loader>();
-  const [comicSeriesState, dispatch] = useReducer(comicSeriesQueryReducerDefault, comicSeriesInitialState);
+  const [comicSeriesState, dispatch] = useReducer(comicSeriesReducer, comicSeriesData);
   
-  const { userComicData, isUserDataLoading, isSubscriptionLoading, isNotificationLoading } = comicSeriesState;
+  const {
+    comicseries,
+    issues,
+    isComicSeriesLoading,
+    userComicData, 
+    isUserDataLoading, 
+    isSubscriptionLoading, 
+    isNotificationLoading,
+  } = comicSeriesState;
   
   // Load user-specific data if authenticated
   useEffect(() => {
     const currentUser = getUserDetails();
-    if (currentUser && comicSeriesData?.comicseries?.uuid) {
+    if (currentUser && comicseries?.uuid) {
       const userClient = getUserApolloClient();
       loadUserComicData({ 
         userClient, 
-        seriesUuid: comicSeriesData.comicseries.uuid 
+        seriesUuid: comicseries.uuid 
       }, dispatch);
     }
-  }, [comicSeriesData?.comicseries?.uuid]);
+  }, [comicseries?.uuid]);
 
   const handleAddToProfile = async () => {
     if (!isAuthenticated()) {
@@ -67,7 +73,7 @@ function ComicSeriesScreen() {
       return;
     }
 
-    if (!comicSeriesData?.comicseries) return;
+    if (!comicseries) return;
 
     try {
       const userClient = getUserApolloClient();
@@ -76,12 +82,12 @@ function ComicSeriesScreen() {
       if (isCurrentlySubscribed) {
         await unsubscribeFromSeries({ 
           userClient, 
-          seriesUuid: comicSeriesData.comicseries.uuid 
+          seriesUuid: comicseries.uuid 
         }, dispatch);
       } else {
         await subscribeToSeries({ 
           userClient, 
-          seriesUuid: comicSeriesData.comicseries.uuid 
+          seriesUuid: comicseries.uuid 
         }, dispatch);
       }
     } catch (error) {
@@ -97,7 +103,7 @@ function ComicSeriesScreen() {
       return;
     }
 
-    if (!comicSeriesData?.comicseries) return;
+    if (!comicseries) return;
 
     try {
       const userClient = getUserApolloClient();
@@ -106,12 +112,12 @@ function ComicSeriesScreen() {
       if (hasNotifications) {
         await disableNotificationsForSeries({ 
           userClient, 
-          seriesUuid: comicSeriesData.comicseries.uuid 
+          seriesUuid: comicseries.uuid 
         }, dispatch);
       } else {
         await enableNotificationsForSeries({ 
           userClient, 
-          seriesUuid: comicSeriesData.comicseries.uuid 
+          seriesUuid: comicseries.uuid 
         }, dispatch);
       }
     } catch (error) {
@@ -119,11 +125,21 @@ function ComicSeriesScreen() {
     }
   };
   
+  if (!isComicSeriesLoading && !comicseries) {
+    return (
+      <div className="max-w-3xl mx-auto sm:p-6 lg:p-8 h-96 flex items-center justify-center">
+        <p className="text-lg font-medium text-center">
+          Comic series not found
+        </p>
+      </div>
+    )
+  }
+
   return (
     <>
       <div className="max-w-3xl mx-auto sm:p-6 lg:p-8">
         <ComicSeriesDetails 
-          comicseries={comicSeriesData?.comicseries} 
+          comicseries={comicseries} 
           pageType={'comicseries-screen'} 
         />
         <div className="px-4 sm:px-6 lg:px-8 pb-3">
@@ -134,14 +150,14 @@ function ComicSeriesScreen() {
               <div className="flex items-start">
                 <AddToProfileButton
                   isSubscribed={userComicData?.isSubscribed || false}
-                  isLoading={isSubscriptionLoading || isUserDataLoading}
+                  isLoading={isSubscriptionLoading || isUserDataLoading || false}
                   onPress={handleAddToProfile}
                   selectedText='SAVED'
                   unselectedText='SAVE'
                 />
                 <NotificationButton
                   isReceivingNotifications={userComicData?.hasNotificationEnabled || false}
-                  isLoading={isNotificationLoading || isUserDataLoading}
+                  isLoading={isNotificationLoading || isUserDataLoading || false}
                   onPress={handleGetNotifications}
                 />
               </div>
@@ -149,18 +165,18 @@ function ComicSeriesScreen() {
           </div>
         </div>
         <ComicIssuesList 
-          comicseries={comicSeriesData?.comicseries} 
-          issues={comicSeriesData?.issues?.filter((issue) => issue !== null)}
-          currentIssueUuid={comicSeriesData?.issues?.[0]?.uuid}
+          comicseries={comicseries} 
+          issues={issues?.filter((issue) => issue !== null)}
+          currentIssueUuid={issues?.[0]?.uuid}
         />
-        {comicSeriesData?.comicseries && (
-          <ComicSeriesInfo comicseries={comicSeriesData.comicseries} />
+        {comicseries && (
+          <ComicSeriesInfo comicseries={comicseries} />
         )}
-        {comicSeriesData.comicseries && comicSeriesData?.issues?.[0] && comicSeriesData?.issues?.length > 3 && (
+        {comicseries && issues?.[0] && issues?.length > 3 && (
           <div className="px-4 lg:px-8 pb-8">
             <ReadNextEpisode 
-              comicissue={comicSeriesData.issues[0]}
-              comicseries={comicSeriesData.comicseries}
+              comicissue={issues[0]}
+              comicseries={comicseries}
               firstTextCTA="READ THE FIRST"
               secondTextCTA="EPISODE"
             />

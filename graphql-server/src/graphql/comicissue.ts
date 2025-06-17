@@ -60,6 +60,9 @@ type ComicIssue {
   " Details on the comic for which this issue belongs to "
   comicSeries: ComicSeries
 
+  " Previous issue in the series "
+  previousIssue: ComicIssue
+
   " Next issue in the series "
   nextIssue: ComicIssue
 
@@ -164,6 +167,13 @@ const ComicIssueFieldResolvers: ComicIssueResolvers = {
     async comicSeries({ seriesUuid }: ComicIssueModel, input:{}, context: GraphQLContext) {
       const trimmedSeriesUuid = validateAndTrimUuid(seriesUuid, 'seriesUuid');
       return await ComicSeries.getComicSeriesByUuid(trimmedSeriesUuid);
+    },
+
+    async previousIssue({ seriesUuid, position }: ComicIssueModel, input:{}, context: GraphQLContext) {
+      const trimmedSeriesUuid = validateAndTrimUuid(seriesUuid, 'seriesUuid');
+      if (!isNumber(position)) { return null }
+      if (position === 0) { return null } // The first issue has no previous issue
+      return await ComicIssue.getComicIssueForSeriesByPosition(trimmedSeriesUuid, position - 1);
     },
 
     async nextIssue({ seriesUuid, position }: ComicIssueModel, input:{}, context: GraphQLContext) {

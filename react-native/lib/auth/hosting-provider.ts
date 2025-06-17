@@ -1,19 +1,27 @@
 import { getNewAccessToken, getNewContentToken, getNewRefreshToken } from '@inkverse/public/hosting-providers';
 import { asyncSet, asyncGet, asyncDeleteMultiple, asyncDelete } from '../storage/async';
 import { secureSet, secureGet, secureDeleteMultiple, secureDelete } from '../storage/secure';
-import { isTokenExpired } from './utils';
+import { doesTokenContainPaidItems, isTokenExpired } from './utils';
+import { syncStorageGet, syncStorageSet } from '../storage/sync';
 
 // Key constants
 const HOSTING_PROVIDER_ACCESS_TOKEN_ENDING = 'access-token';
 const HOSTING_PROVIDER_REFRESH_TOKEN_ENDING = 'refresh-token';
-const HOSTING_PROVIDER_UUIDS_KEY = 'hosting-provider-uuids';
+export const HOSTING_PROVIDER_UUIDS_KEY = 'hosting-provider-uuids';
 const contentTokenForProviderAndSeries: Record<string, string> = {};
 
 /**
  * Get all connected hosting provider UUIDs
  */
-export async function getConnectedHostingProviderUuids(): Promise<string[]> {
-  return Array.from(await getHostingProviderUuids());
+export function getConnectedHostingProviderUuids(): string[] {
+  const uuids = syncStorageGet(HOSTING_PROVIDER_UUIDS_KEY);
+  if (!uuids) return [];
+  try {
+    const uuidArray = JSON.parse(uuids);
+    return uuidArray;
+  } catch {
+    return [];
+  }
 }
 
 /**
@@ -34,6 +42,7 @@ async function getHostingProviderUuids(): Promise<Set<string>> {
  * Save the set of hosting provider UUIDs to AsyncStorage
  */
 async function saveHostingProviderUuids(uuidSet: Set<string>): Promise<void> {
+  syncStorageSet(HOSTING_PROVIDER_UUIDS_KEY, JSON.stringify(Array.from(uuidSet)));
   await asyncSet(HOSTING_PROVIDER_UUIDS_KEY, JSON.stringify(Array.from(uuidSet)));
 }
 
@@ -72,6 +81,8 @@ export async function saveHostingProviderRefreshToken(token: string, hostingProv
 }
 
 export function saveContentTokenForProviderAndSeries(token: string, hostingProviderUuid: string, seriesUuid: string): void {
+  if (!doesTokenContainPaidItems(token)) return;
+
   contentTokenForProviderAndSeries[`${hostingProviderUuid}_${seriesUuid}`] = token;
 }
 

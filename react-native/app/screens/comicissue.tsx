@@ -1,10 +1,12 @@
 import React, { useCallback, useReducer, useEffect, useMemo, useRef, useState } from 'react';
-import { StyleSheet, useWindowDimensions, Animated, View, NativeSyntheticEvent, NativeScrollEvent, TouchableWithoutFeedback, Pressable } from 'react-native';
+import { StyleSheet, useWindowDimensions, Animated, View, NativeSyntheticEvent, NativeScrollEvent, TouchableWithoutFeedback, Pressable, Text } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { RootStackParamList, COMICISSUE_SCREEN } from '@/constants/Navigation';
+import { RootStackParamList, COMICISSUE_SCREEN, COMICSERIES_SCREEN, EDIT_PATREON_SCREEN, SIGNUP_SCREEN } from '@/constants/Navigation';
 import { FlashList } from '@shopify/flash-list';
 import { Image } from 'expo-image';
+import { jwtDecode } from 'jwt-decode';
+import * as Linking from 'expo-linking';
 
 import { StoryImage } from '../components/comics/StoryImage';
 import { GridOfComicIssues } from '../components/comics/GridOfComicIssues';
@@ -12,14 +14,19 @@ import { ComicHeader, HEADER_HEIGHT } from '../components/comics/ComicHeader';
 import { ComicFooter, FOOTER_HEIGHT } from '../components/comics/ComicFooter';
 import { CreatorForIssue } from '../components/creator/CreatorForIssue';
 import { ReadNextEpisode } from '../components/comics/ReadNextEpisode';
-import { Screen, ScrollIndicator, ThemedActivityIndicator, ThemedRefreshControl } from '@/app/components/ui';
+import { Screen, ScrollIndicator, ThemedActivityIndicator, ThemedRefreshControl, ThemedView, ThemedText, ThemedButton, PressableOpacity, ThemedTextFontFamilyMap } from '@/app/components/ui';
 
 import { getPublicApolloClient } from '@/lib/apollo';
-import { comicIssueQueryReducer, comicIssueInitialState, loadComicIssue } from '@inkverse/shared-client/dispatch/comicissue';
-import { ComicIssue } from '@inkverse/shared-client/graphql/operations';
+import { comicIssueReducer, comicIssueInitialState, loadComicIssue, checkPatreonAccess } from '@inkverse/shared-client/dispatch/comicissue';
+import { ComicIssue, Creator } from '@inkverse/shared-client/graphql/operations';
 import { getStoryImageUrl } from '@inkverse/public/comicstory';
+import { getAvatarImageUrl } from '@inkverse/public/creator';
+import { LinkType } from '@inkverse/public/graphql/types';
+import { getUserDetails } from '@/lib/auth/user';
+import { getConnectedHostingProviderUuids, getContentTokenForProviderAndSeries } from '@/lib/auth/hosting-provider';
+import { useThemeColor } from '@/constants/Colors';
 
-type ListItemType = 'story' | 'grid' | 'creator' | 'next-episode';
+type ListItemType = 'story' | 'grid' | 'creator' | 'next-episode' | 'exclusive-signup' | 'exclusive-connect-patreon' | 'exclusive-checking-access' | 'exclusive-no-access';
 
 interface ListItem {
   type: ListItemType;
@@ -108,8 +115,15 @@ export function ComicIssueScreen() {
     }).start();
   }, []);
   
-  const [state, dispatch] = useReducer(comicIssueQueryReducer, comicIssueInitialState);
-  const { isComicIssueLoading, comicissue, comicseries, allIssues } = state;
+  const [state, dispatch] = useReducer(comicIssueReducer, comicIssueInitialState);
+  const { isComicIssueLoading, comicissue, comicseries, isCheckingAccess, contentToken, creatorLinks } = state;
+  
+  const isPatreonExclusive = comicissue?.scopesForExclusiveContent?.includes('patreon');
+  const decodedToken = contentToken && jwtDecode(contentToken) as any;
+  const hasAccessToIssue = decodedToken?.items && Array.isArray(decodedToken.items) && comicissue?.uuid && decodedToken.items.includes(comicissue.uuid);
+  const connectedProviders = getConnectedHostingProviderUuids();
+  const isConnectedToHostingProvider = comicseries?.hostingProviderUuid && connectedProviders.includes(comicseries.hostingProviderUuid);
+  const isAuthenticated = !!getUserDetails();
   
   const loadData = useCallback(async (forceRefresh = false) => {
     await loadComicIssue({
@@ -122,7 +136,18 @@ export function ComicIssueScreen() {
 
   useEffect(() => {
     loadData();
-  }, [loadData]);
+  }, [issueUuid, seriesUuid]);
+
+  useEffect(() => {
+    if (isPatreonExclusive && comicseries?.hostingProviderUuid && comicseries?.uuid && isConnectedToHostingProvider) {
+      checkPatreonAccess({
+        isPatreonExclusive,
+        hostingProviderUuid: comicseries?.hostingProviderUuid,
+        seriesUuid: comicseries?.uuid,
+        getContentTokenForProviderAndSeries
+      }, dispatch);
+    }
+  }, [isPatreonExclusive, comicseries?.hostingProviderUuid, comicseries?.uuid, comicissue?.uuid]);
 
   const handleRefresh = useCallback(() => {
     setRefreshing(true);
@@ -132,15 +157,16 @@ export function ComicIssueScreen() {
 
   const preloadImages = useCallback(async (stories: NonNullable<ComicIssue['stories']>) => {
     const imageUrls = stories
-      .map(story => getStoryImageUrl({ storyImageAsString: story?.storyImageAsString }))
+      .map(story => getStoryImageUrl({ storyImageAsString: story?.storyImageAsString, token: contentToken || undefined }))
       .filter((url): url is string => url !== null);
 
     try {
+      if (isPatreonExclusive && !contentToken) return; // If the issue is patreon exclusive, and the user doesn't have a content token, don't preload images
       await preloadImagesInBatch(imageUrls);
     } catch (error) {
       console.warn('Error preloading images:', error);
     }
-  }, [issueUuid, comicissue?.uuid]);
+  }, [issueUuid, comicissue?.uuid, contentToken]);
 
   // Preload images when stories data is available
   useEffect(() => {
@@ -168,6 +194,11 @@ export function ComicIssueScreen() {
     footerTranslateY.setValue(FOOTER_CLOSED_POSITION);    
   }, [navigation]);
 
+  const exclusiveListItemStyle = useMemo(() => ({
+    ...styles.exclusiveListItem,
+    height: screenDetails.height,
+  }), [screenDetails.height]);
+
   const renderItem = useCallback(({ item }: { item: ListItem }) => {
     switch (item.type) {
       case 'story':
@@ -175,6 +206,7 @@ export function ComicIssueScreen() {
           <StoryImage
             story={item.data}
             screenDetails={screenDetails}
+            contentToken={contentToken}
           />
         );
       case 'creator':
@@ -201,13 +233,72 @@ export function ComicIssueScreen() {
             />
           </View>
         );
+      case 'exclusive-signup':
+        return (
+          <View style={exclusiveListItemStyle}>
+            <SignupButton navigation={navigation} />
+          </View>
+        );
+      case 'exclusive-connect-patreon':
+        return (
+          <View style={exclusiveListItemStyle}>
+            <PatreonConnectButton navigation={navigation} />
+          </View>
+        );
+      case 'exclusive-checking-access':
+        return (
+          <View style={exclusiveListItemStyle}>
+            <ThemedActivityIndicator />
+          </View>
+        );
+      case 'exclusive-no-access':
+        return (
+          <View style={exclusiveListItemStyle}>
+            <YouNeedToBeAPatreonBacker 
+              creators={item.data.creators} 
+              creatorLinks={item.data.creatorLinks} 
+            />
+          </View>
+        );
       default:
         return null;
     }
-  }, [screenDetails, handleNavigateToIssue]);
+  }, [screenDetails, contentToken, handleNavigateToIssue, navigation, exclusiveListItemStyle]);
 
   const listData = useMemo(() => {
     if (!comicissue || !comicseries) return [];
+
+    // Check for exclusive content states
+    if (isPatreonExclusive) {
+      if (!isAuthenticated) {
+        return [{
+          type: 'exclusive-signup' as const,
+          key: 'exclusive-signup',
+          data: {},
+        }];
+      } else if (!isConnectedToHostingProvider) {
+        return [{
+          type: 'exclusive-connect-patreon' as const,
+          key: 'exclusive-connect-patreon',
+          data: {},
+        }];
+      } else if (isCheckingAccess) {
+        return [{
+          type: 'exclusive-checking-access' as const,
+          key: 'exclusive-checking-access',
+          data: {},
+        }];
+      } else if (!hasAccessToIssue && contentToken) {
+        return [{
+          type: 'exclusive-no-access' as const,
+          key: 'exclusive-no-access',
+          data: {
+            creators: comicseries?.creators?.filter(Boolean) as Creator[] | undefined,
+            creatorLinks: creatorLinks,
+          },
+        }];
+      }
+    }
 
     const storyItems: ListItem[] = comicissue.stories?.map((story) => ({
       type: 'story' as const,
@@ -224,16 +315,6 @@ export function ComicIssueScreen() {
       },
     };
 
-    const gridItem: ListItem = {
-      type: 'grid' as const,
-      key: 'grid-of-issues',
-      data: {
-        comicseries,
-        comicissue,
-        allIssues,
-      },
-    };
-
     const nextEpisodeItem: ListItem = {
       type: 'next-episode' as const,
       key: 'next-episode-button',
@@ -245,12 +326,11 @@ export function ComicIssueScreen() {
     const items = [
       ...storyItems,
       creatorItem,
-      // gridItem,
       nextEpisodeItem
     ];
 
     return items;
-  }, [comicissue, comicseries, allIssues]);
+  }, [comicissue, comicseries, contentToken, isPatreonExclusive, isAuthenticated, isConnectedToHostingProvider, isCheckingAccess, hasAccessToIssue, creatorLinks]);
 
   // Handle tap on content to toggle header and footer
   const handleTap = useCallback(() => {
@@ -357,7 +437,8 @@ export function ComicIssueScreen() {
       <ComicFooter
         footerPosition={footerTranslateY}
         comicissue={comicissue}
-        allIssues={allIssues || []}
+        nextIssue={comicissue?.nextIssue}
+        previousIssue={comicissue?.previousIssue}
         onNavigateToIssue={handleNavigateToIssue}
       />
       <ScrollIndicator 
@@ -373,6 +454,64 @@ export function ComicIssueScreen() {
   );
 }
 
+const SignupButton = ({ navigation }: { navigation: any }) => {
+  return (
+    <View style={styles.authContainer}>
+      <ThemedText style={styles.authText}>Please sign up to continue</ThemedText>
+      <ThemedButton
+        buttonText="Sign Up"
+        style={styles.authButton}
+        buttonTextProps={styles.authButtonText}
+        onPress={() => navigation.navigate(SIGNUP_SCREEN)}
+      />
+    </View>
+  );
+};
+
+const PatreonConnectButton = ({ navigation }: { navigation: any }) => {
+  return (
+    <View style={styles.authContainer}>
+      <ThemedText style={styles.authText}>Please connect your Patreon account to access this comic issue.</ThemedText>
+      <PressableOpacity
+        onPress={() => navigation.navigate(EDIT_PATREON_SCREEN)}
+        style={styles.authButton}
+      >
+        <Text style={styles.authButtonText}>Connect Patreon</Text>
+      </PressableOpacity>
+    </View>
+  );
+};
+
+const YouNeedToBeAPatreonBacker = ({ creators, creatorLinks }: { creators?: Creator[] | undefined, creatorLinks?: any[] }) => {
+  const creatorName = creators?.[0]?.name || 'this creator';
+  const patreonUrl = creatorLinks?.find(link => link.type === LinkType.PATREON)?.url || undefined;
+  const creatorAvatar = getAvatarImageUrl({ avatarImageAsString: creators?.[0]?.avatarImageAsString });
+  const buttonColor = useThemeColor({}, 'action');
+
+  return (
+    <View style={styles.authContainer}>
+      {creatorAvatar && (
+        <Image source={{ uri: creatorAvatar }} style={styles.creatorAvatar} />
+      )}
+      <ThemedText style={styles.patreonBackerTitle}>
+        You need to be a <ThemedText style={[styles.patreonText, { color: buttonColor }]}>Patreon</ThemedText> backer of {creatorName} to get access to this episode.
+      </ThemedText>
+      {patreonUrl && (
+        <ThemedButton
+          buttonText="BECOME A PATREON BACKER"
+          style={{ ...styles.patreonButton, backgroundColor: buttonColor }}
+          buttonTextProps={styles.patreonButtonText}
+          onPress={() => {
+            if (patreonUrl) {
+              Linking.openURL(patreonUrl);
+            }
+          }}
+        />
+      )}
+    </View>
+  );
+};
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -384,5 +523,58 @@ const styles = StyleSheet.create({
   },
   bottomSpacer: {
     marginBottom: 10,
+  },
+  exclusiveListItem: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  authContainer: {
+    alignItems: 'center',
+    padding: 20,
+  },
+  authText: {
+    fontSize: 18,
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  authButton: {
+    backgroundColor: '#EF4444',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 999,
+  },
+  authButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  creatorAvatar: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    marginBottom: 16,
+  },
+  patreonBackerTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 24,
+  },
+  patreonText: {
+    fontSize: 19,
+    fontFamily: ThemedTextFontFamilyMap.semiBold,
+  },
+  patreonButton: {
+    paddingHorizontal: 32,
+    paddingVertical: 12,
+    borderRadius: 999,
+  },
+  patreonButtonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });

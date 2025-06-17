@@ -5,7 +5,6 @@ import { handleLoaderError } from "./error-handler";
 
 export type DocumentationLoaderData = {
   documentation: GetDocumentationQuery['getDocumentation'];
-  apolloState: Record<string, any>;
 };
 
 export async function loadDocumentation({ params, request, context }: LoaderFunctionArgs, basePath: string): Promise<DocumentationLoaderData> {
@@ -25,11 +24,8 @@ export async function loadDocumentation({ params, request, context }: LoaderFunc
       throw new Response("Not Found", { status: 404 });
     }
 
-    const state = client.extract();
-
     return {
       documentation: data.getDocumentation,
-      apolloState: state,
     };
 
   } catch (error) {

@@ -1,14 +1,73 @@
 import type { ApolloClient, ApolloQueryResult } from '@apollo/client';
-import { asyncAction, ActionTypes, errorHandlerFactory, type Dispatch, type Action } from './utils.js';
+import type { Dispatch } from 'react';
 import { type GetComicSeriesQuery, type GetComicSeriesQueryVariables, SortOrder, GetComicSeries, type ComicIssue, type ComicSeries, GetMiniComicSeries, type GetMiniComicSeriesQuery, type GetMiniComicSeriesQueryVariables, type SubscribeToSeriesMutation, type SubscribeToSeriesMutationVariables, SubscribeToSeries, type UnsubscribeFromSeriesMutation, type UnsubscribeFromSeriesMutationVariables, UnsubscribeFromSeries, GetUserComicSeries, type GetUserComicSeriesQuery, type GetUserComicSeriesQueryVariables, type EnableNotificationsForSeriesMutation, type EnableNotificationsForSeriesMutationVariables, EnableNotificationsForSeries, type DisableNotificationsForSeriesMutation, type DisableNotificationsForSeriesMutationVariables, DisableNotificationsForSeries } from "../graphql/operations.js";
 
-/* Actions */
-export const GET_COMICSERIES = asyncAction(ActionTypes.GET_COMICSERIES);
-export const GET_USER_COMIC_DATA = asyncAction(ActionTypes.GET_USER_COMIC_DATA);
-export const SUBSCRIBE_TO_SERIES = asyncAction(ActionTypes.SUBSCRIBE_TO_SERIES);
-export const UNSUBSCRIBE_FROM_SERIES = asyncAction(ActionTypes.UNSUBSCRIBE_FROM_SERIES);
-export const ENABLE_NOTIFICATIONS_FOR_SERIES = asyncAction(ActionTypes.ENABLE_NOTIFICATIONS_FOR_SERIES);
-export const DISABLE_NOTIFICATIONS_FOR_SERIES = asyncAction(ActionTypes.DISABLE_NOTIFICATIONS_FOR_SERIES);
+/* Action Type Enum */
+export enum ComicSeriesActionType {
+  // Comic Series Loading
+  GET_COMICSERIES_START = 'GET_COMICSERIES_START',
+  GET_COMICSERIES_SUCCESS = 'GET_COMICSERIES_SUCCESS',
+  GET_COMICSERIES_ERROR = 'GET_COMICSERIES_ERROR',
+  
+  // User Comic Data
+  GET_USER_COMIC_DATA_START = 'GET_USER_COMIC_DATA_START',
+  GET_USER_COMIC_DATA_SUCCESS = 'GET_USER_COMIC_DATA_SUCCESS',
+  GET_USER_COMIC_DATA_ERROR = 'GET_USER_COMIC_DATA_ERROR',
+  
+  // Subscription Management
+  SUBSCRIBE_TO_SERIES_START = 'SUBSCRIBE_TO_SERIES_START',
+  SUBSCRIBE_TO_SERIES_SUCCESS = 'SUBSCRIBE_TO_SERIES_SUCCESS',
+  SUBSCRIBE_TO_SERIES_ERROR = 'SUBSCRIBE_TO_SERIES_ERROR',
+  
+  UNSUBSCRIBE_FROM_SERIES_START = 'UNSUBSCRIBE_FROM_SERIES_START',
+  UNSUBSCRIBE_FROM_SERIES_SUCCESS = 'UNSUBSCRIBE_FROM_SERIES_SUCCESS',
+  UNSUBSCRIBE_FROM_SERIES_ERROR = 'UNSUBSCRIBE_FROM_SERIES_ERROR',
+  
+  // Notification Management
+  ENABLE_NOTIFICATIONS_FOR_SERIES_START = 'ENABLE_NOTIFICATIONS_FOR_SERIES_START',
+  ENABLE_NOTIFICATIONS_FOR_SERIES_SUCCESS = 'ENABLE_NOTIFICATIONS_FOR_SERIES_SUCCESS',
+  ENABLE_NOTIFICATIONS_FOR_SERIES_ERROR = 'ENABLE_NOTIFICATIONS_FOR_SERIES_ERROR',
+  
+  DISABLE_NOTIFICATIONS_FOR_SERIES_START = 'DISABLE_NOTIFICATIONS_FOR_SERIES_START',
+  DISABLE_NOTIFICATIONS_FOR_SERIES_SUCCESS = 'DISABLE_NOTIFICATIONS_FOR_SERIES_SUCCESS',
+  DISABLE_NOTIFICATIONS_FOR_SERIES_ERROR = 'DISABLE_NOTIFICATIONS_FOR_SERIES_ERROR',
+}
+
+/* Action Types */
+interface UserComicData {
+  isSubscribed: boolean;
+  isRecommended: boolean;
+  hasNotificationEnabled: boolean;
+}
+
+export type ComicSeriesAction =
+  // Comic Series Loading
+  | { type: ComicSeriesActionType.GET_COMICSERIES_START }
+  | { type: ComicSeriesActionType.GET_COMICSERIES_SUCCESS; payload: Partial<ComicSeriesLoaderData> }
+  | { type: ComicSeriesActionType.GET_COMICSERIES_ERROR; payload: string }
+  
+  // User Comic Data
+  | { type: ComicSeriesActionType.GET_USER_COMIC_DATA_START }
+  | { type: ComicSeriesActionType.GET_USER_COMIC_DATA_SUCCESS; payload: Partial<ComicSeriesLoaderData> }
+  | { type: ComicSeriesActionType.GET_USER_COMIC_DATA_ERROR; payload: string }
+  
+  // Subscription Management
+  | { type: ComicSeriesActionType.SUBSCRIBE_TO_SERIES_START }
+  | { type: ComicSeriesActionType.SUBSCRIBE_TO_SERIES_SUCCESS; payload: { userComicData: UserComicData } }
+  | { type: ComicSeriesActionType.SUBSCRIBE_TO_SERIES_ERROR; payload: string }
+  
+  | { type: ComicSeriesActionType.UNSUBSCRIBE_FROM_SERIES_START }
+  | { type: ComicSeriesActionType.UNSUBSCRIBE_FROM_SERIES_SUCCESS; payload: { userComicData: UserComicData } }
+  | { type: ComicSeriesActionType.UNSUBSCRIBE_FROM_SERIES_ERROR; payload: string }
+  
+  // Notification Management
+  | { type: ComicSeriesActionType.ENABLE_NOTIFICATIONS_FOR_SERIES_START }
+  | { type: ComicSeriesActionType.ENABLE_NOTIFICATIONS_FOR_SERIES_SUCCESS; payload: { userComicData: UserComicData } }
+  | { type: ComicSeriesActionType.ENABLE_NOTIFICATIONS_FOR_SERIES_ERROR; payload: string }
+  
+  | { type: ComicSeriesActionType.DISABLE_NOTIFICATIONS_FOR_SERIES_START }
+  | { type: ComicSeriesActionType.DISABLE_NOTIFICATIONS_FOR_SERIES_SUCCESS; payload: { userComicData: UserComicData } }
+  | { type: ComicSeriesActionType.DISABLE_NOTIFICATIONS_FOR_SERIES_ERROR; payload: string };
 
 export type ComicSeriesLoaderData = {
   isComicSeriesLoading: boolean;
@@ -25,10 +84,9 @@ export type ComicSeriesLoaderData = {
   subscriptionError: string | null;
   isNotificationLoading: boolean;
   notificationError: string | null;
-  apolloState?: Record<string, any>;
 };
 
-export const comicSeriesInitialState: ComicSeriesLoaderData = {
+export const comicSeriesInitialState: Partial<ComicSeriesLoaderData> = {
   isComicSeriesLoading: false,
   comicseries: null,
   issues: [],
@@ -82,8 +140,11 @@ interface DisableNotificationsProps {
   seriesUuid: string;
 }
 
-export async function loadComicSeriesUrl({ publicClient, shortUrl }: WrappedGetComicSeriesProps, dispatch: Dispatch) {
-  dispatch(GET_COMICSERIES.request());
+export async function loadComicSeriesUrl(
+  { publicClient, shortUrl }: WrappedGetComicSeriesProps,
+  dispatch?: Dispatch<ComicSeriesAction>
+): Promise<Partial<ComicSeriesLoaderData> | null> {
+  if (dispatch) dispatch({ type: ComicSeriesActionType.GET_COMICSERIES_START });
 
   try {
     // Then get the full comic series data
@@ -98,14 +159,34 @@ export async function loadComicSeriesUrl({ publicClient, shortUrl }: WrappedGetC
 
     const parsedData = parseLoaderComicSeries(getComicSeriesUuid.data);
 
-    dispatch(GET_COMICSERIES.success(parsedData));
-  } catch (error: Error | unknown) {
-    errorHandlerFactory(dispatch, GET_COMICSERIES)(error);
+    if (dispatch) {
+      dispatch({ 
+        type: ComicSeriesActionType.GET_COMICSERIES_SUCCESS, 
+        payload: parsedData 
+      });
+    }
+    
+    return parsedData;
+  } catch (error: any) {
+    const errorMessage = error?.response?.data?.error || 
+                        error?.message || 
+                        'Failed to load comic series';
+    
+    if (dispatch) {
+      dispatch({ 
+        type: ComicSeriesActionType.GET_COMICSERIES_ERROR, 
+        payload: errorMessage 
+      });
+    }
+    return null;
   }
 }
 
-export async function loadComicSeries({ publicClient, uuid, forceRefresh = false }: GetComicSeriesProps, dispatch: Dispatch) {
-  dispatch(GET_COMICSERIES.request());
+export async function loadComicSeries(
+  { publicClient, uuid, forceRefresh = false }: GetComicSeriesProps,
+  dispatch?: Dispatch<ComicSeriesAction>
+): Promise<Partial<ComicSeriesLoaderData> | null> {
+  if (dispatch) dispatch({ type: ComicSeriesActionType.GET_COMICSERIES_START });
 
   try {
     // Then get the full comic series data
@@ -126,14 +207,34 @@ export async function loadComicSeries({ publicClient, uuid, forceRefresh = false
 
     const parsedData = parseLoaderComicSeries(comicSeriesResult.data);
 
-    dispatch(GET_COMICSERIES.success(parsedData));
-  } catch (error: Error | unknown) {
-    errorHandlerFactory(dispatch, GET_COMICSERIES)(error);
+    if (dispatch) {
+      dispatch({ 
+        type: ComicSeriesActionType.GET_COMICSERIES_SUCCESS, 
+        payload: parsedData 
+      });
+    }
+    
+    return parsedData;
+  } catch (error: any) {
+    const errorMessage = error?.response?.data?.error || 
+                        error?.message || 
+                        'Failed to load comic series';
+    
+    if (dispatch) {
+      dispatch({ 
+        type: ComicSeriesActionType.GET_COMICSERIES_ERROR, 
+        payload: errorMessage 
+      });
+    }
+    return null;
   }
 }
 
-export async function loadUserComicData({ userClient, seriesUuid, forceRefresh = false }: GetUserComicDataProps, dispatch: Dispatch) {
-  dispatch(GET_USER_COMIC_DATA.request());
+export async function loadUserComicData(
+  { userClient, seriesUuid, forceRefresh = false }: GetUserComicDataProps,
+  dispatch?: Dispatch<ComicSeriesAction>
+): Promise<Partial<ComicSeriesLoaderData> | null> {
+  if (dispatch) dispatch({ type: ComicSeriesActionType.GET_USER_COMIC_DATA_START });
 
   try {
     const result = await userClient.query<GetUserComicSeriesQuery, GetUserComicSeriesQueryVariables>({
@@ -144,14 +245,34 @@ export async function loadUserComicData({ userClient, seriesUuid, forceRefresh =
 
     const parsedData = parseLoaderUserComicSeries(result.data);
 
-    dispatch(GET_USER_COMIC_DATA.success(parsedData));
-  } catch (error: Error | unknown) {
-    errorHandlerFactory(dispatch, GET_USER_COMIC_DATA)(error);
+    if (dispatch) {
+      dispatch({ 
+        type: ComicSeriesActionType.GET_USER_COMIC_DATA_SUCCESS, 
+        payload: parsedData 
+      });
+    }
+    
+    return parsedData;
+  } catch (error: any) {
+    const errorMessage = error?.response?.data?.error || 
+                        error?.message || 
+                        'Failed to load user comic data';
+    
+    if (dispatch) {
+      dispatch({ 
+        type: ComicSeriesActionType.GET_USER_COMIC_DATA_ERROR, 
+        payload: errorMessage 
+      });
+    }
+    return null;
   }
 }
 
-export async function subscribeToSeries({ userClient, seriesUuid }: SubscribeToSeriesProps, dispatch: Dispatch) {
-  dispatch(SUBSCRIBE_TO_SERIES.request());
+export async function subscribeToSeries(
+  { userClient, seriesUuid }: SubscribeToSeriesProps,
+  dispatch?: Dispatch<ComicSeriesAction>
+): Promise<UserComicData | null> {
+  if (dispatch) dispatch({ type: ComicSeriesActionType.SUBSCRIBE_TO_SERIES_START });
 
   try {
     const result = await userClient.mutate<SubscribeToSeriesMutation, SubscribeToSeriesMutationVariables>({
@@ -159,24 +280,44 @@ export async function subscribeToSeries({ userClient, seriesUuid }: SubscribeToS
       variables: { seriesUuid }
     });
 
-    if (result.data?.subscribeToSeries) {
-      dispatch(SUBSCRIBE_TO_SERIES.success({ 
-        userComicData: {
-          isSubscribed: result.data.subscribeToSeries.isSubscribed,
-          isRecommended: result.data.subscribeToSeries.isRecommended,
-          hasNotificationEnabled: result.data.subscribeToSeries.hasNotificationEnabled,
-        }
-      }));
-    } else {
+    if (!result.data?.subscribeToSeries) {
       throw new Error('Failed to subscribe to series');
     }
-  } catch (error: Error | unknown) {
-    errorHandlerFactory(dispatch, SUBSCRIBE_TO_SERIES)(error);
+    
+    const userComicData: UserComicData = {
+      isSubscribed: result.data.subscribeToSeries.isSubscribed,
+      isRecommended: result.data.subscribeToSeries.isRecommended,
+      hasNotificationEnabled: result.data.subscribeToSeries.hasNotificationEnabled,
+    };
+    
+    if (dispatch) {
+      dispatch({ 
+        type: ComicSeriesActionType.SUBSCRIBE_TO_SERIES_SUCCESS, 
+        payload: { userComicData }
+      });
+    }
+    
+    return userComicData;
+  } catch (error: any) {
+    const errorMessage = error?.response?.data?.error || 
+                        error?.message || 
+                        'Failed to subscribe to series';
+    
+    if (dispatch) {
+      dispatch({ 
+        type: ComicSeriesActionType.SUBSCRIBE_TO_SERIES_ERROR, 
+        payload: errorMessage 
+      });
+    }
+    return null;
   }
 }
 
-export async function unsubscribeFromSeries({ userClient, seriesUuid }: UnsubscribeFromSeriesProps, dispatch: Dispatch) {
-  dispatch(UNSUBSCRIBE_FROM_SERIES.request());
+export async function unsubscribeFromSeries(
+  { userClient, seriesUuid }: UnsubscribeFromSeriesProps,
+  dispatch?: Dispatch<ComicSeriesAction>
+): Promise<UserComicData | null> {
+  if (dispatch) dispatch({ type: ComicSeriesActionType.UNSUBSCRIBE_FROM_SERIES_START });
 
   try {
     const result = await userClient.mutate<UnsubscribeFromSeriesMutation, UnsubscribeFromSeriesMutationVariables>({
@@ -184,25 +325,45 @@ export async function unsubscribeFromSeries({ userClient, seriesUuid }: Unsubscr
       variables: { seriesUuid }
     });
 
-    if (result.data?.unsubscribeFromSeries) {
-      dispatch(UNSUBSCRIBE_FROM_SERIES.success({ 
-        userComicData: {
-          isSubscribed: result.data.unsubscribeFromSeries.isSubscribed,
-          isRecommended: result.data.unsubscribeFromSeries.isRecommended,
-          hasNotificationEnabled: result.data.unsubscribeFromSeries.hasNotificationEnabled,
-        }
-      }));
-    } else {
+    if (!result.data?.unsubscribeFromSeries) {
       throw new Error('Failed to unsubscribe from series');
     }
-  } catch (error: Error | unknown) {
-    errorHandlerFactory(dispatch, UNSUBSCRIBE_FROM_SERIES)(error);
+    
+    const userComicData: UserComicData = {
+      isSubscribed: result.data.unsubscribeFromSeries.isSubscribed,
+      isRecommended: result.data.unsubscribeFromSeries.isRecommended,
+      hasNotificationEnabled: result.data.unsubscribeFromSeries.hasNotificationEnabled,
+    };
+    
+    if (dispatch) {
+      dispatch({ 
+        type: ComicSeriesActionType.UNSUBSCRIBE_FROM_SERIES_SUCCESS, 
+        payload: { userComicData }
+      });
+    }
+    
+    return userComicData;
+  } catch (error: any) {
+    const errorMessage = error?.response?.data?.error || 
+                        error?.message || 
+                        'Failed to unsubscribe from series';
+    
+    if (dispatch) {
+      dispatch({ 
+        type: ComicSeriesActionType.UNSUBSCRIBE_FROM_SERIES_ERROR, 
+        payload: errorMessage 
+      });
+    }
+    return null;
   }
 }
 
 
-export async function enableNotificationsForSeries({ userClient, seriesUuid }: EnableNotificationsProps, dispatch: Dispatch) {
-  dispatch(ENABLE_NOTIFICATIONS_FOR_SERIES.request());
+export async function enableNotificationsForSeries(
+  { userClient, seriesUuid }: EnableNotificationsProps,
+  dispatch?: Dispatch<ComicSeriesAction>
+): Promise<UserComicData | null> {
+  if (dispatch) dispatch({ type: ComicSeriesActionType.ENABLE_NOTIFICATIONS_FOR_SERIES_START });
 
   try {
     const result = await userClient.mutate<EnableNotificationsForSeriesMutation, EnableNotificationsForSeriesMutationVariables>({
@@ -210,24 +371,44 @@ export async function enableNotificationsForSeries({ userClient, seriesUuid }: E
       variables: { seriesUuid }
     });
 
-    if (result.data?.enableNotificationsForSeries) {
-      dispatch(ENABLE_NOTIFICATIONS_FOR_SERIES.success({ 
-        userComicData: {
-          isSubscribed: result.data.enableNotificationsForSeries.isSubscribed,
-          isRecommended: result.data.enableNotificationsForSeries.isRecommended,
-          hasNotificationEnabled: result.data.enableNotificationsForSeries.hasNotificationEnabled,
-        }
-      }));
-    } else {
+    if (!result.data?.enableNotificationsForSeries) {
       throw new Error('Failed to enable notifications for series');
     }
-  } catch (error: Error | unknown) {
-    errorHandlerFactory(dispatch, ENABLE_NOTIFICATIONS_FOR_SERIES)(error);
+    
+    const userComicData: UserComicData = {
+      isSubscribed: result.data.enableNotificationsForSeries.isSubscribed,
+      isRecommended: result.data.enableNotificationsForSeries.isRecommended,
+      hasNotificationEnabled: result.data.enableNotificationsForSeries.hasNotificationEnabled,
+    };
+    
+    if (dispatch) {
+      dispatch({ 
+        type: ComicSeriesActionType.ENABLE_NOTIFICATIONS_FOR_SERIES_SUCCESS, 
+        payload: { userComicData }
+      });
+    }
+    
+    return userComicData;
+  } catch (error: any) {
+    const errorMessage = error?.response?.data?.error || 
+                        error?.message || 
+                        'Failed to enable notifications for series';
+    
+    if (dispatch) {
+      dispatch({ 
+        type: ComicSeriesActionType.ENABLE_NOTIFICATIONS_FOR_SERIES_ERROR, 
+        payload: errorMessage 
+      });
+    }
+    return null;
   }
 }
 
-export async function disableNotificationsForSeries({ userClient, seriesUuid }: DisableNotificationsProps, dispatch: Dispatch) {
-  dispatch(DISABLE_NOTIFICATIONS_FOR_SERIES.request());
+export async function disableNotificationsForSeries(
+  { userClient, seriesUuid }: DisableNotificationsProps,
+  dispatch?: Dispatch<ComicSeriesAction>
+): Promise<UserComicData | null> {
+  if (dispatch) dispatch({ type: ComicSeriesActionType.DISABLE_NOTIFICATIONS_FOR_SERIES_START });
 
   try {
     const result = await userClient.mutate<DisableNotificationsForSeriesMutation, DisableNotificationsForSeriesMutationVariables>({
@@ -235,19 +416,36 @@ export async function disableNotificationsForSeries({ userClient, seriesUuid }: 
       variables: { seriesUuid }
     });
 
-    if (result.data?.disableNotificationsForSeries) {
-      dispatch(DISABLE_NOTIFICATIONS_FOR_SERIES.success({ 
-        userComicData: {
-          isSubscribed: result.data.disableNotificationsForSeries.isSubscribed,
-          isRecommended: result.data.disableNotificationsForSeries.isRecommended,
-          hasNotificationEnabled: result.data.disableNotificationsForSeries.hasNotificationEnabled,
-        }
-      }));
-    } else {
+    if (!result.data?.disableNotificationsForSeries) {
       throw new Error('Failed to disable notifications for series');
     }
-  } catch (error: Error | unknown) {
-    errorHandlerFactory(dispatch, DISABLE_NOTIFICATIONS_FOR_SERIES)(error);
+    
+    const userComicData: UserComicData = {
+      isSubscribed: result.data.disableNotificationsForSeries.isSubscribed,
+      isRecommended: result.data.disableNotificationsForSeries.isRecommended,
+      hasNotificationEnabled: result.data.disableNotificationsForSeries.hasNotificationEnabled,
+    };
+    
+    if (dispatch) {
+      dispatch({ 
+        type: ComicSeriesActionType.DISABLE_NOTIFICATIONS_FOR_SERIES_SUCCESS, 
+        payload: { userComicData }
+      });
+    }
+    
+    return userComicData;
+  } catch (error: any) {
+    const errorMessage = error?.response?.data?.error || 
+                        error?.message || 
+                        'Failed to disable notifications for series';
+    
+    if (dispatch) {
+      dispatch({ 
+        type: ComicSeriesActionType.DISABLE_NOTIFICATIONS_FOR_SERIES_ERROR, 
+        payload: errorMessage 
+      });
+    }
+    return null;
   }
 }
 
@@ -269,119 +467,135 @@ export function parseLoaderUserComicSeries(data: GetUserComicSeriesQuery): Parti
   };
 }
 
-/* Reducers */
-export function comicSeriesQueryReducerDefault(state = comicSeriesInitialState, action: Action): ComicSeriesLoaderData {
+/* Reducer */
+export function comicSeriesReducer(
+  state: Partial<ComicSeriesLoaderData>,
+  action: ComicSeriesAction
+): Partial<ComicSeriesLoaderData> {
   switch (action.type) {
-    case GET_COMICSERIES.REQUEST:
+    // Comic Series Loading
+    case ComicSeriesActionType.GET_COMICSERIES_START:
       return {
         ...state,
         isComicSeriesLoading: true,
       };
-    case GET_COMICSERIES.SUCCESS:
+    case ComicSeriesActionType.GET_COMICSERIES_SUCCESS:
       return {
         ...state,
         ...action.payload,
         isComicSeriesLoading: false,
       };
-    case GET_USER_COMIC_DATA.REQUEST:
+    case ComicSeriesActionType.GET_COMICSERIES_ERROR:
+      return {
+        ...state,
+        isComicSeriesLoading: false,
+        // Could add a general error field if needed
+      };
+      
+    // User Comic Data
+    case ComicSeriesActionType.GET_USER_COMIC_DATA_START:
       return {
         ...state,
         isUserDataLoading: true,
         userDataError: null,
       };
-    case GET_USER_COMIC_DATA.SUCCESS:
+    case ComicSeriesActionType.GET_USER_COMIC_DATA_SUCCESS:
       return {
         ...state,
         ...action.payload,
         isUserDataLoading: false,
         userDataError: null,
       };
-    case GET_USER_COMIC_DATA.FAILURE:
+    case ComicSeriesActionType.GET_USER_COMIC_DATA_ERROR:
       return {
         ...state,
         isUserDataLoading: false,
-        userDataError: action.payload?.message || 'Failed to load user comic data',
+        userDataError: action.payload,
       };
-    case SUBSCRIBE_TO_SERIES.REQUEST:
+      
+    // Subscription Management
+    case ComicSeriesActionType.SUBSCRIBE_TO_SERIES_START:
       return {
         ...state,
         isSubscriptionLoading: true,
         subscriptionError: null,
       };
-    case SUBSCRIBE_TO_SERIES.SUCCESS:
+    case ComicSeriesActionType.SUBSCRIBE_TO_SERIES_SUCCESS:
       return {
         ...state,
-        ...action.payload,
+        userComicData: action.payload.userComicData,
         isSubscriptionLoading: false,
         subscriptionError: null,
       };
-    case SUBSCRIBE_TO_SERIES.FAILURE:
+    case ComicSeriesActionType.SUBSCRIBE_TO_SERIES_ERROR:
       return {
         ...state,
         isSubscriptionLoading: false,
-        subscriptionError: action.payload?.message || 'Failed to subscribe to series',
+        subscriptionError: action.payload,
       };
-    case UNSUBSCRIBE_FROM_SERIES.REQUEST:
+      
+    case ComicSeriesActionType.UNSUBSCRIBE_FROM_SERIES_START:
       return {
         ...state,
         isSubscriptionLoading: true,
         subscriptionError: null,
       };
-    case UNSUBSCRIBE_FROM_SERIES.SUCCESS:
+    case ComicSeriesActionType.UNSUBSCRIBE_FROM_SERIES_SUCCESS:
       return {
         ...state,
-        ...action.payload,
+        userComicData: action.payload.userComicData,
         isSubscriptionLoading: false,
         subscriptionError: null,
       };
-    case UNSUBSCRIBE_FROM_SERIES.FAILURE:
+    case ComicSeriesActionType.UNSUBSCRIBE_FROM_SERIES_ERROR:
       return {
         ...state,
         isSubscriptionLoading: false,
-        subscriptionError: action.payload?.message || 'Failed to unsubscribe from series',
+        subscriptionError: action.payload,
       };
-    case ENABLE_NOTIFICATIONS_FOR_SERIES.REQUEST:
+      
+    // Notification Management
+    case ComicSeriesActionType.ENABLE_NOTIFICATIONS_FOR_SERIES_START:
       return {
         ...state,
         isNotificationLoading: true,
         notificationError: null,
       };
-    case ENABLE_NOTIFICATIONS_FOR_SERIES.SUCCESS:
+    case ComicSeriesActionType.ENABLE_NOTIFICATIONS_FOR_SERIES_SUCCESS:
       return {
         ...state,
-        ...action.payload,
+        userComicData: action.payload.userComicData,
         isNotificationLoading: false,
         notificationError: null,
       };
-    case ENABLE_NOTIFICATIONS_FOR_SERIES.FAILURE:
+    case ComicSeriesActionType.ENABLE_NOTIFICATIONS_FOR_SERIES_ERROR:
       return {
         ...state,
         isNotificationLoading: false,
-        notificationError: action.payload?.message || 'Failed to enable notifications for series',
+        notificationError: action.payload,
       };
-    case DISABLE_NOTIFICATIONS_FOR_SERIES.REQUEST:
+      
+    case ComicSeriesActionType.DISABLE_NOTIFICATIONS_FOR_SERIES_START:
       return {
         ...state,
         isNotificationLoading: true,
         notificationError: null,
       };
-    case DISABLE_NOTIFICATIONS_FOR_SERIES.SUCCESS:
+    case ComicSeriesActionType.DISABLE_NOTIFICATIONS_FOR_SERIES_SUCCESS:
       return {
         ...state,
-        ...action.payload,
+        userComicData: action.payload.userComicData,
         isNotificationLoading: false,
         notificationError: null,
       };
-    case DISABLE_NOTIFICATIONS_FOR_SERIES.FAILURE:
+    case ComicSeriesActionType.DISABLE_NOTIFICATIONS_FOR_SERIES_ERROR:
       return {
         ...state,
         isNotificationLoading: false,
-        notificationError: action.payload?.message || 'Failed to disable notifications for series',
+        notificationError: action.payload,
       };
+      
     default:
-      console.log('No matching case for action type:', action.type);
       return state;
   }
 }
-
-export const comicSeriesQueryReducer = (state: ComicSeriesLoaderData, action: Action) => comicSeriesQueryReducerDefault(state, action); 

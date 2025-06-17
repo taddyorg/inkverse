@@ -11,7 +11,7 @@ import { getPrettyGenre } from '@inkverse/public/genres';
 import { Colors, useThemeColor } from '@/constants/Colors';
 import { ComicSeriesDetails } from '@/app/components/comics/ComicSeriesDetails';
 import { getPublicApolloClient } from '@/lib/apollo';
-import { searchQueryReducer, searchInitialState, searchComics, debouncedSearchComics } from '@inkverse/shared-client/dispatch/search';
+import { searchReducer, searchInitialState, searchComics, debouncedSearchComics } from '@inkverse/shared-client/dispatch/search';
 import { COMICS_LIST_SCREEN } from '@/constants/Navigation';
 
 // Popular webtoon tags
@@ -77,7 +77,7 @@ function useSearch() {
   const [currentPage, setCurrentPage] = useState(1);
   
   // Set up the reducer for search state
-  const [state, dispatch] = useReducer(searchQueryReducer, searchInitialState);
+  const [state, dispatch] = useReducer(searchReducer, searchInitialState);
   const { isSearchLoading, isLoadingMore, searchResults } = state;
   const publicClient = getPublicApolloClient();
   

@@ -1,9 +1,8 @@
 import React from 'react';
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
 import { PressableOpacity, ThemedText, ThemedTextFontFamilyMap } from '@/app/components/ui';
 import { SPACING } from '@/constants/Spacing';
-import { useThemeColor } from '@/constants/Colors';
 
 interface AddToProfileButtonProps {
   isSubscribed: boolean;

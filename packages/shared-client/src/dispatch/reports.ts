@@ -1,9 +1,24 @@
 import type { ApolloClient } from '@apollo/client';
-import { asyncAction, ActionTypes, errorHandlerFactory, type Dispatch, type Action } from './utils.js';
+import type { Dispatch } from 'react';
 import gql from 'graphql-tag';
 
-/* Actions */
-export const REPORT_COMIC_SERIES = asyncAction(ActionTypes.REPORT_COMIC_SERIES);
+/* Action Type Enum */
+export enum ReportActionType {
+  // Report Operations
+  REPORT_COMIC_SERIES_START = 'REPORT_COMIC_SERIES_START',
+  REPORT_COMIC_SERIES_SUCCESS = 'REPORT_COMIC_SERIES_SUCCESS',
+  REPORT_COMIC_SERIES_ERROR = 'REPORT_COMIC_SERIES_ERROR',
+  RESET_REPORT = 'REPORT_RESET',
+}
+
+/* Action Types */
+export type ReportAction =
+  // Report Operations
+  | { type: ReportActionType.REPORT_COMIC_SERIES_START }
+  | { type: ReportActionType.REPORT_COMIC_SERIES_SUCCESS }
+  | { type: ReportActionType.REPORT_COMIC_SERIES_ERROR; payload: string }
+  | { type: ReportActionType.RESET_REPORT };
+
 /* GraphQL Mutation */
 export const ReportComicSeriesMutation = gql`
   mutation ReportComicSeries($uuid: ID!, $reportType: String) {
@@ -15,7 +30,7 @@ export const ReportComicSeriesMutation = gql`
 export interface ReportState {
   isSubmitting: boolean;
   success: boolean;
-  error: Error | null;
+  error: string | null;
 }
 
 export const reportInitialState: ReportState = {
@@ -33,9 +48,9 @@ interface ReportComicSeriesProps {
 
 export async function submitReportComicSeries(
   { publicClient, uuid, reportType }: ReportComicSeriesProps, 
-  dispatch: Dispatch
-) {
-  dispatch(REPORT_COMIC_SERIES.request());
+  dispatch?: Dispatch<ReportAction>
+): Promise<boolean> {
+  if (dispatch) dispatch({ type: ReportActionType.REPORT_COMIC_SERIES_START });
 
   try {
     const result = await publicClient.mutate({
@@ -47,46 +62,62 @@ export async function submitReportComicSeries(
     });
 
     if (result.data?.reportComicSeries) {
-      dispatch(REPORT_COMIC_SERIES.success({ success: true }));
+      if (dispatch) {
+        dispatch({ type: ReportActionType.REPORT_COMIC_SERIES_SUCCESS });
+      }
       return true;
     } else {
       throw new Error("Failed to submit report");
     }
-  } catch (error: Error | unknown) {
-    errorHandlerFactory(dispatch, REPORT_COMIC_SERIES)(error);
+  } catch (error: any) {
+    const errorMessage = error?.response?.data?.error || 
+                        error?.message || 
+                        'Failed to submit report';
+    
+    if (dispatch) {
+      dispatch({ 
+        type: ReportActionType.REPORT_COMIC_SERIES_ERROR, 
+        payload: errorMessage 
+      });
+    }
     return false;
   }
 }
 
-export function resetReportComicSeries(dispatch: Dispatch) {
-  dispatch(REPORT_COMIC_SERIES.failure({ error: null }));
+export function resetReportComicSeries(dispatch: Dispatch<ReportAction>) {
+  dispatch({ type: ReportActionType.RESET_REPORT });
 }
 
-/* Reducers */
-export function reportReducer(state = reportInitialState, action: Action): ReportState {
+/* Reducer */
+export function reportReducer(
+  state: ReportState = reportInitialState, 
+  action: ReportAction
+): ReportState {
   switch (action.type) {
-    case REPORT_COMIC_SERIES.REQUEST:
+    case ReportActionType.REPORT_COMIC_SERIES_START:
       return {
         ...state,
         isSubmitting: true,
         success: false,
         error: null
       };
-    case REPORT_COMIC_SERIES.SUCCESS:
+    case ReportActionType.REPORT_COMIC_SERIES_SUCCESS:
       return {
         ...state,
         isSubmitting: false,
         success: true,
         error: null
       };
-    case REPORT_COMIC_SERIES.FAILURE:
+    case ReportActionType.REPORT_COMIC_SERIES_ERROR:
       return {
         ...state,
         isSubmitting: false,
         success: false,
         error: action.payload
       };
+    case ReportActionType.RESET_REPORT:
+      return reportInitialState;
     default:
       return state;
   }
-} 
+}

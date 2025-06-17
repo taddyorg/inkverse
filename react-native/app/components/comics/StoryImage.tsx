@@ -7,10 +7,11 @@ import { getStoryImageUrl } from '@inkverse/public/comicstory';
 interface StoryImageProps {
   story: ComicStory | null | undefined;
   screenDetails: { width: number, height: number };
+  contentToken?: string | null;
 }
 
-export const StoryImage = ({ story, screenDetails }: StoryImageProps) => {
-  const storyImageUrl = getStoryImageUrl({ storyImageAsString: story?.storyImageAsString });
+export const StoryImage = ({ story, screenDetails, contentToken }: StoryImageProps) => {
+  const storyImageUrl = getStoryImageUrl({ storyImageAsString: story?.storyImageAsString, token: contentToken || undefined });
   if (!storyImageUrl) return null;
   const [aspectRatio, setAspectRatio] = useState(getInitialAspectRatio(story?.width, story?.height, screenDetails));
 

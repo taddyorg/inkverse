@@ -5,7 +5,6 @@ import { handleLoaderError } from "./error-handler";
 
 export type ListLoaderData = {
   list: GetListQuery['getList'];
-  apolloState: Record<string, any>;
 };
 
 export async function loadList({ params, request, context }: LoaderFunctionArgs): Promise<ListLoaderData> {
@@ -30,12 +29,8 @@ export async function loadList({ params, request, context }: LoaderFunctionArgs)
       throw new Response("Not Found", { status: 404 });
     }
 
-    const state = client.extract();
-
-    // Return immediately with comic series, but defer user data
     return {
       list: listResult.data.getList,
-      apolloState: state,
     };
     
   } catch (error) {

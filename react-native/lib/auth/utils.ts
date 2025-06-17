@@ -17,3 +17,12 @@ export function isTokenExpired(token: string): boolean {
     return true;
   }
 }
+
+export function doesTokenContainPaidItems(token: string): boolean {
+  try {
+    const decoded = jwtDecode(token) as JwtPayload & { items: string[] };
+    return decoded.items?.length > 0;
+  } catch {
+    return false;
+  }
+}

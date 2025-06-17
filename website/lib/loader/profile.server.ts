@@ -27,7 +27,6 @@ export async function loadProfile({ params, request, context }: LoaderFunctionAr
         subscribedComics: null,
         isLoading: false,
         error: null,
-        apolloState: publicClient.extract(),
       };
     }
 
@@ -43,16 +42,10 @@ export async function loadProfile({ params, request, context }: LoaderFunctionAr
         subscribedComics: null,
         isLoading: false,
         error: null,
-        apolloState: publicClient.extract(),
       };
     }
 
-    const result = {
-      ...profileData,
-      apolloState: publicClient.extract(),
-    };
-
-    return result;
+    return profileData;
     
   } catch (error) {
     const errorResult = handleLoaderError(error, 'Profile');
@@ -61,7 +54,6 @@ export async function loadProfile({ params, request, context }: LoaderFunctionAr
       subscribedComics: null,
       isLoading: false,
       error: errorResult,
-      apolloState: {},
     };
   }
 }

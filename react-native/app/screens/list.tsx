@@ -9,7 +9,7 @@ import { Screen, ThemedText, HeaderShareButton, HeaderBackButton, ScreenHeader, 
 import { ListDetails } from '@/app/components/list/ListDetails';
 
 import { getPublicApolloClient } from '@/lib/apollo';
-import { loadList, listQueryReducer, listInitialState } from '@inkverse/shared-client/dispatch/list';
+import { loadList, listReducer, listInitialState } from '@inkverse/shared-client/dispatch/list';
 import { List } from '@inkverse/shared-client/graphql/operations';
 
 type ListItem =
@@ -25,11 +25,11 @@ export function ListScreen() {
   const { id } = route.params;
   const publicClient = getPublicApolloClient();
   
-  const [listQuery, listQueryDispatch] = useReducer(listQueryReducer, listInitialState);
+  const [listQuery, listDispatch] = useReducer(listReducer, listInitialState);
   const { isListLoading, list } = listQuery;
 
   const loadListData = useCallback((forceRefresh = false) => {
-    loadList({ publicClient, id, forceRefresh }, listQueryDispatch);
+    loadList({ publicClient, id, forceRefresh }, listDispatch);
   }, [publicClient, id]);
 
   useEffect(() => {

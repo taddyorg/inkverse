@@ -6,7 +6,6 @@ import { handleLoaderError } from "./error-handler";
 export type CreatorLoaderData = {
   creator: GetCreatorQuery['getCreator'];
   comicseries: NonNullable<GetCreatorQuery['getCreator']>['comics'] | null | undefined;
-  apolloState: Record<string, any>;
 };
 
 export async function loadCreator({ params, request, context }: LoaderFunctionArgs): Promise<CreatorLoaderData> {
@@ -35,13 +34,10 @@ export async function loadCreator({ params, request, context }: LoaderFunctionAr
       throw new Response("Not Found", { status: 404 });
     }
 
-    const state = client.extract();
-
     // Return immediately with comic series, but defer user data
     return {
       creator: creatorResult.data.getCreator,
       comicseries: creatorResult.data.getCreator.comics,
-      apolloState: state,
     };
     
   } catch (error) {

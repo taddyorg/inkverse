@@ -35,53 +35,42 @@ export function ReadNextEpisode({ comicissue, showEmptyState = true, firstTextCT
 
   const isPatreonExclusive = comicissue.scopesForExclusiveContent?.includes('patreon');
 
-  const NextEpisodeContent = () => (
-    <View style={[styles.nextIssueButtonContainer, { borderColor: color }]}>
-      {comicissue.thumbnailImageAsString && (
-        <View style={styles.thumbnailWrapper}>
-          <Image
-            source={getThumbnailImageUrl({ thumbnailImageAsString: comicissue.thumbnailImageAsString })}
-            style={[
-              styles.thumbnail,
-              isPatreonExclusive && styles.thumbnailLocked
-            ]}
-            contentFit="cover"
-          />
-          {isPatreonExclusive && (
-            <View style={styles.lockIconContainer}>
-              <MaterialIcons name="lock" size={50} color={color} />
-            </View>
-          )}
-        </View>
-      )}
-      <View style={styles.titleContainer}>
-        <ThemedText style={[styles.title, { color }]}>{firstTextCTA.toUpperCase()}</ThemedText>
-        <ThemedText style={[styles.title, { color }]}>{secondTextCTA.toUpperCase()}</ThemedText>
-        {isPatreonExclusive && (
-          <ThemedText style={[styles.patreonExclusiveText, { color }]}>PATREON EXCLUSIVE</ThemedText>
-        )}
-      </View>
-    </View>
-  );
-
   return (
     <View style={styles.container}>
-      {isPatreonExclusive ? (
-        <View style={styles.button}>
-          <NextEpisodeContent />
+      <PressableOpacity
+        style={styles.button} 
+        onPress={() => {
+          if (handleNavigateToIssue && comicissue.uuid && comicissue.seriesUuid) {
+            handleNavigateToIssue(comicissue.uuid, comicissue.seriesUuid);
+          }
+        }}
+      >
+        <View style={[styles.nextIssueButtonContainer, { borderColor: color }]}>
+          {comicissue.thumbnailImageAsString && (
+            <View style={styles.thumbnailWrapper}>
+              <Image
+                source={getThumbnailImageUrl({ thumbnailImageAsString: comicissue.thumbnailImageAsString })}
+                style={[
+                  styles.thumbnail,
+                ]}
+                contentFit="cover"
+              />
+              {isPatreonExclusive && (
+                <View style={styles.lockIconContainer}>
+                  <MaterialIcons name="lock" size={50} color={color} />
+                </View>
+              )}
+            </View>
+          )}
+          <View style={styles.titleContainer}>
+            <ThemedText style={[styles.title, { color }]}>{firstTextCTA.toUpperCase()}</ThemedText>
+            <ThemedText style={[styles.title, { color }]}>{secondTextCTA.toUpperCase()}</ThemedText>
+            {isPatreonExclusive && (
+              <ThemedText style={[styles.patreonExclusiveText, { color }]}>PATREON EXCLUSIVE</ThemedText>
+            )}
+          </View>
         </View>
-      ) : (
-        <PressableOpacity
-          style={styles.button} 
-          onPress={() => {
-            if (handleNavigateToIssue && comicissue.uuid && comicissue.seriesUuid) {
-              handleNavigateToIssue(comicissue.uuid, comicissue.seriesUuid);
-            }
-          }}
-        >
-          <NextEpisodeContent />
-        </PressableOpacity>
-      )}
+      </PressableOpacity>
     </View>
   );
 }
@@ -114,7 +103,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   thumbnailLocked: {
-    opacity: 0.5,
+    opacity: 0.8,
   },
   lockIconContainer: {
     position: 'absolute',
@@ -135,6 +124,7 @@ const styles = StyleSheet.create({
   patreonExclusiveText: {
     fontSize: 14,
     marginTop: 8,
+    fontFamily: ThemedTextFontFamilyMap.semiBold,
   },
   endButtonContainer: {
     alignItems: "center",

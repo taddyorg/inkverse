@@ -7,8 +7,7 @@ import {
   hostingProviderReducer, 
   hostingProviderInitialState, 
   fetchRefreshTokenForHostingProvider,
-  clearHostingProviderError,
-  FETCH_USER_TOKENS,
+  HostingProviderActionType,
 } from '@inkverse/shared-client/dispatch/hosting-provider';
 import { getHostingProviderRefreshToken, refreshHostingProviderAccessToken, saveHostingProviderRefreshToken } from '@/lib/auth/hosting-provider';
 import { localStorageGet } from '@/lib/storage/local';
@@ -55,7 +54,7 @@ export default function HostingProvider() {
     // Handle error from URL params
     if (errorParam) {
       const errorMessage = getErrorMessage(errorParam);
-      dispatch(FETCH_USER_TOKENS.failure({ message: errorMessage }));
+      dispatch({ type: HostingProviderActionType.FETCH_USER_TOKENS_ERROR, payload: errorMessage });
       return;
     }
 
@@ -81,7 +80,6 @@ export default function HostingProvider() {
   }, [errorParam, successParam, uuid, state.isLoading, state.refreshToken, navigate, dispatch]);
 
   const handleRetry = () => {
-    clearHostingProviderError(dispatch);
     navigate(`${fromScreen}?step=patreon`);
   };
 

@@ -1,21 +1,35 @@
 import { ApolloClient, type ApolloQueryResult } from '@apollo/client';
-import { asyncAction, ActionTypes, errorHandlerFactory, type Dispatch, type Action } from './utils.js';
+import type { Dispatch } from 'react';
 import { GetCreator, type GetCreatorQuery, type Creator, type ComicSeries, GetMiniCreator, type GetMiniCreatorQuery, type GetMiniCreatorQueryVariables } from '../graphql/operations.js';
 
-/* Actions */
-export const GET_CREATOR = asyncAction(ActionTypes.GET_CREATOR);
+/* Action Type Enum */
+export enum CreatorActionType {
+  // Creator Loading
+  GET_CREATOR_START = 'GET_CREATOR_START',
+  GET_CREATOR_SUCCESS = 'GET_CREATOR_SUCCESS',
+  GET_CREATOR_ERROR = 'GET_CREATOR_ERROR',
+}
+
+/* Action Types */
+export type CreatorAction =
+  // Creator Loading
+  | { type: CreatorActionType.GET_CREATOR_START }
+  | { type: CreatorActionType.GET_CREATOR_SUCCESS; payload: CreatorLoaderData }
+  | { type: CreatorActionType.GET_CREATOR_ERROR; payload: string }
 
 /* Types */
 export type CreatorLoaderData = {
   isLoading: boolean;
   creator: Creator | null;
   comicseries: ComicSeries[] | null;
+  error?: string | null;
 };
 
 export const creatorInitialState: CreatorLoaderData = {
   isLoading: false,
   creator: null,
   comicseries: null,
+  error: null,
 };
 
 /* Action Creators */
@@ -30,8 +44,11 @@ interface WrappedGetCreatorProps {
   shortUrl: string;
 }
 
-export async function getCreatorScreen({ publicClient, uuid, forceRefresh = false }: GetCreatorScreenProps, dispatch: Dispatch) {
-  dispatch(GET_CREATOR.request());
+export async function getCreatorScreen(
+  { publicClient, uuid, forceRefresh = false }: GetCreatorScreenProps,
+  dispatch?: Dispatch<CreatorAction>
+): Promise<CreatorLoaderData> {
+  if (dispatch) dispatch({ type: CreatorActionType.GET_CREATOR_START });
 
   try {
     // Get full creator data
@@ -46,14 +63,35 @@ export async function getCreatorScreen({ publicClient, uuid, forceRefresh = fals
     }
 
     const parsedData = parseLoaderCreator(creatorResult.data);
-    dispatch(GET_CREATOR.success(parsedData));
-  } catch (error: Error | unknown) {
-    errorHandlerFactory(dispatch, GET_CREATOR)(error);
+    
+    if (dispatch) {
+      dispatch({ 
+        type: CreatorActionType.GET_CREATOR_SUCCESS, 
+        payload: parsedData 
+      });
+    }
+    
+    return parsedData;
+  } catch (error: any) {
+    const errorMessage = error?.response?.data?.error || 
+                        error?.message || 
+                        'Failed to load creator';
+    
+    if (dispatch) {
+      dispatch({ 
+        type: CreatorActionType.GET_CREATOR_ERROR, 
+        payload: errorMessage 
+      });
+    }
+    throw error;
   }
 }
 
-export async function loadCreatorUrl({ publicClient, shortUrl }: WrappedGetCreatorProps, dispatch: Dispatch) {
-  dispatch(GET_CREATOR.request());
+export async function loadCreatorUrl(
+  { publicClient, shortUrl }: WrappedGetCreatorProps,
+  dispatch?: Dispatch<CreatorAction>
+): Promise<CreatorLoaderData> {
+  if (dispatch) dispatch({ type: CreatorActionType.GET_CREATOR_START });
 
   try {
     // Get the creator UUID from shortUrl
@@ -68,9 +106,26 @@ export async function loadCreatorUrl({ publicClient, shortUrl }: WrappedGetCreat
 
     const parsedData = parseLoaderCreator(getCreatorUuid.data);
 
-    dispatch(GET_CREATOR.success(parsedData));
-  } catch (error: Error | unknown) {
-    errorHandlerFactory(dispatch, GET_CREATOR)(error);
+    if (dispatch) {
+      dispatch({ 
+        type: CreatorActionType.GET_CREATOR_SUCCESS, 
+        payload: parsedData 
+      });
+    }
+    
+    return parsedData;
+  } catch (error: any) {
+    const errorMessage = error?.response?.data?.error || 
+                        error?.message || 
+                        'Failed to load creator';
+    
+    if (dispatch) {
+      dispatch({ 
+        type: CreatorActionType.GET_CREATOR_ERROR, 
+        payload: errorMessage 
+      });
+    }
+    throw error;
   }
 }
 
@@ -82,23 +137,32 @@ export function parseLoaderCreator(data: GetCreatorQuery): CreatorLoaderData {
   };
 }
 
-/* Reducers */
-export function creatorQueryReducerDefault(state = creatorInitialState, action: Action): CreatorLoaderData {
+/* Reducer */
+export function creatorReducer(
+  state: CreatorLoaderData = creatorInitialState,
+  action: CreatorAction
+): CreatorLoaderData {
   switch (action.type) {
-    case GET_CREATOR.REQUEST:
+    case CreatorActionType.GET_CREATOR_START:
       return {
         ...state,
         isLoading: true,
+        error: null,
       };
-    case GET_CREATOR.SUCCESS:
+    case CreatorActionType.GET_CREATOR_SUCCESS:
       return {
         ...state,
         ...action.payload,
         isLoading: false,
+        error: null,
+      };
+    case CreatorActionType.GET_CREATOR_ERROR:
+      return {
+        ...state,
+        isLoading: false,
+        error: action.payload,
       };
     default:
       return state;
   }
 }
-
-export const creatorQueryReducer = (state: CreatorLoaderData, action: Action) => creatorQueryReducerDefault(state, action);

@@ -10,7 +10,7 @@ import { CreatorDetails } from '@/app/components/creator/CreatorDetails';
 import { CreatorComics } from '@/app/components/creator/CreatorComics';
 import { Screen, HeaderBackButton, HeaderShareButton, ThemedActivityIndicator, ThemedRefreshControl, ScreenHeader } from '@/app/components/ui';
 
-import { creatorQueryReducer, getCreatorScreen, creatorInitialState } from '@inkverse/shared-client/dispatch/creator';
+import { creatorReducer, getCreatorScreen, creatorInitialState } from '@inkverse/shared-client/dispatch/creator';
 import { ComicSeries, Creator } from '@inkverse/shared-client/graphql/operations';
 
 type CreatorListItem =
@@ -25,17 +25,17 @@ export type CreatorScreenParams = {
 export function CreatorScreen() {
   const route = useRoute<NativeStackScreenProps<RootStackParamList, typeof CREATOR_SCREEN>['route']>();
   const { uuid } = route.params;
-  const [creatorQuery, creatorQueryDispatch] = useReducer(creatorQueryReducer, creatorInitialState);
+  const [creatorQuery, creatorDispatch] = useReducer(creatorReducer, creatorInitialState);
   const publicClient = getPublicApolloClient();
   
   const { isLoading, creator, comicseries } = creatorQuery;
 
   useEffect(() => {
-    getCreatorScreen({ publicClient, uuid }, creatorQueryDispatch);
+    getCreatorScreen({ publicClient, uuid }, creatorDispatch);
   }, [uuid]);
 
   const handleRefresh = () => {
-    getCreatorScreen({ publicClient, uuid }, creatorQueryDispatch);
+    getCreatorScreen({ publicClient, uuid }, creatorDispatch);
   };
 
   const listData = useMemo((): CreatorListItem[] => {

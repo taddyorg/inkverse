@@ -1,7 +1,6 @@
 import type { Dispatch } from 'react';
 import type { ApolloClient } from '@apollo/client';
-import type { StorageFunctions, Dispatch as UtilsDispatch, Action } from './utils';
-import { asyncAction, ActionTypes, errorHandlerFactory } from './utils';
+import type { StorageFunctions } from './utils';
 import { 
   GetMeDetails, 
   type GetMeDetailsQuery, 
@@ -16,8 +15,12 @@ import {
   type ComicSeries,
 } from '../graphql/operations';
 
-/* Actions */
-export const GET_PROFILE = asyncAction(ActionTypes.GET_PROFILE);
+/* Action Type Enum */
+export enum ProfileActionType {
+  GET_PROFILE_START = 'GET_PROFILE_START',
+  GET_PROFILE_SUCCESS = 'GET_PROFILE_SUCCESS',
+  GET_PROFILE_ERROR = 'GET_PROFILE_ERROR',
+}
 
 export interface ProfileState {
   user: any | null;
@@ -34,42 +37,12 @@ export const profileInitialState: ProfileState = {
   error: null,
 };
 
-export enum ProfileActionType {
-  PROFILE_START = 'PROFILE_START',
-  PROFILE_SUCCESS = 'PROFILE_SUCCESS',
-  PROFILE_ERROR = 'PROFILE_ERROR',
-  PROFILE_CLEAR_ERROR = 'PROFILE_CLEAR_ERROR',
-}
-
-type ProfileAction =
-  | { type: ProfileActionType.PROFILE_START }
-  | { type: ProfileActionType.PROFILE_SUCCESS; payload: any }
-  | { type: ProfileActionType.PROFILE_ERROR; payload: string }
-  | { type: ProfileActionType.PROFILE_CLEAR_ERROR };
-
-export const profileReducer = (state: ProfileState, action: ProfileAction): ProfileState => {
-  switch (action.type) {
-    case ProfileActionType.PROFILE_START:
-      return { ...state, isLoading: true, error: null };
-    case ProfileActionType.PROFILE_SUCCESS:
-      return {
-        ...state,
-        user: action.payload,
-        isLoading: false,
-        error: null,
-      };
-    case ProfileActionType.PROFILE_ERROR:
-      return { ...state, isLoading: false, error: action.payload };
-    case ProfileActionType.PROFILE_CLEAR_ERROR:
-      return { ...state, error: null };
-    default:
-      return state;
-  }
-};
-
-export function clearProfileError(dispatch: Dispatch<ProfileAction>): void {
-  dispatch({ type: ProfileActionType.PROFILE_CLEAR_ERROR });
-}
+/* Action Types */
+export type ProfileAction =
+  // Get Profile
+  | { type: ProfileActionType.GET_PROFILE_START }
+  | { type: ProfileActionType.GET_PROFILE_SUCCESS; payload: ProfileState }
+  | { type: ProfileActionType.GET_PROFILE_ERROR; payload: string };
 
 export interface GetMeDetailsParams {
   userClient: ApolloClient<any>;
@@ -139,9 +112,9 @@ export async function loadProfileByUsername(
 // Load profile by ID (for React Native)
 export async function loadProfileById(
   { publicClient, userClient, userId, currentUserId, forceRefresh = false }: LoadProfileByIdProps,
-  dispatch?: UtilsDispatch
+  dispatch?: Dispatch<ProfileAction>
 ): Promise<ProfileState | null> {
-  dispatch?.(GET_PROFILE.request());
+  if (dispatch) dispatch({ type: ProfileActionType.GET_PROFILE_START });
   
   try {
     const client = (currentUserId && userClient && currentUserId === userId) ? userClient : publicClient;
@@ -156,12 +129,24 @@ export async function loadProfileById(
 
     const parsedData = parseProfileData(data);
 
-    dispatch?.(GET_PROFILE.success(parsedData));
+    if (dispatch) {
+      dispatch({ 
+        type: ProfileActionType.GET_PROFILE_SUCCESS, 
+        payload: parsedData 
+      });
+    }
 
     return parsedData;
-  } catch (error: Error | unknown) {
+  } catch (error: any) {
+    const errorMessage = error?.response?.data?.error || 
+                        error?.message || 
+                        'Failed to load profile';
+    
     if (dispatch) {
-      errorHandlerFactory(dispatch, GET_PROFILE)(error);
+      dispatch({ 
+        type: ProfileActionType.GET_PROFILE_ERROR, 
+        payload: errorMessage 
+      });
     }
     return null;
   }
@@ -176,27 +161,26 @@ function parseProfileData(data: GetProfileByUserIdQuery): ProfileState {
   };
 }
 
-// New reducer for profile loading
-export function profileLoaderReducer(state = profileInitialState, action: Action): ProfileState {
+/* Reducer */
+export const profileReducer = (
+  state: ProfileState = profileInitialState,
+  action: ProfileAction
+): ProfileState => {
   switch (action.type) {
-    case GET_PROFILE.REQUEST:
-      return {
-        ...state,
-        isLoading: true,
-      };
-    case GET_PROFILE.SUCCESS:
+    // Get Profile actions
+    case ProfileActionType.GET_PROFILE_START:
+      return { ...state, isLoading: true, error: null };
+    case ProfileActionType.GET_PROFILE_SUCCESS:
       return {
         ...state,
         ...action.payload,
         isLoading: false,
+        error: null,
       };
-    case GET_PROFILE.FAILURE:
-      return {
-        ...state,
-        isLoading: false,
-        error: action.payload,
-      };
+    case ProfileActionType.GET_PROFILE_ERROR:
+      return { ...state, isLoading: false, error: action.payload };
+      
     default:
       return state;
   }
-}
+};

@@ -249,6 +249,6 @@ const styles = StyleSheet.create({
   },
   patreonLabel: {
     fontSize: 11,
-    fontWeight: '400',
+    fontFamily: ThemedTextFontFamilyMap.semiBold,
   },
 }); 

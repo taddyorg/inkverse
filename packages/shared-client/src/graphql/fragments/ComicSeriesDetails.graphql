@@ -19,4 +19,5 @@ fragment comicSeriesDetails on ComicSeries {
     seriesType
     isCompleted
     issueCount
+    hostingProviderUuid
 } 

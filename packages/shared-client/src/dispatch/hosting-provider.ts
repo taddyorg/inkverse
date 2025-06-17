@@ -1,5 +1,5 @@
 import type { ApolloClient, NormalizedCacheObject } from '@apollo/client';
-import { asyncAction, ActionTypes, errorHandlerFactory, type Action, type Dispatch } from './utils.js';
+import type { Dispatch } from 'react';
 import { FetchAllHostingProviderTokens, FetchRefreshTokenForHostingProvider, type FetchAllHostingProviderTokensMutation, type FetchAllHostingProviderTokensMutationVariables, type FetchRefreshTokenForHostingProviderMutation, type FetchRefreshTokenForHostingProviderMutationVariables } from '../graphql/operations';
 import { jwtDecode } from 'jwt-decode';
 
@@ -15,9 +15,19 @@ export const hostingProviderInitialState: HostingProviderState = {
   refreshToken: null,
 };
 
-/* Actions */
-export const FETCH_USER_TOKENS = asyncAction(ActionTypes.FETCH_USER_TOKENS);
-export const CLEAR_HOSTING_PROVIDER_ERROR = 'CLEAR_HOSTING_PROVIDER_ERROR';
+/* Action Type Enum */
+export enum HostingProviderActionType {
+  FETCH_USER_TOKENS_START = 'FETCH_USER_TOKENS_START',
+  FETCH_USER_TOKENS_SUCCESS = 'FETCH_USER_TOKENS_SUCCESS',
+  FETCH_USER_TOKENS_ERROR = 'FETCH_USER_TOKENS_ERROR',
+}
+
+/* Action Types */
+export type HostingProviderAction =
+  // Fetch User Tokens
+  | { type: HostingProviderActionType.FETCH_USER_TOKENS_START }
+  | { type: HostingProviderActionType.FETCH_USER_TOKENS_SUCCESS; payload: { refreshToken: string | null } }
+  | { type: HostingProviderActionType.FETCH_USER_TOKENS_ERROR; payload: string }
 
 /* Action Creators */
 interface FetchUserTokensParams {
@@ -27,9 +37,9 @@ interface FetchUserTokensParams {
 
 export async function fetchRefreshTokenForHostingProvider(
   { userClient, hostingProviderUuid }: FetchUserTokensParams,
-  dispatch: Dispatch
-): Promise<void> {
-  dispatch(FETCH_USER_TOKENS.request());
+  dispatch?: Dispatch<HostingProviderAction>
+): Promise<string | null> {
+  if (dispatch) dispatch({ type: HostingProviderActionType.FETCH_USER_TOKENS_START });
 
   try {
     const { data } = await userClient.mutate<
@@ -41,11 +51,28 @@ export async function fetchRefreshTokenForHostingProvider(
       fetchPolicy: 'no-cache'
     });
 
-    dispatch(FETCH_USER_TOKENS.success({ 
-      refreshToken: data?.fetchRefreshTokenForHostingProvider || null 
-    }));
-  } catch (error: Error | unknown) {
-    errorHandlerFactory(dispatch, FETCH_USER_TOKENS)(error);
+    const refreshToken = data?.fetchRefreshTokenForHostingProvider || null;
+    
+    if (dispatch) {
+      dispatch({ 
+        type: HostingProviderActionType.FETCH_USER_TOKENS_SUCCESS, 
+        payload: { refreshToken }
+      });
+    }
+    
+    return refreshToken;
+  } catch (error: any) {
+    const errorMessage = error?.response?.data?.error || 
+                        error?.message || 
+                        'Failed to fetch refresh token';
+    
+    if (dispatch) {
+      dispatch({ 
+        type: HostingProviderActionType.FETCH_USER_TOKENS_ERROR, 
+        payload: errorMessage 
+      });
+    }
+    return null;
   }
 }
 
@@ -83,29 +110,26 @@ export async function fetchAllHostingProviderTokens(
   } 
 }
 
-export function clearHostingProviderError(dispatch: Dispatch): void {
-  dispatch({ type: CLEAR_HOSTING_PROVIDER_ERROR });
-}
-
 /* Reducer */
-export function hostingProviderReducer(state = hostingProviderInitialState, action: Action): HostingProviderState {
+export function hostingProviderReducer(
+  state: HostingProviderState = hostingProviderInitialState,
+  action: HostingProviderAction
+): HostingProviderState {
   switch (action.type) {
-    case FETCH_USER_TOKENS.REQUEST:
+    case HostingProviderActionType.FETCH_USER_TOKENS_START:
       return { ...state, isLoading: true, error: null };
-    case FETCH_USER_TOKENS.SUCCESS:
+    case HostingProviderActionType.FETCH_USER_TOKENS_SUCCESS:
       return { 
         ...state, 
         isLoading: false, 
-        refreshToken: action.payload?.refreshToken || null 
+        refreshToken: action.payload.refreshToken
       };
-    case FETCH_USER_TOKENS.FAILURE:
+    case HostingProviderActionType.FETCH_USER_TOKENS_ERROR:
       return { 
         ...state, 
         isLoading: false, 
-        error: action.payload?.message || 'Failed to fetch user tokens' 
+        error: action.payload
       };
-    case CLEAR_HOSTING_PROVIDER_ERROR:
-      return { ...state, error: null };
     default:
       return state;
   }

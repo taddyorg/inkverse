@@ -240,6 +240,7 @@ function HomeStack() {
       <Stack.Screen {...listScreenConfig} />
       <Stack.Screen {...comicsListScreenConfig} />
       <Stack.Screen {...profileScreenConfig} />
+      <Stack.Screen {...editPatreonScreenConfig} />
     </Stack.Navigator>
   );
 }
@@ -261,6 +262,7 @@ function SearchStack() {
       <Stack.Screen {...listScreenConfig} />
       <Stack.Screen {...comicsListScreenConfig} />
       <Stack.Screen {...profileScreenConfig} />
+      <Stack.Screen {...editPatreonScreenConfig} />
     </Stack.Navigator>
   );
 }

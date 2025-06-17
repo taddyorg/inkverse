@@ -3,15 +3,9 @@ import { getPublicApolloClient } from "@/lib/apollo/client.server";
 import { type GetMiniComicSeriesQuery, type GetMiniComicSeriesQueryVariables, GetMiniComicSeries, SortOrder, type GetComicIssueQuery, type GetComicIssueQueryVariables, GetComicIssue } from "@inkverse/shared-client/graphql/operations";
 import { handleLoaderError } from "./error-handler";
 import type { ApolloQueryResult } from "@apollo/client";
+import type { ComicIssueLoaderData } from "@inkverse/shared-client/dispatch/comicissue";
 
-export type ComicIssueLoaderData = {
-  comicissue: GetComicIssueQuery['getComicIssue'];
-  comicseries: GetComicIssueQuery['getComicSeries'];
-  allIssues: GetComicIssueQuery['getIssuesForComicSeries'];
-  apolloState: Record<string, any>;
-};
-
-export async function loadComicIssue({ params, request, context }: LoaderFunctionArgs): Promise<ComicIssueLoaderData> {
+export async function loadComicIssue({ params, request, context }: LoaderFunctionArgs): Promise<Partial<ComicIssueLoaderData>> {
   const { shortUrl, episodeId } = params;
 
   const client = getPublicApolloClient(request);
@@ -43,21 +37,21 @@ export async function loadComicIssue({ params, request, context }: LoaderFunctio
     // Get comic issue data
     const comicIssueResult = await client.query<GetComicIssueQuery, GetComicIssueQueryVariables>({
       query: GetComicIssue,
-      variables: { issueUuid: safeIssueUuid, seriesUuid: getComicSeriesUuid.data?.getComicSeries.uuid, sortOrderForIssues: SortOrder.OLDEST, limitPerPageForIssues: 1000, pageForIssues: 1 },
+      variables: { issueUuid: safeIssueUuid, seriesUuid: getComicSeriesUuid.data?.getComicSeries.uuid },
     });
 
     if (!comicIssueResult.data?.getComicIssue) {
       throw new Response("Not Found", { status: 404 });
     }
 
-    const state = client.extract();
+    const isPatreonExclusive = comicIssueResult.data.getComicIssue.scopesForExclusiveContent?.includes('patreon');
 
     // Return immediately with comic series, but defer user data
     return {
       comicissue: comicIssueResult.data.getComicIssue,
       comicseries: comicIssueResult.data.getComicSeries,
-      allIssues: comicIssueResult.data.getIssuesForComicSeries,
-      apolloState: state,
+      creatorLinks: comicIssueResult.data.getCreatorLinksForSeries,
+      isCheckingAccess: isPatreonExclusive,
     };
     
   } catch (error) {

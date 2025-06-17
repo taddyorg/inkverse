@@ -34,64 +34,39 @@ export const ComicIssueDetails = ({ comicseries, comicissue, position, isCurrent
     return <></>;
   }
 
-  if (isPatreonExclusive) {
-    return (
-      <ComicIssueDetailsWrapper comicissue={comicissue} position={position} isPatreonExclusive={true} isCurrentIssue={isCurrentIssue}>
-        <div className="text-sm">
-          {dateAndFreeContent}
-          <p className="font-bold mt-1 text-brand-pink">
-            PATREON EXCLUSIVE - Read on Inkverse Mobile app
-          </p>
-        </div>
-      </ComicIssueDetailsWrapper>
-    );
-  }
-
   return (
     <Link to={linkToComicIssue} className="block">
-      <ComicIssueDetailsWrapper comicissue={comicissue} position={position} isCurrentIssue={isCurrentIssue}>
-        {dateAndFreeContent}
-      </ComicIssueDetailsWrapper>
+      <div className={`flex justify-between items-center ${isCurrentIssue ? 'bg-brand-pink dark:bg-brand-purple rounded-2xl py-2 mb-2' : 'h-16 mb-2'}`}>
+        <div className="flex items-center pl-4">
+          <div className="w-16 h-16 mr-4 relative">
+            <img 
+              src={getThumbnailImageUrl({ thumbnailImageAsString: comicissue.thumbnailImageAsString })} 
+              alt={comicissue.name || ''}
+              className='w-full h-full rounded-2xl object-cover'
+            />
+            {isPatreonExclusive && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <MdLock size={30} className="text-inkverse-black dark:text-white" />
+              </div>
+            )}
+          </div>
+          <div className="flex flex-col">
+            <h2 className={`text-base font-normal m-0 ${isCurrentIssue ? 'text-white' : ''}`}>{comicissue.name}</h2>
+            <div className={isCurrentIssue ? 'text-white' : ''}>
+            {isPatreonExclusive
+              ? <div className="text-sm">
+                  {dateAndFreeContent}
+                  <p className="font-semibold mt-1 text-brand-pink">
+                    PATREON EXCLUSIVE
+                  </p>
+                </div>
+              : <>{dateAndFreeContent}</>
+            }
+            </div>
+          </div>
+        </div>
+        <span className={`text-base pr-4 ${isCurrentIssue ? 'text-white font-bold' : ''}`}>#{position + 1}</span>
+      </div>
     </Link>
   );
 }
-
-type ComicIssueDetailsWrapperProps = {
-  children?: React.ReactNode,
-  comicissue: ComicIssue, 
-  position: number,
-  isPatreonExclusive?: boolean,
-  isCurrentIssue?: boolean,
-}
-
-const ComicIssueDetailsWrapper = ({ 
-  children, 
-  comicissue, 
-  position, 
-  isPatreonExclusive,
-  isCurrentIssue,
-}: ComicIssueDetailsWrapperProps) => (
-  <div className={`flex justify-between items-center ${isCurrentIssue ? 'bg-brand-pink dark:bg-brand-purple rounded-2xl py-2 mb-2' : 'h-16 mb-2'}`}>
-    <div className="flex items-center pl-4">
-      <div className="w-16 h-16 mr-4 relative">
-        <img 
-          src={getThumbnailImageUrl({ thumbnailImageAsString: comicissue.thumbnailImageAsString })} 
-          alt={comicissue.name || ''}
-          className={`w-full h-full rounded-2xl object-cover ${isPatreonExclusive ? 'opacity-50' : 'opacity-100'}`} 
-        />
-        {isPatreonExclusive && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <MdLock size={30} className="text-inkverse-black dark:text-white" />
-          </div>
-        )}
-      </div>
-      <div className="flex flex-col">
-        <h2 className={`text-base font-normal m-0 ${isCurrentIssue ? 'text-white' : ''}`}>{comicissue.name}</h2>
-        <div className={isCurrentIssue ? 'text-white' : ''}>
-          {children}
-        </div>
-      </div>
-    </div>
-    <span className={`text-base pr-4 ${isCurrentIssue ? 'text-white font-bold' : ''}`}>#{position + 1}</span>
-  </div>
-);

@@ -1,9 +1,38 @@
 import type { ApolloClient } from '@apollo/client';
-import { asyncAction, ActionTypes, errorHandlerFactory, type Dispatch, type Action, mergeItemsWithUuid } from './utils.js';
+import type { Dispatch } from 'react';
+import { mergeItemsWithUuid } from './utils.js';
 import { type SearchQuery, type SearchQueryVariables, type ComicSeries, type Genre, Search } from "../graphql/operations.js";
 
-/* Actions */
-export const COMICS_LIST = asyncAction(ActionTypes.COMICS_LIST);
+/* Action Type Enum */
+export enum ComicsListActionType {
+  // Comics List Loading
+  COMICS_LIST_START = 'COMICS_LIST_START',
+  COMICS_LIST_SUCCESS = 'COMICS_LIST_SUCCESS',
+  COMICS_LIST_ERROR = 'COMICS_LIST_ERROR',
+}
+
+/* Action Types */
+export type ComicsListAction =
+  // Comics List Loading
+  | { type: ComicsListActionType.COMICS_LIST_START; payload: { page: number; isLoadingMore: boolean } }
+  | { type: ComicsListActionType.COMICS_LIST_SUCCESS; payload: ComicsListLoaderData; meta: { page: number } }
+  | { type: ComicsListActionType.COMICS_LIST_ERROR; payload: string }
+
+export type ComicsListLoaderData = {
+  isLoading: boolean;
+  isLoadingMore: boolean;
+  comics: ComicSeries[];
+  hasMore: boolean;
+  error?: string | null;
+};
+
+export const comicsListInitialState: ComicsListLoaderData = {
+  isLoading: false,
+  isLoadingMore: false,
+  comics: [],
+  hasMore: false,
+  error: null,
+}
 
 /* Action Creators */
 interface ComicsListProps {
@@ -17,18 +46,26 @@ interface ComicsListProps {
   forceRefresh?: boolean;
 }
 
-export async function fetchComics({ 
-  publicClient, 
-  page = 1, 
-  limitPerPage = 30, 
-  filterForTypes = ["COMICSERIES"],
-  filterForTags,
-  filterForGenres,
-  isLoadingMore = false,
-  forceRefresh = false,
-}: ComicsListProps, dispatch: Dispatch) {
+export async function fetchComics(
+  { 
+    publicClient, 
+    page = 1, 
+    limitPerPage = 30, 
+    filterForTypes = ["COMICSERIES"],
+    filterForTags,
+    filterForGenres,
+    isLoadingMore = false,
+    forceRefresh = false,
+  }: ComicsListProps,
+  dispatch?: Dispatch<ComicsListAction>
+): Promise<ComicsListLoaderData | null> {
   
-  dispatch(COMICS_LIST.request({ page, isLoadingMore }));
+  if (dispatch) {
+    dispatch({ 
+      type: ComicsListActionType.COMICS_LIST_START, 
+      payload: { page, isLoadingMore } 
+    });
+  }
 
   try {
     // Execute the search query
@@ -51,12 +88,28 @@ export async function fetchComics({
 
     const parsedData = parseComicsListResults(searchResult.data, limitPerPage);
 
-    // Include the page in the success action metadata
-    dispatch(COMICS_LIST.success(parsedData, { page }));
-  } catch (error: Error | unknown) {
-    // Handle error
-    errorHandlerFactory(dispatch, COMICS_LIST)(error);
-    dispatch(COMICS_LIST.failure(error));
+    if (dispatch) {
+      // Include the page in the success action metadata
+      dispatch({ 
+        type: ComicsListActionType.COMICS_LIST_SUCCESS, 
+        payload: parsedData, 
+        meta: { page } 
+      });
+    }
+    
+    return parsedData;
+  } catch (error: any) {
+    const errorMessage = error?.response?.data?.error || 
+                        error?.message || 
+                        'Failed to fetch comics';
+    
+    if (dispatch) {
+      dispatch({ 
+        type: ComicsListActionType.COMICS_LIST_ERROR, 
+        payload: errorMessage 
+      });
+    }
+    return null;
   }
 }
 
@@ -72,34 +125,24 @@ export function parseComicsListResults(data: SearchQuery, limitPerPage: number):
   };
 }
 
-export type ComicsListLoaderData = {
-  isLoading: boolean;
-  isLoadingMore: boolean;
-  comics: ComicSeries[];
-  hasMore: boolean;
-};
-
-export const comicsListInitialState: ComicsListLoaderData = {
-  isLoading: false,
-  isLoadingMore: false,
-  comics: [],
-  hasMore: false,
-}
-
-/* Reducers */
-export function comicsListReducerDefault(state = comicsListInitialState, action: Action): ComicsListLoaderData {
+/* Reducer */
+export function comicsListReducer(
+  state: ComicsListLoaderData = comicsListInitialState,
+  action: ComicsListAction
+): ComicsListLoaderData {
   switch (action.type) {
-    case COMICS_LIST.REQUEST:
-      const isLoadingMore = !!action.payload?.isLoadingMore;
+    case ComicsListActionType.COMICS_LIST_START:
+      const { isLoadingMore } = action.payload;
       
       return {
         ...state,
         isLoading: !isLoadingMore,
         isLoadingMore: isLoadingMore,
+        error: null,
       };
       
-    case COMICS_LIST.SUCCESS:
-      const isPaginationRequest = action.meta?.page && action.meta.page > 1;
+    case ComicsListActionType.COMICS_LIST_SUCCESS:
+      const isPaginationRequest = action.meta.page > 1;
 
       // For pagination, append new results to existing ones
       if (isPaginationRequest) {
@@ -109,6 +152,7 @@ export function comicsListReducerDefault(state = comicsListInitialState, action:
           comics: mergeItemsWithUuid(state.comics, action.payload.comics),
           isLoading: false,
           isLoadingMore: false,
+          error: null,
         };
       } 
       
@@ -118,18 +162,21 @@ export function comicsListReducerDefault(state = comicsListInitialState, action:
         ...action.payload,
         isLoading: false,
         isLoadingMore: false,
+        error: null,
       };
       
-    case COMICS_LIST.FAILURE:
+    case ComicsListActionType.COMICS_LIST_ERROR:
       return {
         ...state,
         isLoading: false,
         isLoadingMore: false,
+        error: action.payload,
       };
-        
+
     default:
       return state;
   }
 }
 
-export const comicsListReducer = (state: ComicsListLoaderData, action: Action) => comicsListReducerDefault(state, action);
+// Legacy reducer for backwards compatibility - use comicsListReducer instead
+export const comicsListReducerDefault = comicsListReducer;

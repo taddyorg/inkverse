@@ -12,6 +12,9 @@ fragment comicIssueDetails on ComicIssue {
         width
         height
     }
+    previousIssue{
+        ...miniComicIssueDetails
+    }
     nextIssue{
         ...miniComicIssueDetails
     }

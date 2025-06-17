@@ -30,41 +30,92 @@ The `src/graphql` directory contains shared GraphQL operations used across clien
 
 ### 2. Dispatch Functions
 
-The `src/dispatch` directory contains client-side data management functions:
+The `src/dispatch` directory contains client-side data management functions following a TypeScript-first approach:
 
-- **Action Creators**: Functions that create and dispatch actions to fetch/update data
-- **Reducers**: Functions that handle state updates based on dispatched actions
-- **Data Processing**: Utilities to parse and normalize data from API responses
-- **Error Handling**: Standardized error handling for API operations
+- **Action Type Enums**: Strongly typed action constants using TypeScript enums
+- **Action Creators**: Async functions that fetch data and optionally dispatch actions
+- **Reducers**: Pure functions that handle state updates based on dispatched actions
+- **Data Parsing**: Type-safe utilities to parse and normalize API responses
+- **Dual Support**: Functions work with or without dispatch for flexibility
+
+Key features of the new pattern:
+- **TypeScript-first**: Full type safety with enums, interfaces, and union types
+- **Optional dispatch**: Action creators return data directly and dispatch is optional
+- **Granular loading states**: Separate loading states for different operations
+- **Error handling**: Built-in error state management in reducers
 
 Example dispatch pattern:
 ```typescript
-// Action types
-export const GET_COMICISSUE = asyncAction(ActionTypes.GET_COMICISSUE);
+// Action type enum
+export enum ComicIssueActionType {
+  GET_COMICISSUE_START = 'GET_COMICISSUE_START',
+  GET_COMICISSUE_SUCCESS = 'GET_COMICISSUE_SUCCESS',
+  GET_COMICISSUE_ERROR = 'GET_COMICISSUE_ERROR',
+}
 
-// Action creator
-export async function loadComicIssue({ publicClient, issueUuid, seriesUuid }, dispatch) {
-  dispatch(GET_COMICISSUE.request());
-  
+// Action types union
+export type ComicIssueAction =
+  | { type: ComicIssueActionType.GET_COMICISSUE_START }
+  | { type: ComicIssueActionType.GET_COMICISSUE_SUCCESS; payload: ComicIssueLoaderData }
+  | { type: ComicIssueActionType.GET_COMICISSUE_ERROR; payload: string }
+
+// State type
+export type ComicIssueLoaderData = {
+  isComicIssueLoading: boolean;
+  comicissue: ComicIssue | null;
+  comicseries: ComicSeries | null;
+  allIssues: ComicIssue[];
+};
+
+// Action creator with optional dispatch
+export async function loadComicIssue(
+  { publicClient, issueUuid, seriesUuid, forceRefresh = false }: GetComicIssueProps,
+  dispatch?: Dispatch<ComicIssueAction>
+): Promise<ComicIssueLoaderData | null> {
+  if (dispatch) dispatch({ type: ComicIssueActionType.GET_COMICISSUE_START });
+
   try {
-    const result = await publicClient.query({
+    const result = await publicClient.query<GetComicIssueQuery>({
       query: GetComicIssue,
-      variables: { issueUuid, seriesUuid }
+      variables: { issueUuid, seriesUuid },
+      ...(!!forceRefresh && { fetchPolicy: 'network-only' })
     });
+
+    const parsedData = parseLoaderComicIssue(result.data);
+
+    if (dispatch) {
+      dispatch({ 
+        type: ComicIssueActionType.GET_COMICISSUE_SUCCESS, 
+        payload: parsedData 
+      });
+    }
     
-    dispatch(GET_COMICISSUE.success(parseData(result.data)));
-  } catch (error) {
-    errorHandlerFactory(dispatch, GET_COMICISSUE)(error);
+    return parsedData;
+  } catch (error: any) {
+    const errorMessage = error?.message || 'Failed to load comic issue';
+    
+    if (dispatch) {
+      dispatch({ 
+        type: ComicIssueActionType.GET_COMICISSUE_ERROR, 
+        payload: errorMessage 
+      });
+    }
+    return null;
   }
 }
 
 // Reducer
-export function comicIssueReducer(state, action) {
+export function comicIssueQueryReducer(
+  state: ComicIssueLoaderData = comicIssueInitialState,
+  action: ComicIssueAction
+): ComicIssueLoaderData {
   switch (action.type) {
-    case GET_COMICISSUE.REQUEST:
-      return { ...state, isLoading: true };
-    case GET_COMICISSUE.SUCCESS:
-      return { ...state, ...action.payload, isLoading: false };
+    case ComicIssueActionType.GET_COMICISSUE_START:
+      return { ...state, isComicIssueLoading: true };
+    case ComicIssueActionType.GET_COMICISSUE_SUCCESS:
+      return { ...state, ...action.payload, isComicIssueLoading: false };
+    case ComicIssueActionType.GET_COMICISSUE_ERROR:
+      return { ...state, isComicIssueLoading: false };
     default:
       return state;
   }

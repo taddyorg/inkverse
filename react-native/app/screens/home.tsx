@@ -11,7 +11,7 @@ import { BLOG_SCREEN, LIST_SCREEN } from '@/constants/Navigation';
 
 import { getPublicApolloClient } from '@/lib/apollo';
 import { ComicSeries, List } from '@inkverse/shared-client/graphql/operations';
-import { loadHomeScreen, homefeedQueryReducerDefault, homeScreenInitialState } from '@inkverse/shared-client/dispatch/homefeed';
+import { loadHomeScreen, homefeedReducer, homeScreenInitialState } from '@inkverse/shared-client/dispatch/homefeed';
 import { NewsItem, inkverseNewsItems } from '@inkverse/public/news-items';
 
 // Section types for FlashList
@@ -25,7 +25,7 @@ type SectionType =
   | { type: 'inkverseNews'; data: NewsItem[] | null | undefined }
 
 export function HomeScreen() {
-  const [homeScreenState, dispatch] = useReducer(homefeedQueryReducerDefault, homeScreenInitialState);
+  const [homeScreenState, dispatch] = useReducer(homefeedReducer, homeScreenInitialState);
   const [refreshing, setRefreshing] = useState(false);
   const flashListRef = useRef<FlashList<SectionType>>(null);
   const publicClient = getPublicApolloClient();

@@ -1,5 +1,5 @@
 import { useReducer, useState, useCallback, useEffect, memo } from 'react';
-import { StyleSheet, View, Alert } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { FlashList } from '@shopify/flash-list';
 
@@ -12,7 +12,7 @@ import { AddToProfileButton, NotificationButton } from '@/app/components/comics/
 import { getPublicApolloClient, getUserApolloClient } from '@/lib/apollo';
 import { getUserDetails } from '@/lib/auth/user';
 import { ComicIssue, ComicSeries } from '@inkverse/shared-client/graphql/operations';
-import { loadComicSeries, loadUserComicData, subscribeToSeries, unsubscribeFromSeries, enableNotificationsForSeries, disableNotificationsForSeries, comicSeriesQueryReducerDefault, comicSeriesInitialState } from '@inkverse/shared-client/dispatch/comicseries';
+import { loadComicSeries, loadUserComicData, subscribeToSeries, unsubscribeFromSeries, enableNotificationsForSeries, disableNotificationsForSeries, comicSeriesReducer, comicSeriesInitialState } from '@inkverse/shared-client/dispatch/comicseries';
 import { RootStackParamList, COMICSERIES_SCREEN, COMICISSUE_SCREEN, SIGNUP_SCREEN } from '@/constants/Navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ReadNextEpisode } from '../components/comics/ReadNextEpisode';
@@ -39,7 +39,7 @@ export function ComicSeriesScreen() {
   const publicClient = getPublicApolloClient();
   const userClient = isLoggedIn ? getUserApolloClient() : undefined;
   
-  const [comicSeriesState, dispatch] = useReducer(comicSeriesQueryReducerDefault, comicSeriesInitialState);
+  const [comicSeriesState, dispatch] = useReducer(comicSeriesReducer, comicSeriesInitialState);
   const [refreshing, setRefreshing] = useState(false);
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
 
@@ -127,14 +127,14 @@ export function ComicSeriesScreen() {
           <View style={styles.actionButtonsContainer}>
             <AddToProfileButton
               isSubscribed={userComicData?.isSubscribed || false}
-              isLoading={isSubscriptionLoading || isUserDataLoading}
+              isLoading={isSubscriptionLoading || isUserDataLoading || false}
               onPress={handleAddToProfile}
               selectedText='SAVED'
               unselectedText='SAVE'
             />
             <NotificationButton
               isReceivingNotifications={userComicData?.hasNotificationEnabled || false}
-              isLoading={isNotificationLoading || isUserDataLoading}
+              isLoading={isNotificationLoading || isUserDataLoading || false}
               onPress={handleGetNotifications}
             />
           </View>
@@ -181,15 +181,15 @@ export function ComicSeriesScreen() {
     return [
       { type: 'header', data: comicseries },
       { type: 'action-buttons', data: comicseries },
-      { type: 'issues', data: { comicissues: issues, comicseries, currentIssueUuid: issues[0]?.uuid } },
+      { type: 'issues', data: { comicissues: issues || [], comicseries, currentIssueUuid: issues?.[0]?.uuid } },
       { type: 'info', data: comicseries },
-      ...(issues.length > 3 ? [{ type: 'next-episode' as const, data: issues[0] }] : []),
+      ...(issues?.length && issues.length > 3 ? [{ type: 'next-episode' as const, data: issues[0] }] : []),
     ];
   }, [comicseries, issues, userComicData, isSubscriptionLoading, isNotificationLoading]);
 
   if (isComicSeriesLoading) {
     return (
-      <ComicSeriesScreenWrapper isHeaderVisible={isHeaderVisible} comicseries={comicseries}>
+      <ComicSeriesScreenWrapper isHeaderVisible={isHeaderVisible} comicseries={comicseries || null}>
         <View style={styles.loadingContainer}>
           <ThemedActivityIndicator />
         </View>
@@ -198,7 +198,7 @@ export function ComicSeriesScreen() {
   }
 
   return (
-    <ComicSeriesScreenWrapper isHeaderVisible={isHeaderVisible} comicseries={comicseries}>
+    <ComicSeriesScreenWrapper isHeaderVisible={isHeaderVisible} comicseries={comicseries || null}>
       <FlashList
         data={getListData()}
         renderItem={renderItem}

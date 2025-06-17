@@ -1,6 +1,6 @@
 import { getNewAccessToken, getNewContentToken, getNewRefreshToken } from '@inkverse/public/hosting-providers';
 import { localStorageSet, localStorageGet, localStorageDeleteMultiple, localStorageDelete } from '../storage/local';
-import { isTokenExpired } from './utils';
+import { isTokenExpired, doesTokenContainPaidItems } from './utils';
 
 // Key constants
 const HOSTING_PROVIDER_ACCESS_TOKEN_ENDING = 'access-token';
@@ -71,6 +71,8 @@ export function saveHostingProviderRefreshToken(token: string, hostingProviderUu
 }
 
 export function saveContentTokenForProviderAndSeries(token: string, hostingProviderUuid: string, seriesUuid: string): void {
+  if (!doesTokenContainPaidItems(token)) return;
+
   contentTokenForProviderAndSeries[`${hostingProviderUuid}:${seriesUuid}`] = token;
 }
 

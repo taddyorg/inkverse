@@ -3,6 +3,7 @@ import { PiUserBold } from "react-icons/pi";
 import { Link, useMatches, useNavigate } from "react-router";
 import { SignupModal } from "../profile/SignupModal";
 import { isAuthenticated, getUserDetails } from "@/lib/auth/user";
+import config from "@/config";
 
 interface NavbarProps {
   theme: string;
@@ -21,6 +22,7 @@ export function Navbar({ theme, zoomMode, onThemeChange, onZoomModeChange }: Nav
 
   const userDetails = getUserDetails();
   const isUserAuthenticated = isAuthenticated();
+  const showThemeToggle = config.SHOW_THEME_TOGGLE_ON_NAVBAR || false;
 
   const matches = useMatches();
   const navigate = useNavigate();
@@ -113,7 +115,7 @@ export function Navbar({ theme, zoomMode, onThemeChange, onZoomModeChange }: Nav
             </button>
 
             {/* Theme Toggle */}
-            {!isUserAuthenticated && (
+            {(!isUserAuthenticated || showThemeToggle) && (
               <>
                 <button 
                   onClick={toggleTheme}

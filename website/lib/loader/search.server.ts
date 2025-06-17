@@ -6,7 +6,6 @@ import { handleLoaderError } from "./error-handler";
 export type SearchLoaderData = {
   search: SearchQuery['search'];
   comicseries: NonNullable<SearchQuery['search']>['comicSeries'];
-  apolloState: Record<string, any>;
 };
 
 function prettyTypeToInkverseType(type: string): string {
@@ -40,13 +39,10 @@ export async function loadSearch({ params, request, context }: LoaderFunctionArg
       throw new Response("Not Found", { status: 404 });
     }
 
-    const state = client.extract();
-
     // Return immediately with comic series, but defer user data
     return {
       search: searchResult.data.search,
       comicseries: searchResult.data.search.comicSeries,
-      apolloState: state,
     };
     
   } catch (error) {

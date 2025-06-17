@@ -68,11 +68,8 @@ export function SettingsScreen() {
     // Clear Inkverse Auth Data
     await inkverseAuthClear();
 
-    // Clear SyncStorage
-    syncStorageClear();
-
     // Clear hosting provider data
-    const hostingProviderUuids = await getConnectedHostingProviderUuids();
+    const hostingProviderUuids = getConnectedHostingProviderUuids();
     hostingProviderUuids.forEach((hostingProviderUuid) => {
       clearHostingProviderAuthData(hostingProviderUuid);
     });
@@ -85,6 +82,9 @@ export function SettingsScreen() {
 
     //clear apollo local store
     getUserApolloClient()?.resetStore();
+
+    // Clear SyncStorage
+    syncStorageClear();
 
     // Go back to home
     navigation.goBack();

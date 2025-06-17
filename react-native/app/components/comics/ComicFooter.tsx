@@ -11,27 +11,18 @@ export const FOOTER_HEIGHT = 80;
 interface ComicFooterProps {
   footerPosition: Animated.AnimatedInterpolation<string | number>;
   comicissue: ComicIssue;
-  allIssues: ComicIssue[];
+  nextIssue?: ComicIssue | null;
+  previousIssue?: ComicIssue | null;
   onNavigateToIssue: (issueUuid: string, seriesUuid: string) => void;
 }
 
 export function ComicFooter({ 
   footerPosition, 
   comicissue, 
-  allIssues, 
+  nextIssue, 
+  previousIssue, 
   onNavigateToIssue 
 }: ComicFooterProps) {
-  // Find the current issue index
-  const currentIndex = allIssues.findIndex(issue => issue.uuid === comicissue.uuid);
-  
-  // Determine if we have previous/next issues
-  const hasPreviousIssue = currentIndex > 0;
-  const hasNextIssue = currentIndex < allIssues.length - 1 && currentIndex !== -1;
-  
-  // Get the previous and next issues if they exist
-  const previousIssue = hasPreviousIssue ? allIssues[currentIndex - 1] : null;
-  const nextIssue = hasNextIssue ? allIssues[currentIndex + 1] : null;
-
   // Handle navigation to previous issue
   const handlePreviousIssue = () => {
     if (previousIssue && previousIssue.uuid && comicissue.seriesUuid) {
@@ -49,12 +40,12 @@ export function ComicFooter({
   return (
     <Animated.View style={[styles.footer, { transform: [{ translateY: footerPosition }] }]}>
       <View style={styles.right}>
-        {hasPreviousIssue && (
+        {previousIssue && (
           <PressableOpacity onPress={handlePreviousIssue} style={styles.navigationButton}>
             <Ionicons name="chevron-back" size={28} color="white" />
           </PressableOpacity>
         )}
-        {hasNextIssue && (
+        {nextIssue && (
           <PressableOpacity onPress={handleNextIssue} style={styles.navigationButton}>
             <Ionicons name="chevron-forward" size={28} color="white" />
           </PressableOpacity>

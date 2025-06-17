@@ -168,7 +168,7 @@ const PreviewComicIssue = (props: PreviewComicIssueProps) => {
           </div>
         )}
       </div>
-      <p className={`font-bold mt-1 ${isCurrentIssue ? 'text-brand-pink' : isPatreonExclusive ? 'text-gray-400' : 'text-gray-500'}`}>
+      <p className={`font-semibold mt-1 ${isCurrentIssue ? 'text-brand-pink' : isPatreonExclusive ? 'text-gray-400' : 'text-gray-500'}`}>
         {comicissue?.name} {isPatreonExclusive ? "(PATREON EXCLUSIVE)" : ""}
       </p>
     </div>
