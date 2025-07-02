@@ -2,12 +2,7 @@ import { useState, useReducer } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { UserAgeRange } from '@inkverse/public/graphql/types';
-import { 
-  authReducer, 
-  authInitialState,
-  AuthActionType
-} from '@inkverse/shared-client/dispatch/authentication';
-import { updateAgeRange } from '@inkverse/shared-client/dispatch/user-details';
+import { updateAgeRange, UserDetailsActionType, userDetailsInitialState, userDetailsReducer } from '@inkverse/shared-client/dispatch/user-details';
 import { Screen, ThemedView, HeaderBackButton } from '@/app/components/ui';
 import { SetupAge } from '@/app/components/profile/SetupAge';
 import { useThemeColor } from '@/constants/Colors';
@@ -19,14 +14,17 @@ export function SignupAgeScreen() {
   
   const [ageRange, setAgeRange] = useState<UserAgeRange | ''>('');
   const [birthYear, setBirthYear] = useState('');
-  const [authState, dispatch] = useReducer(authReducer, authInitialState);
+  const [userDetailsState, dispatch] = useReducer(userDetailsReducer, userDetailsInitialState);
   
   const backgroundColor = useThemeColor({}, 'background');
 
   const handleSubmit = async () => {
-    dispatch({ type: AuthActionType.AUTH_CLEAR_ERROR });
-
     try {
+      dispatch({ type: UserDetailsActionType.USER_DETAILS_CLEAR_ERROR });
+      const userClient = getUserApolloClient();
+
+      if (!userClient) return;
+
       // Validate inputs
       if (!ageRange) {
         throw new Error('Age range is required');
@@ -38,7 +36,7 @@ export function SignupAgeScreen() {
       // Call updateAgeRange mutation
       await updateAgeRange(
         { 
-          userClient: getUserApolloClient(),
+          userClient,
           ageRange,
           birthYear: birthYear ? parseInt(birthYear) : undefined,
         },
@@ -48,7 +46,7 @@ export function SignupAgeScreen() {
       // Navigate to Notifications screen after successful update
       navigation.navigate(SIGNUP_NOTIFICATIONS_SCREEN);
     } catch (err: any) {
-      dispatch({ type: AuthActionType.AUTH_ERROR, payload: err.message });
+      dispatch({ type: UserDetailsActionType.USER_DETAILS_ERROR, payload: err.message });
     }
   };
 
@@ -59,10 +57,10 @@ export function SignupAgeScreen() {
         <ThemedView style={[styles.card, { backgroundColor }]}>
           <SetupAge
             ageRange={ageRange}
+            userDetailsState={userDetailsState}
             setAgeRange={setAgeRange}
             birthYear={birthYear}
             setBirthYear={setBirthYear}
-            authState={authState}
             onSubmit={handleSubmit}
             mode="setup"
           />

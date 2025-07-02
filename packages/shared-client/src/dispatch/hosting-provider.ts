@@ -20,6 +20,7 @@ export enum HostingProviderActionType {
   FETCH_USER_TOKENS_START = 'FETCH_USER_TOKENS_START',
   FETCH_USER_TOKENS_SUCCESS = 'FETCH_USER_TOKENS_SUCCESS',
   FETCH_USER_TOKENS_ERROR = 'FETCH_USER_TOKENS_ERROR',
+  FETCH_USER_TOKENS_CLEAR_ERROR = 'FETCH_USER_TOKENS_CLEAR_ERROR',
 }
 
 /* Action Types */
@@ -28,7 +29,7 @@ export type HostingProviderAction =
   | { type: HostingProviderActionType.FETCH_USER_TOKENS_START }
   | { type: HostingProviderActionType.FETCH_USER_TOKENS_SUCCESS; payload: { refreshToken: string | null } }
   | { type: HostingProviderActionType.FETCH_USER_TOKENS_ERROR; payload: string }
-
+  | { type: HostingProviderActionType.FETCH_USER_TOKENS_CLEAR_ERROR }
 /* Action Creators */
 interface FetchUserTokensParams {
   userClient: ApolloClient<any>;
@@ -130,6 +131,8 @@ export function hostingProviderReducer(
         isLoading: false, 
         error: action.payload
       };
+    case HostingProviderActionType.FETCH_USER_TOKENS_CLEAR_ERROR:
+      return { ...state, error: null };
     default:
       return state;
   }

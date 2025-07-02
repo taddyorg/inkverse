@@ -10,8 +10,7 @@ import {
   hostingProviderReducer, 
   hostingProviderInitialState,
   fetchRefreshTokenForHostingProvider,
-  clearHostingProviderError,
-  FETCH_USER_TOKENS,
+  HostingProviderActionType,
 } from '@inkverse/shared-client/dispatch/hosting-provider';
 import { 
   getHostingProviderRefreshToken, 
@@ -63,7 +62,7 @@ export function WrappedHostingProviderScreen() {
     // Handle error from URL params
     if (error) {
       const errorMessage = getErrorMessage(error);
-      dispatch(FETCH_USER_TOKENS.failure({ message: errorMessage }));
+      dispatch({ type: HostingProviderActionType.FETCH_USER_TOKENS_ERROR, payload: errorMessage });
       return;
     }
 
@@ -115,7 +114,7 @@ export function WrappedHostingProviderScreen() {
   };
 
   const handleRetry = async () => {
-    clearHostingProviderError(dispatch);
+    dispatch({ type: HostingProviderActionType.FETCH_USER_TOKENS_CLEAR_ERROR });
     navigation.goBack();
   };
 
