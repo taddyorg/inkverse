@@ -87,7 +87,7 @@ export const UserComicSeriesMutations: MutationResolvers = {
     await UserSeriesSubscription.subscribeToComicSeries(context.user.id, seriesUuid);
     
     // Purge the ProfileComicSeries cache for this user
-    await purgeCacheOnCdn({ type: 'profilecomicseries', id: String(context.user.id) });
+    await purgeCacheOnCdn({ type: 'profilecomicseries', id: String(context.user.id), shortUrl: context.user.username });
     
     // Get notification preference
     const hasNotificationEnabled = await NotificationPreference.hasNotificationEnabled(
@@ -112,7 +112,7 @@ export const UserComicSeriesMutations: MutationResolvers = {
     await UserSeriesSubscription.unsubscribeFromComicSeries(context.user.id, seriesUuid);
     
     // Purge the ProfileComicSeries cache for this user
-    await purgeCacheOnCdn({ type: 'profilecomicseries', id: String(context.user.id) });
+    await purgeCacheOnCdn({ type: 'profilecomicseries', id: String(context.user.id), shortUrl: context.user.username });
     
     // Get notification preference
     const hasNotificationEnabled = await NotificationPreference.hasNotificationEnabled(

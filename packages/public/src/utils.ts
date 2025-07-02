@@ -25,7 +25,7 @@ export const arrayToObject = <T extends Record<K, PropertyKey>, K extends keyof 
 }, {} as Record<T[K], T>);
 
 
-export type InkverseUrlType = 'comicseries' | 'comicissue' | 'creator' | 'list' | 'search' | 'share-inkverse' | 'tag' | 'genre';
+export type InkverseUrlType = 'comicseries' | 'comicissue' | 'creator' | 'list' | 'search' | 'share-inkverse' | 'tag' | 'genre' | 'profile';
 
 export type InkverseUrlParams = {
   type: InkverseUrlType,
@@ -80,6 +80,10 @@ export function getInkverseUrl(
     
     case 'share-inkverse':
       return '/';
+
+    case 'profile':
+      if (!params.shortUrl) return undefined;
+      return `/${params.shortUrl}`;
 
   default:
     throw new Error('getInkverseLink - type is invalid');

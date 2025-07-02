@@ -412,7 +412,7 @@ export const UserMutations: MutationResolvers = {
         )
       );
 
-      await purgeCacheOnCdn({ type: 'profilecomicseries', id: String(context.user.id) });
+      await purgeCacheOnCdn({ type: 'profilecomicseries', id: String(context.user.id), shortUrl: context.user.username });
 
       // Return true if at least one subscription succeeded
       return results.some(result => result.status === 'fulfilled' && result.value);
