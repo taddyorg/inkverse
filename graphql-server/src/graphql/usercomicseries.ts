@@ -1,6 +1,7 @@
 import { AuthenticationError } from './error.js';
 import { UserSeriesSubscription, NotificationPreference } from '@inkverse/shared-server/models/index';
 import { NotificationType, type MutationResolvers } from '@inkverse/shared-server/graphql/types';
+import { purgeCacheOnCdn } from '@inkverse/shared-server/cache/index';
 
 // GraphQL Type Definitions
 export const UserComicSeriesDefinitions = `
@@ -85,6 +86,9 @@ export const UserComicSeriesMutations: MutationResolvers = {
 
     await UserSeriesSubscription.subscribeToComicSeries(context.user.id, seriesUuid);
     
+    // Purge the ProfileComicSeries cache for this user
+    await purgeCacheOnCdn({ type: 'profilecomicseries', id: String(context.user.id) });
+    
     // Get notification preference
     const hasNotificationEnabled = await NotificationPreference.hasNotificationEnabled(
       context.user.id,
@@ -106,6 +110,9 @@ export const UserComicSeriesMutations: MutationResolvers = {
     }
 
     await UserSeriesSubscription.unsubscribeFromComicSeries(context.user.id, seriesUuid);
+    
+    // Purge the ProfileComicSeries cache for this user
+    await purgeCacheOnCdn({ type: 'profilecomicseries', id: String(context.user.id) });
     
     // Get notification preference
     const hasNotificationEnabled = await NotificationPreference.hasNotificationEnabled(

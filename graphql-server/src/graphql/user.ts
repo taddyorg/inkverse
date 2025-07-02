@@ -10,6 +10,7 @@ import { sanitizeUsername, validateUsername } from '@inkverse/public/user';
 import { sendEmail } from '@inkverse/shared-server/messaging/email/index';
 import { inkverseWebsiteUrl } from '@inkverse/public/utils';
 import { isAValidEmail } from '@inkverse/public/utils';
+import { purgeCacheOnCdn } from '@inkverse/shared-server/cache/index';
 
 // GraphQL Type Definitions
 export const UserDefinitions = `
@@ -48,6 +49,16 @@ export const UserDefinitions = `
     EMAIL
   }
 
+  """
+  Profile comic series wrapper for caching
+  """
+  type ProfileComicSeries {
+    "Id of the user"
+    userId: ID!
+    
+    "List of comic series"
+    comicSeries: [ComicSeries]
+  }
 
   """
   Bluesky profile information
@@ -100,8 +111,7 @@ export const UserQueriesDefinitions = `
     userId: ID!
     limitPerPage: Int
     page: Int
-  ): [ComicSeries]
-
+  ): ProfileComicSeries
 `;
 
 export const UserMutationsDefinitions = `
@@ -267,7 +277,7 @@ export const UserQueries = {
     return await ComicSeries.getComicsFromCreatorUuids(creatorUuids);
   },
 
-  getUserSubscribedComics: async (_parent: any, { userId, limitPerPage = 20, page = 1 }: { userId: string; limitPerPage?: number | null; page?: number | null }, context: any): Promise<ComicSeriesModel[]> => {
+  getUserSubscribedComics: async (_parent: any, { userId, limitPerPage = 20, page = 1 }: { userId: string; limitPerPage?: number | null; page?: number | null }, context: any): Promise<{ userId: string; comicSeries: ComicSeriesModel[] | null }> => {
     try {
       const actualLimitPerPage = limitPerPage ?? 20;
       const actualPage = page ?? 1;
@@ -282,7 +292,10 @@ export const UserQueries = {
       const subscriptions = await UserSeriesSubscription.getUserSubscriptions(Number(userId), actualLimitPerPage, offset);
       
       if (!subscriptions || subscriptions.length === 0) {
-        return [];
+        return {
+          userId,
+          comicSeries: []
+        };
       }
 
       // Extract series UUIDs from subscriptions
@@ -295,7 +308,12 @@ export const UserQueries = {
         return acc;
       }, {});
       
-      return seriesUuids.map(uuid => comicSeriesObject[uuid]).filter(Boolean) as ComicSeriesModel[];
+      const orderedComicSeries = seriesUuids.map(uuid => comicSeriesObject[uuid]).filter(Boolean) as ComicSeriesModel[];
+      
+      return {
+        userId,
+        comicSeries: orderedComicSeries
+      };
     } catch (error) {
       console.error('Error getting user subscribed comics:', error);
       throw new Error('Failed to get subscribed comics');
@@ -393,6 +411,8 @@ export const UserMutations: MutationResolvers = {
           UserSeriesSubscription.subscribeToComicSeries(Number(context.user.id), seriesUuid)
         )
       );
+
+      await purgeCacheOnCdn({ type: 'profilecomicseries', id: String(context.user.id) });
 
       // Return true if at least one subscription succeeded
       return results.some(result => result.status === 'fulfilled' && result.value);

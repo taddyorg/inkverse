@@ -990,6 +990,15 @@ export enum PrivacyType {
   PUBLIC = 'PUBLIC'
 }
 
+/** Profile comic series wrapper for caching */
+export type ProfileComicSeries = {
+  __typename?: 'ProfileComicSeries';
+  /** List of comic series */
+  comicSeries?: Maybe<Array<Maybe<ComicSeries>>>;
+  /** Id of the user */
+  userId: Scalars['ID']['output'];
+};
+
 export type Query = {
   __typename?: 'Query';
   /** Get Bluesky profile details for a given handle */
@@ -1033,7 +1042,7 @@ export type Query = {
   /** Get user's relationship data for a specific comic series */
   getUserComicSeries?: Maybe<UserComicSeries>;
   /** Get the current user's subscribed comics */
-  getUserSubscribedComics?: Maybe<Array<Maybe<ComicSeries>>>;
+  getUserSubscribedComics?: Maybe<ProfileComicSeries>;
   /** Get the current authenticated user */
   me?: Maybe<User>;
   /**  Search for a term  */
@@ -1338,6 +1347,7 @@ export type ResolversTypes = ResolversObject<{
   NotificationPreferenceInput: NotificationPreferenceInput;
   NotificationType: NotificationType;
   PrivacyType: PrivacyType;
+  ProfileComicSeries: ResolverTypeWrapper<Omit<ProfileComicSeries, 'comicSeries'> & { comicSeries?: Maybe<Array<Maybe<ResolversTypes['ComicSeries']>>> }>;
   Query: ResolverTypeWrapper<{}>;
   SearchResults: ResolverTypeWrapper<Omit<SearchResults, 'comicSeries' | 'creators'> & { comicSeries?: Maybe<Array<Maybe<ResolversTypes['ComicSeries']>>>, creators?: Maybe<Array<Maybe<ResolversTypes['Creator']>>> }>;
   SeriesStatus: SeriesStatus;
@@ -1370,6 +1380,7 @@ export type ResolversParentTypes = ResolversObject<{
   Mutation: {};
   NotificationPreference: NotificationPreference;
   NotificationPreferenceInput: NotificationPreferenceInput;
+  ProfileComicSeries: Omit<ProfileComicSeries, 'comicSeries'> & { comicSeries?: Maybe<Array<Maybe<ResolversParentTypes['ComicSeries']>>> };
   Query: {};
   SearchResults: Omit<SearchResults, 'comicSeries' | 'creators'> & { comicSeries?: Maybe<Array<Maybe<ResolversParentTypes['ComicSeries']>>>, creators?: Maybe<Array<Maybe<ResolversParentTypes['Creator']>>> };
   String: Scalars['String']['output'];
@@ -1572,6 +1583,12 @@ export type NotificationPreferenceResolvers<ContextType = any, ParentType extend
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type ProfileComicSeriesResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProfileComicSeries'] = ResolversParentTypes['ProfileComicSeries']> = ResolversObject<{
+  comicSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['ComicSeries']>>>, ParentType, ContextType>;
+  userId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
   getBlueskyProfile?: Resolver<Maybe<ResolversTypes['BlueskyProfile']>, ParentType, ContextType, RequireFields<QueryGetBlueskyProfileArgs, 'handle'>>;
   getComicIssue?: Resolver<Maybe<ResolversTypes['ComicIssue']>, ParentType, ContextType, RequireFields<QueryGetComicIssueArgs, 'seriesUuid' | 'uuid'>>;
@@ -1593,7 +1610,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getUserById?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryGetUserByIdArgs, 'id'>>;
   getUserByUsername?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryGetUserByUsernameArgs, 'username'>>;
   getUserComicSeries?: Resolver<Maybe<ResolversTypes['UserComicSeries']>, ParentType, ContextType, RequireFields<QueryGetUserComicSeriesArgs, 'seriesUuid'>>;
-  getUserSubscribedComics?: Resolver<Maybe<Array<Maybe<ResolversTypes['ComicSeries']>>>, ParentType, ContextType, RequireFields<QueryGetUserSubscribedComicsArgs, 'userId'>>;
+  getUserSubscribedComics?: Resolver<Maybe<ResolversTypes['ProfileComicSeries']>, ParentType, ContextType, RequireFields<QueryGetUserSubscribedComicsArgs, 'userId'>>;
   me?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   search?: Resolver<Maybe<ResolversTypes['SearchResults']>, ParentType, ContextType, Partial<QuerySearchArgs>>;
 }>;
@@ -1643,6 +1660,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   List?: ListResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
   NotificationPreference?: NotificationPreferenceResolvers<ContextType>;
+  ProfileComicSeries?: ProfileComicSeriesResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   SearchResults?: SearchResultsResolvers<ContextType>;
   User?: UserResolvers<ContextType>;

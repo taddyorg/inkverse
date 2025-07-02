@@ -10,9 +10,7 @@ dotenv.config({ path: envPath });
 
 type EmailListName = 'signup'
 
-const EMAIL_LISTS: Record<EmailListName, string> = {
-  signup: 'signup',
-}
+const EMAIL_LISTS = JSON.parse(process.env.EMAIL_LISTS || '{}');
 
 type Contact = {
   email: string;
@@ -32,7 +30,6 @@ export async function addContactToList(listName: EmailListName, contact: Contact
   }
 
   const data = {
-    api_key: process.env.EMAIL_OCTOPUS_API_KEY,
     email_address: contact.email,
     // fields: {
     //   ...(contact.name && {
@@ -40,14 +37,16 @@ export async function addContactToList(listName: EmailListName, contact: Contact
     //     FirstName: contact.name.split(' ')[0],
     //   }),
     // },
-    ...(contact.platforms?.length && { platforms: contact.platforms }),
-    status: "SUBSCRIBED"
+    status: "subscribed"
   };
 
+  // POST is for creating a new contact
+  // PUT is for updating an existing contact
   const config: AxiosRequestConfig = {
     method: 'post',
-    url: `https://emailoctopus.com/api/1.6/lists/${listId}/contacts`,
+    url: `https://api.emailoctopus.com/lists/${listId}/contacts`,
     headers: {
+      'Authorization': `Bearer ${process.env.EMAIL_OCTOPUS_API_KEY}`,
       'Content-Type': 'application/json',
     },
     data,
@@ -56,7 +55,7 @@ export async function addContactToList(listName: EmailListName, contact: Contact
   try {
     await axios(config);
   } catch (error) {
-    const axiosError = error as AxiosError;
+    const axiosError = error as AxiosError;  
     console.error('Error adding contact to list:', listName, contact, axiosError.response?.data || axiosError.message);
   }
 }
@@ -74,14 +73,13 @@ export async function removeContactFromList(listName: EmailListName, contact: Co
   }
 
   const data = {
-    api_key: process.env.EMAIL_OCTOPUS_API_KEY,
     email_address: contact.email,
-    status: "UNSUBSCRIBED"
+    status: "unsubscribed"
   };
 
   const config: AxiosRequestConfig = {
-    method: 'post',
-    url: `https://emailoctopus.com/api/1.6/lists/${listId}/contacts`,
+    method: 'put',
+    url: `https://api.emailoctopus.com/lists/${listId}/contacts`,
     headers: {
       'Content-Type': 'application/json',
     },

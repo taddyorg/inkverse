@@ -198,7 +198,7 @@ export async function loadUserProfileById(
 export function parseProfileData(data: GetProfileByUserIdQuery): ProfileState {
   return {
     user: data?.getUserById,
-    subscribedComics: data?.getUserSubscribedComics?.filter((comic): comic is ComicSeries => comic !== null) || null,
+    subscribedComics: data?.getUserSubscribedComics?.comicSeries?.filter((comic): comic is ComicSeries => comic !== null) || null,
     isLoading: false,
     error: null,
   };

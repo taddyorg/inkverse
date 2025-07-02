@@ -85,7 +85,7 @@ import {
 
 import {
   NotificationPreferenceDefinitions,
-} from './notificationPreference.js';
+} from './notificationpreference.js';
 
 export const typeDefs = gql`#graphql
   ${CommonDefinitions}

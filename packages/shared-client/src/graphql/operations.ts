@@ -987,6 +987,15 @@ export enum PrivacyType {
   PUBLIC = 'PUBLIC'
 }
 
+/** Profile comic series wrapper for caching */
+export type ProfileComicSeries = {
+  __typename?: 'ProfileComicSeries';
+  /** List of comic series */
+  comicSeries?: Maybe<Array<Maybe<ComicSeries>>>;
+  /** Id of the user */
+  userId: Scalars['ID']['output'];
+};
+
 export type Query = {
   __typename?: 'Query';
   /** Get Bluesky profile details for a given handle */
@@ -1030,7 +1039,7 @@ export type Query = {
   /** Get user's relationship data for a specific comic series */
   getUserComicSeries?: Maybe<UserComicSeries>;
   /** Get the current user's subscribed comics */
-  getUserSubscribedComics?: Maybe<Array<Maybe<ComicSeries>>>;
+  getUserSubscribedComics?: Maybe<ProfileComicSeries>;
   /** Get the current authenticated user */
   me?: Maybe<User>;
   /**  Search for a term  */
@@ -1425,7 +1434,7 @@ export type GetProfileByUserIdQueryVariables = Exact<{
 }>;
 
 
-export type GetProfileByUserIdQuery = { __typename?: 'Query', getUserById?: { __typename?: 'User', id: string, username?: string | null } | null, getUserSubscribedComics?: Array<{ __typename?: 'ComicSeries', uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null } | null> | null };
+export type GetProfileByUserIdQuery = { __typename?: 'Query', getUserById?: { __typename?: 'User', id: string, username?: string | null } | null, getUserSubscribedComics?: { __typename?: 'ProfileComicSeries', userId: string, comicSeries?: Array<{ __typename?: 'ComicSeries', uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null } | null> | null } | null };
 
 export type GetUserByUsernameQueryVariables = Exact<{
   username: Scalars['String']['input'];
@@ -1799,7 +1808,10 @@ export const GetProfileByUserId = gql`
     ...miniUserDetails
   }
   getUserSubscribedComics(userId: $id, limitPerPage: 1000, page: 1) {
-    ...miniComicSeriesDetails
+    userId
+    comicSeries {
+      ...miniComicSeriesDetails
+    }
   }
 }
     ${MiniUserDetails}
