@@ -30,7 +30,7 @@ export interface ProfileState {
   apolloState?: Record<string, any>;
 }
 
-export const profileInitialState: ProfileState = {
+export const profileInitialState: Partial<ProfileState> = {
   user: null,
   subscribedComics: null,
   isLoading: false,
@@ -78,11 +78,15 @@ interface LoadProfileByUsernameProps {
   username: string;
 }
 
-interface LoadProfileByIdProps {
+interface LoadPublicProfileByIdProps {
   publicClient: ApolloClient<any>;
-  userClient?: ApolloClient<any>;
   userId: string;
-  currentUserId?: string;
+  forceRefresh?: boolean;
+}
+
+interface LoadUserProfileByIdProps {
+  userClient: ApolloClient<any>;
+  userId: string;
   forceRefresh?: boolean;
 }
 
@@ -109,16 +113,14 @@ export async function loadProfileByUsername(
   }
 }
 
-// Load profile by ID (for React Native)
-export async function loadProfileById(
-  { publicClient, userClient, userId, currentUserId, forceRefresh = false }: LoadProfileByIdProps,
+export async function loadPublicProfileById(
+  { publicClient, userId, forceRefresh = false }: LoadPublicProfileByIdProps,
   dispatch?: Dispatch<ProfileAction>
 ): Promise<ProfileState | null> {
   if (dispatch) dispatch({ type: ProfileActionType.GET_PROFILE_START });
   
   try {
-    const client = (currentUserId && userClient && currentUserId === userId) ? userClient : publicClient;
-    const { data } = await client.query<
+    const { data } = await publicClient.query<
       GetProfileByUserIdQuery,
       GetProfileByUserIdQueryVariables
     >({
@@ -152,7 +154,48 @@ export async function loadProfileById(
   }
 }
 
-function parseProfileData(data: GetProfileByUserIdQuery): ProfileState {
+export async function loadUserProfileById(
+  { userClient, userId, forceRefresh = false }: LoadUserProfileByIdProps,
+  dispatch?: Dispatch<ProfileAction>
+): Promise<ProfileState | null> {
+  if (dispatch) dispatch({ type: ProfileActionType.GET_PROFILE_START });
+  
+  try {
+    const { data } = await userClient.query<
+      GetProfileByUserIdQuery,
+      GetProfileByUserIdQueryVariables
+    >({
+      query: GetProfileByUserId,
+      variables: { id: userId },
+      ...(forceRefresh ? { fetchPolicy: 'network-only' } : {}),
+    });
+
+    const parsedData = parseProfileData(data);
+
+    if (dispatch) {
+      dispatch({ 
+        type: ProfileActionType.GET_PROFILE_SUCCESS, 
+        payload: parsedData 
+      });
+    }
+
+    return parsedData;
+  } catch (error: any) {
+    const errorMessage = error?.response?.data?.error || 
+                        error?.message || 
+                        'Failed to load profile';
+    
+    if (dispatch) {
+      dispatch({ 
+        type: ProfileActionType.GET_PROFILE_ERROR, 
+        payload: errorMessage 
+      });
+    }
+    return null;
+  }
+}
+
+export function parseProfileData(data: GetProfileByUserIdQuery): ProfileState {
   return {
     user: data?.getUserById,
     subscribedComics: data?.getUserSubscribedComics?.filter((comic): comic is ComicSeries => comic !== null) || null,
@@ -163,9 +206,9 @@ function parseProfileData(data: GetProfileByUserIdQuery): ProfileState {
 
 /* Reducer */
 export const profileReducer = (
-  state: ProfileState = profileInitialState,
+  state: Partial<ProfileState> = profileInitialState,
   action: ProfileAction
-): ProfileState => {
+): Partial<ProfileState> => {
   switch (action.type) {
     // Get Profile actions
     case ProfileActionType.GET_PROFILE_START:

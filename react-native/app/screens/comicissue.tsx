@@ -120,7 +120,7 @@ export function ComicIssueScreen() {
   
   const isPatreonExclusive = comicissue?.scopesForExclusiveContent?.includes('patreon');
   const decodedToken = contentToken && jwtDecode(contentToken) as any;
-  const hasAccessToIssue = decodedToken?.items && Array.isArray(decodedToken.items) && comicissue?.uuid && decodedToken.items.includes(comicissue.uuid);
+  const hasAccessToIssue = decodedToken?.scopes_for_exclusive_content?.includes('patreon');
   const connectedProviders = getConnectedHostingProviderUuids();
   const isConnectedToHostingProvider = comicseries?.hostingProviderUuid && connectedProviders.includes(comicseries.hostingProviderUuid);
   const isAuthenticated = !!getUserDetails();

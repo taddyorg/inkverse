@@ -144,9 +144,7 @@ export function SignupScreen() {
             baseUrl: config.AUTH_URL,
             idToken: credential.identityToken,
             storageFunctions: mobileStorageFunctions,
-            onSuccessFunction: () => {
-              navigation.navigate(SIGNUP_USERNAME_SCREEN);
-            }
+            onSuccessFunction: onTokenSuccessfullyReceived
           }, 
           dispatch
         );

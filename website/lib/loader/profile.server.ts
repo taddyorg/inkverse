@@ -1,8 +1,9 @@
 import { type LoaderFunctionArgs } from "react-router";
 import { getPublicApolloClient } from "@/lib/apollo/client.server";
-import { type GetUserByUsernameQuery, GetUserByUsername, type GetUserByUsernameQueryVariables } from "@inkverse/shared-client/graphql/operations";
+import { type GetUserByUsernameQuery, GetUserByUsername, type GetUserByUsernameQueryVariables, type GetProfileByUserIdQuery, type GetProfileByUserIdQueryVariables, GetProfileByUserId } from "@inkverse/shared-client/graphql/operations";
 import { handleLoaderError } from "./error-handler";
-import { type ProfileState, loadProfileById } from "@inkverse/shared-client/dispatch/profile";
+import { parseProfileData } from "@inkverse/shared-client/dispatch/profile";
+import type { ProfileState } from "@inkverse/shared-client/dispatch/profile";
 
 export async function loadProfile({ params, request, context }: LoaderFunctionArgs): Promise<ProfileState> {
   const { username } = params;
@@ -30,13 +31,15 @@ export async function loadProfile({ params, request, context }: LoaderFunctionAr
       };
     }
 
-    // Step 2: Fetch user data using the helper function
-    const profileData = await loadProfileById({
-      publicClient,
-      userId: userIdFromUsername,
+    const { data } = await publicClient.query<
+      GetProfileByUserIdQuery,
+      GetProfileByUserIdQueryVariables
+    >({
+      query: GetProfileByUserId,
+      variables: { id: userIdFromUsername },
     });
 
-    if (!profileData) {
+    if (!data) {
       return {
         user: null,
         subscribedComics: null,
@@ -45,7 +48,7 @@ export async function loadProfile({ params, request, context }: LoaderFunctionAr
       };
     }
 
-    return profileData;
+    return parseProfileData(data);
     
   } catch (error) {
     const errorResult = handleLoaderError(error, 'Profile');

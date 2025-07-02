@@ -1,4 +1,10 @@
 export const typePolicies = {
+  User: {
+    keyFields: ["id"]
+  },
+  Documentation: {
+    keyFields: ["id"]
+  },
   ComicSeries: {
     keyFields: ["uuid"],
   },
@@ -26,27 +32,25 @@ export const typePolicies = {
   HomeScreenCuratedList: {
     keyFields: ["id"]
   },
-  Documentation: {
+  List: {
     keyFields: ["id"]
+  },
+  HostingProvider: {
+    keyFields: ["uuid"]
   },
   SearchResults: {
     keyFields: ["searchId"]
   },
-  List: {
-    keyFields: ["id"]
+  SearchQueryResponseInfo: {
+    keyFields: ["searchId"]
   },
-  User: {
-    keyFields: ["id"]
+  SearchQueryResponseInfoDetails: {
+    keyFields: ["searchId"]
+  },
+  BlueskyProfile: {
+    keyFields: ["did"]
+  },
+  UserComicSeries: {
+    keyFields: ["seriesUuid"]
   },
 }
-
-export const defaultOptions = {
-  watchQuery: {
-    fetchPolicy: 'no-cache',
-    errorPolicy: 'ignore',
-  },
-  query: {
-    fetchPolicy: 'no-cache',
-    errorPolicy: 'all',
-  },
-};

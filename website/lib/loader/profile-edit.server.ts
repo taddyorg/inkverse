@@ -23,8 +23,6 @@ export async function loadProfileEdit({ request }: LoaderFunctionArgs): Promise<
     throw redirect('/');
   }
 
-  const userId = decoded.sub;
-
   try {
     const userClient = getUserApolloClient(request);
 

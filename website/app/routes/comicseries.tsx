@@ -6,13 +6,12 @@ import { ComicSeriesDetails } from '../components/comics/ComicSeriesDetails';
 import { ComicIssuesList } from '../components/comics/ComicIssuesList';
 import { ComicSeriesInfo } from '../components/comics/ComicSeriesInfo';
 import { ReadNextEpisode } from '../components/comics/ReadNextEpisode';
-import { AddToProfileButton, NotificationButton } from '../components/comics/ComicActionButtons';
 
 import { loadComicSeries } from '@/lib/loader/comicseries.server';
 import { getMetaTags } from '@/lib/seo';
 import { getInkverseUrl, inkverseWebsiteUrl } from '@inkverse/public/utils';
 import { getBannerImageUrl } from '@inkverse/public/comicseries';
-import { getUserDetails, isAuthenticated } from '@/lib/auth/user';
+import { getUserDetails } from '@/lib/auth/user';
 import { getUserApolloClient } from '@/lib/apollo/client.client';
 import { 
   loadUserComicData, 
@@ -20,7 +19,8 @@ import {
   unsubscribeFromSeries, 
   enableNotificationsForSeries, 
   disableNotificationsForSeries, 
-  comicSeriesReducer, 
+  comicSeriesReducer,
+  type ComicSeriesLoaderData, 
 } from '@inkverse/shared-client/dispatch/comicseries';
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
@@ -39,9 +39,14 @@ export const loader = async ({ params, request, context }: LoaderFunctionArgs) =
   return await loadComicSeries({ params, request, context });
 };
 
-function ComicSeriesScreen() {
+export default function ComicSeries() {
   const comicSeriesData = useLoaderData<typeof loader>();
-  const [comicSeriesState, dispatch] = useReducer(comicSeriesReducer, comicSeriesData);
+  const seriesKey = comicSeriesData.comicseries?.uuid || 'no-series';
+  return <ComicSeriesContent key={seriesKey} initialData={comicSeriesData} />;
+}
+
+function ComicSeriesContent({ initialData }: { initialData: Partial<ComicSeriesLoaderData> }) {
+  const [comicSeriesState, dispatch] = useReducer(comicSeriesReducer, initialData);
   
   const {
     comicseries,
@@ -66,7 +71,8 @@ function ComicSeriesScreen() {
   }, [comicseries?.uuid]);
 
   const handleAddToProfile = async () => {
-    if (!isAuthenticated()) {
+    const currentUser = getUserDetails();
+    if (!currentUser || !currentUser.id) {
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new Event('openSignupModal'));
       }
@@ -82,12 +88,14 @@ function ComicSeriesScreen() {
       if (isCurrentlySubscribed) {
         await unsubscribeFromSeries({ 
           userClient, 
-          seriesUuid: comicseries.uuid 
+          seriesUuid: comicseries.uuid,
+          userId: currentUser?.id
         }, dispatch);
       } else {
         await subscribeToSeries({ 
           userClient, 
-          seriesUuid: comicseries.uuid 
+          seriesUuid: comicseries.uuid,
+          userId: currentUser?.id
         }, dispatch);
       }
     } catch (error) {
@@ -96,7 +104,8 @@ function ComicSeriesScreen() {
   };
 
   const handleGetNotifications = async () => {
-    if (!isAuthenticated()) {
+    const currentUser = getUserDetails();
+    if (!currentUser || !currentUser.id) {
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new Event('openSignupModal'));
       }
@@ -112,12 +121,14 @@ function ComicSeriesScreen() {
       if (hasNotifications) {
         await disableNotificationsForSeries({ 
           userClient, 
-          seriesUuid: comicseries.uuid 
+          seriesUuid: comicseries.uuid,
+          userId: currentUser?.id
         }, dispatch);
       } else {
         await enableNotificationsForSeries({ 
           userClient, 
-          seriesUuid: comicseries.uuid 
+          seriesUuid: comicseries.uuid,
+          userId: currentUser?.id
         }, dispatch);
       }
     } catch (error) {
@@ -140,30 +151,14 @@ function ComicSeriesScreen() {
       <div className="max-w-3xl mx-auto sm:p-6 lg:p-8">
         <ComicSeriesDetails 
           comicseries={comicseries} 
-          pageType={'comicseries-screen'} 
+          pageType={'comicseries-screen'}
+          userComicData={userComicData}
+          isSubscriptionLoading={isSubscriptionLoading}
+          isNotificationLoading={isNotificationLoading}
+          isUserDataLoading={isUserDataLoading}
+          onAddToProfile={handleAddToProfile}
+          onGetNotifications={handleGetNotifications}
         />
-        <div className="px-4 sm:px-6 lg:px-8 pb-3">
-          <div className="flex flex-col sm:flex-row">
-            {/* Invisible spacer to match cover art exact dimensions: h-60 aspect-4/6 = 160px width + mr-2 */}
-            <div className="hidden sm:block w-[160px] mr-2 flex-shrink-0"></div>
-            <div className="sm:w-2/3 sm:pl-4">
-              <div className="flex items-start">
-                <AddToProfileButton
-                  isSubscribed={userComicData?.isSubscribed || false}
-                  isLoading={isSubscriptionLoading || isUserDataLoading || false}
-                  onPress={handleAddToProfile}
-                  selectedText='SAVED'
-                  unselectedText='SAVE'
-                />
-                <NotificationButton
-                  isReceivingNotifications={userComicData?.hasNotificationEnabled || false}
-                  isLoading={isNotificationLoading || isUserDataLoading || false}
-                  onPress={handleGetNotifications}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
         <ComicIssuesList 
           comicseries={comicseries} 
           issues={issues?.filter((issue) => issue !== null)}
@@ -186,5 +181,3 @@ function ComicSeriesScreen() {
     </>
   );
 }
-
-export default ComicSeriesScreen;

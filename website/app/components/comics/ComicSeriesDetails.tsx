@@ -5,6 +5,7 @@ import { getInkverseUrl } from '@inkverse/public/utils';
 import { getPrettyGenre } from '@inkverse/public/genres';
 import { getBannerImageUrl, getCoverImageUrl, getThumbnailImageUrl } from '@inkverse/public/comicseries';
 import { getAvatarImageUrl } from '@inkverse/public/creator';
+import { AddToProfileButton, NotificationButton } from './ComicActionButtons';
 
 export type ComicSeriesPageType = 
   | 'comicseries-screen'
@@ -19,10 +20,21 @@ type ComicSeriesDetailsProps = {
   comicseries: ComicSeries | null | undefined;
   pageType: ComicSeriesPageType;
   index?: number;
+  // Action button props for comicseries-screen
+  userComicData?: {
+    isSubscribed?: boolean;
+    isRecommended?: boolean;
+    hasNotificationEnabled?: boolean;
+  } | null;
+  isSubscriptionLoading?: boolean;
+  isNotificationLoading?: boolean;
+  isUserDataLoading?: boolean;
+  onAddToProfile?: () => void;
+  onGetNotifications?: () => void;
 }
 
 export function ComicSeriesDetails(props: ComicSeriesDetailsProps){
-  const { comicseries, pageType } = props;
+  const { comicseries, pageType, onAddToProfile, onGetNotifications, userComicData, isSubscriptionLoading, isNotificationLoading, isUserDataLoading } = props;
 
   if (!comicseries) { return <></>; }
 
@@ -123,7 +135,7 @@ export function ComicSeriesDetails(props: ComicSeriesDetailsProps){
 
   
   return (
-    <div className="py-6 mt-2 px-4 sm:px-6 lg:px-8 rounded-md">
+    <div className="pt-6 pb-3 mt-2 px-4 sm:px-6 lg:px-8 rounded-md">
       <div className="flex flex-col sm:flex-row ">
         <CoverArt comicseries={comicseries} pageType={pageType} />
         <div className="sm:w-2/3 sm:pl-4">
@@ -135,8 +147,19 @@ export function ComicSeriesDetails(props: ComicSeriesDetailsProps){
           <Creators comicseries={comicseries} pageType={pageType}/>
           <p className='mt-2'>{comicseries?.description?.trim()}</p>
           <Tags comicseries={comicseries} pageType={pageType}/>
+          {pageType === 'comicseries-screen' && onAddToProfile && onGetNotifications && (
+            <ComicSeriesActionButtons
+              userComicData={userComicData}
+              isSubscriptionLoading={isSubscriptionLoading}
+              isNotificationLoading={isNotificationLoading}
+              isUserDataLoading={isUserDataLoading}
+              onAddToProfile={onAddToProfile}
+              onGetNotifications={onGetNotifications}
+            />
+          )}
         </div>
       </div>
+      
     </div>
   );
 }
@@ -297,30 +320,43 @@ const Creators = ({ comicseries, pageType }: { comicseries: ComicSeries, pageTyp
   );
 }
 
-// const RecommendButton = ({ isLoading, recommendHandler }) => {
-//     return (
-//         <a href='https://inkverse.co/download' target='_blank' className={`flex items-center justify-center px-4 py-2 rounded-full text-sm font-bold transition-colors duration-150 bg-background-primary border-2 border-button-disabled text-text-primary hover:bg-brand-pink hover:text-white hover:border-brand-pink`}>
-//             <div className="flex items-center">
-//                 <FaThumbsUp
-//                     className={`mr-2 text-text-primary group-hover:text-white`}
-//                     size={16}
-//                 />
-//                 <span>Recommend</span>
-//             </div>
-//         </a>
-//     );
-// };
+interface ComicSeriesActionButtonsProps {
+  userComicData?: {
+    isSubscribed?: boolean;
+    isRecommended?: boolean;
+    hasNotificationEnabled?: boolean;
+  } | null;
+  isSubscriptionLoading?: boolean;
+  isNotificationLoading?: boolean;
+  isUserDataLoading?: boolean;
+  onAddToProfile: () => void;
+  onGetNotifications: () => void;
+}
 
-// const SaveButton = ({ isLoading, saveHandler }) => {
-//     return (
-//         <a href='https://inkverse.co/download' target='_blank' className={`flex items-center justify-center px-4 py-2 rounded-full text-sm font-bold transition-colors duration-150 bg-background-primary border-2 border-button-disabled text-text-primary hover:bg-brand-pink hover:text-white hover:border-brand-pink ml-2`}>
-//             <div className="flex items-center">
-//                 <FaBookmark
-//                     className={`mr-2 text-text-primary`}
-//                     size={16}
-//                 />
-//                 <span>Save</span>
-//             </div>
-//         </a>
-//     );
-// };
+export function ComicSeriesActionButtons({
+  userComicData,
+  isSubscriptionLoading,
+  isNotificationLoading,
+  isUserDataLoading,
+  onAddToProfile,
+  onGetNotifications,
+}: ComicSeriesActionButtonsProps) {
+  return (
+    <div className="flex flex-col sm:flex-row mt-6">
+      <div className="flex items-start">
+        <AddToProfileButton
+          isSubscribed={userComicData?.isSubscribed || false}
+          isLoading={isSubscriptionLoading || isUserDataLoading || false}
+          onPress={onAddToProfile}
+          selectedText='SAVED'
+          unselectedText='SAVE'
+        />
+        <NotificationButton
+          isReceivingNotifications={userComicData?.hasNotificationEnabled || false}
+          isLoading={isNotificationLoading || isUserDataLoading || false}
+          onPress={onGetNotifications}
+        />
+      </div>
+    </div>
+  );
+} 

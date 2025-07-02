@@ -134,9 +134,7 @@ export async function dispatchExchangeOTPForTokens(
 
     if (dispatch) {
       dispatch({ type: AuthActionType.AUTH_SUCCESS, payload: response.data });
-      if (onSuccessFunction) {
-        onSuccessFunction();
-      }
+      onSuccessFunction?.();
     }
   } catch (error: any) {
     if (dispatch) {
@@ -186,9 +184,7 @@ export async function dispatchLoginWithGoogle(
 
     if (dispatch) {
       dispatch({ type: AuthActionType.AUTH_SUCCESS, payload: response.data });
-      if (onSuccessFunction) {
-        onSuccessFunction();
-      }
+      onSuccessFunction?.();
     }
   } catch (error: any) {
     if (dispatch) {
@@ -234,9 +230,7 @@ export async function dispatchLoginWithApple(
 
     if (dispatch) {
       dispatch({ type: AuthActionType.AUTH_SUCCESS, payload: response.data });
-      if (onSuccessFunction) {
-        onSuccessFunction();
-      }
+      onSuccessFunction?.();
     }
   } catch (error: any) {
     if (dispatch) {

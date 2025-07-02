@@ -44,7 +44,7 @@ export function SetupBluesky({
               value={blueskyHandle}
               onChange={(e) => setBlueskyHandle(e.target.value)}
               className="w-full px-2 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-pink dark:focus:ring-taddy-blue text-inkverse-black bg-white"
-              placeholder="bsky.app/profile/yourhandle"
+              placeholder="yourhandle.bsky.social"
               required
             />
           </div>

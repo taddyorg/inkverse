@@ -14,18 +14,19 @@ const cacheKeyForType: Record<string, string> = {
   "Documentation": "id",
   "ComicSeries": "uuid",
   "ComicIssue": "uuid",
+  "ComicIssueForSeries": "seriesUuid",
   "ComicStory": "uuid",
   "Creator": "uuid",
   "CreatorContent": "uuid",
+  "HomeScreenComicSeries": "id",
+  "HomeScreenCuratedList": "id",
+  "List": "id",
   "HostingProvider": "uuid",
-  "OAuthDetails": "uuid",
   "SearchResults": "searchId",
   "SearchQueryResponseInfo": "searchId",
-  "SearchQueryResponseInfoDetails": "searchId",
-  "HomeScreenComicSeries": "id",
-  "ComicIssueForSeries": "seriesUuid",
-  "UserComicSeries": "seriesUuid",
-  "BlueskyProfile": "did"
+  "SearchQueryResponseInfoDetails": "searchId", 
+  "BlueskyProfile": "did",
+  "UserComicSeries": "seriesUuid"
 }
 
 const cacheTypesSet = new Set(Object.keys(cacheKeyForType));

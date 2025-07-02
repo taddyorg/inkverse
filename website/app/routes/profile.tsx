@@ -6,6 +6,9 @@ import { inkverseWebsiteUrl } from '@inkverse/public/utils';
 import { getUserDetails } from '@/lib/auth/user';
 import type { ComicSeries } from '@inkverse/shared-client/graphql/operations';
 import { ComicSeriesDetails } from '../components/comics/ComicSeriesDetails';
+import { loadUserProfileById, profileReducer, type ProfileState } from '@inkverse/shared-client/dispatch/profile';
+import { useEffect, useReducer } from 'react';
+import { getUserApolloClient } from '@/lib/apollo/client.client';
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   if (!data) { return []; }
@@ -26,12 +29,38 @@ export const loader = async ({ params, request, context }: LoaderFunctionArgs) =
   return await loadProfile({ params, request, context });
 };
 
-function ProfileScreen() {
+export default function Profile() {
   const profileData = useLoaderData<typeof loader>();
+  const profileKey = profileData.user?.username || 'no-user';
+  return <ProfileContent key={profileKey} initialData={profileData} />;
+}
 
-  const isOwnProfile = getUserDetails() && profileData.user && getUserDetails()?.username === profileData.user.username;
+function ProfileContent({ initialData }: { initialData: Partial<ProfileState> }) {
 
-  if (!profileData.user) {
+  const [profileState, dispatch] = useReducer(profileReducer, initialData);
+  
+  const {
+    user,
+    subscribedComics,
+    isLoading,
+    error,
+  } = profileState;
+
+
+  useEffect(() => {
+    const currentUser = getUserDetails();
+    if (currentUser && user?.id) {
+      const userClient = getUserApolloClient();
+      loadUserProfileById({
+        userClient,
+        userId: user.id,
+      }, dispatch);
+    }
+  }, [user?.id, dispatch]);
+
+  const isOwnProfile = getUserDetails() && user && getUserDetails()?.username === user.username;
+
+  if (!user) {
     return (
       <div className="max-w-3xl mx-auto sm:p-6 lg:p-8">
         <div className="text-center">
@@ -41,14 +70,14 @@ function ProfileScreen() {
     );
   }
 
-  const subscriptions = profileData.subscribedComics || [];
+  const subscriptions = subscribedComics || [];
 
   return (
     <div className="max-w-3xl mx-auto sm:p-6 lg:p-8">
       <div className="rounded-lg p-6">
         <div className="flex justify-between items-start mb-4 sm:mb-2">
           <h1 className="text-2xl font-bold">
-            {profileData.user.username}
+            {user.username}
           </h1>
           
           {isOwnProfile && (
@@ -68,7 +97,7 @@ function ProfileScreen() {
               <p className="text-gray-600 dark:text-gray-400">
                 {isOwnProfile 
                   ? "When you save a comic to your profile, it will show up here"
-                  : `No comics saved to ${profileData.user.username}'s profile, yet...`
+                  : `No comics saved to ${user.username}'s profile, yet...`
                 }
               </p>
             </div>
@@ -93,5 +122,3 @@ function ProfileScreen() {
     </div>
   );
 }
-
-export default ProfileScreen;

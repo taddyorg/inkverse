@@ -600,6 +600,7 @@ export async function followComicsFromBlueskyCreators(
 }
 
 interface SubscribeToComicsParams {
+  userId: string;
   userClient: ApolloClient<any>;
   seriesUuids: string[];
 }
@@ -610,7 +611,7 @@ interface SubscribeToComicsResult {
 }
 
 export async function subscribeToComics(
-  { userClient, seriesUuids }: SubscribeToComicsParams,
+  { userId, userClient, seriesUuids }: SubscribeToComicsParams,
   dispatch?: Dispatch<UserDetailsAction>
 ): Promise<SubscribeToComicsResult> {
   if (dispatch) dispatch({ type: UserDetailsActionType.BLUESKY_SUBSCRIPTION_START });
@@ -635,6 +636,7 @@ export async function subscribeToComics(
       SubscribeToMultipleComicSeriesMutationVariables
     >({
       mutation: SubscribeToMultipleComicSeries,
+      refetchQueries: [{ query: GetProfileByUserId, variables: { id: userId } }],
       variables: {
         seriesUuids: uniqueSeriesUuids
       }

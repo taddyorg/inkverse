@@ -118,7 +118,8 @@ export function EditBlueskyScreen() {
 
       const result = await subscribeToComics({ 
         userClient: userClientRef.current,
-        seriesUuids
+        seriesUuids,
+        userId: userDetailsState.userData?.id,
       }, dispatch);
 
       if (result.success) {

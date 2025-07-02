@@ -26,8 +26,13 @@ export const loader = async ({ params, request, context }: LoaderFunctionArgs) =
   return await loadCreator({ params, request, context });
 };
 
-function CreatorScreen() {
+export default function Creator() {
   const creatorData = useLoaderData<typeof loader>();
+  const creatorKey = creatorData.creator?.uuid || 'no-creator';
+  return <CreatorContent key={creatorKey} initialData={creatorData} />;
+}
+
+function CreatorContent({ initialData }: { initialData: typeof loader }) {
   // const { match = {}, location, comicseries:SSRComicseries } = props;
 
   // const [ comicseriesQuery, comicseriesQueryDispatch] = useReducer(comicInfoReducer, {});
@@ -54,15 +59,13 @@ function CreatorScreen() {
   return (
     <div className="max-w-3xl mx-auto sm:p-6 lg:p-8">
       <CreatorDetails 
-        creator={creatorData?.creator} 
+        creator={initialData?.creator} 
         pageType={'creator-screen'} 
       />
       <CreatorComics 
-        comicseries={creatorData?.comicseries?.filter((comicseries) => comicseries !== null)} 
+        comicseries={initialData?.comicseries?.filter((comicseries) => comicseries !== null)} 
         pageType={'creator-screen'} 
       />
     </div>
   );
 }
-
-export default CreatorScreen;

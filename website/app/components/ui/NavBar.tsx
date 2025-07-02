@@ -19,6 +19,7 @@ export function Navbar({ theme, zoomMode, onThemeChange, onZoomModeChange }: Nav
   const [showSearchBox, setShowSearchBox] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showSignupModal, setShowSignupModal] = useState(false);
+  const [authTimestamp, setAuthTimestamp] = useState(Date.now()); // Force re-render when auth changes
 
   const userDetails = getUserDetails();
   const isUserAuthenticated = isAuthenticated();
@@ -26,6 +27,11 @@ export function Navbar({ theme, zoomMode, onThemeChange, onZoomModeChange }: Nav
 
   const matches = useMatches();
   const navigate = useNavigate();
+
+  const handleAuthSuccess = () => {
+    // Force component to re-render by updating timestamp
+    setAuthTimestamp(Date.now());
+  };
 
   const toggleTheme = async () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
@@ -90,6 +96,7 @@ export function Navbar({ theme, zoomMode, onThemeChange, onZoomModeChange }: Nav
           isOpen={showSignupModal}
           onClose={() => setShowSignupModal(false)}
           hideComponent={false}
+          onAuthSuccess={handleAuthSuccess}
         />
       </>
    : <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" aria-label="Top">
@@ -155,6 +162,7 @@ export function Navbar({ theme, zoomMode, onThemeChange, onZoomModeChange }: Nav
                 <SignupModal
                   isOpen={showSignupModal}
                   onClose={() => setShowSignupModal(false)}
+                  onAuthSuccess={handleAuthSuccess}
                 />
               </>
             )}

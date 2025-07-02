@@ -5,6 +5,7 @@ import { MdEmail, MdArrowBack } from 'react-icons/md';
 import { isAValidEmail } from '@inkverse/public/utils';
 import { createPortal } from 'react-dom';
 import config from '@/config';
+import { useNavigate } from 'react-router';
 
 import { GoogleLogin, useGoogleOneTapLogin } from '@react-oauth/google';
 import AppleSignin from 'react-apple-signin-auth';
@@ -18,23 +19,91 @@ import {
   clearAuthError,
   AuthActionType
 } from '@inkverse/shared-client/dispatch/authentication';
-import { isAuthenticated, webStorageFunctions } from '@/lib/auth/user';
+
+import { getUserDetails, isAuthenticated, webStorageFunctions } from '@/lib/auth/user';
+import { getUserApolloClient } from '@/lib/apollo/client.client';
+import { fetchAllHostingProviderTokens } from '@inkverse/shared-client/dispatch/hosting-provider';
+import { saveHostingProviderRefreshToken } from '@/lib/auth/hosting-provider';
+import { refreshHostingProviderAccessToken } from '@/lib/auth/hosting-provider';
 
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   hideComponent?: boolean;
+  onAuthSuccess?: () => void;
 }
 
 type AuthMode = 'signup' | 'emailInput' | 'verifyEmail';
 
-export function SignupModal({ isOpen, onClose, hideComponent = true }: AuthModalProps) {
+export function SignupModal({ isOpen, onClose, hideComponent = true, onAuthSuccess }: AuthModalProps) {
   const isUserAuthenticated = isAuthenticated();
   const [mode, setMode] = useState<AuthMode>('signup');
   const [email, setEmail] = useState('');
   const [authState, dispatch] = useReducer(authReducer, authInitialState);
   const modalRef = useRef<HTMLDivElement>(null);
   const initialFocusRef = useRef<HTMLButtonElement>(null);
+  const navigate = useNavigate();
+
+  const onTokenSuccessfullyReceivedQuickSignup = async () => {
+    const userClient = getUserApolloClient();
+
+    // Notify parent component of successful authentication
+    onAuthSuccess?.();
+
+    fetchAllHostingProviderTokens({ 
+      userClient: userClient as any, 
+      saveHostingProviderRefreshToken, 
+      refreshHostingProviderAccessToken 
+    })
+
+    onClose();
+  }
+
+  const onTokenSuccessfullyReceived = async () => {
+    const user = await getUserDetails();
+    const userClient = getUserApolloClient();
+
+    // Notify parent component of successful authentication
+    onAuthSuccess?.();
+
+    fetchAllHostingProviderTokens({ 
+      userClient: userClient as any, 
+      saveHostingProviderRefreshToken, 
+      refreshHostingProviderAccessToken 
+    })
+
+    if (!user?.username) {
+      navigate('/profile/setup');
+    }
+
+    // close modal
+    onClose();
+  }
+
+  const handleGoogleLoginSuccessQuickSignup = async (credentialResponse: any) => {
+    try {
+      if (!credentialResponse.credential) {
+        throw new Error('No credential received from Google');
+      }
+      
+      await dispatchLoginWithGoogle(
+        { 
+          baseUrl: config.AUTH_URL,
+          source: 'web',
+          googleIdToken: credentialResponse.credential,
+          storageFunctions: webStorageFunctions,
+          includeCredentials: true,
+          onSuccessFunction: onTokenSuccessfullyReceivedQuickSignup
+        },
+        dispatch
+      );
+      
+      // Close the modal on success
+      onClose();
+    } catch (err: any) {
+      // Error is handled by the dispatch function
+    }
+  };
 
   const handleGoogleLoginSuccess = async (credentialResponse: any) => {
     try {
@@ -48,7 +117,8 @@ export function SignupModal({ isOpen, onClose, hideComponent = true }: AuthModal
           source: 'web',
           googleIdToken: credentialResponse.credential,
           storageFunctions: webStorageFunctions,
-          includeCredentials: true
+          includeCredentials: true,
+          onSuccessFunction: onTokenSuccessfullyReceived
         },
         dispatch
       );
@@ -65,7 +135,7 @@ export function SignupModal({ isOpen, onClose, hideComponent = true }: AuthModal
   };
 
   useGoogleOneTapLogin({
-    onSuccess: handleGoogleLoginSuccess,
+    onSuccess: handleGoogleLoginSuccessQuickSignup,
     onError: handleGoogleLoginError,
     disabled: isOpen || isUserAuthenticated
   });
@@ -180,7 +250,8 @@ export function SignupModal({ isOpen, onClose, hideComponent = true }: AuthModal
           baseUrl: config.AUTH_URL, 
           idToken: response.authorization.id_token,
           storageFunctions: webStorageFunctions,
-          includeCredentials: true
+          includeCredentials: true,
+          onSuccessFunction: onTokenSuccessfullyReceived
         },
         dispatch
       );

@@ -74,7 +74,7 @@ export function ComicSeriesScreen() {
   }, [navigation]);
 
   const handleAddToProfile = useCallback(async () => {
-    if (!isLoggedIn || !userClient) {
+    if (!isLoggedIn || !userClient || !currentUser?.id) {
       navigation.navigate(SIGNUP_SCREEN);
       return;
     }
@@ -83,9 +83,9 @@ export function ComicSeriesScreen() {
       const isCurrentlySubscribed = userComicData?.isSubscribed || false;
       
       if (isCurrentlySubscribed) {
-        await unsubscribeFromSeries({ userClient, seriesUuid: uuid }, dispatch);
+        await unsubscribeFromSeries({ userClient, seriesUuid: uuid, userId: currentUser?.id }, dispatch);
       } else {
-        await subscribeToSeries({ userClient, seriesUuid: uuid }, dispatch);
+        await subscribeToSeries({ userClient, seriesUuid: uuid, userId: currentUser?.id }, dispatch);
       }
     } catch (error) {
       console.error('Error updating subscription:', error);
@@ -93,7 +93,7 @@ export function ComicSeriesScreen() {
   }, [isLoggedIn, userClient, userComicData?.isSubscribed, uuid]);
 
   const handleGetNotifications = useCallback(async () => {
-    if (!isLoggedIn || !userClient) {
+    if (!isLoggedIn || !userClient || !currentUser?.id) {
       navigation.navigate(SIGNUP_SCREEN);
       return;
     }
@@ -102,9 +102,9 @@ export function ComicSeriesScreen() {
       const hasNotifications = userComicData?.hasNotificationEnabled || false;
       
       if (hasNotifications) {
-        await disableNotificationsForSeries({ userClient, seriesUuid: uuid }, dispatch);
+        await disableNotificationsForSeries({ userClient, seriesUuid: uuid, userId: currentUser?.id }, dispatch);
       } else {
-        await enableNotificationsForSeries({ userClient, seriesUuid: uuid }, dispatch);
+        await enableNotificationsForSeries({ userClient, seriesUuid: uuid, userId: currentUser?.id }, dispatch);
       }
     } catch (error) {
       console.error('Error updating notifications:', error);

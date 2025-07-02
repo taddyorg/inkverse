@@ -1,6 +1,6 @@
 import type { ApolloClient, ApolloQueryResult } from '@apollo/client';
 import type { Dispatch } from 'react';
-import { type GetComicSeriesQuery, type GetComicSeriesQueryVariables, SortOrder, GetComicSeries, type ComicIssue, type ComicSeries, GetMiniComicSeries, type GetMiniComicSeriesQuery, type GetMiniComicSeriesQueryVariables, type SubscribeToSeriesMutation, type SubscribeToSeriesMutationVariables, SubscribeToSeries, type UnsubscribeFromSeriesMutation, type UnsubscribeFromSeriesMutationVariables, UnsubscribeFromSeries, GetUserComicSeries, type GetUserComicSeriesQuery, type GetUserComicSeriesQueryVariables, type EnableNotificationsForSeriesMutation, type EnableNotificationsForSeriesMutationVariables, EnableNotificationsForSeries, type DisableNotificationsForSeriesMutation, type DisableNotificationsForSeriesMutationVariables, DisableNotificationsForSeries } from "../graphql/operations.js";
+import { type GetComicSeriesQuery, type GetComicSeriesQueryVariables, SortOrder, GetComicSeries, type ComicIssue, type ComicSeries, GetMiniComicSeries, type GetMiniComicSeriesQuery, type GetMiniComicSeriesQueryVariables, type SubscribeToSeriesMutation, type SubscribeToSeriesMutationVariables, SubscribeToSeries, type UnsubscribeFromSeriesMutation, type UnsubscribeFromSeriesMutationVariables, UnsubscribeFromSeries, GetUserComicSeries, type GetUserComicSeriesQuery, type GetUserComicSeriesQueryVariables, type EnableNotificationsForSeriesMutation, type EnableNotificationsForSeriesMutationVariables, EnableNotificationsForSeries, type DisableNotificationsForSeriesMutation, type DisableNotificationsForSeriesMutationVariables, DisableNotificationsForSeries, GetProfileByUserId } from "../graphql/operations.js";
 
 /* Action Type Enum */
 export enum ComicSeriesActionType {
@@ -122,22 +122,26 @@ interface GetUserComicDataProps {
 interface SubscribeToSeriesProps {
   userClient: ApolloClient<any>;
   seriesUuid: string;
+  userId: string;
 }
 
 interface UnsubscribeFromSeriesProps {
   userClient: ApolloClient<any>;
   seriesUuid: string;
+  userId: string;
 }
 
 /* Notification Actions */
 interface EnableNotificationsProps {
   userClient: ApolloClient<any>;
   seriesUuid: string;
+  userId: string;
 }
 
 interface DisableNotificationsProps {
   userClient: ApolloClient<any>;
   seriesUuid: string;
+  userId: string;
 }
 
 export async function loadComicSeriesUrl(
@@ -269,7 +273,7 @@ export async function loadUserComicData(
 }
 
 export async function subscribeToSeries(
-  { userClient, seriesUuid }: SubscribeToSeriesProps,
+  { userClient, seriesUuid, userId }: SubscribeToSeriesProps,
   dispatch?: Dispatch<ComicSeriesAction>
 ): Promise<UserComicData | null> {
   if (dispatch) dispatch({ type: ComicSeriesActionType.SUBSCRIBE_TO_SERIES_START });
@@ -277,6 +281,7 @@ export async function subscribeToSeries(
   try {
     const result = await userClient.mutate<SubscribeToSeriesMutation, SubscribeToSeriesMutationVariables>({
       mutation: SubscribeToSeries,
+      refetchQueries: [{ query: GetProfileByUserId, variables: { id: userId } }],
       variables: { seriesUuid }
     });
 
@@ -314,7 +319,7 @@ export async function subscribeToSeries(
 }
 
 export async function unsubscribeFromSeries(
-  { userClient, seriesUuid }: UnsubscribeFromSeriesProps,
+  { userClient, seriesUuid, userId }: UnsubscribeFromSeriesProps,
   dispatch?: Dispatch<ComicSeriesAction>
 ): Promise<UserComicData | null> {
   if (dispatch) dispatch({ type: ComicSeriesActionType.UNSUBSCRIBE_FROM_SERIES_START });
@@ -322,6 +327,7 @@ export async function unsubscribeFromSeries(
   try {
     const result = await userClient.mutate<UnsubscribeFromSeriesMutation, UnsubscribeFromSeriesMutationVariables>({
       mutation: UnsubscribeFromSeries,
+      refetchQueries: [{ query: GetProfileByUserId, variables: { id: userId } }],
       variables: { seriesUuid }
     });
 
@@ -360,7 +366,7 @@ export async function unsubscribeFromSeries(
 
 
 export async function enableNotificationsForSeries(
-  { userClient, seriesUuid }: EnableNotificationsProps,
+  { userClient, seriesUuid, userId }: EnableNotificationsProps,
   dispatch?: Dispatch<ComicSeriesAction>
 ): Promise<UserComicData | null> {
   if (dispatch) dispatch({ type: ComicSeriesActionType.ENABLE_NOTIFICATIONS_FOR_SERIES_START });
@@ -405,7 +411,7 @@ export async function enableNotificationsForSeries(
 }
 
 export async function disableNotificationsForSeries(
-  { userClient, seriesUuid }: DisableNotificationsProps,
+  { userClient, seriesUuid, userId }: DisableNotificationsProps,
   dispatch?: Dispatch<ComicSeriesAction>
 ): Promise<UserComicData | null> {
   if (dispatch) dispatch({ type: ComicSeriesActionType.DISABLE_NOTIFICATIONS_FOR_SERIES_START });

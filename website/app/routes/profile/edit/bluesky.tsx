@@ -119,7 +119,8 @@ export default function EditBlueskyPage() {
 
       const result = await subscribeToComics({ 
         userClient: userClientRef.current,
-        seriesUuids
+        seriesUuids,
+        userId: user.id,
       }, dispatch);
 
       if (result.success) {

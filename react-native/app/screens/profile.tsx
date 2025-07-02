@@ -9,7 +9,7 @@ import { PROFILE_SCREEN, RootStackParamList, SETTINGS_SCREEN, SIGNUP_SCREEN } fr
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { getUserDetails } from '@/lib/auth/user';
 import { User, ComicSeries } from '@inkverse/shared-client/graphql/operations';
-import { loadProfileById, profileReducer, profileInitialState } from '@inkverse/shared-client/dispatch/profile';
+import { loadPublicProfileById, loadUserProfileById, profileReducer, profileInitialState } from '@inkverse/shared-client/dispatch/profile';
 import { getPublicApolloClient, getUserApolloClient } from '@/lib/apollo';
 import { ComicSeriesDetails } from '../components/comics/ComicSeriesDetails';
 
@@ -51,17 +51,26 @@ export function ProfileScreen() {
 
     const publicClient = getPublicApolloClient();
     const userClient = isLoggedIn ? getUserApolloClient() : undefined;
-    
-    loadProfileById(
-      {
-        publicClient,
-        userClient,
-        userId: profileUserId,
-        currentUserId: currentUser?.id,
-        forceRefresh,
-      },
-      dispatch
-    );
+
+    if (currentUser?.id === profileUserId) {
+      loadUserProfileById(
+        {
+          userClient,
+          userId: profileUserId,
+          forceRefresh,
+        },
+        dispatch
+      );
+    } else {
+      loadPublicProfileById(
+        {
+          publicClient,
+          userId: profileUserId,  
+          forceRefresh,
+        },
+        dispatch
+      );
+    }
   }, [profileUserId, currentUser?.id, isLoggedIn, refreshing]);
   
   // Load profile data on mount or when userId changes
@@ -363,7 +372,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     position: 'relative',
     height: 64,
-    paddingTop: 16,
+    marginTop: 16,
     marginBottom: 8,
   },
   comicsGrid: {
