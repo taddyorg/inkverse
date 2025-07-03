@@ -14,7 +14,7 @@ RUN curl -o- -L https://yarnpkg.com/install.sh | bash
 ENV PATH="/root/.yarn/bin:$PATH"
 
 # Copy package manifests
-COPY package.json ./
+COPY package.json yarn.lock ./
 COPY packages/public/package.json ./packages/public/package.json
 COPY packages/shared-client/package.json ./packages/shared-client/package.json
 COPY website/package.json ./website/package.json
@@ -27,12 +27,20 @@ COPY packages/public/ ./packages/public/
 COPY packages/shared-client/ ./packages/shared-client/
 COPY website/ ./website/
 
-# Build packages
-WORKDIR /app/website
-RUN yarn build
-
 # Set environment
 ENV NODE_ENV=production
+
+# Build public
+WORKDIR /app/packages/public
+RUN yarn build
+
+# Build shared-client
+WORKDIR /app/packages/shared-client
+RUN yarn build
+
+# Build website
+WORKDIR /app/website
+RUN yarn build
 
 EXPOSE 3000
 

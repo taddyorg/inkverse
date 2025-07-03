@@ -14,7 +14,7 @@
     "import-all-comics": "tsx src/scripts/feeds/import-all-comics.ts",
     "audit-comic": "tsx src/scripts/feeds/audit-comic.ts",
     "purge-cache": "tsx src/scripts/cache/delete.ts",
-    "purge-cache-production": "NODE_ENV=production tsx src/scripts/cache/delete.ts everything",
+    "purge-cache-production": "NODE_ENV=production tsx src/scripts/cache/delete.ts",
     "pre-download-comic-stories-height-and-width": "tsx src/scripts/images/start.ts",
     "build-sitemap": "tsx src/scripts/sitemap/start.ts",
     "generate-creator-links": "tsx src/scripts/feeds/generate-creator-links.ts",

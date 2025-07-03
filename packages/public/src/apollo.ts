@@ -35,16 +35,7 @@ export const typePolicies = {
   List: {
     keyFields: ["id"]
   },
-  HostingProvider: {
-    keyFields: ["uuid"]
-  },
   SearchResults: {
-    keyFields: ["searchId"]
-  },
-  SearchQueryResponseInfo: {
-    keyFields: ["searchId"]
-  },
-  SearchQueryResponseInfoDetails: {
     keyFields: ["searchId"]
   },
   BlueskyProfile: {

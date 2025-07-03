@@ -1,0 +1,71 @@
+Parameters:
+  App:
+    Type: String
+    Description: Your application's name.
+  Env:
+    Type: String
+    Description: The environment name your service, job, or workflow is being deployed to.
+  Name:
+    Type: String
+    Description: The name of the service, job, or workflow being deployed.
+Resources:
+  # Subnet group to control where the DB gets placed
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Group of subnets to place DB into
+      SubnetIds: !Split [ ',', { 'Fn::ImportValue': !Sub '${App}-${Env}-PrivateSubnets' } ]
+  # Security group to add the DB to the VPC,
+  # and to allow the Fargate containers to talk to DB
+  DatabaseSecurityGroup:
+    Metadata:
+      'aws:copilot:description': 'A security group to access the DB cluster'
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "DB Security Group"
+      VpcId: { 'Fn::ImportValue': !Sub '${App}-${Env}-VpcId' }
+  # Enable ingress from other ECS services created within the environment.
+  DBIngress:
+    Metadata:
+      'aws:copilot:description': 'Allow ingress from containers in my application to the DB cluster'
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      Description: Ingress from Fargate containers
+      GroupId: !Ref 'DatabaseSecurityGroup'
+      IpProtocol: tcp
+      FromPort: 5432
+      ToPort: 5432
+      SourceSecurityGroupId: { 'Fn::ImportValue': !Sub '${App}-${Env}-EnvironmentSecurityGroup' }
+  # The cluster itself.
+  DBInstance:
+    Metadata:
+      'aws:copilot:description': 'DB cluster'
+    Type: AWS::RDS::DBInstance
+    Properties:
+      Engine: postgres
+      EngineVersion: '13.18'
+      DBInstanceClass: 'db.t4g.micro'
+      AllocatedStorage: 20
+      StorageType: gp2
+      MultiAZ: false
+      AllowMajorVersionUpgrade: false
+      AutoMinorVersionUpgrade: true
+      DeletionProtection: true
+      EnablePerformanceInsights : true
+      CACertificateIdentifier: 'rds-ca-ecc384-g1'
+      DBName: inkverse
+      MasterUsername: dmathewwws
+      MasterUserPassword: !Sub "{{resolve:ssm-secure:/copilot/${App}/${Env}/secrets/DATABASE_PASSWORD}}"
+      DBSubnetGroupName: !Ref 'DBSubnetGroup'
+      VPCSecurityGroups:
+        - !Ref DatabaseSecurityGroup
+  EndpointAddressParam:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/copilot/${App}/${Env}/secrets/DATABASE_ENDPOINT"
+      Type: String
+      Value: !GetAtt DBInstance.Endpoint.Address
+Outputs:
+  DatabaseSecurityGroup:
+    Description: Security group for DB
+    Value: !Ref DatabaseSecurityGroup

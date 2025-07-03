@@ -21,10 +21,7 @@ const cacheKeyForType: Record<string, string> = {
   "HomeScreenComicSeries": "id",
   "HomeScreenCuratedList": "id",
   "List": "id",
-  "HostingProvider": "uuid",
   "SearchResults": "searchId",
-  "SearchQueryResponseInfo": "searchId",
-  "SearchQueryResponseInfoDetails": "searchId", 
   "BlueskyProfile": "did",
   "UserComicSeries": "seriesUuid"
 }

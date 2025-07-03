@@ -1,0 +1,48 @@
+FROM node:20.17
+
+# Create and use /app
+WORKDIR /app
+
+# Update and install system dependencies
+RUN apt-get update -y && apt-get upgrade -y && \
+    apt-get install -y apt-utils apt-transport-https ca-certificates
+
+# Install Yarn
+RUN curl -o- -L https://yarnpkg.com/install.sh | bash
+
+# Add Yarn to PATH
+ENV PATH="/root/.yarn/bin:$PATH"
+
+# Copy package manifests from the monorepo root
+COPY package.json yarn.lock ./
+COPY packages/public/package.json ./packages/public/package.json
+COPY packages/shared-server/package.json ./packages/shared-server/package.json
+COPY graphql-server/package.json ./graphql-server/package.json
+
+# Install root dependencies
+RUN yarn install
+
+# Copy the rest of the source code from the monorepo root
+COPY packages/public/ ./packages/public/
+COPY packages/shared-server/ ./packages/shared-server/
+COPY graphql-server/ ./graphql-server/
+
+# Set environment
+ENV NODE_ENV=production
+
+# Build public
+WORKDIR /app/packages/public
+RUN yarn build
+
+# Build shared-server
+WORKDIR /app/packages/shared-server
+RUN yarn build
+
+# Build graphql-server
+WORKDIR /app/graphql-server
+RUN yarn build
+
+EXPOSE 3010
+
+# Run the server
+CMD ["node", "dist/server.js"]
