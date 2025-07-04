@@ -5,8 +5,7 @@ WORKDIR /app
 
 # Update and install system dependencies
 RUN apt-get update -y && apt-get upgrade -y && \
-    apt-get install -y apt-utils apt-transport-https ca-certificates \
-    apt-get install -y postgresql-client
+    apt-get install -y apt-utils apt-transport-https ca-certificates
 
 # Install Yarn
 RUN curl -o- -L https://yarnpkg.com/install.sh | bash
@@ -44,4 +43,4 @@ WORKDIR /app/worker
 RUN yarn build
 
 # Run the server
-CMD [ "npm", "run", "receive-messages"]
+CMD [ "npm", "run", "generate-creator-links"]

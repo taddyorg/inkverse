@@ -114,9 +114,9 @@ export default function HostingProvider() {
             </button>
             <button
               onClick={handleGoHome}
-              className="w-full border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-2 px-4 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              className="mx-auto block text-center text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
             >
-              Go to Home
+              Go Home
             </button>
           </div>
         </div>

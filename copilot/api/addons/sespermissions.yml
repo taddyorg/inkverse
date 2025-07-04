@@ -1,0 +1,50 @@
+# You can use any of these parameters to create conditions or mappings in your template.
+Parameters:
+  App:
+    Type: String
+    Description: Your application's name.
+  Env:
+    Type: String
+    Description: The environment name your service, job, or workflow is being deployed to.
+  Name:
+    Type: String
+    Description: The name of the service, job, or workflow being deployed.
+  # Additional parameters defined in addons.parameters.yml
+  SESARN:
+    Description: The ARN of SES AWS account
+    Type: String
+  CONFIGSETARN:
+    Description: The ARN of Config Set
+    Type: String
+    
+Resources:
+  SESAccessPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: SESActions
+            Effect: Allow
+            Action:
+              - ses:SendEmail
+            Resource: !Sub ${SESARN}
+  SESConfiguationSetAccessPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: SESActions
+            Effect: Allow
+            Action:
+              - ses:SendEmail
+            Resource: !Sub ${CONFIGSETARN}
+            
+Outputs:
+  SESPolicy:
+    Description: "The ARN of the ManagedPolicy to attach to the task role."
+    Value: !Ref SESAccessPolicy
+  SESConfiguationSetPolicy:
+    Description: "The ARN of the ManagedPolicy to attach to the task role."
+    Value: !Ref SESConfiguationSetAccessPolicy

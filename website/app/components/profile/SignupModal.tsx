@@ -432,7 +432,7 @@ export function SignupModal({ isOpen, onClose, hideComponent = true, onAuthSucce
         {mode === 'verifyEmail' && (
           <>
             <div className="mb-4 p-3 text-center">
-              <span>We have sent an email to <span className="font-bold">{email}</span>.<br />Click the link in the email to verify your email address.</span>
+              <span>We have sent an email to <span className="font-bold">{email}</span>.<br />Click the link in the email to verify your email address. (If you don't see it, check your spam folder.)</span>
             </div>
           </>
         )}

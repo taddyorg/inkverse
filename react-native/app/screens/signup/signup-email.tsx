@@ -139,7 +139,7 @@ export function SignupEmailScreen() {
             {email ? `We have sent an email to ${email}` : 'We have sent an email to you'}
           </ThemedText>
           <ThemedText style={styles.subtitle}>
-            Click the link in the email to verify your email address.
+            Click the link in the email to verify your email address. (If you don't see it, check your spam folder.)
           </ThemedText>
           {hasReturnedToApp && (
             <>
