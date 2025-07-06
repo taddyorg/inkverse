@@ -1,3 +1,4 @@
+const { getDefaultConfig } = require('expo/metro-config');
 const { getSentryExpoConfig } = require('@sentry/react-native/metro');
 const path = require('path');
 const { FileStore } = require('metro-cache');
@@ -5,8 +6,15 @@ const { FileStore } = require('metro-cache');
 const projectRoot = __dirname;
 const monorepoRoot = path.resolve(projectRoot, '..');
 
-// Start with Sentry's Expo config
-const config = getSentryExpoConfig(projectRoot);
+// Start with Expo's default config
+const config = getDefaultConfig(projectRoot);
+
+// Apply Sentry configuration
+const sentryConfig = getSentryExpoConfig(projectRoot);
+config.transformer = {
+  ...config.transformer,
+  ...sentryConfig.transformer,
+};
 
 // 1. Set up Metro to understand the monorepo structure
 config.watchFolders = [monorepoRoot];
@@ -34,12 +42,22 @@ config.resolver.sourceExts = [...(config.resolver.sourceExts || []), 'ts', 'tsx'
 config.resolver.resolveRequest = (context, moduleName, platform) => {
   // Handle @inkverse/* packages from the monorepo
   if (moduleName.startsWith('@inkverse/')) {
-    const packageName = moduleName.split('/')[1];
+    const parts = moduleName.split('/');
+    const packageName = parts[1];
     const packagePath = path.resolve(monorepoRoot, 'packages', packageName);
     
     try {
-      // Try to resolve from the package's dist directory
-      const distPath = path.join(packagePath, 'dist', 'index.js');
+      let distPath;
+      
+      if (parts.length > 2) {
+        // Handle subpath imports like @inkverse/shared-client/dispatch/authentication
+        const subPath = parts.slice(2).join('/');
+        distPath = path.join(packagePath, 'dist', `${subPath}.js`);
+      } else {
+        // Handle bare imports like @inkverse/shared-client
+        distPath = path.join(packagePath, 'dist', 'index.js');
+      }
+      
       if (require('fs').existsSync(distPath)) {
         return {
           filePath: distPath,

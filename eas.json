@@ -1,0 +1,23 @@
+{
+  "cli": {
+    "version": ">= 15.0.14",
+    "appVersionSource": "local",
+    "requireCommit": false
+  },
+  "build": {
+    "base": {
+      "env": {
+        "YARN_ENABLE_IMMUTABLE_INSTALLS": "false"
+      }
+    },
+    "development": {
+      "extends": "base"
+    },
+    "preview": {
+      "extends": "base"
+    },
+    "production": {
+      "extends": "base"
+    }
+  }
+}

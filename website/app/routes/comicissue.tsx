@@ -60,7 +60,7 @@ function ComicIssueContent({ initialData }: { initialData: Partial<ComicIssueLoa
   const comicSeriesLink = getInkverseUrl({ type: "comicseries", shortUrl: comicseries?.shortUrl });
   const isPatreonExclusive = comicissue?.scopesForExclusiveContent?.includes('patreon');
   const decodedToken = contentToken && jwtDecode(contentToken) as any;
-  const hasAccessToIssue = decodedToken?.scopes_for_exclusive_content?.includes('patreon');
+  const hasAccessToIssue = decodedToken?.scopes_for_exclusive_content?.includes('patreon-2');
   const connectedProviders = getConnectedHostingProviderUuids();
   const isConnectedToHostingProvider = comicseries?.hostingProviderUuid && connectedProviders.includes(comicseries.hostingProviderUuid);
   const isAuthenticated = !!getUserDetails();
@@ -259,6 +259,9 @@ const YouNeedToBeAPatreonBacker = ({ creators, creatorLinks }: { creators?: Crea
         <h2 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">
           You need to be a <span className="text-brand-pink dark:text-brand-purple">Patreon</span> backer of {creatorName} to get access to this episode.
         </h2>
+        {/* <p className="text-gray-600 dark:text-gray-400 mt-6">
+          If you are already a Patreon backer of {creatorName} and you are seeing this message, please check you are on the Patreon tier that gives you early access to new episodes.
+        </p> */}
         {patreonUrl && (
           <a 
             href={patreonUrl}

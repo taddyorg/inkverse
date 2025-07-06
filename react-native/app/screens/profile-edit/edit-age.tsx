@@ -4,7 +4,7 @@ import { HeaderBackButton, ThemedView } from '@/app/components/ui';
 import { SetupAge } from '@/app/components/profile/SetupAge';
 import { getUserApolloClient } from '@/lib/apollo';
 import { userDetailsReducer, userDetailsInitialState, updateAgeRange } from '@inkverse/shared-client/dispatch/user-details';
-import { UserAgeRange } from '@inkverse/shared-server/graphql/types';
+import { UserAgeRange } from '@inkverse/shared-client/graphql/operations';
 import type { ApolloClient, NormalizedCacheObject } from '@apollo/client';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';

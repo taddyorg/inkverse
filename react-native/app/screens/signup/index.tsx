@@ -75,7 +75,9 @@ export function SignupScreen() {
     try {
       dispatch({ type: AuthActionType.AUTH_START_PROVIDER, payload: AuthProvider.GOOGLE });
       
-      if (Platform.OS === 'ios' && !__DEV__) {
+      if (Platform.OS === 'ios') {
+        if (__DEV__) { throw new Error('Google login is not supported in development mode on iOS'); }
+
         const { GoogleSignin } = require('@react-native-google-signin/google-signin');
         const user = await GoogleSignin.signIn();
         if (user?.data?.idToken) {
