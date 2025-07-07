@@ -6,6 +6,7 @@
 import { verifyToken } from '@inkverse/shared-server/utils/authentication';
 import type { User } from '@inkverse/public/graphql/types';
 import { User as UserFns } from '@inkverse/shared-server/models/index';
+import { AuthenticationError } from 'src/graphql/error.js';
 
 /**
  * GraphQL context type for authentication
@@ -57,6 +58,6 @@ export const createAuthContext = async (req: Request): Promise<GraphQLContext> =
   } catch (error) {
     // Token verification failed
     console.error('Authentication error:', error);
-    return { user: null };
+    throw new AuthenticationError('Invalid or expired token');
   }
 };

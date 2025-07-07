@@ -1,6 +1,5 @@
 import { useCallback, useMemo, useEffect, useReducer, useState } from 'react';
-import { StyleSheet, Image, View } from 'react-native';
-import { FlashList } from '@shopify/flash-list';
+import { StyleSheet, Image, View, Dimensions, SectionList, FlatList } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
 import { Screen, ThemedView, ThemedText, ThemedButton, ThemedActivityIndicator, HeaderBackButton, ThemedRefreshControl } from '@/app/components/ui';
@@ -13,16 +12,34 @@ import { loadPublicProfileById, loadUserProfileById, profileReducer, profileInit
 import { getPublicApolloClient, getUserApolloClient } from '@/lib/apollo';
 import { ComicSeriesDetails } from '../components/comics/ComicSeriesDetails';
 
-type ListItem = 
-  | { type: 'screen-header'; data: undefined; includeBackButton: boolean }
-  | { type: 'empty-state'; data: undefined }
-  | { type: 'loading-state'; data: undefined }
-  | { type: 'error-state'; data: { message: string } }
-  | { type: 'profile-details'; data: { user: Partial<User> | null } }
-  | { type: 'subscribed-comics-section'; data: { user: Partial<User> | null; subscriptions: ComicSeries[] | null; isOwnProfile: boolean } }
+type SectionData = {
+  title: string;
+  type: string;
+  data: any[];
+}
+
+type HeaderItem = { type: 'header'; includeBackButton: boolean };
+type ProfileItem = { type: 'profile'; user: Partial<User> | null };
+type EmptyStateItem = { type: 'logged-out-state' };
+type LoadingItem = { type: 'loading' };
+type ErrorItem = { type: 'error'; message: string };
+type ComicsGridItem = { type: 'comics-grid'; comics: ComicSeries[]; isOwnProfile: boolean; user: Partial<User> | null };
+
+type ProfileSectionItem = HeaderItem | ProfileItem | EmptyStateItem | LoadingItem | ErrorItem | ComicsGridItem;
 
 export type ProfileScreenParams = {
   userId?: string;
+};
+
+// Calculate number of columns based on screen width
+const getNumColumns = () => {
+  const screenWidth = Dimensions.get('window').width;
+  // Account for padding: 12px container + 8px view + 16px between items
+  const availableWidth = screenWidth - 32;
+  // Each item needs at least 150px width
+  const minItemWidth = 150;
+  const numColumns = Math.floor(availableWidth / minItemWidth);
+  return Math.max(1, Math.min(numColumns, 3)); // Between 1 and 3 columns
 };
 
 export function ProfileScreen() {
@@ -85,184 +102,227 @@ export function ProfileScreen() {
     setRefreshing(false);
   }, [loadProfile]);
   
-  const listData = useMemo((): ListItem[] => {
-    const baseItems: ListItem[] = [
-      { type: 'screen-header', data: undefined, includeBackButton: !!userId },
-    ];
+  const sectionData = useMemo((): SectionData[] => {
+    const sections: SectionData[] = [];
+    
+    // Header section
+    sections.push({
+      title: '',
+      type: 'header',
+      data: [{ type: 'header', includeBackButton: !!userId } as HeaderItem],
+    });
 
     // Show sign up prompt for logged out users viewing their own profile
     if (!isLoggedIn && !userId) {
-      return [...baseItems, { type: 'empty-state', data: undefined }];
+      sections.push({
+        title: '',
+        type: 'logged-out-state',
+        data: [{ type: 'logged-out-state' } as EmptyStateItem],
+      });
+      return sections;
     }
 
     // Show loading state
     if (isLoading) {
-      return [...baseItems, { type: 'loading-state', data: undefined }];
+      sections.push({
+        title: '',
+        type: 'loading',
+        data: [{ type: 'loading' } as LoadingItem],
+      });
+      return sections;
     }
 
-    // Show error state
-    if (error) {
-      return [...baseItems, { 
-        type: 'error-state', 
-        data: { 
-          message: typeof error === 'string' ? error : 'Unknown error' 
-        } 
-      }];
+    // Show error state or profile not found state
+    if (error || !user) {
+      sections.push({
+        title: '',
+        type: 'error',
+        data: [{ 
+          type: 'error', 
+          message: error 
+            ? (typeof error === 'string' ? error : 'Unknown error')
+            : 'Profile not found'
+        } as ErrorItem],
+      });
+      return sections;
     }
 
-    // Show profile not found state
-    if (!user) {
-      return [...baseItems, { 
-        type: 'error-state',
-        data: { 
-          message: 'Profile not found' 
-        } 
-      }];
-    }
+    // Profile details section
+    sections.push({
+      title: '',
+      type: 'profile',
+      data: [{ type: 'profile', user } as ProfileItem],
+    });
 
-    // Add profile details
-    const profileDetailsItem: ListItem = {
-      type: 'profile-details',
-      data: {
-        user,
-      }
-    };
-
-    // Add comics section for successfully loaded profiles
-    const comicsSectionItem: ListItem = {
-      type: 'subscribed-comics-section',
-      data: {
-        user,
-        subscriptions: subscribedComics || [],
+    // Comics section
+    sections.push({
+      title: 'Your Comics',
+      type: 'comics-grid',
+      data: [{ 
+        type: 'comics-grid', 
+        comics: subscribedComics,
         isOwnProfile: !!isOwnProfile,
-      }
-    };
+        user 
+      } as ComicsGridItem],
+    });
 
-    return [...baseItems, profileDetailsItem, comicsSectionItem];
+    return sections;
   }, [isLoggedIn, userId, user, subscribedComics, isLoading, error, isOwnProfile]);
 
   const handleSettingsPress = useCallback(() => {
     navigation.navigate(SETTINGS_SCREEN);
   }, [navigation]);
 
-  const handleEditProfile = useCallback(() => {
-    // TODO: Navigate to edit profile screen when it's implemented
-    console.log('Edit profile pressed');
-  }, []);
-
-  const renderItem = useCallback(({ item }: { item: ListItem }) => {
-    if (item.type === 'screen-header') {
-      return (
-        <ThemedView style={styles.headerContainer}>
-          {item.includeBackButton && <HeaderBackButton />}
-          <HeaderSettingsButton onPress={handleSettingsPress} />
-        </ThemedView>
-      );
-    }
-    if (item.type === 'empty-state') {
-      return (
-        <ThemedView style={styles.emptyStateContainer}>
-          <Image source={require('@/assets/images/unlock-profile.png')} style={styles.emptyStateImage}/>
-          <ThemedView style={styles.emptyStateContent}>
-            <ThemedText size='title' style={styles.heading}>
-              Unlock Your Profile!
-            </ThemedText>
-            <ThemedText style={styles.subheading}>
-              Create your profile to start saving your favorite webtoons and tracking your reading history!
-            </ThemedText>
-            <ThemedButton 
-              buttonText="Sign Up"
-              style={styles.ctaButton}
-              onPress={() => navigation.navigate(SIGNUP_SCREEN)}
-            />
+  const renderSectionItem = useCallback(({ item }: { item: ProfileSectionItem }) => {
+    switch (item.type) {
+      case 'header':
+        return (
+          <ThemedView style={styles.headerContainer}>
+            {item.includeBackButton && <HeaderBackButton />}
+            <HeaderSettingsButton onPress={handleSettingsPress} />
           </ThemedView>
-        </ThemedView>
-      );
-    }
-    if (item.type === 'loading-state') {
-      return (
-        <ThemedView style={styles.profileContainer}>
-          <ThemedActivityIndicator size="large" />
-        </ThemedView>
-      );
-    }
-    if (item.type === 'error-state') {
-      return (
-        <ThemedView style={styles.profileContainer}>
-          <ThemedText style={styles.errorText}>
-            Error loading profile: {item.data.message}
-          </ThemedText>
-        </ThemedView>
-      );
-    }
-    if (item.type === 'profile-details') {
-      const { user } = item.data;
+        );
       
-      return (
-        <ThemedView style={styles.profileContainer}>
-          <ThemedView style={[styles.profileHeader, { paddingHorizontal: 16 }]}>
-            <ThemedText size='title' style={styles.username}>
-              {user?.username}
+      case 'logged-out-state':
+        return (
+          <ThemedView style={styles.emptyStateContainer}>
+            <Image source={require('@/assets/images/unlock-profile.png')} style={styles.emptyStateImage}/>
+            <ThemedView style={styles.emptyStateContent}>
+              <ThemedText size='title' style={styles.heading}>
+                Unlock Your Profile!
+              </ThemedText>
+              <ThemedText style={styles.subheading}>
+                Create your profile to start saving your favorite webtoons and tracking your reading history!
+              </ThemedText>
+              <ThemedButton 
+                buttonText="Sign Up"
+                style={styles.ctaButton}
+                onPress={() => navigation.navigate(SIGNUP_SCREEN)}
+              />
+            </ThemedView>
+          </ThemedView>
+        );
+      
+      case 'loading':
+        return (
+          <ThemedView style={styles.profileContainer}>
+            <ThemedActivityIndicator size="large" />
+          </ThemedView>
+        );
+      
+      case 'error':
+        return (
+          <ThemedView style={styles.profileContainer}>
+            <ThemedText style={styles.errorText}>
+              Error loading profile: {item.message}
             </ThemedText>
           </ThemedView>
-        </ThemedView>
-      );
-    }
-    
-    if (item.type === 'subscribed-comics-section') {
-      const { user, subscriptions, isOwnProfile } = item.data;
+        );
       
-      return (
-        <ThemedView style={styles.sectionContainer}>
-          {subscriptions && subscriptions.length === 0 && (
-            <ThemedView style={styles.emptyComicsContainer}>
-              <ThemedText style={styles.emptyComicsText}>
-                {isOwnProfile 
-                  ? "When you save a comic to your profile, it will show up here"
-                  : `No comics saved to ${user?.username}'s profile, yet...`
-                }
+      case 'profile':
+        return (
+          <ThemedView style={styles.profileContainer}>
+            <ThemedView style={[styles.profileHeader, { paddingHorizontal: 16 }]}>
+              <ThemedText size='title' style={styles.username}>
+                {item.user?.username}
               </ThemedText>
             </ThemedView>
-          )}
-          {subscriptions && subscriptions.length > 0 && (
-            <View style={{ paddingHorizontal: 8 }}>
-              <ThemedText size='subtitle' style={[styles.sectionTitle]}>
-                Your Comics
-              </ThemedText>
-              <FlashList
-                data={subscriptions}
-                renderItem={renderComicItem}
-                numColumns={2}
-                keyExtractor={(item) => item.uuid.toString()}
-                showsVerticalScrollIndicator={false}
-                // contentContainerStyle={{ paddingHorizontal: 4 }}
-              />
-            </View>
-          )}
-        </ThemedView>
-      );
+          </ThemedView>
+        );
+      
+      case 'comics-grid':
+        const { comics, isOwnProfile, user } = item;
+        
+        if (comics.length === 0) {
+          return (
+            <ThemedView style={styles.sectionContainer}>
+              <ThemedView style={styles.emptyComicsContainer}>
+                <ThemedText style={styles.emptyComicsText}>
+                  {isOwnProfile 
+                    ? "When you save a comic to your profile, it will show up here"
+                    : `No comics saved to ${user?.username}'s profile, yet...`
+                  }
+                </ThemedText>
+              </ThemedView>
+            </ThemedView>
+          );
+        }
+        
+        return (
+          <View style={styles.sectionContainer}>
+            <FlatList
+              data={comics}
+              renderItem={renderComicItem}
+              numColumns={getNumColumns()}
+              keyExtractor={(comic) => comic.uuid.toString()}
+              showsVerticalScrollIndicator={false}
+              scrollEnabled={false}
+              contentContainerStyle={styles.comicsGrid}
+            />
+          </View>
+        );
+      
+      default:
+        return null;
     }
-    
-    return null;
-  }, [handleSettingsPress, isOwnProfile, handleEditProfile]);
+  }, [handleSettingsPress, navigation]);
 
   const renderComicItem = useCallback(({ item }: { item: ComicSeries }) => {
+    const numColumns = getNumColumns();
+    const screenWidth = Dimensions.get('window').width;
+    const availableWidth = screenWidth - 32; // Account for padding
+    const itemWidth = (availableWidth - (numColumns - 1)) / numColumns; // 16px gap between items
+        
     return (
-      <ComicSeriesDetails
-        comicseries={item}
-        pageType='grid-item'
-      />
+      <View style={{ width: itemWidth }}> 
+        <ComicSeriesDetails
+          comicseries={item}
+          pageType='grid-item'
+        />
+      </View>
+    );
+  }, []);
+
+  const renderSectionHeader = useCallback(({ section }: { section: SectionData }) => {
+    if (!section.title) return null;
+    
+    return (
+      <View style={{ paddingHorizontal: 20 }}>
+        <ThemedText size='subtitle' style={styles.sectionTitle}>
+          {section.title}
+        </ThemedText>
+      </View>
     );
   }, []);
 
   return (
     <Screen>
-      <FlashList
-        data={listData}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.type}
-        estimatedItemSize={100}
+      <SectionList
+        sections={sectionData}
+        renderItem={renderSectionItem}
+        renderSectionHeader={renderSectionHeader}
+        keyExtractor={(item, index) => {
+          // Each item type appears only once, so we can use a combination
+          // of the item type and any unique property it has
+          switch(item.type) {
+            case 'header':
+              return `header-${item.includeBackButton ? 'back' : 'no-back'}`;
+            case 'profile':
+              return `profile-${item.user?.id || 'no-user'}`;
+            case 'comics-grid':
+              return `comics-grid-${item.user?.id || 'section'}`;
+            case 'logged-out-state':
+              return 'logged-out-state';
+            case 'loading':
+              return 'loading';
+            case 'error':
+              return `error-${index}`;
+            default:
+              return `item-${index}`;
+          }
+        }}
         contentContainerStyle={styles.screenPadding}
+        stickySectionHeadersEnabled={false}
         refreshControl={
           <ThemedRefreshControl
             refreshing={refreshing}
@@ -350,8 +410,7 @@ const styles = StyleSheet.create({
     color: 'red',
   },
   sectionContainer: {
-    marginTop: 8,
-    paddingHorizontal: 12,
+    paddingHorizontal: 16,
   },
   sectionTitle: {
     fontSize: 20,

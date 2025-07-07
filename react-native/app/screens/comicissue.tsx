@@ -511,7 +511,7 @@ const YouNeedToBeAPatreonBacker = ({ creators, creatorLinks }: { creators?: Crea
         You need to be a <ThemedText style={[styles.patreonText, { color: buttonColor }]}>Patreon</ThemedText> backer of {creatorName} to get access to this episode.
       </ThemedText>
       <ThemedText style={styles.patreonBackerDescriptionText}>
-        If you are already a Patreon backer of {creatorName} and you are seeing this message, please check you are on the right tier that gives you early access to new episodes.
+        If you are already a Patreon backer of {creatorName} and you are seeing this message, please check you are on the Patreon tier that gives you early access to new episodes.
       </ThemedText>
       {patreonUrl && (
         <ThemedButton

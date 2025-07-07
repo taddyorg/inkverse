@@ -283,7 +283,7 @@ export const UserQueries = {
       const actualPage = page ?? 1;
 
       if (actualLimitPerPage > 1000) {
-        throw new UserInputError('Limit per page cannot be greater than 100');
+        throw new UserInputError('Limit per page cannot be greater than 1000');
       }
 
       const offset = Math.max(0, (actualPage - 1) * actualLimitPerPage);

@@ -349,7 +349,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   gridItemContainer: {
-    flex: 1,
     marginHorizontal: 8,
     marginBottom: 16,
   },
