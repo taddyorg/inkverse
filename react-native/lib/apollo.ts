@@ -4,6 +4,7 @@ import { onError } from '@apollo/client/link/error';
 import { ApolloClient, from } from '@apollo/client';
 import * as Sentry from '@sentry/react-native';
 import { typePolicies } from '@inkverse/public/apollo';
+import { setupUserClientEventListeners } from '@inkverse/shared-client/pubsub';
 import config from '@/config';
 import { getValidToken } from '@/lib/auth/user';
 
@@ -64,6 +65,9 @@ const userClient = new ApolloClient({
     'client-version': '3.0.0',
   },
 });
+
+// Set up cache event listeners for the user client
+setupUserClientEventListeners(userClient as any);
 
 /**
  * Get the public client

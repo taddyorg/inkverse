@@ -37,7 +37,7 @@ import type {
   GetMeDetailsQueryVariables,
 } from '../graphql/operations';
 import type { StorageFunctions } from './utils';
-import axios from 'axios';
+import { emit, EventNames } from '../pubsub';
 
 export interface UserDetailsState {
   userData: any | null;
@@ -315,6 +315,11 @@ export async function updateUsername(
 
     storageFunctions.saveUserDetails(user);
 
+    // Emit event that user profile was updated
+    emit(EventNames.USER_PROFILE_UPDATED, { 
+      userId: user.id, 
+    });
+
     return user;
   } catch (error: any) {
     if (dispatch) {
@@ -359,7 +364,14 @@ export async function updateAgeRange(
       dispatch({ type: UserDetailsActionType.USER_DETAILS_SUCCESS, payload: data.updateUserProfile });
     }
 
-    return data.updateUserProfile;
+    const user = data.updateUserProfile;
+
+    // Emit event that user profile was updated
+    emit(EventNames.USER_PROFILE_UPDATED, { 
+      userId: user.id, 
+    });
+
+    return user;
   } catch (error: any) {
     if (dispatch) {
       dispatch({ type: UserDetailsActionType.USER_DETAILS_ERROR, payload: error?.message || 'Failed to update age range' });
@@ -406,6 +418,11 @@ export async function updateUserEmail(
     const user = data.updateUserEmail;
 
     storageFunctions.saveUserDetails(user);
+
+    // Emit event that user profile was updated
+    emit(EventNames.USER_PROFILE_UPDATED, { 
+      userId: user.id,
+    });
 
     return user;
   } catch (error: any) {
@@ -652,6 +669,10 @@ export async function subscribeToComics(
       }
     }
 
+    uniqueSeriesUuids.forEach(uuid => {
+      emit(EventNames.COMIC_SUBSCRIBED, { seriesUuid: uuid, userId });
+    });
+
     return {
       success,
       subscribedCount: uniqueSeriesUuids.length
@@ -711,6 +732,7 @@ export async function getComicsFromPatreonCreators(
 interface SubscribeToPatreonComicsParams {
   userClient: ApolloClient<any>;
   seriesUuids: string[];
+  userId: string;
 }
 
 interface SubscribeToPatreonComicsResult {
@@ -719,7 +741,7 @@ interface SubscribeToPatreonComicsResult {
 }
 
 export async function subscribeToPatreonComics(
-  { userClient, seriesUuids }: SubscribeToPatreonComicsParams,
+  { userClient, seriesUuids, userId }: SubscribeToPatreonComicsParams,
   dispatch?: Dispatch<UserDetailsAction>
 ): Promise<SubscribeToPatreonComicsResult> {
   if (dispatch) dispatch({ type: UserDetailsActionType.PATREON_SUBSCRIPTION_START });
@@ -744,6 +766,7 @@ export async function subscribeToPatreonComics(
       SubscribeToMultipleComicSeriesMutationVariables
     >({
       mutation: SubscribeToMultipleComicSeries,
+      refetchQueries: [{ query: GetProfileByUserId, variables: { id: userId } }],
       variables: {
         seriesUuids: uniqueSeriesUuids
       }
@@ -758,6 +781,10 @@ export async function subscribeToPatreonComics(
         dispatch({ type: UserDetailsActionType.PATREON_SUBSCRIPTION_ERROR, payload: 'Failed to subscribe to comics' });
       }
     }
+
+    uniqueSeriesUuids.forEach(uuid => {
+      emit(EventNames.COMIC_SUBSCRIBED, { seriesUuid: uuid, userId });
+    });
 
     return {
       success,

@@ -16,6 +16,7 @@ import { SetupBluesky } from '@/app/components/profile/SetupBluesky';
 import { BlueskyConnected } from '@/app/components/profile/BlueskyConnected';
 import { getUserApolloClient } from '@/lib/apollo';
 import { SIGNUP_COMPLETE_SCREEN } from '@/constants/Navigation';
+import { getUserDetails } from '@/lib/auth/user';
 
 export interface SignupBlueskyScreenParams {
   context?: 'signup' | 'profile';
@@ -117,10 +118,13 @@ export function SignupBlueskyScreen() {
         return;
       }
 
+      const user = getUserDetails();
+      if (!user || !user.id) { return; }
+
       const result = await subscribeToComics({ 
         userClient: userClientRef.current,
         seriesUuids,
-        userId: userDetailsState.userData?.id,
+        userId: user.id,
       }, dispatch);
 
       if (result.success) {

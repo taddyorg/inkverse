@@ -125,7 +125,7 @@ export function ProfileScreen() {
     };
 
     // Handle comic subscription events
-    const handleComicSubscribed = (data: { seriesUuid: string; userId: string }) => {
+    const handleComicSubscribed = (data: { seriesUuid?: string; userId: string }) => {
       // Reload profile when a comic is subscribed
       if (data.userId === profileUserId) {
         loadProfile(true);

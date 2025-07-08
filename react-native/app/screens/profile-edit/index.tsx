@@ -14,6 +14,7 @@ import { getUserApolloClient } from '@/lib/apollo';
 import { userDetailsReducer, userDetailsInitialState, getMeDetails } from '@inkverse/shared-client/dispatch/user-details';
 import type { ApolloClient, NormalizedCacheObject } from '@apollo/client';
 import { getUserDetails } from '@/lib/auth/user';
+import { on, off, EventNames } from '@inkverse/shared-client/pubsub';
 
 interface ProfileProperty {
   type: 'list' | 'action';
@@ -93,6 +94,22 @@ export function EditProfileScreen() {
   useEffect(() => {
     checkConnections();
   }, []);
+
+  // Listen for profile update events
+  useEffect(() => {
+    const handleProfileUpdate = (event: { userId: string; }) => {
+      // Reload user data when profile is updated
+      if (event.userId === user?.id) {
+        loadUserData({ forceRefresh: true });
+      }
+    };
+
+    on(EventNames.USER_PROFILE_UPDATED, handleProfileUpdate);
+
+    return () => {
+      off(EventNames.USER_PROFILE_UPDATED, handleProfileUpdate);
+    };
+  }, [user?.id]);
 
   // Use user data from the reducer state
   const currentUser = userDetailsState.userData;

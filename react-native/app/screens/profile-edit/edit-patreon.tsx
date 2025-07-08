@@ -16,7 +16,7 @@ import {
 } from '@inkverse/shared-client/dispatch/user-details';
 import { fetchAllHostingProviderTokens } from '@inkverse/shared-client/dispatch/hosting-provider';
 import { HeaderBackButton, ThemedView } from '@/app/components/ui';
-import { on, off, EventNames } from '@inkverse/shared-client/pubsub';
+import { on, off, EventNames, emit } from '@inkverse/shared-client/pubsub';
 import { saveHostingProviderRefreshToken, refreshHostingProviderAccessToken } from '@/lib/auth/hosting-provider';
 import { TADDY_HOSTING_PROVIDER_UUID } from '@inkverse/public/hosting-providers';
 
@@ -51,6 +51,11 @@ export function EditPatreonScreen() {
           { userClient: userClientRef.current },
           dispatch
         );
+
+        const user = getUserDetails();
+        if (!user || !user.id) { return; }
+
+        emit(EventNames.USER_PROFILE_UPDATED, { userId: user.id });
       }
     };
 
@@ -95,6 +100,9 @@ export function EditPatreonScreen() {
   const handleContinue = useCallback(async () => {
     if (!userClientRef.current) return;
 
+    const user = getUserDetails();
+    if (!user || !user.id) { return; }
+
     try {
       // Extract UUIDs from the comic series
       const seriesUuids = (userDetailsState.patreonComicSeries || []).map(series => series.uuid).filter(Boolean);
@@ -102,7 +110,8 @@ export function EditPatreonScreen() {
       if (seriesUuids.length > 0) {
         await subscribeToPatreonComics({ 
           userClient: userClientRef.current,
-          seriesUuids
+          seriesUuids,
+          userId: user.id,
         }, dispatch);
       }
 

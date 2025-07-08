@@ -15,6 +15,8 @@ import { HeaderBackButton, ThemedView } from '@/app/components/ui';
 import { SetupBluesky } from '@/app/components/profile/SetupBluesky';
 import { BlueskyConnected } from '@/app/components/profile/BlueskyConnected';
 import { getUserApolloClient } from '@/lib/apollo';
+import { getUserDetails } from '@/lib/auth/user';
+import { emit, EventNames } from '@inkverse/shared-client/pubsub';
 
 export interface EditBlueskyScreenParams {
   context?: 'signup' | 'profile';
@@ -94,6 +96,11 @@ export function EditBlueskyScreen() {
         { userClient: userClientRef.current },
         dispatch
       );
+
+      const user = getUserDetails();
+      if (!user || !user.id) { return; }
+
+      emit(EventNames.USER_PROFILE_UPDATED, { userId: user.id });
       
       setCurrentStep('bluesky-connected');
     } catch (err: any) {
@@ -116,10 +123,13 @@ export function EditBlueskyScreen() {
         return;
       }
 
+      const user = getUserDetails();
+      if (!user || !user.id) { return; }
+
       const result = await subscribeToComics({ 
         userClient: userClientRef.current,
         seriesUuids,
-        userId: userDetailsState.userData?.id,
+        userId: user.id,
       }, dispatch);
 
       if (result.success) {

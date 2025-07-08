@@ -5,6 +5,7 @@ import config from '@/config';
 import { typePolicies } from '@inkverse/public/apollo';
 import { setContext } from '@apollo/client/link/context';
 import { getAccessToken } from '../auth/user';
+import { setupUserClientEventListeners } from '@inkverse/shared-client/pubsub/cache-listeners';
 
 const cache = new InMemoryCache({ typePolicies });
 
@@ -48,6 +49,8 @@ const userClient = new ApolloClient({
   }
 });
 
+// Set up cache event listeners for the user client
+setupUserClientEventListeners(userClient as any);
 
 /**
  * Initialize the public Apollo client with state restoration

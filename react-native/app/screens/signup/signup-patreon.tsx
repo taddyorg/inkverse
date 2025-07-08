@@ -96,6 +96,9 @@ export function SignupPatreonScreen() {
   const handleContinue = useCallback(async () => {
     if (!userClientRef.current) return;
 
+    const user = getUserDetails();
+    if (!user || !user.id) { return; }
+
     try {
       // Extract UUIDs from the comic series
       const seriesUuids = (userDetailsState.patreonComicSeries || []).map(series => series.uuid).filter(Boolean);
@@ -103,7 +106,8 @@ export function SignupPatreonScreen() {
       if (seriesUuids.length > 0) {
         await subscribeToPatreonComics({ 
           userClient: userClientRef.current,
-          seriesUuids
+          seriesUuids,
+          userId: user.id,
         }, dispatch);
       }
 
