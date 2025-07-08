@@ -218,7 +218,26 @@ const stackScreenOptions = {
   ...Platform.select({
     android: {
       animation: 'slide_from_right' as const,
-      presentation: 'transparentModal' as const,
+      // Remove transparentModal as it interferes with swipe gestures
+      // presentation: 'transparentModal' as const,
+      // Android-specific gesture configuration
+      freezeOnBlur: true, // Improves performance and gesture handling
+    },
+    ios: {
+      // iOS keeps default behavior
+    }
+  }),
+  // Enable gestures with proper configuration
+  gestureEnabled: true,
+  gestureDirection: 'horizontal' as const,
+  // Adjust gesture response distance based on platform
+  gestureResponseDistance: Platform.select({
+    android: {
+      start: 40, // Slightly lower than iOS to account for navigation bar
+      end: 200, // Allow gestures from a wider area
+    },
+    ios: {
+      start: 50, // Increase from default 25 for better edge swipe detection
     },
   }),
 };
@@ -446,6 +465,14 @@ function App() {
     gestureDirection: 'vertical' as const,
     fullScreenGestureEnabled: true,
     contentStyle: { backgroundColor: 'white' },
+    ...Platform.select({
+      android: {
+        // Android-specific gesture configuration for modals
+        gestureResponseDistance: {
+          top: 135, // Default modal gesture distance
+        },
+      },
+    }),
   }
 
   const modalScreenOptionsCannotClose = {
@@ -454,6 +481,17 @@ function App() {
     contentStyle: { backgroundColor: 'white' },
     gestureEnabled: false,
     fullScreenGestureEnabled: false,
+    ...Platform.select({
+      android: {
+        // Ensure gestures are fully disabled on Android too
+        gestureResponseDistance: {
+          top: 0,
+          bottom: 0,
+          start: 0,
+          end: 0,
+        },
+      },
+    }),
   }
 
   // Create the signup stack navigator
@@ -465,6 +503,7 @@ function App() {
         initialRouteName={SIGNUP_MAIN_SCREEN}
         screenOptions={{
           headerShown: false,
+          ...stackScreenOptions, // Apply the same gesture configurations
         }}
       >
         <SignupStack.Screen 

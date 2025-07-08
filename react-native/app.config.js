@@ -90,7 +90,10 @@ export default {
         {
           android: {
             parentTheme: "Light",
-            enforceNavigationBarContrast: false
+            enforceNavigationBarContrast: false,
+            // Keep navigation bar visible but transparent
+            navigationBarStyle: "light",
+            navigationBarColor: "transparent"
           }
         }
       ],

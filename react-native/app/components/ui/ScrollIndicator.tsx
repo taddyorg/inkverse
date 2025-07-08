@@ -187,7 +187,9 @@ const styles = StyleSheet.create({
     right: 8,
     width: 24,
     zIndex: 10,
-    marginTop: -10
+    marginTop: -10,
+    // Ensure scroll indicator doesn't interfere with edge swipe gestures
+    pointerEvents: 'box-none' as const,
   },
   touchArea: {
     position: 'absolute',
