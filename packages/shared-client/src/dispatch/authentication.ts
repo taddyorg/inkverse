@@ -2,6 +2,7 @@ import axios from 'axios';
 import type { StorageFunctions } from './utils';
 import type { User } from '@inkverse/shared-client/graphql/operations';
 import { AuthProvider } from '@inkverse/public/graphql/types';
+import { emit, EventNames } from '../pubsub';
 
 export interface AuthState {
   user: any | null;
@@ -134,6 +135,12 @@ export async function dispatchExchangeOTPForTokens(
 
     if (dispatch) {
       dispatch({ type: AuthActionType.AUTH_SUCCESS, payload: response.data });
+      
+      // Emit authentication event for other components to listen
+      emit(EventNames.USER_AUTHENTICATED, {
+        userId: response.data.user.id,
+      });
+      
       onSuccessFunction?.();
     }
   } catch (error: any) {
@@ -184,6 +191,12 @@ export async function dispatchLoginWithGoogle(
 
     if (dispatch) {
       dispatch({ type: AuthActionType.AUTH_SUCCESS, payload: response.data });
+      
+      // Emit authentication event for other components to listen
+      emit(EventNames.USER_AUTHENTICATED, {
+        userId: response.data.user.id,
+      });
+      
       onSuccessFunction?.();
     }
   } catch (error: any) {
@@ -230,6 +243,12 @@ export async function dispatchLoginWithApple(
 
     if (dispatch) {
       dispatch({ type: AuthActionType.AUTH_SUCCESS, payload: response.data });
+      
+      // Emit authentication event for other components to listen
+      emit(EventNames.USER_AUTHENTICATED, {
+        userId: response.data.user.id,
+      });
+      
       onSuccessFunction?.();
     }
   } catch (error: any) {
@@ -298,7 +317,7 @@ export function logout(dispatch: React.Dispatch<AuthAction>): void {
   // Clear tokens from storage
   // TODO: Implement token storage clearing
   
-  dispatch({ type: AuthActionType.AUTH_LOGOUT });
+  dispatch({ type: AuthActionType.AUTH_LOGOUT });  
 }
 
 export function clearAuthError(dispatch: React.Dispatch<AuthAction>): void {

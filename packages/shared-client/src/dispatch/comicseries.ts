@@ -1,6 +1,7 @@
 import type { ApolloClient, ApolloQueryResult } from '@apollo/client';
 import type { Dispatch } from 'react';
 import { type GetComicSeriesQuery, type GetComicSeriesQueryVariables, SortOrder, GetComicSeries, type ComicIssue, type ComicSeries, GetMiniComicSeries, type GetMiniComicSeriesQuery, type GetMiniComicSeriesQueryVariables, type SubscribeToSeriesMutation, type SubscribeToSeriesMutationVariables, SubscribeToSeries, type UnsubscribeFromSeriesMutation, type UnsubscribeFromSeriesMutationVariables, UnsubscribeFromSeries, GetUserComicSeries, type GetUserComicSeriesQuery, type GetUserComicSeriesQueryVariables, type EnableNotificationsForSeriesMutation, type EnableNotificationsForSeriesMutationVariables, EnableNotificationsForSeries, type DisableNotificationsForSeriesMutation, type DisableNotificationsForSeriesMutationVariables, DisableNotificationsForSeries, GetProfileByUserId } from "../graphql/operations.js";
+import { emit, EventNames } from '../pubsub';
 
 /* Action Type Enum */
 export enum ComicSeriesActionType {
@@ -302,6 +303,9 @@ export async function subscribeToSeries(
       });
     }
     
+    // Emit event for other components to listen
+    emit(EventNames.COMIC_SUBSCRIBED, { seriesUuid, userId });
+    
     return userComicData;
   } catch (error: any) {
     const errorMessage = error?.response?.data?.error || 
@@ -347,6 +351,9 @@ export async function unsubscribeFromSeries(
         payload: { userComicData }
       });
     }
+    
+    // Emit event for other components to listen
+    emit(EventNames.COMIC_UNSUBSCRIBED, { seriesUuid, userId });
     
     return userComicData;
   } catch (error: any) {

@@ -16,7 +16,7 @@ import {
 } from '@inkverse/shared-client/dispatch/user-details';
 import { fetchAllHostingProviderTokens } from '@inkverse/shared-client/dispatch/hosting-provider';
 import { Screen, ThemedView } from '@/app/components/ui';
-import { PubSub, PubSubEvents, HostingProviderConnectedData } from '@/lib/pubsub';
+import { on, off, EventNames } from '@inkverse/shared-client/pubsub';
 import { SIGNUP_BLUESKY_SCREEN } from '@/constants/Navigation';
 import { saveHostingProviderRefreshToken, refreshHostingProviderAccessToken } from '@/lib/auth/hosting-provider';
 import { TADDY_HOSTING_PROVIDER_UUID } from '@inkverse/public/hosting-providers';
@@ -35,32 +35,31 @@ export function SignupPatreonScreen() {
 
   // Listen for hosting provider connection events
   useEffect(() => {
-    const subscription = PubSub.subscribe<HostingProviderConnectedData>(
-      PubSubEvents.HOSTING_PROVIDER_CONNECTED,
-      async (data) => {
-        // Check if this is the Patreon provider
-        if (data.hostingProviderUuid === TADDY_HOSTING_PROVIDER_UUID && data.success) {
-          setCurrentStep('patreon-connected');
-          
-          // Fetch hosting provider tokens to ensure we have the latest connection
-          await fetchAllHostingProviderTokens({ 
-            userClient: userClientRef.current, 
-            saveHostingProviderRefreshToken, 
-            refreshHostingProviderAccessToken 
-          });
-          
-          // Fetch comics from Patreon creators
-          await getComicsFromPatreonCreators(
-            { userClient: userClientRef.current },
-            dispatch
-          );
-        }
+    const handleHostingProviderConnected = async (data: { hostingProviderUuid: string; success: boolean }) => {
+      // Check if this is the Patreon provider
+      if (data.hostingProviderUuid === TADDY_HOSTING_PROVIDER_UUID && data.success) {
+        setCurrentStep('patreon-connected');
+        
+        // Fetch hosting provider tokens to ensure we have the latest connection
+        await fetchAllHostingProviderTokens({ 
+          userClient: userClientRef.current, 
+          saveHostingProviderRefreshToken, 
+          refreshHostingProviderAccessToken 
+        });
+        
+        // Fetch comics from Patreon creators
+        await getComicsFromPatreonCreators(
+          { userClient: userClientRef.current },
+          dispatch
+        );
       }
-    );
+    };
+
+    on(EventNames.HOSTING_PROVIDER_CONNECTED, handleHostingProviderConnected);
 
     // Cleanup subscription on unmount
     return () => {
-      subscription.remove();
+      off(EventNames.HOSTING_PROVIDER_CONNECTED, handleHostingProviderConnected);
     };
   }, []);
 

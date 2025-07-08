@@ -19,7 +19,7 @@ import {
 } from '@/lib/auth/hosting-provider';
 import { RootStackParamList } from '@/constants/Navigation';
 import { Colors, useThemeColor } from '@/constants/Colors';
-import { PubSub, PubSubEvents, HostingProviderConnectedData } from '@/lib/pubsub';
+import { emit, EventNames } from '@inkverse/shared-client/pubsub';
 
 export interface WrappedHostingProviderScreenParams {
   uuid?: string;
@@ -89,7 +89,7 @@ export function WrappedHostingProviderScreen() {
   const handleSuccessWithoutSavingTokens = async () => {
     // Emit event that hosting provider was connected
     if (uuid) {
-      PubSub.emit<HostingProviderConnectedData>(PubSubEvents.HOSTING_PROVIDER_CONNECTED, {
+      emit(EventNames.HOSTING_PROVIDER_CONNECTED, {
         hostingProviderUuid: uuid,
         success: true,
       });
@@ -104,7 +104,7 @@ export function WrappedHostingProviderScreen() {
     await refreshHostingProviderAccessToken(uuid);
     
     // Emit event that hosting provider was connected
-    PubSub.emit<HostingProviderConnectedData>(PubSubEvents.HOSTING_PROVIDER_CONNECTED, {
+    emit(EventNames.HOSTING_PROVIDER_CONNECTED, {
       hostingProviderUuid: uuid,
       success: true,
     });

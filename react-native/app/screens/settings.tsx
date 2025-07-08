@@ -19,6 +19,7 @@ import { asyncClear } from '@/lib/storage/async';
 import { syncStorageClear } from '@/lib/storage/sync';
 import { inkverseAuthClear } from '@/lib/storage/secure';
 import { SIGNUP_SCREEN, EDIT_PROFILE_SCREEN } from '@/constants/Navigation';
+import { emit, EventNames } from '@inkverse/shared-client/pubsub';
 
 export type SettingsScreenParams = undefined;
 
@@ -85,6 +86,8 @@ export function SettingsScreen() {
 
     // Clear SyncStorage
     syncStorageClear();
+
+    emit(EventNames.USER_LOGGED_OUT);
 
     // Go back to home
     navigation.goBack();

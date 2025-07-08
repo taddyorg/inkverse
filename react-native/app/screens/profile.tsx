@@ -8,9 +8,10 @@ import { PROFILE_SCREEN, RootStackParamList, SETTINGS_SCREEN, SIGNUP_SCREEN } fr
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { getUserDetails } from '@/lib/auth/user';
 import { User, ComicSeries } from '@inkverse/shared-client/graphql/operations';
-import { loadPublicProfileById, loadUserProfileById, profileReducer, profileInitialState } from '@inkverse/shared-client/dispatch/profile';
+import { loadPublicProfileById, loadUserProfileById, profileReducer, profileInitialState, ProfileActionType, ProfileState, logoutUserProfile } from '@inkverse/shared-client/dispatch/profile';
 import { getPublicApolloClient, getUserApolloClient } from '@/lib/apollo';
 import { ComicSeriesDetails } from '../components/comics/ComicSeriesDetails';
+import { on, off, EventNames } from '@inkverse/shared-client/pubsub';
 
 type SectionData = {
   title: string;
@@ -94,6 +95,64 @@ export function ProfileScreen() {
   useEffect(() => {
     loadProfile();
   }, [loadProfile]);
+
+  // Listen for authentication events
+  useEffect(() => {
+    // Handle user authentication (login/signup)
+    const handleUserAuthenticated = (data: { userId: string }) => {
+      // Reload profile when user logs in
+      // Use the userId from the event since getUserDetails might not be updated yet
+      if (data.userId && (!userId || data.userId === userId)) {
+        // If viewing own profile (no userId in route), load the newly authenticated user's profile
+        const userClient = getUserApolloClient();
+        if (!userClient) { return; }
+
+        loadUserProfileById(
+          {
+            userClient,
+            userId: data.userId,
+            forceRefresh: true,
+          },
+          dispatch
+        );
+      }
+    };
+
+    // Handle user logout
+    const handleUserLoggedOut = () => {
+      // Reset state to initial when user logs out
+      logoutUserProfile(dispatch);
+    };
+
+    // Handle comic subscription events
+    const handleComicSubscribed = (data: { seriesUuid: string; userId: string }) => {
+      // Reload profile when a comic is subscribed
+      if (data.userId === profileUserId) {
+        loadProfile(true);
+      }
+    };
+
+    const handleComicUnsubscribed = (data: { seriesUuid: string; userId: string }) => {
+      // Reload profile when a comic is unsubscribed
+      if (data.userId === profileUserId) {
+        loadProfile(true);
+      }
+    };
+
+    // Subscribe to events
+    on(EventNames.USER_AUTHENTICATED, handleUserAuthenticated);
+    on(EventNames.USER_LOGGED_OUT, handleUserLoggedOut);
+    on(EventNames.COMIC_SUBSCRIBED, handleComicSubscribed);
+    on(EventNames.COMIC_UNSUBSCRIBED, handleComicUnsubscribed);
+
+    // Cleanup subscriptions on unmount
+    return () => {
+      off(EventNames.USER_AUTHENTICATED, handleUserAuthenticated);
+      off(EventNames.USER_LOGGED_OUT, handleUserLoggedOut);
+      off(EventNames.COMIC_SUBSCRIBED, handleComicSubscribed);
+      off(EventNames.COMIC_UNSUBSCRIBED, handleComicUnsubscribed);
+    };
+  }, [loadProfile, dispatch, userId, profileUserId]);
 
   // Pull to refresh handler
   const onRefresh = useCallback(async () => {

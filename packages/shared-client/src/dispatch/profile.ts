@@ -1,6 +1,7 @@
 import type { Dispatch } from 'react';
 import type { ApolloClient } from '@apollo/client';
 import type { StorageFunctions } from './utils';
+import { emit, EventNames } from '../pubsub';
 import { 
   GetMeDetails, 
   type GetMeDetailsQuery, 
@@ -15,11 +16,13 @@ import {
   type ComicSeries,
 } from '../graphql/operations';
 
+
 /* Action Type Enum */
 export enum ProfileActionType {
   GET_PROFILE_START = 'GET_PROFILE_START',
   GET_PROFILE_SUCCESS = 'GET_PROFILE_SUCCESS',
   GET_PROFILE_ERROR = 'GET_PROFILE_ERROR',
+  LOGOUT_PROFILE = 'LOGOUT_PROFILE',
 }
 
 export interface ProfileState {
@@ -42,7 +45,8 @@ export type ProfileAction =
   // Get Profile
   | { type: ProfileActionType.GET_PROFILE_START }
   | { type: ProfileActionType.GET_PROFILE_SUCCESS; payload: ProfileState }
-  | { type: ProfileActionType.GET_PROFILE_ERROR; payload: string };
+  | { type: ProfileActionType.GET_PROFILE_ERROR; payload: string }
+  | { type: ProfileActionType.LOGOUT_PROFILE };
 
 export interface GetMeDetailsParams {
   userClient: ApolloClient<any>;
@@ -195,6 +199,12 @@ export async function loadUserProfileById(
   }
 }
 
+export async function logoutUserProfile(
+  dispatch?: Dispatch<ProfileAction>
+): Promise<void> {
+  if (dispatch) dispatch({ type: ProfileActionType.LOGOUT_PROFILE });
+}
+
 export function parseProfileData(data: GetProfileByUserIdQuery): ProfileState {
   return {
     user: data?.getUserById,
@@ -222,7 +232,8 @@ export const profileReducer = (
       };
     case ProfileActionType.GET_PROFILE_ERROR:
       return { ...state, isLoading: false, error: action.payload };
-      
+    case ProfileActionType.LOGOUT_PROFILE:
+      return { ...profileInitialState, isLoading: false, error: null };
     default:
       return state;
   }
