@@ -52,6 +52,7 @@ export function getPublicApolloClient(request: Request) {
 }
 
 export function getUserApolloClient(request: Request) {
+  const cache = new InMemoryCache({ typePolicies });
   const authLink = createAuthLink(request);
   
   const client = new ApolloClient({

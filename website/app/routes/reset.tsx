@@ -99,5 +99,12 @@ export const meta: MetaFunction = ({ data }) => {
     description: "Please wait while we verify your authentication token.",
     url: "https://inkverse.co/reset",
   });
+};
 
+export const headers = () => {
+  return {
+    'Cache-Control': 'private, no-cache, no-store, must-revalidate',
+    'Pragma': 'no-cache',
+    'Expires': '0',
+  };
 };

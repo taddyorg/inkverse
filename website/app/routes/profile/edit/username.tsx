@@ -27,6 +27,14 @@ export const loader = async ({ params, request, context }: LoaderFunctionArgs) =
   return await loadProfileEdit({ params, request, context });
 };
 
+export const headers = () => {
+  return {
+    'Cache-Control': 'private, no-cache, no-store, must-revalidate',
+    'Pragma': 'no-cache',
+    'Expires': '0',
+  };
+};
+
 export default function EditUsernamePage() {
   const { user } = useLoaderData<typeof loader>();
   const navigate = useNavigate();
