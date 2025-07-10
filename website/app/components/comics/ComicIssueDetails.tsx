@@ -46,7 +46,7 @@ export const ComicIssueDetails = ({ comicseries, comicissue, position, isCurrent
             />
             {isPatreonExclusive && (
               <div className="absolute inset-0 flex items-center justify-center">
-                <MdLock size={30} className="text-inkverse-black dark:text-white" />
+                <MdLock size={30} className="text-brand-pink dark:text-white" />
               </div>
             )}
           </div>

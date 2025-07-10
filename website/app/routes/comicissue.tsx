@@ -60,7 +60,7 @@ function ComicIssueContent({ initialData }: { initialData: Partial<ComicIssueLoa
   const comicSeriesLink = getInkverseUrl({ type: "comicseries", shortUrl: comicseries?.shortUrl });
   const isPatreonExclusive = comicissue?.scopesForExclusiveContent?.includes('patreon');
   const decodedToken = contentToken && jwtDecode(contentToken) as any;
-  const hasAccessToIssue = decodedToken?.scopes_for_exclusive_content?.includes('patreon-2');
+  const hasAccessToIssue = decodedToken?.scopes_for_exclusive_content?.includes('patreon');
   const connectedProviders = getConnectedHostingProviderUuids();
   const isConnectedToHostingProvider = comicseries?.hostingProviderUuid && connectedProviders.includes(comicseries.hostingProviderUuid);
   const isAuthenticated = !!getUserDetails();

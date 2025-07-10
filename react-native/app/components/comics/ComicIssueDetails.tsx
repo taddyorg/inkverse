@@ -39,7 +39,7 @@ export const ComicIssueDetails = memo(({ comicissue, comicseries, position, isCu
 
   const actionColor = useThemeColor({}, 'action');
   const actionTextColor = useThemeColor({}, 'actionText');
-  const textColor = useThemeColor({}, 'text');
+  const tintColor = useThemeColor({}, 'tint');
 
   return (
     <PressableOpacity onPress={handlePress}>
@@ -65,7 +65,7 @@ export const ComicIssueDetails = memo(({ comicissue, comicseries, position, isCu
         />
         {isPatreonExclusive && (
           <View style={styles.lockIcon}>
-            <MaterialIcons name="lock" size={34} color={textColor} />
+            <MaterialIcons name="lock" size={34} color={tintColor} />
           </View>
         )}
         </View>
