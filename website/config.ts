@@ -7,8 +7,9 @@ const developmentConfig = {
     HOST_URL: 'https://us.i.posthog.com'
   },
   "GOOGLE_CLIENT_ID": "485860487313-jddr4ok61k6voj594b1sqhvj18gt7nms.apps.googleusercontent.com", 
-  "APPLE_CLIENT_ID": "art.bamcomics.taddy", 
-  "APPLE_REDIRECT_URI": "https://inkverse.test:3010/api/auth/login-with-apple",
+  "APPLE_CLIENT_ID": "art.bamcomics.taddy",
+  "APPLE_SERVICE_ID": "co.inkverse",
+  "APPLE_REDIRECT_URI": "http://inkverse.test:3010/api/auth/login-with-apple",
   "TADDY_CLIENT_ID":"151",
   "SHOW_THEME_TOGGLE_ON_NAVBAR": true,
 }
@@ -22,7 +23,8 @@ const developmentConfigButProductionData = {
     HOST_URL: 'https://us.i.posthog.com'
   },
   "GOOGLE_CLIENT_ID": "485860487313-ditiq1chl9qjbiaemsthun7bbdstu3tq.apps.googleusercontent.com", 
-  "APPLE_CLIENT_ID": "art.bamcomics.taddy", 
+  "APPLE_CLIENT_ID": "art.bamcomics.taddy",
+  "APPLE_SERVICE_ID": "co.inkverse",
   "APPLE_REDIRECT_URI": "https://inkverse.co/api/auth/login-with-apple", 
   "TADDY_CLIENT_ID":"151",
   "SHOW_THEME_TOGGLE_ON_NAVBAR": false,
@@ -38,6 +40,7 @@ const productionConfig = {
   },
   "GOOGLE_CLIENT_ID": "485860487313-ditiq1chl9qjbiaemsthun7bbdstu3tq.apps.googleusercontent.com", 
   "APPLE_CLIENT_ID": "art.bamcomics.taddy", 
+  "APPLE_SERVICE_ID": "co.inkverse",
   "APPLE_REDIRECT_URI": "https://inkverse.co/api/auth/login-with-apple", 
   "TADDY_CLIENT_ID":"151",
   "SHOW_THEME_TOGGLE_ON_NAVBAR": false,

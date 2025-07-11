@@ -341,7 +341,7 @@ export function SignupModal({ isOpen, onClose, hideComponent = true, onAuthSucce
                 <div style={{ width: '240px' }}>
                   <AppleSignin
                     authOptions={{
-                      clientId: config.APPLE_CLIENT_ID,
+                      clientId: config.APPLE_SERVICE_ID,
                       scope: 'email',
                       redirectURI: config.APPLE_REDIRECT_URI,
                       nonce: Math.random().toString(36).substring(2, 10),
