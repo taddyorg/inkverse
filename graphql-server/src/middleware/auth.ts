@@ -6,7 +6,7 @@
 import { verifyToken } from '@inkverse/shared-server/utils/authentication';
 import type { User } from '@inkverse/public/graphql/types';
 import { User as UserFns } from '@inkverse/shared-server/models/index';
-import { AuthenticationError } from 'src/graphql/error.js';
+import { AuthenticationError } from '../graphql/error.js';
 
 /**
  * GraphQL context type for authentication

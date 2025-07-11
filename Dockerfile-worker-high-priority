@@ -5,7 +5,7 @@ WORKDIR /app
 
 # Update and install system dependencies
 RUN apt-get update -y && apt-get upgrade -y && \
-    apt-get install -y apt-utils apt-transport-https ca-certificates \
+    apt-get install -y apt-utils apt-transport-https ca-certificates && \
     apt-get install -y postgresql-client
 
 # Install Yarn
