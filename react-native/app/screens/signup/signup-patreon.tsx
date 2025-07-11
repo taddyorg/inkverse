@@ -82,7 +82,7 @@ export function SignupPatreonScreen() {
   }, []);
 
   const handleSkip = useCallback(() => {
-    navigation.navigate(SIGNUP_BLUESKY_SCREEN);
+    navigation.navigate(SIGNUP_BLUESKY_SCREEN, { context: 'signup' });
   }, [navigation]);
 
   const handleBack = useCallback(() => {
@@ -111,7 +111,7 @@ export function SignupPatreonScreen() {
         }, dispatch);
       }
 
-      navigation.navigate(SIGNUP_BLUESKY_SCREEN);
+      navigation.navigate(SIGNUP_BLUESKY_SCREEN, { context: 'signup' });
     } catch (err) {
       console.error('Error subscribing to Patreon comics:', err);
     }

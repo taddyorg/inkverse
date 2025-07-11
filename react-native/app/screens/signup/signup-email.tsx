@@ -151,6 +151,7 @@ export function SignupEmailScreen() {
                 value={link}
                 onChangeText={onLinkTextChanged}
                 placeholder="https://inkverse.co/..."
+                placeholderTextColor={textColor + '80'}
                 keyboardType="url"
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -198,6 +199,7 @@ export function SignupEmailScreen() {
                   { color: textColor, borderColor: textColor }
                 ]}
                 placeholder="your@email.com"
+                placeholderTextColor={textColor + '80'}
                 value={email}
                 onChangeText={updateEmailState}
                 onSubmitEditing={handleEmailSubmit}

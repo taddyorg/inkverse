@@ -215,7 +215,7 @@ export function ProfileScreen() {
 
     // Comics section
     sections.push({
-      title: 'Your Comics',
+      title: (subscribedComics && subscribedComics.length > 0) ? 'Your Comics' : '',
       type: 'comics-grid',
       data: [{ 
         type: 'comics-grid', 

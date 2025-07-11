@@ -44,7 +44,7 @@ export function SignupAgeScreen() {
       );
 
       // Navigate to Notifications screen after successful update
-      navigation.navigate(SIGNUP_NOTIFICATIONS_SCREEN);
+      navigation.navigate(SIGNUP_NOTIFICATIONS_SCREEN, { isReturningUser: false });
     } catch (err: any) {
       dispatch({ type: UserDetailsActionType.USER_DETAILS_ERROR, payload: err.message });
     }

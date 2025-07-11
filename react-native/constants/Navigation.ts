@@ -95,16 +95,16 @@ export type RootStackParamList = {
   [SIGNUP_RESET_SCREEN]: SignupResetScreenParams | undefined;
   [SIGNUP_USERNAME_SCREEN]: undefined;
   [SIGNUP_AGE_SCREEN]: undefined;
-  [SIGNUP_NOTIFICATIONS_SCREEN]: SignupNotificationsScreenParams | undefined;
-  [SIGNUP_PATREON_SCREEN]: SignupPatreonScreenParams | undefined;
-  [SIGNUP_BLUESKY_SCREEN]: SignupBlueskyScreenParams | undefined;
+  [SIGNUP_NOTIFICATIONS_SCREEN]: SignupNotificationsScreenParams;
+  [SIGNUP_PATREON_SCREEN]: SignupPatreonScreenParams;
+  [SIGNUP_BLUESKY_SCREEN]: SignupBlueskyScreenParams;
   [SIGNUP_COMPLETE_SCREEN]: undefined;
   [EDIT_PROFILE_SCREEN]: undefined;
-  [EDIT_USERNAME_SCREEN]: EditUsernameScreenParams | undefined;
-  [EDIT_AGE_SCREEN]: EditAgeScreenParams | undefined;
-  [EDIT_EMAIL_SCREEN]: EditEmailScreenParams | undefined;
-  [EDIT_PATREON_SCREEN]: EditPatreonScreenParams | undefined;
-  [EDIT_BLUESKY_SCREEN]: EditBlueskyScreenParams | undefined;
+  [EDIT_USERNAME_SCREEN]: EditUsernameScreenParams;
+  [EDIT_AGE_SCREEN]: EditAgeScreenParams;
+  [EDIT_EMAIL_SCREEN]: EditEmailScreenParams;
+  [EDIT_PATREON_SCREEN]: EditPatreonScreenParams;
+  [EDIT_BLUESKY_SCREEN]: EditBlueskyScreenParams;
 };
 
 interface ResetNavigationToContentScreenParams {

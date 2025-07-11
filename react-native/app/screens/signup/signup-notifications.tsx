@@ -77,7 +77,7 @@ export function SignupNotificationsScreen() {
     if (isReturningUser) {
       navigation.getParent()?.goBack();
     } else {
-      navigation.navigate(SIGNUP_PATREON_SCREEN);
+      navigation.navigate(SIGNUP_PATREON_SCREEN, { context: 'signup' });
     }
   };
 
