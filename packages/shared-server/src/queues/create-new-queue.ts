@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import { createQueue, QUEUE_NAMES } from "./utils.js";
+import { createQueue, type QUEUE_NAMES, isValidQueueName } from "./utils.js";
 import { fileURLToPath } from 'url';
 
 import path from 'path';
@@ -15,8 +15,8 @@ async function run(){
 
   if (!queueName) {
     throw new Error("Must pass in a queue name");
-  }else if (!(queueName in QUEUE_NAMES)) {
-    throw new Error("Invalid queue name");
+  } else if (!isValidQueueName(queueName)) {
+    throw new Error(`Invalid queue name: ${queueName}`);
   }
 
   const queueNameEnum = queueName as QUEUE_NAMES;

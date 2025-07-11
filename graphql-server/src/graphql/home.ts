@@ -79,8 +79,8 @@ getCuratedLists(
 
 const HomeScreenQueries: QueryResolvers = {
   async getRecentlyAddedComicSeries(root: any, { page = 1, limitPerPage = 10 }, context: GraphQLContext) : Promise<{ id: string; comicSeries: ComicSeriesModel[] | null }> {
-    if (!isNumber(page) || page < 1 || page > 8) { throw new UserInputError('page must be between 1 and 20') }
-    if (!isNumber(limitPerPage) || limitPerPage < 1 || limitPerPage > 25) { throw new UserInputError('limitPerPage must be between 1 and 20') }
+    if (!isNumber(page) || page < 1 || page > 8) { throw new UserInputError('page must be between 1 and 8') }
+    if (!isNumber(limitPerPage) || limitPerPage < 1 || limitPerPage > 25) { throw new UserInputError('limitPerPage must be between 1 and 25') }
 
     const comicSeries = await ComicSeries.getRecentlyAddedComicSeries(page, limitPerPage);
     return {
@@ -90,8 +90,8 @@ const HomeScreenQueries: QueryResolvers = {
   },
 
   async getRecentlyUpdatedComicSeries(root: any, { page = 1, limitPerPage = 10 }, context: GraphQLContext): Promise<{ id: string; comicSeries: ComicSeriesModel[] | null }> {
-    if (!isNumber(page) || page < 1 || page > 8) { throw new UserInputError('page must be between 1 and 20') }
-    if (!isNumber(limitPerPage) || limitPerPage < 1 || limitPerPage > 25) { throw new UserInputError('limitPerPage must be between 1 and 20') }
+    if (!isNumber(page) || page < 1 || page > 8) { throw new UserInputError('page must be between 1 and 8') }
+    if (!isNumber(limitPerPage) || limitPerPage < 1 || limitPerPage > 25) { throw new UserInputError('limitPerPage must be between 1 and 25') }
 
     const comicSeries = await ComicSeries.getRecentlyUpdatedComicSeries(page, limitPerPage);
     return {
@@ -101,8 +101,8 @@ const HomeScreenQueries: QueryResolvers = {
   },
 
   async getMostPopularComicSeries(root: any, { page = 1, limitPerPage = 10 }, context: GraphQLContext): Promise<{ id: string; comicSeries: ComicSeriesModel[] | null }> {
-    if (!isNumber(page) || page < 1 || page > 8) { throw new UserInputError('page must be between 1 and 20') }
-    if (!isNumber(limitPerPage) || limitPerPage < 1 || limitPerPage > 25) { throw new UserInputError('limitPerPage must be between 1 and 20') }
+    if (!isNumber(page) || page < 1 || page > 8) { throw new UserInputError('page must be between 1 and 8') }
+    if (!isNumber(limitPerPage) || limitPerPage < 1 || limitPerPage > 25) { throw new UserInputError('limitPerPage must be between 1 and 25') }
     
     const comicSeries = await ComicSeries.getComicSeriesByUuids(mostPopularComicSeriesUuids);
 
@@ -115,8 +115,8 @@ const HomeScreenQueries: QueryResolvers = {
   },
 
   async getFeaturedComicSeries(root: any, { page = 1, limitPerPage = 10 }, context: GraphQLContext): Promise<{ id: string; comicSeries: ComicSeriesModel[] | null }> {
-    if (!isNumber(page) || page < 1 || page > 8) { throw new UserInputError('page must be between 1 and 20') }
-    if (!isNumber(limitPerPage) || limitPerPage < 1 || limitPerPage > 100) { throw new UserInputError('limitPerPage must be between 1 and 100') }
+    if (!isNumber(page) || page < 1 || page > 8) { throw new UserInputError('page must be between 1 and 8') }
+    if (!isNumber(limitPerPage) || limitPerPage < 1 || limitPerPage > 25) { throw new UserInputError('limitPerPage must be between 1 and 25') }
 
     const comicSeries = await ComicSeries.getComicSeriesByUuids(featuredComicSeriesUuids);
 
@@ -127,8 +127,8 @@ const HomeScreenQueries: QueryResolvers = {
   },
 
   async getCuratedLists(root: any, { page = 1, limitPerPage = 10 }, context: GraphQLContext): Promise<{ id: string; lists: ListModel[] | null }> {
-    if (!isNumber(page) || page < 1 || page > 8) { throw new UserInputError('page must be between 1 and 20') }
-    if (!isNumber(limitPerPage) || limitPerPage < 1 || limitPerPage > 25) { throw new UserInputError('limitPerPage must be between 1 and 20') }
+    if (!isNumber(page) || page < 1 || page > 8) { throw new UserInputError('page must be between 1 and 8') }
+    if (!isNumber(limitPerPage) || limitPerPage < 1 || limitPerPage > 25) { throw new UserInputError('limitPerPage must be between 1 and 25') }
 
     const curatedLists = [curatedListsData["4"], curatedListsData["2"], curatedListsData["3"], curatedListsData["8"], curatedListsData["10"], curatedListsData["5"], curatedListsData["6"], curatedListsData["9"], curatedListsData["7"] ].filter((list): list is ListModel => list !== undefined);
     const shuffledCuratedLists = shuffle(curatedLists);

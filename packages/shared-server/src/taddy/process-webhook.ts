@@ -1,6 +1,7 @@
 import { ComicSeries, ComicIssue, Creator, CreatorContent } from '../models/index.js';
 import { purgeCacheOnCdn, purgeMultipleCacheOnCdn } from '../cache/index.js'
 import { getMultipleHeightAndWidths } from '../utils/sharp.js';
+import { sendMessage } from '../queues/utils.js';
 
 export type TaddyWebhook = {
   uuid: string;
@@ -133,8 +134,13 @@ async function processComicIssueWebhook(body: TaddyWebhook) {
         purgeCacheOnCdn({ type: 'recentlyUpdated' }),
       ])
 
-      // push notification
-      await sendPushNotification(taddyType, action, data);
+      // add push notification to queue
+      await sendMessage('INKVERSE_HIGH_PRIORITY', {
+        type: 'SEND_PUSH_NOTIFICATION',
+        pushNotificationType: 'NEW_EPISODE_RELEASE', 
+        issueUuid: comicissue.uuid,
+        seriesUuid: comicissue.seriesUuid,
+      });
 
       return;
     }
@@ -257,9 +263,6 @@ async function processCreatorContentWebhook(body: TaddyWebhook): Promise<void> {
         purgeCacheOnCdn({ type: 'creatorcontent', id: creatorcontent.uuid }),
       ])
       
-      // push notification
-      await sendPushNotification(taddyType, action, data);
-
       return;
     }
     case 'updated': {
@@ -303,20 +306,4 @@ async function processCreatorContentWebhook(body: TaddyWebhook): Promise<void> {
     default:
       throw new Error('processCreatorContentWebhook - Invalid action');
   }
-}
-
-async function sendPushNotification(taddyType: TaddyWebhookType, action: TaddyWebhookAction, data: Record<string, any>) {
-  // const source = 'webhook'
-  // const pushNotificationData = {
-  //   source,
-  //   taddyType,
-  //   action,
-  //   data,
-  // }
-
-  // const event = `${source}-${taddyType}-${action}`;
-  // const tokenRows = await Common.getFCMTokensForEvent(event, data);
-  // const fcmTokens = tokenRows.map(token => token.fcmToken)
-
-  // await fcmSendMulticast({ fcmTokens, source, data: pushNotificationData });
 }

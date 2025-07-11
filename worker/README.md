@@ -75,3 +75,7 @@ yarn run migrate:rollback
 ### Pre-download comic story height and width
 ===============
 yarn run pre-download-comic-stories-height-and-width
+
+### Send push notification
+===============
+yarn run mock-push-notification '{"pushNotificationType": "NEW_EPISODE_RELEASED", "seriesUuid": "abc123", "issueUuid": "def456"}'

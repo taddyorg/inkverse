@@ -1,6 +1,6 @@
 import express, { Router, type NextFunction, type Request, type Response } from 'express';
 import { getSafeError } from '@inkverse/shared-server/utils/errors';
-import { QUEUE_NAMES, sendMessage, INKVERSE_HIGH_PRIORITY_TYPE } from '@inkverse/shared-server/queues/utils';
+import { sendMessage } from '@inkverse/shared-server/queues/utils';
 
 const router = Router();
 
@@ -24,11 +24,11 @@ router.post('/process-taddy-webhook', async (req: Request, res: Response, next: 
 
       const body = {
         ...req.body,
-        type: INKVERSE_HIGH_PRIORITY_TYPE.PROCESS_TADDY_WEBHOOK
+        type: 'PROCESS_TADDY_WEBHOOK'
       };
 
       //send to sqs
-      await sendMessage(QUEUE_NAMES.INKVERSE_HIGH_PRIORITY, body);
+      await sendMessage('INKVERSE_HIGH_PRIORITY', body);
 
       res.status(200).send('OK')
     } catch(error) {

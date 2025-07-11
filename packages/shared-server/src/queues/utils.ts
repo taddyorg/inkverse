@@ -2,6 +2,7 @@ import { ListQueuesCommand, CreateQueueCommand, ReceiveMessageCommand, DeleteMes
 import { sqsClient } from "./sqs-client.js";
 import { uniqBy } from "lodash-es";
 import { processWebhook, type TaddyWebhook } from "../taddy/process-webhook.js";
+import { sendPushNotification, type SendPushNotificationQueueMessage } from "../messaging/push-notifications/index.js";
 
 import path from 'path';
 import { fileURLToPath } from "url";
@@ -12,13 +13,17 @@ const __dirname = path.dirname(__filename);
 const envPath = path.resolve(__dirname, '..', '..', '.env');
 dotenv.config({ path: envPath });
 
-export enum QUEUE_NAMES {
-  INKVERSE_HIGH_PRIORITY = "INKVERSE_HIGH_PRIORITY",
+export const VALID_QUEUE_NAMES = ['INKVERSE_HIGH_PRIORITY'] as const;
+
+export type QUEUE_NAMES = typeof VALID_QUEUE_NAMES[number];
+
+export function isValidQueueName(name: string): name is QUEUE_NAMES {
+  return VALID_QUEUE_NAMES.includes(name as QUEUE_NAMES);
 }
 
-export enum INKVERSE_HIGH_PRIORITY_TYPE {
-  PROCESS_TADDY_WEBHOOK = "PROCESS_TADDY_WEBHOOK",
-}
+export type INKVERSE_HIGH_PRIORITY_TYPE = 
+  'PROCESS_TADDY_WEBHOOK' |
+  'SEND_PUSH_NOTIFICATION';
 
 export function getQueueUrl(queueName: QUEUE_NAMES): string {
   if (!queueName) { throw new Error("Need to pass in a queue name")}
@@ -55,10 +60,13 @@ export async function createQueue(queueName: QUEUE_NAMES): Promise<string | unde
 
 async function doWork(queueName: QUEUE_NAMES, doc: any, inputArgs?: any, isDebugMode?: boolean, shouldDeleteMessages?: boolean): Promise<void> {
   switch (queueName) {
-    case QUEUE_NAMES.INKVERSE_HIGH_PRIORITY:
+    case 'INKVERSE_HIGH_PRIORITY':
       switch (doc.type) {
-        case INKVERSE_HIGH_PRIORITY_TYPE.PROCESS_TADDY_WEBHOOK:
+        case 'PROCESS_TADDY_WEBHOOK':
           await processWebhook(doc as TaddyWebhook);
+          return;
+        case 'SEND_PUSH_NOTIFICATION':
+          await sendPushNotification(doc as SendPushNotificationQueueMessage);
           return;
         default:
           throw new Error(`INKVERSE_HIGH_PRIORITY ERROR - Unhandled QUEUE_ACTION_TYPES case: ${doc.type}`);

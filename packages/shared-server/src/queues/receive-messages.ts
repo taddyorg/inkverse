@@ -1,4 +1,4 @@
-import { QUEUE_NAMES, receiveAndDeleteMessages } from "./utils.js";
+import { isValidQueueName, type QUEUE_NAMES, receiveAndDeleteMessages } from "./utils.js";
 
 let shouldLoop = true;
 
@@ -14,7 +14,7 @@ async function run(){
 
   if(!queueNameString){
     throw new Error("Must pass in a queue name")
-  }else if (!(queueNameString in QUEUE_NAMES)){
+  } else if (!isValidQueueName(queueNameString)) {
     throw new Error(`QueueName: ${queueNameString} is not a valid queue name`)
   }
 
