@@ -210,13 +210,14 @@ export async function dispatchLoginWithGoogle(
 interface DispatchLoginWithAppleParams {
   baseUrl: string;
   idToken: string;
+  source: 'web' | 'ios';
   storageFunctions?: StorageFunctions;
   includeCredentials?: boolean; // For web - to receive Set-Cookie headers
   onSuccessFunction?: () => void;
 }
 
 export async function dispatchLoginWithApple(
-  { baseUrl, idToken, storageFunctions, includeCredentials = false, onSuccessFunction }: DispatchLoginWithAppleParams,
+  { baseUrl, idToken, source, storageFunctions, includeCredentials = false, onSuccessFunction }: DispatchLoginWithAppleParams,
   dispatch?: React.Dispatch<AuthAction>
 ): Promise<void> {
   if (dispatch) dispatch({ type: AuthActionType.AUTH_START_PROVIDER, payload: AuthProvider.APPLE });
@@ -224,7 +225,7 @@ export async function dispatchLoginWithApple(
   try {
     const response = await axios.post(
       `${baseUrl}/login-with-apple`, 
-      { id_token: idToken },
+      { id_token: idToken, source },
       { withCredentials: includeCredentials }
     );
 

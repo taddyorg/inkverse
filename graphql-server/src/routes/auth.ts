@@ -296,23 +296,23 @@ router.post('/login-with-google', async (req: Request, res: Response) => {
 // Apple Sign-In Callback
 router.post('/login-with-apple', async (req: Request, res: Response) => {
   try {
-    const { id_token } = req.body;
+    const { id_token, source = 'web' } = req.body;
     
     if (!id_token) {
       return res.status(400).json({ error: 'ID token is required' });
     }
 
-    const APPLE_CLIENT_ID = process.env.APPLE_CLIENT_ID;
+    const APPLE_CLIENT_ID = process.env.APPLE_CLIENT_ID; // For iOS app
+    const APPLE_SERVICE_ID = process.env.APPLE_SERVICE_ID; // For web
     
-    if (!APPLE_CLIENT_ID) {
-      return res.status(500).json({ error: 'Server configuration error: Missing Apple Client ID' });
+    if (!APPLE_CLIENT_ID && !APPLE_SERVICE_ID) {
+      return res.status(500).json({ error: 'Server configuration error: Missing Apple Client ID or Service ID' });
     }
 
-    // Verify the Apple ID token
-    // This will fetch Apple's public keys and verify the token signature
-    const appleIdTokenClaims = await AppleSignin.verifyIdToken(id_token, {
-      audience: APPLE_CLIENT_ID, // Client ID - validation
-    });
+    // Verify the Apple ID token with the appropriate audience based on source
+    const appleIdTokenClaims = source === 'web' 
+    ? await AppleSignin.verifyIdToken(id_token, { audience: APPLE_SERVICE_ID })
+    : await AppleSignin.verifyIdToken(id_token, { audience: APPLE_CLIENT_ID });
 
     // Extract user information from verified token
     const appleUserId = appleIdTokenClaims.sub; // Apple user ID

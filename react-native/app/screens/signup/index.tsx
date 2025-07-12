@@ -145,6 +145,7 @@ export function SignupScreen() {
           {
             baseUrl: config.AUTH_URL,
             idToken: credential.identityToken,
+            source: 'ios',
             storageFunctions: mobileStorageFunctions,
             onSuccessFunction: onTokenSuccessfullyReceived
           }, 

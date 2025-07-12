@@ -249,6 +249,7 @@ export function SignupModal({ isOpen, onClose, hideComponent = true, onAuthSucce
         { 
           baseUrl: config.AUTH_URL, 
           idToken: response.authorization.id_token,
+          source: 'web',
           storageFunctions: webStorageFunctions,
           includeCredentials: true,
           onSuccessFunction: onTokenSuccessfullyReceived
@@ -264,7 +265,7 @@ export function SignupModal({ isOpen, onClose, hideComponent = true, onAuthSucce
   };
 
   const handleAppleLoginError = (error: any) => {
-    dispatch({ type: AuthActionType.AUTH_ERROR, payload: 'Apple sign-in was unsuccessful' });
+    console.log('handleAppleLoginError Apple sign-in was unsuccessful');
   };
 
   if (!isOpen || !hideComponent) return null;
@@ -345,6 +346,7 @@ export function SignupModal({ isOpen, onClose, hideComponent = true, onAuthSucce
                       scope: 'email',
                       redirectURI: config.APPLE_REDIRECT_URI,
                       nonce: Math.random().toString(36).substring(2, 10),
+                      usePopup: true,
                     }}
                     uiType="light"
                     onSuccess={handleAppleLogin}
