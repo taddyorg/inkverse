@@ -47,6 +47,7 @@ import { WrappedListScreen } from './wrapped-screens/wrappedlist';
 import { WrappedTaggedScreen } from './wrapped-screens/wrappedtagged';
 import { WrappedProfileScreen } from './wrapped-screens/wrappedprofile';
 import { WrappedHostingProviderScreen } from './wrapped-screens/wrappedhostingprovider';
+import { NotificationProvider } from '../components/providers/NotificationProvider';
 
 import { 
   HOME_TAB, 
@@ -547,89 +548,91 @@ function App() {
   }
 
   return (
-    <SafeAreaProvider>
-      <AppLoaderProvider>
-        <AuthRefreshProvider>
-          <NavigationContainer 
-            ref={navigationRef}
-            linking={linking}
-          >
-            <PostHogProvider 
-              apiKey={config.POST_HOG_INFO.API_KEY}
-              options={{
-                host: config.POST_HOG_INFO.HOST_URL,
-                // enableSessionReplay: true,
-                // sessionReplayConfig: {
-                //   maskAllTextInputs: true,
-                //   maskAllImages: true,
-                //   captureLog: true,
-                //   captureNetworkTelemetry: true,
-                //   androidDebouncerDelayMs: 500,
-                //   iOSdebouncerDelayMs: 1000,
-                // },
-              }}
+      <SafeAreaProvider>
+        <AppLoaderProvider>
+          <AuthRefreshProvider>
+            <NavigationContainer 
+              ref={navigationRef}
+              linking={linking}
             >
-          <Stack.Navigator screenOptions={{ headerShown: false }}>
-            <Stack.Screen 
-              name={MAIN_SCREEN} 
-              component={RootStack} 
-            />
-            <Stack.Screen 
-              name={BLOG_SCREEN} 
-              component={BlogScreen}
-              options={modalScreenOptions}
-            />            
-            <Stack.Screen 
-              name={REPORTS_SCREEN} 
-              component={ReportsScreen}
-              options={modalScreenOptions}
-            />
-            <Stack.Screen 
-              name={WRAPPED_COMICSERIES_SCREEN} 
-              component={WrappedComicSeriesScreen}
-              options={modalScreenOptions}
-            />
-            <Stack.Screen 
-              name={WRAPPED_COMICISSUE_SCREEN} 
-              component={WrappedComicIssueScreen}
-              options={modalScreenOptions}
-            />
-            <Stack.Screen 
-              name={WRAPPED_CREATOR_SCREEN} 
-              component={WrappedCreatorScreen}
-              options={modalScreenOptions}
-            />
-            <Stack.Screen 
-              name={WRAPPED_LIST_SCREEN} 
-              component={WrappedListScreen}
-              options={modalScreenOptions}
-            />
-            <Stack.Screen 
-              name={WRAPPED_TAGGED_SCREEN} 
-              component={WrappedTaggedScreen}
-              options={modalScreenOptions}
-            />
-            <Stack.Screen 
-              name={WRAPPED_PROFILE_SCREEN} 
-              component={WrappedProfileScreen}
-              options={modalScreenOptions}
-            />
-            <Stack.Screen 
-              name={WRAPPED_HOSTING_PROVIDER_SCREEN} 
-              component={WrappedHostingProviderScreen}
-              options={modalScreenOptions}
-            />
-            <Stack.Screen 
-              name={SIGNUP_SCREEN} 
-              component={SignupNavigator}
-              options={modalScreenOptionsCannotClose}
-            />
-          </Stack.Navigator>
-        </PostHogProvider>
-      </NavigationContainer>
-      </AuthRefreshProvider>
-    </AppLoaderProvider>
-    </SafeAreaProvider>
+              <PostHogProvider 
+                apiKey={config.POST_HOG_INFO.API_KEY}
+                options={{
+                  host: config.POST_HOG_INFO.HOST_URL,
+                  // enableSessionReplay: true,
+                  // sessionReplayConfig: {
+                  //   maskAllTextInputs: true,
+                  //   maskAllImages: true,
+                  //   captureLog: true,
+                  //   captureNetworkTelemetry: true,
+                  //   androidDebouncerDelayMs: 500,
+                  //   iOSdebouncerDelayMs: 1000,
+                  // },
+                }}
+              >
+              <NotificationProvider>
+              <Stack.Navigator screenOptions={{ headerShown: false }}>
+                <Stack.Screen 
+                  name={MAIN_SCREEN} 
+                  component={RootStack} 
+                />
+              <Stack.Screen 
+                name={BLOG_SCREEN} 
+                component={BlogScreen}
+                options={modalScreenOptions}
+              />            
+              <Stack.Screen 
+                name={REPORTS_SCREEN} 
+                component={ReportsScreen}
+                options={modalScreenOptions}
+              />
+              <Stack.Screen 
+                name={WRAPPED_COMICSERIES_SCREEN} 
+                component={WrappedComicSeriesScreen}
+                options={modalScreenOptions}
+              />
+              <Stack.Screen 
+                name={WRAPPED_COMICISSUE_SCREEN} 
+                component={WrappedComicIssueScreen}
+                options={modalScreenOptions}
+              />
+              <Stack.Screen 
+                name={WRAPPED_CREATOR_SCREEN} 
+                component={WrappedCreatorScreen}
+                options={modalScreenOptions}
+              />
+              <Stack.Screen 
+                name={WRAPPED_LIST_SCREEN} 
+                component={WrappedListScreen}
+                options={modalScreenOptions}
+              />
+              <Stack.Screen 
+                name={WRAPPED_TAGGED_SCREEN} 
+                component={WrappedTaggedScreen}
+                options={modalScreenOptions}
+              />
+              <Stack.Screen 
+                name={WRAPPED_PROFILE_SCREEN} 
+                component={WrappedProfileScreen}
+                options={modalScreenOptions}
+              />
+              <Stack.Screen 
+                name={WRAPPED_HOSTING_PROVIDER_SCREEN} 
+                component={WrappedHostingProviderScreen}
+                options={modalScreenOptions}
+              />
+              <Stack.Screen 
+                name={SIGNUP_SCREEN} 
+                component={SignupNavigator}
+                options={modalScreenOptionsCannotClose}
+              />
+            </Stack.Navigator>
+            </NotificationProvider>
+          </PostHogProvider>
+        </NavigationContainer>
+        </AuthRefreshProvider>
+      </AppLoaderProvider>
+      </SafeAreaProvider>
   );
 }
 

@@ -5,7 +5,7 @@ import config from '@/config';
 import { typePolicies } from '@inkverse/public/apollo';
 import { setContext } from '@apollo/client/link/context';
 import { getAccessToken } from '../auth/user';
-import { setupUserClientEventListeners } from '@inkverse/shared-client/pubsub/cache-listeners';
+import { setupUserClientEventListeners } from '@inkverse/shared-client/pubsub/index';
 
 const cache = new InMemoryCache({ typePolicies });
 
