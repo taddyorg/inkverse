@@ -114,7 +114,7 @@ function getGoogleClientID(source: 'web' | 'ios' | 'android'): string | undefine
     case 'ios':
       return process.env.GOOGLE_CLIENT_ID_IOS;
     case 'android':
-      return process.env.GOOGLE_CLIENT_ID_ANDROID;
+      return process.env.GOOGLE_CLIENT_ID_WEB;
     default:
       throw new Error(`Invalid source: ${source}`);
   }

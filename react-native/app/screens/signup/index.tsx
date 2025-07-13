@@ -97,7 +97,7 @@ export function SignupScreen() {
       } else {
         const { signUpWithGoogle } = require('react-native-credentials-manager');
         const googleCredential = await signUpWithGoogle({
-          serverClientId: config.GOOGLE_CLIENT_ID_ANDROID,
+          serverClientId: config.GOOGLE_CLIENT_ID_WEB,
           autoSelectEnabled: true,
         });
 

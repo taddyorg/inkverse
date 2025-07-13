@@ -89,15 +89,17 @@ const appleAppSiteAssociation = JSON.stringify(appleAppSiteAssociationJSON)
 
 const assetLinksJSON = [
 	{
-		"relation": ["delegate_permission/common.handle_all_urls"],
+		"relation": [
+			"delegate_permission/common.handle_all_urls",
+			"delegate_permission/common.get_login_creds"
+		],
 		"target": {
 			"namespace": "android_app",
 			"package_name": "com.bamtoons",
-			"sha256_cert_fingerprints":
-				[
-					"05:81:98:F2:01:88:46:12:80:EB:86:7F:05:CC:D7:C9:4B:6D:4A:3A:15:AA:0B:9B:6E:18:8C:5C:5D:32:D4:2B",
-					"41:E4:3F:4D:70:13:2E:7A:CE:B3:94:B8:7B:33:A7:CB:62:BE:08:51:F5:4E:D7:3F:15:AF:BA:85:40:5E:C5:74"
-				]
+			"sha256_cert_fingerprints": [
+				"05:81:98:F2:01:88:46:12:80:EB:86:7F:05:CC:D7:C9:4B:6D:4A:3A:15:AA:0B:9B:6E:18:8C:5C:5D:32:D4:2B",
+				"41:E4:3F:4D:70:13:2E:7A:CE:B3:94:B8:7B:33:A7:CB:62:BE:08:51:F5:4E:D7:3F:15:AF:BA:85:40:5E:C5:74"
+			]
 		}
 	}
 ]

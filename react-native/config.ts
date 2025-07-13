@@ -10,6 +10,7 @@ const developmentConfig = {
   },
   "GOOGLE_CLIENT_ID_IOS": "485860487313-mecvs6na5ih575klndmmiu3li1ikjiod.apps.googleusercontent.com",
   "GOOGLE_CLIENT_ID_ANDROID": "485860487313-b76bdd96ftan9j9cb7um50n75ebvhp8k.apps.googleusercontent.com",
+  "GOOGLE_CLIENT_ID_WEB": "485860487313-ditiq1chl9qjbiaemsthun7bbdstu3tq.apps.googleusercontent.com",
   "TADDY_CLIENT_ID":"151",
 }
 
@@ -23,6 +24,7 @@ const developmentConfigButProductionData = {
   },
   "GOOGLE_CLIENT_ID_IOS": "485860487313-mecvs6na5ih575klndmmiu3li1ikjiod.apps.googleusercontent.com",
   "GOOGLE_CLIENT_ID_ANDROID": "485860487313-b76bdd96ftan9j9cb7um50n75ebvhp8k.apps.googleusercontent.com",
+  "GOOGLE_CLIENT_ID_WEB": "485860487313-ditiq1chl9qjbiaemsthun7bbdstu3tq.apps.googleusercontent.com",
   "TADDY_CLIENT_ID":"151",
 }
 
@@ -36,6 +38,7 @@ const productionConfig = {
   },
   "GOOGLE_CLIENT_ID_IOS": "485860487313-mecvs6na5ih575klndmmiu3li1ikjiod.apps.googleusercontent.com",
   "GOOGLE_CLIENT_ID_ANDROID": "485860487313-b76bdd96ftan9j9cb7um50n75ebvhp8k.apps.googleusercontent.com",
+  "GOOGLE_CLIENT_ID_WEB": "485860487313-ditiq1chl9qjbiaemsthun7bbdstu3tq.apps.googleusercontent.com",
   "TADDY_CLIENT_ID":"151",
 }
 
