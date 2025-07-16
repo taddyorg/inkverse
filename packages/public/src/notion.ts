@@ -15,6 +15,7 @@ export const NotionPage = {
   APP_UPDATES: { id: "5c29ee8546e142b1b72de04eae36960d", path: "/updates" },
   APP_UPDATES_NEW_APP_LAUNCHED: { id: "1b9332bebe3f80cd8437e457f71ebbf0", path: "/updates/new-app-launched" },
   APP_UPDATES_ROADMAP: { id: "1bc332bebe3f80ec8bc2d14b3ff5ceec", path: "/updates/our-roadmap" },
+  APP_UPDATES_INKVERSE2DOT0: { id: "230332bebe3f8055bd1ac78b311867f5", path: "/updates/inkverse-2dot0" },
   BRAND_KIT: { id: "a900cc4737e045c7aec5312df1ce741a", path: "/brand-kit" },
   ABOUT_US: { id: "334d2f916f2948d5b9e470dc0473527b", path: "/about-us" },
   OPEN_SOURCE: { id: "12b332bebe3f80f9a197eb8e60525e72", path: "/open-source" },
@@ -149,7 +150,7 @@ export const additionalInfoForNotionId: { [key: string]: BlogPost } = {
   },
   [NotionPage.BEST_WEBTOONS_OF_ALL_TIME.path]: {
     priority: '0.9',
-    title: "The 20 Best Webtoons",
+    title: "The 20 Best Webtoons of All Time, Ranked",
     description: "There are so many webtoons that sometimes it can be hard to pick what to read next. So, we've rounded up 20 of the most popular webtoons to make your choice easier!",
     url: 'https://inkverse.co/blog/best-webtoons-of-all-time',
     imageURL: 'https://ink0.inkverse.co/blog/best-webtoons-images/best-webtoons-banner.webp',
@@ -174,6 +175,26 @@ export const additionalInfoForNotionId: { [key: string]: BlogPost } = {
     title: "New Inkverse app has been launched!",
     description: "We're excited to announce that the new iOS, Android and Web Inkverse app has been launched!",
     url: 'https://inkverse.co/updates/new-app-launched',
+    author: {
+      name: 'Daniel Mathews',
+      url: 'https://dmathewwws.com',
+    }
+  },
+  [NotionPage.APP_UPDATES_INKVERSE2DOT0.path]: {
+    priority: '0.8',
+    title: "Inkverse 2.0 has been launched!",
+    description: "We're excited to announce that the new Inkverse app has been launched!",
+    url: 'https://inkverse.co/updates/inkverse-2dot0',
+    author: {
+      name: 'Daniel Mathews',
+      url: 'https://dmathewwws.com',
+    }
+  },
+  [NotionPage.APP_UPDATES_ROADMAP.path]: {
+    priority: '0.8',
+    title: "Our roadmap for the Inkverse app",
+    description: "We've been working on the Inkverse app and we wanted to share a list of all the updates we've made to the app so far!",
+    url: 'https://inkverse.co/updates/our-roadmap',
     author: {
       name: 'Daniel Mathews',
       url: 'https://dmathewwws.com',

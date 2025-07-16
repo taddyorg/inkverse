@@ -6,6 +6,6 @@ export interface NewsItem {
 
 // Define inkverseNewsItems with example data
 export const inkverseNewsItems: NewsItem[] = [
-  { title: 'We just launched the new Inkverse apps! 🎉', url: 'https://inkverse.co/updates/new-app-launched' },
+  { title: 'Inkverse 2.0 is here! 🎉', url: 'https://inkverse.co/updates/inkverse-2dot0' },
   { title: 'Check out our upcoming Roadmap 🚗🚗🚗', url: 'https://inkverse.co/updates/our-roadmap' },
 ];

@@ -1,45 +1,204 @@
-# Inkverse setup instructions
+# 🚀 Inkverse Setup Instructions
 
-Inkverse is a comic reading platform.
+**Inkverse** is a fun comic reading app built using Typescript, React, React Native, Node.js, and GraphQL.
 
-## Monorepo Structure
+## 📋 Table of Contents
 
-- `/website`: React web frontend
-- `/react-native`: React Native mobile app
-- `/graphql-server`: Node.js GraphQL backend
-- `/worker`: Background job processor
-- `/cloud`: Cloudflare edge services
-- `/packages`: Internal packages (shared utilities and types)
-  - `packages/shared-client`: Shared client code (Frontend shared utilities)
-  - `packages/shared-server`: Shared server code (Backend shared utilities)
-  - `packages/public`: Shared constants and types
+- [🏗️ Monorepo Structure](#️-monorepo-structure)
+- [🏛️ Architecture](#️-architecture)
+- [⚡ Quick Setup (Website)](#-quick-setup-website)
+- [📱 Quick Setup (React Native)](#-quick-setup-react-native)
+- [🛠️ Full Local Setup](#️-full-local-setup)
+- [💡 Helpful Commands](#-helpful-commands)
+- [📚 Additional Documentation](#-additional-documentation)
 
-## Steps to Setup
-
-### 0. Basic setups
-  - Have or Install node >= 20.
-  - Install yarn (npm install -g yarn)
-  - Download & install Docker for Mac: https://store.docker.com/editions/community/docker-ce-desktop-mac
-
-### 1. Create a .env file
-
-- Copy the .env file from `packages/shared-server/.env.example` to `packages/shared-server/.env`. You will fill in these values in the next couple of steps.
-
-### 2. Setup databases
-
-Inkverse's backend requires the following databases:
-- Postgres (main database)
-
-#### To setup Postgres
-
-Make up a USERNAME, PASSWORD, and DB-NAME for your local database. Pass these in as environment variables to the command below.
+## 🏗️ Monorepo Structure
 
 ```
-docker run --name inkverse-postgres -e POSTGRES_USER=USERNAME -e POSTGRES_PASSWORD=PASSWORD -e POSTGRES_DB=DB-NAME -d  -v ~/docker-vms/inkverse-postgresdata:/var/lib/postgresql/data -p "5432:5432" postgres:13.16
+website/          # React web frontend
+react-native/     # React Native mobile app
+graphql-server/   # Node.js GraphQL backend
+worker/           # To run background jobs
+cloud/            # Cloudflare edge services
+packages/         # Internal packages
+  ├── shared-client/   # Frontend shared utilities
+  ├── shared-server/   # Backend shared utilities
+  └── public/         # Shared constants and types
 ```
 
-Update the `.env` file in the following format:
+## 🏛️ Architecture
+
+![Inkverse Monorepo Structure](./docs/inkverse-open-source-architecture.webp)
+
+---
+
+## ⚡ Quick Setup (Website)
+
+> Setup the website by pointing it to Inkverse's production API for quick setup and without needing to setup a local server.
+
+### Prerequisites
+
+- **Node.js** >= 20
+- **Yarn** package manager
+
+### Steps
+
+#### 1. Install Dependencies
+
+```bash
+# Install all project dependencies
+yarn install
 ```
+
+#### 2. Configure Custom Localhost
+
+We use `inkverse.test` instead of `localhost` to avoid cookie conflicts between projects. Add to your hosts file (`sudo vim /etc/hosts` on Mac/Linux):
+
+```hosts
+127.0.0.1               localhost
+127.0.0.1               inkverse.test
+```
+
+#### 3. Configure for Production API
+
+In `website/config.ts`, change:
+
+```typescript
+// Change this line:
+export const config = developmentConfig;
+
+// To this:
+export const config = developmentConfigButProductionData;
+```
+
+This will get the website to use Inkverse's production API.
+
+#### 4. Build and Watch for changes in internal packages
+
+```bash
+# Start watching internal packages
+yarn watch:internal-packages
+```
+
+#### 5. Start the Website
+
+```bash
+cd website
+yarn dev
+```
+
+🎉 **Success!** Visit [inkverse.test:8082](http://inkverse.test:8082) to see the app.
+
+#### 6. Authentication Note
+
+> ⚠️ **Note**: Google/Apple/Email signup don't work in local development due to CORS restrictions. Use the React Native app for production account login.
+
+---
+
+## 📱 Quick Setup (React Native)
+
+> Setup the iOS/Android apps by pointing it to Inkverse's production API for quick setup and without needing to setup a local server.
+
+### Prerequisites
+
+- **Node.js** >= 20
+- **Yarn** package manager
+
+### Steps
+
+#### 1. Install Dependencies
+
+```bash
+yarn install
+```
+
+#### 2. Configure Custom Localhost
+
+We use `inkverse.test` instead of `localhost` to avoid cookie conflicts between projects. Add to your hosts file (`sudo vim /etc/hosts` on Mac/Linux):
+
+```hosts
+127.0.0.1               localhost
+127.0.0.1               inkverse.test
+```
+
+#### 3. Configure for Production API
+
+In `react-native/config.ts`, change:
+```typescript
+// Change this line:
+export const config = developmentConfig;
+
+// To this:
+export const config = developmentConfigButProductionData;
+```
+
+This will get the React Native app to use Inkverse's production API.
+
+#### 4. Build and Watch for changes in internal packages
+
+```bash
+# Start watching internal packages
+yarn watch:internal-packages
+```
+
+#### 5. Start the App
+
+```bash
+cd react-native
+yarn dev
+```
+
+- Press `i` for iOS Simulator
+- Press `a` for Android Emulator
+
+#### 6. Login with Production Account
+
+> ⚠️ **Note**: Google/Apple signup don't work in local development. Use email login:
+
+1. Go to Profile → Sign Up → Continue with email
+2. Check your email for the login link
+3. When you return to the app, paste the login link in the text input
+
+![Login with email](./docs/login-with-email.png)
+
+---
+
+## 🛠️ Full Local Setup
+
+> **Complete Setup**: For building new features or fixing complex bugs, you'll need to setup the backend as well as the website and mobile apps. Follow the steps below to setup the backend locally.
+
+### Prerequisites
+
+- **Node.js** >= 20
+- **Yarn** package manager
+- **Docker Desktop** ([Download here](https://store.docker.com/editions/community/docker-ce-desktop-mac))
+
+### Steps
+
+#### 1. Environment Configuration
+
+Copy the environment template:
+```bash
+cp packages/shared-server/.env.example packages/shared-server/.env
+```
+
+#### 2. Database Setup (PostgreSQL)
+
+Create and start PostgreSQL container:
+```bash
+# Replace USERNAME, PASSWORD, and DB-NAME with your preferred values
+docker run --name inkverse-postgres \
+  -e POSTGRES_USER=USERNAME \
+  -e POSTGRES_PASSWORD=PASSWORD \
+  -e POSTGRES_DB=DB-NAME \
+  -d \
+  -v ~/docker-vms/inkverse-postgresdata:/var/lib/postgresql/data \
+  -p "5432:5432" \
+  postgres:13.16
+```
+
+Update `.env` file:
+```env
 DATABASE_USERNAME=USERNAME
 DATABASE_PASSWORD=PASSWORD
 DATABASE_NAME=DB-NAME
@@ -47,143 +206,132 @@ DATABASE_ENDPOINT=localhost
 DATABASE_PORT=5432
 ```
 
-#### FYI - Docker Coles notes:
-Docker has 2 main components: images & containers. A image is a definition of what you want to create and a container is an instance of the image.
+#### 3. Message Queue Setup (AWS SQS Local)
 
-You may have noticed a couple of flags in the command above:
-
-**-e**: pass a value as an environment variable when you create the container.  
-**-v**: Volume mounting. ie) Maps a directory in the container to a local directory of your choosing. This means whenever you restart your computer, you dont lose all the data you have created previously as the data keeps persisted in a folder on your local disk even if the container dies.
-**-p**: Maps the port in your container to your localhost port.
-
-Some helpful docker commands:
-
-**docker ps -a** - Lists all containers, even stopped containers  
-**docker run** - You only need to run the `docker run` command once to create a container. After you have run the docker run command, you can just start/stop the containers going forward.
-**docker start <containerId>** - Starts a container, once you have it setup your containers you can start and stop them ex) when your computer restarts.  
-**docker stop <containerId>** - Stops a container
-
-### 3. Setup AWS SQS Queues locally
-
-```
+```bash
 docker run -d --name inkverse-queues -p 4102:4100 admiralpiett/goaws
 ```
 
-This is a local message queue system that mimics AWS SQS queues. We use queues to handle sending emails, push notifications, etc.
+#### 4. JWT Key Generation
 
-Everytime you restart the docker container (or restart your laptop) you will have to create the queues again and all messages in your queues will be deleted.
+Generate RSA key pair for JWT tokens:
 
-In Step 7 below, we will finalize setting up the queue by adding `us-east-1.goaws.com` to your hosts file.
-
-### 4. Setup JWT keys
-
-We need to generate a private & public key for signing & verifying JWT tokens. We use JWT tokens for user authentication. 
-
-- Run the following code to create a `jwt.key` file (Don't add passphrase when asked). This will create a private key that is used for signing JWT tokens.
-
-```
+```bash
+# Generate private key
 ssh-keygen -t rsa -b 4096 -m PEM -f jwt.key
-```
 
-- Run the following code to generate a `jwt.key.pub` file. This will create a public key for verifying JWT tokens.
-
-```
+# Generate public key
 openssl rsa -in jwt.key -pubout -outform PEM -out jwt.key.pub
 ```
 
-Update the `.env` file with the following values (you will need to remove newlines and replace them with \n so that the whole key is on one line):
-
+Update `.env` file with the keys (remove newlines, replace with `\n`):
+```env
+PUBLIC_JWT=your_public_key_here
+PRIVATE_JWT=your_private_key_here
 ```
-PUBLIC_JWT=
-PRIVATE_JWT=
+
+Clean up key files:
+```bash
+rm jwt.key jwt.key.pub
 ```
 
-You can delete the `jwt.key` and `jwt.key.pub` files (after you've copied them to the `.env` file).
+#### 5. Install Dependencies
 
-### 5. Install packages for this project
-
-```
+```bash
 yarn install
 ```
 
-### 6. Run database migrations
+#### 6. Database Migration
 
-```
+```bash
 yarn run migrate
 ```
 
-### 7. Localhost vs inkverse.test
+#### 7. Configure Hosts
 
-We use a custom localhost (inkverse.test) vs localhost, the benefit is that you dont mix up cookies and other brower data between different localhost projects.
-
-To set it up, add this to your hosts file, by `sudo vim /etc/hosts` on Mac/Linux.
-
-```
+Add to your hosts file (`sudo vim /etc/hosts`):
+```hosts
 127.0.0.1               localhost
-127.0.0.1               inkverse.test // Custom localhost for Inkverse
-127.0.0.1               us-east-1.goaws.com // Used by inkverse-queues (from Step 3)
+127.0.0.1               inkverse.test
+127.0.0.1               us-east-1.goaws.com # For AWS SQS Local
 ```
 
-Note: We added `inkverse.test` and `us-east-1.goaws.com` to the hosts file.
+#### 8. Start Internal Packages
 
-### 8. Run Inkverse!
-
-To run the backend server, run the following command:
-
+```bash
+# Keep this running in a separate terminal
+yarn watch:internal-packages
 ```
+
+#### 9. Start the Backend
+
+```bash
 cd graphql-server
 yarn run dev
 ```
 
-To run the website, run the following command:
-
-```
-cd website
-yarn run dev
-```
-
-To run the iOS app, or Android app, run the following command:
-
-```
-cd react-native
-yarn run ios
-```
-
-```
-cd react-native
-yarn run android
-```
-
-
-Inkverse is now running on [inkverse.test:3010](http://inkverse.test:3010/).
+🎉 **Success!** Inkverse Server is running on [inkverse.test:3010](http://inkverse.test:3010/).
 
 ---
 
-## Helpful commands
+## 💡 Helpful Commands
 
-If you ever need to start the docker containers used for Inkverse (after a computer restart)
+### 🐳 Docker Management
 
-```
+```bash
+# Start all containers
 docker start inkverse-postgres && docker start inkverse-queues
-```
 
-If you ever need to stop the containers
-
-```
+# Stop all containers
 docker stop inkverse-postgres && docker stop inkverse-queues
+
+# View running containers
+docker ps -a
 ```
 
-### Update GraphQL Types
+### 🔧 Development Commands
 
-If you make changes to the GraphQL schema, run the following command to generate types.
+```bash
+# Watch and rebuild internal packages
+yarn watch:internal-packages
 
+# Start backend server
+cd graphql-server && yarn run dev
+
+# Start website
+cd website && yarn run dev
+
+# Start React Native (Expo)
+cd react-native && yarn dev
+
+# Start React Native (Development Build)
+cd react-native && yarn run ios     # iOS
+cd react-native && yarn run android # Android
 ```
+
+### 📊 Database Commands
+
+```bash
+# Run migrations
+yarn run migrate
+
+# Rollback last migration
+yarn run migrate:rollback
+```
+
+### 🔄 GraphQL Commands
+
+```bash
+# Generate types after schema changes
 yarn run graphql-codegen
 ```
 
-### Docs
+---
 
-Documentation for the project are in the [docs](./docs) folder. 
+## 📚 Additional Documentation
 
-- [CLAUDE.md](./CLAUDE.md) - Claude AI instructions for working with the project.
-- [architecture.md](./docs/architecture.md) - High-level overview of the application.
+| Document | Description |
+|----------|-------------|
+| [CLAUDE.md](./CLAUDE.md) | Claude AI instructions for working with the project |
+| [Architecture](./docs/architecture.md) | High-level overview of the application |
+| [Docs Folder](./docs) | Complete project documentation |
