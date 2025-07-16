@@ -4,13 +4,13 @@
 
 ## 📋 Table of Contents
 
-- [🏗️ Monorepo Structure](#️-monorepo-structure)
-- [🏛️ Architecture](#️-architecture)
-- [⚡ Quick Setup (Website)](#-quick-setup-website)
-- [📱 Quick Setup (React Native)](#-quick-setup-react-native)
-- [🛠️ Full Local Setup](#️-full-local-setup)
-- [💡 Helpful Commands](#-helpful-commands)
-- [📚 Additional Documentation](#-additional-documentation)
+- [Monorepo Structure](#-monorepo-structure)
+- [Architecture](#-architecture)
+- [Quick Setup (Website)](#-quick-setup-website)
+- [Quick Setup (React Native)](#-quick-setup-react-native)
+- [Full Local Setup](#-full-local-setup)
+- [Helpful Commands](#-helpful-commands)
+- [Additional Docs](#-additional-docs)
 
 ## 🏗️ Monorepo Structure
 
@@ -328,7 +328,7 @@ yarn run graphql-codegen
 
 ---
 
-## 📚 Additional Documentation
+## 📚 Additional Docs
 
 | Document | Description |
 |----------|-------------|
