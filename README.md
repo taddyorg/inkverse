@@ -28,7 +28,7 @@ packages/         # Internal packages
 
 ## 🏛️ Architecture
 
-![Inkverse Monorepo Structure](./docs/inkverse-open-source-architecture.webp)
+![Inkverse Monorepo Structure](./docs/images/inkverse-open-source-architecture.webp)
 
 ---
 
@@ -159,7 +159,7 @@ yarn dev
 2. Check your email for the login link
 3. When you return to the app, paste the login link in the text input
 
-![Login with email](./docs/login-with-email.png)
+![Login with email](./docs/images/login-with-email.png)
 
 ---
 
