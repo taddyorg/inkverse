@@ -554,13 +554,6 @@ export type Documentation = {
   text?: Maybe<Scalars['String']['output']>;
 };
 
-/** Response type for OAuth code exchange */
-export type ExchangeHostingProviderOAuthCodeResponse = {
-  __typename?: 'ExchangeHostingProviderOAuthCodeResponse';
-  error?: Maybe<Scalars['String']['output']>;
-  success: Scalars['Boolean']['output'];
-};
-
 /**  Genres for different media types. Follows format: TYPE_GENRE_SUBGENRE  */
 export enum Genre {
   COMICSERIES_ACTION = 'COMICSERIES_ACTION',
@@ -883,7 +876,7 @@ export type Mutation = {
   /** Enable notifications for a comic series */
   enableNotificationsForSeries: UserComicSeries;
   /** Exchange OAuth authorization code for tokens */
-  exchangeHostingProviderOAuthCode: ExchangeHostingProviderOAuthCodeResponse;
+  exchangeHostingProviderOAuthCode: Scalars['Boolean']['output'];
   /** Fetch all hosting provider tokens for the user */
   fetchAllHostingProviderTokens?: Maybe<Array<Scalars['String']['output']>>;
   /** Fetch user's OAuth tokens for a specific hosting provider */
@@ -1296,7 +1289,7 @@ export type ExchangeHostingProviderOAuthCodeMutationVariables = Exact<{
 }>;
 
 
-export type ExchangeHostingProviderOAuthCodeMutation = { __typename?: 'Mutation', exchangeHostingProviderOAuthCode: { __typename?: 'ExchangeHostingProviderOAuthCodeResponse', success: boolean, error?: string | null } };
+export type ExchangeHostingProviderOAuthCodeMutation = { __typename?: 'Mutation', exchangeHostingProviderOAuthCode: boolean };
 
 export type FetchAllHostingProviderTokensMutationVariables = Exact<{ [key: string]: never; }>;
 
@@ -1645,10 +1638,7 @@ export const ExchangeHostingProviderOAuthCode = gql`
   exchangeHostingProviderOAuthCode(
     hostingProviderUuid: $hostingProviderUuid
     code: $code
-  ) {
-    success
-    error
-  }
+  )
 }
     `;
 export const FetchAllHostingProviderTokens = gql`

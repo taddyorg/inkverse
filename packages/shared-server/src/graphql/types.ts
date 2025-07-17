@@ -557,13 +557,6 @@ export type Documentation = {
   text?: Maybe<Scalars['String']['output']>;
 };
 
-/** Response type for OAuth code exchange */
-export type ExchangeHostingProviderOAuthCodeResponse = {
-  __typename?: 'ExchangeHostingProviderOAuthCodeResponse';
-  error?: Maybe<Scalars['String']['output']>;
-  success: Scalars['Boolean']['output'];
-};
-
 /**  Genres for different media types. Follows format: TYPE_GENRE_SUBGENRE  */
 export enum Genre {
   COMICSERIES_ACTION = 'COMICSERIES_ACTION',
@@ -886,7 +879,7 @@ export type Mutation = {
   /** Enable notifications for a comic series */
   enableNotificationsForSeries: UserComicSeries;
   /** Exchange OAuth authorization code for tokens */
-  exchangeHostingProviderOAuthCode: ExchangeHostingProviderOAuthCodeResponse;
+  exchangeHostingProviderOAuthCode: Scalars['Boolean']['output'];
   /** Fetch all hosting provider tokens for the user */
   fetchAllHostingProviderTokens?: Maybe<Array<Scalars['String']['output']>>;
   /** Fetch user's OAuth tokens for a specific hosting provider */
@@ -1347,7 +1340,6 @@ export type ResolversTypes = ResolversObject<{
   CreatorContent: ResolverTypeWrapper<CreatorContentModel>;
   CreatorLinkDetails: ResolverTypeWrapper<CreatorLinkDetails>;
   Documentation: ResolverTypeWrapper<Documentation>;
-  ExchangeHostingProviderOAuthCodeResponse: ResolverTypeWrapper<ExchangeHostingProviderOAuthCodeResponse>;
   Genre: Genre;
   HomeScreenComicSeries: ResolverTypeWrapper<Omit<HomeScreenComicSeries, 'comicSeries'> & { comicSeries?: Maybe<Array<Maybe<ResolversTypes['ComicSeries']>>> }>;
   HomeScreenCuratedList: ResolverTypeWrapper<Omit<HomeScreenCuratedList, 'lists'> & { lists?: Maybe<Array<Maybe<ResolversTypes['List']>>> }>;
@@ -1387,7 +1379,6 @@ export type ResolversParentTypes = ResolversObject<{
   CreatorContent: CreatorContentModel;
   CreatorLinkDetails: CreatorLinkDetails;
   Documentation: Documentation;
-  ExchangeHostingProviderOAuthCodeResponse: ExchangeHostingProviderOAuthCodeResponse;
   HomeScreenComicSeries: Omit<HomeScreenComicSeries, 'comicSeries'> & { comicSeries?: Maybe<Array<Maybe<ResolversParentTypes['ComicSeries']>>> };
   HomeScreenCuratedList: Omit<HomeScreenCuratedList, 'lists'> & { lists?: Maybe<Array<Maybe<ResolversParentTypes['List']>>> };
   ID: Scalars['ID']['output'];
@@ -1539,12 +1530,6 @@ export type DocumentationResolvers<ContextType = any, ParentType extends Resolve
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
-export type ExchangeHostingProviderOAuthCodeResponseResolvers<ContextType = any, ParentType extends ResolversParentTypes['ExchangeHostingProviderOAuthCodeResponse'] = ResolversParentTypes['ExchangeHostingProviderOAuthCodeResponse']> = ResolversObject<{
-  error?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
 export type HomeScreenComicSeriesResolvers<ContextType = any, ParentType extends ResolversParentTypes['HomeScreenComicSeries'] = ResolversParentTypes['HomeScreenComicSeries']> = ResolversObject<{
   comicSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['ComicSeries']>>>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
@@ -1583,7 +1568,7 @@ export type ListResolvers<ContextType = any, ParentType extends ResolversParentT
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
   disableNotificationsForSeries?: Resolver<ResolversTypes['UserComicSeries'], ParentType, ContextType, RequireFields<MutationDisableNotificationsForSeriesArgs, 'seriesUuid'>>;
   enableNotificationsForSeries?: Resolver<ResolversTypes['UserComicSeries'], ParentType, ContextType, RequireFields<MutationEnableNotificationsForSeriesArgs, 'seriesUuid'>>;
-  exchangeHostingProviderOAuthCode?: Resolver<ResolversTypes['ExchangeHostingProviderOAuthCodeResponse'], ParentType, ContextType, RequireFields<MutationExchangeHostingProviderOAuthCodeArgs, 'code' | 'hostingProviderUuid'>>;
+  exchangeHostingProviderOAuthCode?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationExchangeHostingProviderOAuthCodeArgs, 'code' | 'hostingProviderUuid'>>;
   fetchAllHostingProviderTokens?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   fetchRefreshTokenForHostingProvider?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationFetchRefreshTokenForHostingProviderArgs, 'hostingProviderUuid'>>;
   reportComicSeries?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationReportComicSeriesArgs, 'uuid'>>;
@@ -1678,7 +1663,6 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   CreatorContent?: CreatorContentResolvers<ContextType>;
   CreatorLinkDetails?: CreatorLinkDetailsResolvers<ContextType>;
   Documentation?: DocumentationResolvers<ContextType>;
-  ExchangeHostingProviderOAuthCodeResponse?: ExchangeHostingProviderOAuthCodeResponseResolvers<ContextType>;
   HomeScreenComicSeries?: HomeScreenComicSeriesResolvers<ContextType>;
   HomeScreenCuratedList?: HomeScreenCuratedListResolvers<ContextType>;
   LinkDetails?: LinkDetailsResolvers<ContextType>;

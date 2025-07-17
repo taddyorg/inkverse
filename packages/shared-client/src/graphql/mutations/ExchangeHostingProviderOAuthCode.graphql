@@ -1,6 +1,3 @@
 mutation ExchangeHostingProviderOAuthCode($hostingProviderUuid: ID!, $code: String!) {
-  exchangeHostingProviderOAuthCode(hostingProviderUuid: $hostingProviderUuid, code: $code) {
-    success
-    error
-  }
+  exchangeHostingProviderOAuthCode(hostingProviderUuid: $hostingProviderUuid, code: $code)
 }

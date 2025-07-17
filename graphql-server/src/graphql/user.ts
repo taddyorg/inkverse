@@ -72,14 +72,6 @@ export const UserDefinitions = `
     avatar: String
     description: String
   }
-
-  """
-  Response type for OAuth code exchange
-  """
-  type ExchangeHostingProviderOAuthCodeResponse {
-    success: Boolean!
-    error: String
-  }
 `;
 
 // Query and Mutation Definitions
@@ -150,7 +142,7 @@ export const UserMutationsDefinitions = `
   exchangeHostingProviderOAuthCode(
     hostingProviderUuid: ID!
     code: String!
-  ): ExchangeHostingProviderOAuthCodeResponse!
+  ): Boolean!
 
   """
   Fetch user's OAuth tokens for a specific hosting provider
@@ -400,7 +392,7 @@ export const UserMutations: MutationResolvers = {
     return await OAuthToken.getAllRefreshTokensForUser(context.user.id);
   },
 
-  exchangeHostingProviderOAuthCode: async (_parent: any, { hostingProviderUuid, code }: { hostingProviderUuid: string; code: string }, context: any): Promise<{ success: boolean; error?: string }> => {
+  exchangeHostingProviderOAuthCode: async (_parent: any, { hostingProviderUuid, code }: { hostingProviderUuid: string; code: string }, context: any): Promise<boolean> => {
     try {
       // Check if user is authenticated
       if (!context.user) {
@@ -409,39 +401,39 @@ export const UserMutations: MutationResolvers = {
 
       // Validate required parameters
       if (!code || !hostingProviderUuid) {
-        return { success: false, error: 'missing_parameters' };
+        throw new UserInputError('Missing required parameters: code and hostingProviderUuid');
       }
 
       // Exchange OAuth code for refresh and access tokens
       const tokens = await exchangeOAuthCodeForAccessAndRefreshTokens({
         hostingProviderUuid,
-        code,
+        code: code as string,
       });
 
       if (!tokens?.refreshToken) {
-        return { success: false, error: 'tokens_not_found' };
+        throw new Error('Failed to retrieve tokens from OAuth exchange');
       }
       
       const publicKey = providerDetails[hostingProviderUuid]?.endpoints.publicKey;
       if (!publicKey) {
-        return { success: false, error: 'incorrect_hosting_provider' };
+        throw new UserInputError('Invalid hosting provider UUID');
       }
 
       const decodedRefreshToken = jwt.verify(tokens.refreshToken as string, publicKey) as JwtPayload;
 
       // Verify correct provider
       if (decodedRefreshToken.iss !== hostingProviderUuid) {
-        return { success: false, error: 'incorrect_hosting_provider' };
+        throw new UserInputError('Token issuer does not match hosting provider');
       }
 
       // Verify token is valid
       if (!decodedRefreshToken.sub || !decodedRefreshToken.exp || decodedRefreshToken.exp < Date.now() / 1000) {
-        return { success: false, error: 'token_invalid_or_expired' };
+        throw new Error('Token is invalid or expired');
       }
 
       // Verify the user ID matches
       if (decodedRefreshToken.sub !== String(context.user.id)) {
-        return { success: false, error: 'user_not_found' };
+        throw new AuthenticationError('User ID in token does not match authenticated user');
       }
 
       // Store tokens in database (oauth_token table)
@@ -452,10 +444,15 @@ export const UserMutations: MutationResolvers = {
         refreshTokenExpiresAt: decodedRefreshToken.exp,
       });
 
-      return { success: true };
+      return true;
     } catch (error) {
-      console.error('OAuth code exchange error:', error);
-      return { success: false, error: 'connection_failed' };
+      console.error('OAuth code exchange error:', {
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        name: error instanceof Error ? error.name : undefined,
+        ...(error && typeof error === 'object' ? error : {})
+      });
+      throw new Error('OAuth code exchange failed: ' + (error instanceof Error ? error.message : 'Unknown error'));
     }
   },
 

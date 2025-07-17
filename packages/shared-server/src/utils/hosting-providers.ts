@@ -58,8 +58,12 @@ export async function exchangeOAuthCodeForAccessAndRefreshTokens({
     };
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      throw new Error(`Failed to exchange code: ${error.response?.data || error.message}`);
+      const errorData = error.response?.data;
+      const errorMessage = typeof errorData === 'string' 
+        ? errorData 
+        : JSON.stringify(errorData) || error.message;
+      throw new Error(`Failed to exchange code: ${errorMessage}`);
     }
-    throw new Error(`Failed to exchange code: ${error}`);
+    throw new Error(`Failed to exchange code: ${error instanceof Error ? error.message : String(error)}`);
   }
 }

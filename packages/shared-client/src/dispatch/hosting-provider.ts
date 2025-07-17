@@ -132,7 +132,7 @@ interface ExchangeOAuthCodeParams {
 export async function exchangeHostingProviderOAuthCode(
   { userClient, hostingProviderUuid, code }: ExchangeOAuthCodeParams,
   dispatch?: Dispatch<HostingProviderAction>
-): Promise<{ success: boolean; error?: string } | null> {
+): Promise<boolean> {
   if (dispatch) dispatch({ type: HostingProviderActionType.EXCHANGE_OAUTH_CODE_START });
 
   try {
@@ -146,30 +146,25 @@ export async function exchangeHostingProviderOAuthCode(
     });
 
     const result = data?.exchangeHostingProviderOAuthCode;
+    console.log('result', result);
     
     if (!result) {
       throw new Error('No response from server');
     }
 
-    if (result.success) {
-      if (dispatch) {
-        dispatch({ type: HostingProviderActionType.EXCHANGE_OAUTH_CODE_SUCCESS });
-      }
-    } else {
-      if (dispatch) {
-        dispatch({ 
-          type: HostingProviderActionType.EXCHANGE_OAUTH_CODE_ERROR, 
-          payload: result.error || 'Unknown error occurred'
-        });
-      }
+    if (dispatch) {
+      dispatch({ type: HostingProviderActionType.EXCHANGE_OAUTH_CODE_SUCCESS });
     }
     
-    return {
-      success: result.success,
-      error: result.error || undefined
-    };
+    return result;
   } catch (error: any) {
-    const errorMessage = error?.message || 'Failed to exchange OAuth code';
+    console.log('error', error);
+    // Extract error message from GraphQL errors if available
+    const errorMessage = error?.graphQLErrors?.[0]?.message || 
+                        error?.message || 
+                        'Failed to exchange OAuth code';
+
+    console.log('errorMessage', errorMessage);
     
     if (dispatch) {
       dispatch({ 
@@ -177,7 +172,7 @@ export async function exchangeHostingProviderOAuthCode(
         payload: errorMessage 
       });
     }
-    return null;
+    return false;
   }
 }
 
