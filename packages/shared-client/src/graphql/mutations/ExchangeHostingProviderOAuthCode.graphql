@@ -1,0 +1,6 @@
+mutation ExchangeHostingProviderOAuthCode($hostingProviderUuid: ID!, $code: String!) {
+  exchangeHostingProviderOAuthCode(hostingProviderUuid: $hostingProviderUuid, code: $code) {
+    success
+    error
+  }
+}

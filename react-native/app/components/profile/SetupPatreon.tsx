@@ -4,9 +4,7 @@ import { Colors } from '@/constants/Colors';
 import Svg, { Path } from 'react-native-svg';
 import { ThemedText } from '../ui/ThemedText';
 import { HeaderBackButton } from '../ui/HeaderBackButton';
-import { WRAPPED_HOSTING_PROVIDER_SCREEN } from '@/constants/Navigation';
 import { useNavigation } from '@react-navigation/native';
-import { TADDY_HOSTING_PROVIDER_UUID } from '@inkverse/public/hosting-providers';
 import { SPACING } from '@/constants/Spacing';
 
 interface SetupPatreonProps {
@@ -50,18 +48,17 @@ export function SetupPatreon({ currentStep, onConnect, onSkip, onBack, onContinu
         >
           <ThemedText style={styles.skipButtonText}>Skip for now</ThemedText>
         </TouchableOpacity>
-        {__DEV__ && 
+        {/* {__DEV__ && 
           <TouchableOpacity
-            onPress={() => navigation.navigate(WRAPPED_HOSTING_PROVIDER_SCREEN, {
+            onPress={() => navigation.navigate(WRAPPED_API_HOSTING_PROVIDER_SCREEN, {
               uuid: TADDY_HOSTING_PROVIDER_UUID,
-              success: 'true',
             })}
             style={styles.skipButton}
             activeOpacity={0.7}
           >
             <ThemedText style={styles.skipButtonText}>Open Hosting Provider</ThemedText>
           </TouchableOpacity>
-        }
+        } */}
       </View>
     </View>
   );

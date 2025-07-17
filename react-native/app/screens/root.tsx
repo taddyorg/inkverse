@@ -47,6 +47,7 @@ import { WrappedListScreen } from './wrapped-screens/wrappedlist';
 import { WrappedTaggedScreen } from './wrapped-screens/wrappedtagged';
 import { WrappedProfileScreen } from './wrapped-screens/wrappedprofile';
 import { WrappedHostingProviderScreen } from './wrapped-screens/wrappedhostingprovider';
+import { WrappedApiHostingProviderScreen } from './wrapped-screens/wrappedapihostingprovider';
 import { NotificationProvider } from '../components/providers/NotificationProvider';
 
 import { 
@@ -64,6 +65,7 @@ import {
   WRAPPED_TAGGED_SCREEN,
   WRAPPED_PROFILE_SCREEN,
   WRAPPED_HOSTING_PROVIDER_SCREEN,
+  WRAPPED_API_HOSTING_PROVIDER_SCREEN,
   COMICISSUE_SCREEN, 
   CREATOR_SCREEN, 
   SETTINGS_SCREEN,
@@ -302,6 +304,7 @@ function ProfileStack() {
       <Stack.Screen {...comicIssueScreenConfig} />
       <Stack.Screen {...creatorScreenConfig} />
       <Stack.Screen {...listScreenConfig} />
+      <Stack.Screen {...comicsListScreenConfig} />
       <Stack.Screen {...settingsScreenConfig} />
       <Stack.Screen {...editProfileScreenConfig} />
       <Stack.Screen {...editUsernameScreenConfig} />
@@ -450,6 +453,7 @@ function App() {
         [WRAPPED_TAGGED_SCREEN]: 'tagged/:tag',
         [WRAPPED_PROFILE_SCREEN]: ':username',
         [WRAPPED_HOSTING_PROVIDER_SCREEN]: 'hosting-provider/:uuid',
+        [WRAPPED_API_HOSTING_PROVIDER_SCREEN]: 'api/hosting-provider/:uuid',
         [SIGNUP_SCREEN]: {
           screens: {
             [SIGNUP_RESET_SCREEN]: 'reset',
@@ -619,6 +623,11 @@ function App() {
               <Stack.Screen 
                 name={WRAPPED_HOSTING_PROVIDER_SCREEN} 
                 component={WrappedHostingProviderScreen}
+                options={modalScreenOptions}
+              />
+              <Stack.Screen 
+                name={WRAPPED_API_HOSTING_PROVIDER_SCREEN} 
+                component={WrappedApiHostingProviderScreen}
                 options={modalScreenOptions}
               />
               <Stack.Screen 

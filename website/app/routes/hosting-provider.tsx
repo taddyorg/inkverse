@@ -65,7 +65,7 @@ export default function HostingProvider() {
     }
 
     // Handle success case - fetch tokens
-    if (successParam === 'true' && uuid && !state.isLoading && !state.refreshToken) {
+    if (successParam === 'true' && uuid && !state.isLoading && !state.refreshToken && !state.error) {
       const userClient = getUserApolloClient();
       fetchRefreshTokenForHostingProvider({ userClient, hostingProviderUuid: uuid }, dispatch);
       return;
@@ -77,7 +77,7 @@ export default function HostingProvider() {
       return;
     }
 
-  }, [errorParam, successParam, uuid, state.isLoading, state.refreshToken, navigate, dispatch]);
+  }, [errorParam, successParam, uuid, state.isLoading, state.refreshToken, state.error, navigate, dispatch]);
 
   const handleRetry = () => {
     navigate(`${fromScreen}?step=patreon`);

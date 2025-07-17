@@ -5,8 +5,10 @@ import type { ComicSeriesModel, UserModel } from '@inkverse/shared-server/databa
 import { User, OAuthToken, CreatorLink, ComicSeries, UserSeriesSubscription, UserDevice } from '@inkverse/shared-server/models/index';
 import { UserAgeRange, type MutationResolvers, LinkType } from '@inkverse/shared-server/graphql/types';
 import { getAllFollows, getProfile, type BlueskyFollower, type BlueskyProfile } from '@inkverse/shared-server/bluesky/index';
-import { getNewAccessToken, TADDY_HOSTING_PROVIDER_UUID } from '@inkverse/public/hosting-providers';
+import { getNewAccessToken, TADDY_HOSTING_PROVIDER_UUID, providerDetails } from '@inkverse/public/hosting-providers';
+import { exchangeOAuthCodeForAccessAndRefreshTokens } from '@inkverse/shared-server/utils/hosting-providers';
 import { sanitizeUsername, validateUsername } from '@inkverse/public/user';
+import jwt, { type JwtPayload } from 'jsonwebtoken';
 import { sendEmail } from '@inkverse/shared-server/messaging/email/index';
 import { inkverseWebsiteUrl } from '@inkverse/public/utils';
 import { isAValidEmail } from '@inkverse/public/utils';
@@ -69,6 +71,14 @@ export const UserDefinitions = `
     displayName: String
     avatar: String
     description: String
+  }
+
+  """
+  Response type for OAuth code exchange
+  """
+  type ExchangeHostingProviderOAuthCodeResponse {
+    success: Boolean!
+    error: String
   }
 `;
 
@@ -133,6 +143,14 @@ export const UserMutationsDefinitions = `
   Resend verification email
   """
   resendVerificationEmail: Boolean!
+  
+  """
+  Exchange OAuth authorization code for tokens
+  """
+  exchangeHostingProviderOAuthCode(
+    hostingProviderUuid: ID!
+    code: String!
+  ): ExchangeHostingProviderOAuthCodeResponse!
 
   """
   Fetch user's OAuth tokens for a specific hosting provider
@@ -380,6 +398,65 @@ export const UserMutations: MutationResolvers = {
       throw new AuthenticationError('You must be logged in to fetch tokens');
     }
     return await OAuthToken.getAllRefreshTokensForUser(context.user.id);
+  },
+
+  exchangeHostingProviderOAuthCode: async (_parent: any, { hostingProviderUuid, code }: { hostingProviderUuid: string; code: string }, context: any): Promise<{ success: boolean; error?: string }> => {
+    try {
+      // Check if user is authenticated
+      if (!context.user) {
+        throw new AuthenticationError('You must be logged in to exchange OAuth code');
+      }
+
+      // Validate required parameters
+      if (!code || !hostingProviderUuid) {
+        return { success: false, error: 'missing_parameters' };
+      }
+
+      // Exchange OAuth code for refresh and access tokens
+      const tokens = await exchangeOAuthCodeForAccessAndRefreshTokens({
+        hostingProviderUuid,
+        code,
+      });
+
+      if (!tokens?.refreshToken) {
+        return { success: false, error: 'tokens_not_found' };
+      }
+      
+      const publicKey = providerDetails[hostingProviderUuid]?.endpoints.publicKey;
+      if (!publicKey) {
+        return { success: false, error: 'incorrect_hosting_provider' };
+      }
+
+      const decodedRefreshToken = jwt.verify(tokens.refreshToken as string, publicKey) as JwtPayload;
+
+      // Verify correct provider
+      if (decodedRefreshToken.iss !== hostingProviderUuid) {
+        return { success: false, error: 'incorrect_hosting_provider' };
+      }
+
+      // Verify token is valid
+      if (!decodedRefreshToken.sub || !decodedRefreshToken.exp || decodedRefreshToken.exp < Date.now() / 1000) {
+        return { success: false, error: 'token_invalid_or_expired' };
+      }
+
+      // Verify the user ID matches
+      if (decodedRefreshToken.sub !== String(context.user.id)) {
+        return { success: false, error: 'user_not_found' };
+      }
+
+      // Store tokens in database (oauth_token table)
+      await OAuthToken.saveOAuthTokensForUser({
+        userId: context.user.id,
+        hostingProviderUuid,
+        refreshToken: tokens.refreshToken,
+        refreshTokenExpiresAt: decodedRefreshToken.exp,
+      });
+
+      return { success: true };
+    } catch (error) {
+      console.error('OAuth code exchange error:', error);
+      return { success: false, error: 'connection_failed' };
+    }
   },
 
   saveBlueskyDid: async (_parent: any, { did }: { did: string }, context: any): Promise<UserModel | null> => {

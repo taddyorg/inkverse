@@ -17,6 +17,7 @@ import { WrappedListScreenParams } from "@/app/screens/wrapped-screens/wrappedli
 import { WrappedTaggedScreenParams } from "@/app/screens/wrapped-screens/wrappedtagged";
 import { WrappedProfileScreenParams } from "@/app/screens/wrapped-screens/wrappedprofile";
 import { WrappedHostingProviderScreenParams } from "@/app/screens/wrapped-screens/wrappedhostingprovider";
+import { WrappedApiHostingProviderScreenParams } from "@/app/screens/wrapped-screens/wrappedapihostingprovider";
 import { SignupResetScreenParams } from "@/app/screens/signup/signup-reset";
 import { SignupPatreonScreenParams } from "@/app/screens/signup/signup-patreon";
 import { SignupBlueskyScreenParams } from "@/app/screens/signup/signup-bluesky";
@@ -49,6 +50,7 @@ export const WRAPPED_LIST_SCREEN = "WrappedListScreen";
 export const WRAPPED_TAGGED_SCREEN = "WrappedTaggedScreen";
 export const WRAPPED_PROFILE_SCREEN = "WrappedProfileScreen";
 export const WRAPPED_HOSTING_PROVIDER_SCREEN = "WrappedHostingProviderScreen";
+export const WRAPPED_API_HOSTING_PROVIDER_SCREEN = "WrappedApiHostingProviderScreen";
 export const SIGNUP_SCREEN = "SignupScreen";
 export const SIGNUP_MAIN_SCREEN = "SignupMainScreen";
 export const SIGNUP_EMAIL_SCREEN = "SignupEmailScreen";
@@ -89,6 +91,7 @@ export type RootStackParamList = {
   [WRAPPED_TAGGED_SCREEN]: WrappedTaggedScreenParams;
   [WRAPPED_PROFILE_SCREEN]: WrappedProfileScreenParams;
   [WRAPPED_HOSTING_PROVIDER_SCREEN]: WrappedHostingProviderScreenParams;
+  [WRAPPED_API_HOSTING_PROVIDER_SCREEN]: WrappedApiHostingProviderScreenParams;
   [SIGNUP_SCREEN]: undefined;
   [SIGNUP_MAIN_SCREEN]: undefined;
   [SIGNUP_EMAIL_SCREEN]: undefined;
