@@ -81,7 +81,6 @@ export function EditPatreonScreen() {
       clientUserId: user.id,
     });
 
-    // Open OAuth URL in external browser
     openURL({ url });
   }, []);
 

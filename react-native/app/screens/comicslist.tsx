@@ -1,7 +1,6 @@
 import * as React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Dimensions, FlatList } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { FlashList } from '@shopify/flash-list';
 import { useState, useCallback, useEffect, useReducer } from 'react';
 
 import { Screen, ThemedText, PressableOpacity, ScreenHeader, HeaderBackButton, ThemedActivityIndicator } from '@/app/components/ui';
@@ -88,19 +87,21 @@ export function ComicsListScreen() {
   }, [navigation]);
 
   // Render grid item
-  const renderGridItem = useCallback(({ item }: { item: ComicSeries }) => (
-    <View style={styles.gridItem}>
-      <PressableOpacity 
-        onPress={() => handleComicPress(item)}
-        style={styles.gridItemInner}
-      >
+  const renderGridItem = useCallback(({ item }: { item: ComicSeries }) => {
+    const numColumns = 3;
+    const screenWidth = Dimensions.get('window').width;
+    const availableWidth = screenWidth - 32; // Account for padding
+    const itemWidth = (availableWidth - (numColumns - 1)) / numColumns; // 16px gap between items
+    
+    return (
+      <View style={{ width: itemWidth }}>
         <ComicSeriesDetails 
           comicseries={item}
           pageType='grid-item'
         />
-      </PressableOpacity>
-    </View>
-  ), [handleComicPress]);
+      </View>
+    );
+  }, [handleComicPress]);
 
   // Render header component
   const renderHeader = useCallback(() => (
@@ -155,10 +156,9 @@ export function ComicsListScreen() {
   return (
     <Screen>
       <View style={styles.container}>
-        <FlashList
+        <FlatList
           data={comics}
           renderItem={renderGridItem}
-          estimatedItemSize={200}
           numColumns={3}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.listContent}
@@ -173,6 +173,7 @@ export function ComicsListScreen() {
           }
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0.5}
+          keyExtractor={(item) => item.uuid}
         />
       </View>
     </Screen>
@@ -196,16 +197,6 @@ const styles = StyleSheet.create({
   listContent: {
     paddingHorizontal: 16,
     paddingBottom: 24,
-  },
-  gridItem: {
-    flex: 1,
-    marginHorizontal: 4,
-    height: 180,
-  },
-  gridItemInner: {
-    flex: 1,
-    borderRadius: 8,
-    overflow: 'hidden',
   },
   loadingContainer: {
     flex: 1,

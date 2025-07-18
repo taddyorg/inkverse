@@ -394,9 +394,6 @@ export function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  topPadding: {
-    height: 80,
-  },
   emptyStateContainer: {
     flex: 1,
     marginTop: 40,

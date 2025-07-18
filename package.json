@@ -37,6 +37,9 @@
     "watch:public": "yarn workspace @inkverse/public watch",
     "watch:shared-client": "yarn workspace @inkverse/shared-client watch",
     "watch:shared-server": "yarn workspace @inkverse/shared-server watch",
-    "watch:internal-packages": "concurrently \"yarn watch:public\" \"yarn watch:shared-client\" \"yarn watch:shared-server\""
+    "watch:internal-packages": "concurrently \"yarn watch:public\" \"yarn watch:shared-client\" \"yarn watch:shared-server\"",
+    "eas-build:android:production": "tsx scripts/eas-build-android-production.ts",
+    "eas-build:ios:production": "tsx scripts/eas-build-ios-production.ts",
+    "eas-submit:ios:production": "tsx scripts/eas-submit-ios-production.ts"
   }
 }

@@ -77,7 +77,6 @@ export function SignupPatreonScreen() {
       clientUserId: user.id,
     });
 
-    // Open OAuth URL in external browser
     openURL({ url });
   }, []);
 

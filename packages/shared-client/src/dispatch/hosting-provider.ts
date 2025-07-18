@@ -146,7 +146,6 @@ export async function exchangeHostingProviderOAuthCode(
     });
 
     const result = data?.exchangeHostingProviderOAuthCode;
-    console.log('result', result);
     
     if (!result) {
       throw new Error('No response from server');
@@ -158,13 +157,10 @@ export async function exchangeHostingProviderOAuthCode(
     
     return result;
   } catch (error: any) {
-    console.log('error', error);
     // Extract error message from GraphQL errors if available
     const errorMessage = error?.graphQLErrors?.[0]?.message || 
                         error?.message || 
                         'Failed to exchange OAuth code';
-
-    console.log('errorMessage', errorMessage);
     
     if (dispatch) {
       dispatch({ 
