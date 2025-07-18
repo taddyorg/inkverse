@@ -110,7 +110,7 @@ export class BlueskyClient {
     try {
       const response = await axios.post<BlueskyRefreshResponse>(
         `${BLUESKY_BASE_URL}/com.atproto.server.refreshSession`,
-        {},
+        undefined,
         {
           headers: {
             Authorization: `Bearer ${this.refreshToken}`,
