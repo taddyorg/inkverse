@@ -875,8 +875,6 @@ export type Mutation = {
   disableNotificationsForSeries: UserComicSeries;
   /** Enable notifications for a comic series */
   enableNotificationsForSeries: UserComicSeries;
-  /** Exchange OAuth authorization code for tokens */
-  exchangeHostingProviderOAuthCode: Scalars['Boolean']['output'];
   /** Fetch all hosting provider tokens for the user */
   fetchAllHostingProviderTokens?: Maybe<Array<Scalars['String']['output']>>;
   /** Fetch user's OAuth tokens for a specific hosting provider */
@@ -909,12 +907,6 @@ export type MutationDisableNotificationsForSeriesArgs = {
 
 export type MutationEnableNotificationsForSeriesArgs = {
   seriesUuid: Scalars['ID']['input'];
-};
-
-
-export type MutationExchangeHostingProviderOAuthCodeArgs = {
-  code: Scalars['String']['input'];
-  hostingProviderUuid: Scalars['ID']['input'];
 };
 
 
@@ -1283,14 +1275,6 @@ export type EnableNotificationsForSeriesMutationVariables = Exact<{
 
 export type EnableNotificationsForSeriesMutation = { __typename?: 'Mutation', enableNotificationsForSeries: { __typename?: 'UserComicSeries', seriesUuid: string, isSubscribed: boolean, isRecommended: boolean, hasNotificationEnabled: boolean } };
 
-export type ExchangeHostingProviderOAuthCodeMutationVariables = Exact<{
-  hostingProviderUuid: Scalars['ID']['input'];
-  code: Scalars['String']['input'];
-}>;
-
-
-export type ExchangeHostingProviderOAuthCodeMutation = { __typename?: 'Mutation', exchangeHostingProviderOAuthCode: boolean };
-
 export type FetchAllHostingProviderTokensMutationVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -1633,14 +1617,6 @@ export const EnableNotificationsForSeries = gql`
   }
 }
     ${UserComicSeriesDetails}`;
-export const ExchangeHostingProviderOAuthCode = gql`
-    mutation ExchangeHostingProviderOAuthCode($hostingProviderUuid: ID!, $code: String!) {
-  exchangeHostingProviderOAuthCode(
-    hostingProviderUuid: $hostingProviderUuid
-    code: $code
-  )
-}
-    `;
 export const FetchAllHostingProviderTokens = gql`
     mutation FetchAllHostingProviderTokens {
   fetchAllHostingProviderTokens

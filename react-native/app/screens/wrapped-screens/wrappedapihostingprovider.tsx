@@ -1,5 +1,5 @@
-import React, { useEffect, useReducer } from 'react';
-import { StyleSheet, View, TouchableOpacity, ActivityIndicator } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { StyleSheet, View, ActivityIndicator } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -9,10 +9,7 @@ import { RootStackParamList, WRAPPED_HOSTING_PROVIDER_SCREEN } from '@/constants
 import { Colors, useThemeColor } from '@/constants/Colors';
 import { getUserApolloClient } from '@/lib/apollo';
 import { 
-  hostingProviderReducer, 
-  hostingProviderInitialState,
-  exchangeHostingProviderOAuthCode,
-  HostingProviderActionType,
+  fetchRefreshTokenForHostingProvider,
 } from '@inkverse/shared-client/dispatch/hosting-provider';
 
 export interface WrappedApiHostingProviderScreenParams {
@@ -22,164 +19,90 @@ export interface WrappedApiHostingProviderScreenParams {
   error_description?: string;
 }
 
-function getErrorMessage(errorParam: string, errorDescription?: string): string {
-  if (errorDescription) {
-    return errorDescription;
-  }
-  
-  switch (errorParam) {
-    case 'access_denied':
-      return 'You denied access to your account.';
-    case 'invalid_request':
-      return 'Invalid request. Please try again.';
-    case 'unauthorized_client':
-      return 'This app is not authorized to connect.';
-    case 'unsupported_response_type':
-      return 'Unsupported response type.';
-    case 'server_error':
-      return 'The server encountered an error. Please try again later.';
-    case 'temporarily_unavailable':
-      return 'The service is temporarily unavailable. Please try again later.';
-    case 'missing_parameters':
-      return 'Missing required parameters for connection.';
-    case 'tokens_not_found':
-      return 'Could not retrieve authentication tokens.';
-    case 'incorrect_hosting_provider':
-      return 'Incorrect hosting provider in response.';
-    case 'token_invalid_or_expired':
-      return 'Authentication token is invalid or expired.';
-    case 'user_not_found':
-      return 'User account not found.';
-    case 'connection_failed':
-      return 'Connection to hosting provider failed.';
-    default:
-      return 'Connection failed. Please try again.';
-  }
-}
+const MAX_POLLING_ATTEMPTS = 5;
+const POLLING_INTERVAL = 1500;
 
 export function WrappedApiHostingProviderScreen() {
   const route = useRoute<NativeStackScreenProps<RootStackParamList, 'WrappedApiHostingProviderScreen'>['route']>();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { uuid, code, error, error_description } = route.params || {};
+  const { uuid, code, error } = route.params || {};
   
-  const [state, dispatch] = useReducer(hostingProviderReducer, hostingProviderInitialState);
   const userClient = getUserApolloClient();
+  const pollingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const attemptCountRef = useRef(0);
   
   const buttonColor = useThemeColor(
     { light: Colors.light.button, dark: Colors.dark.button },
     'button'
   );
-
-  useEffect(() => {
-    handleOAuthCallback();
-  }, []);
-
-  const handleOAuthCallback = async () => {    
-    // Handle error from OAuth provider
-    if (error) {
-      return;
-    }
-
-    // Handle success case with authorization code
-    if (code && uuid) {
-      // Exchange the OAuth code for tokens using GraphQL
-      handleCodeExchange();
-    }
-  };
-
-  const handleCodeExchange = async () => {
-    if (!code || !uuid) return;
+  
+  const pollForTokens = async () => {
+    attemptCountRef.current += 1;
     
-    const result = await exchangeHostingProviderOAuthCode(
-      { userClient, hostingProviderUuid: uuid, code },
-      dispatch
-    );
-
-    if (result?.success) {
-      // Navigate to the hosting provider screen with success
+    try {
+      const refreshToken = await fetchRefreshTokenForHostingProvider(
+        { userClient, hostingProviderUuid: uuid! }
+      );
+      
+      if (refreshToken) {
+        // Success - tokens are ready
+        if (pollingTimeoutRef.current) {
+          clearTimeout(pollingTimeoutRef.current);
+        }
+        navigation.replace(WRAPPED_HOSTING_PROVIDER_SCREEN, {
+          uuid,
+          success: 'true'
+        });
+      } else if (attemptCountRef.current < MAX_POLLING_ATTEMPTS) {
+        // Continue polling
+        pollingTimeoutRef.current = setTimeout(pollForTokens, POLLING_INTERVAL);
+      } else {
+        // Timeout - max attempts reached
+        navigation.replace(WRAPPED_HOSTING_PROVIDER_SCREEN, {
+          uuid,
+          error: 'connection_failed'
+        });
+      }
+    } catch (error) {
       navigation.replace(WRAPPED_HOSTING_PROVIDER_SCREEN, {
         uuid,
-        success: 'true'
+        error: 'connection_failed'
       });
     }
   };
 
-  const handleRetry = () => {
-    dispatch({ type: HostingProviderActionType.FETCH_USER_TOKENS_CLEAR_ERROR });
-    navigation.goBack();
-  };
-
-  const handleGoHome = () => {
-    navigation.goBack();
-  };
-
-  // Handle OAuth provider errors
-  if (error && !state.isExchangingCode) {
-    const errorMessage = getErrorMessage(error, error_description);
+  useEffect(() => {    
+    // Handle OAuth provider errors immediately
+    if (error) {
+      navigation.replace(WRAPPED_HOSTING_PROVIDER_SCREEN, {
+        uuid,
+        error: error
+      });
+      return;
+    }
     
-    return (
-      <Screen>
-        <ThemedView style={styles.container}>
-          <View style={styles.content}>
-            <ThemedText style={[styles.errorTitle]}>Connection Failed</ThemedText>
-            <ThemedText style={[styles.errorMessage]}>{errorMessage}</ThemedText>
-            
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                onPress={handleRetry}
-                style={[styles.primaryButton, { backgroundColor: buttonColor }]}
-                activeOpacity={0.8}
-              >
-                <ThemedText style={styles.primaryButtonText}>Try Again</ThemedText>
-              </TouchableOpacity>
-              
-              <TouchableOpacity
-                onPress={handleGoHome}
-                style={styles.secondaryButton}
-                activeOpacity={0.8}
-              >
-                <ThemedText style={styles.secondaryButtonText}>Go Back</ThemedText>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </ThemedView>
-      </Screen>
-    );
-  }
+    // Start polling after delay if we have code and uuid
+    if (code && uuid) {
+      setTimeout(() => {
+        pollForTokens();
+      }, 150);
+    } else {
+      navigation.replace(WRAPPED_HOSTING_PROVIDER_SCREEN, {
+        uuid,
+        error: 'missing_parameters'
+      });
+    }
 
-  // Handle GraphQL mutation errors
-  if (state.error) {
-    const errorMessage = getErrorMessage(state.error);
-    
-    return (
-      <Screen>
-        <ThemedView style={styles.container}>
-          <View style={styles.content}>
-            <ThemedText style={[styles.errorTitle]}>Connection Failed</ThemedText>
-            <ThemedText style={[styles.errorMessage]}>{errorMessage}</ThemedText>
-            
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                onPress={handleRetry}
-                style={[styles.primaryButton, { backgroundColor: buttonColor }]}
-                activeOpacity={0.8}
-              >
-                <ThemedText style={styles.primaryButtonText}>Try Again</ThemedText>
-              </TouchableOpacity>
-              
-              <TouchableOpacity
-                onPress={handleGoHome}
-                style={styles.secondaryButton}
-                activeOpacity={0.8}
-              >
-                <ThemedText style={styles.secondaryButtonText}>Go Back</ThemedText>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </ThemedView>
-      </Screen>
-    );
-  }
+    // Cleanup on unmount
+    return () => {
+      if (pollingTimeoutRef.current) {
+        clearTimeout(pollingTimeoutRef.current);
+      }
+    };
+  }, [uuid, code, error]);
+
+  // Render loading state while polling
+  // Navigation is handled in useEffect, so we just show loading
 
   return (  
     <Screen>
@@ -245,7 +168,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   primaryButtonText: {
-    color: 'white',
     fontSize: 16,
     fontWeight: '500',
   },

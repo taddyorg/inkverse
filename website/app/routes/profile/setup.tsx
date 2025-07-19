@@ -41,6 +41,14 @@ export const loader = async ({ params, request, context }: LoaderFunctionArgs) =
   return await loadProfileEdit({ params, request, context });
 };
 
+export const headers = () => {
+  return {
+    'Cache-Control': 'private, no-cache, no-store, must-revalidate',
+    'Pragma': 'no-cache',
+    'Expires': '0',
+  };
+};
+
 export default function AccountSetup() {
   const { user } = useLoaderData<typeof loader>();
   
@@ -180,7 +188,9 @@ export default function AccountSetup() {
 
     if (!userClientRef.current) return;
 
-    if (!isValidDomain(blueskyHandle)) {
+    const trimmedHandle = blueskyHandle.trim().replace(/[^a-zA-Z0-9.-]/g, '');
+
+    if (!isValidDomain(trimmedHandle)) {
       dispatch({ type: UserDetailsActionType.USER_DETAILS_ERROR, payload: 'Invalid Bluesky handle. Make sure you use your handle (ex: bsky.app/profile/yourhandle)' });
       return;
     }
@@ -190,7 +200,7 @@ export default function AccountSetup() {
       await verifyBlueskyHandle(
         { 
           userClient: userClientRef.current,
-          handle: blueskyHandle.trim() 
+          handle: trimmedHandle 
         },
         dispatch
       );
@@ -303,7 +313,8 @@ export default function AccountSetup() {
 
       const result = await subscribeToPatreonComics({ 
         userClient: userClientRef.current,
-        seriesUuids
+        seriesUuids,
+        userId: user.id,
       }, dispatch);
 
       if (result.success) {

@@ -878,8 +878,6 @@ export type Mutation = {
   disableNotificationsForSeries: UserComicSeries;
   /** Enable notifications for a comic series */
   enableNotificationsForSeries: UserComicSeries;
-  /** Exchange OAuth authorization code for tokens */
-  exchangeHostingProviderOAuthCode: Scalars['Boolean']['output'];
   /** Fetch all hosting provider tokens for the user */
   fetchAllHostingProviderTokens?: Maybe<Array<Scalars['String']['output']>>;
   /** Fetch user's OAuth tokens for a specific hosting provider */
@@ -912,12 +910,6 @@ export type MutationDisableNotificationsForSeriesArgs = {
 
 export type MutationEnableNotificationsForSeriesArgs = {
   seriesUuid: Scalars['ID']['input'];
-};
-
-
-export type MutationExchangeHostingProviderOAuthCodeArgs = {
-  code: Scalars['String']['input'];
-  hostingProviderUuid: Scalars['ID']['input'];
 };
 
 
@@ -1568,7 +1560,6 @@ export type ListResolvers<ContextType = any, ParentType extends ResolversParentT
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
   disableNotificationsForSeries?: Resolver<ResolversTypes['UserComicSeries'], ParentType, ContextType, RequireFields<MutationDisableNotificationsForSeriesArgs, 'seriesUuid'>>;
   enableNotificationsForSeries?: Resolver<ResolversTypes['UserComicSeries'], ParentType, ContextType, RequireFields<MutationEnableNotificationsForSeriesArgs, 'seriesUuid'>>;
-  exchangeHostingProviderOAuthCode?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationExchangeHostingProviderOAuthCodeArgs, 'code' | 'hostingProviderUuid'>>;
   fetchAllHostingProviderTokens?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   fetchRefreshTokenForHostingProvider?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationFetchRefreshTokenForHostingProviderArgs, 'hostingProviderUuid'>>;
   reportComicSeries?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationReportComicSeriesArgs, 'uuid'>>;

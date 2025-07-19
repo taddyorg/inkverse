@@ -51,7 +51,9 @@ export function EditBlueskyScreen() {
 
     if (!userClientRef.current) return;
 
-    if (!isValidDomain(blueskyHandle)) {
+    const trimmedHandle = blueskyHandle.trim().replace(/[^a-zA-Z0-9.-]/g, '');
+
+    if (!isValidDomain(trimmedHandle)) {
       dispatch({ 
         type: UserDetailsActionType.USER_DETAILS_ERROR, 
         payload: 'Invalid Bluesky handle. Make sure you use your handle (ex: bsky.app/profile/yourhandle)' 
@@ -64,7 +66,7 @@ export function EditBlueskyScreen() {
       await verifyBlueskyHandle(
         { 
           userClient: userClientRef.current,
-          handle: blueskyHandle.trim() 
+          handle: trimmedHandle 
         },
         dispatch
       );

@@ -1,22 +1,18 @@
 import type { ApolloClient, NormalizedCacheObject } from '@apollo/client';
 import type { Dispatch } from 'react';
-import { FetchAllHostingProviderTokens, FetchRefreshTokenForHostingProvider, ExchangeHostingProviderOAuthCode, type FetchAllHostingProviderTokensMutation, type FetchAllHostingProviderTokensMutationVariables, type FetchRefreshTokenForHostingProviderMutation, type FetchRefreshTokenForHostingProviderMutationVariables, type ExchangeHostingProviderOAuthCodeMutation, type ExchangeHostingProviderOAuthCodeMutationVariables } from '../graphql/operations';
+import { FetchAllHostingProviderTokens, FetchRefreshTokenForHostingProvider, type FetchAllHostingProviderTokensMutation, type FetchAllHostingProviderTokensMutationVariables, type FetchRefreshTokenForHostingProviderMutation, type FetchRefreshTokenForHostingProviderMutationVariables } from '../graphql/operations';
 import { jwtDecode } from 'jwt-decode';
 
 export interface HostingProviderState {
   isLoading: boolean;
   error: string | null;
   refreshToken: string | null;
-  isExchangingCode: boolean;
-  exchangeSuccess: boolean;
 }
 
 export const hostingProviderInitialState: HostingProviderState = {
   isLoading: false,
   error: null,
   refreshToken: null,
-  isExchangingCode: false,
-  exchangeSuccess: false,
 };
 
 /* Action Type Enum */
@@ -25,9 +21,6 @@ export enum HostingProviderActionType {
   FETCH_USER_TOKENS_SUCCESS = 'FETCH_USER_TOKENS_SUCCESS',
   FETCH_USER_TOKENS_ERROR = 'FETCH_USER_TOKENS_ERROR',
   FETCH_USER_TOKENS_CLEAR_ERROR = 'FETCH_USER_TOKENS_CLEAR_ERROR',
-  EXCHANGE_OAUTH_CODE_START = 'EXCHANGE_OAUTH_CODE_START',
-  EXCHANGE_OAUTH_CODE_SUCCESS = 'EXCHANGE_OAUTH_CODE_SUCCESS',
-  EXCHANGE_OAUTH_CODE_ERROR = 'EXCHANGE_OAUTH_CODE_ERROR',
 }
 
 /* Action Types */
@@ -37,10 +30,6 @@ export type HostingProviderAction =
   | { type: HostingProviderActionType.FETCH_USER_TOKENS_SUCCESS; payload: { refreshToken: string | null } }
   | { type: HostingProviderActionType.FETCH_USER_TOKENS_ERROR; payload: string }
   | { type: HostingProviderActionType.FETCH_USER_TOKENS_CLEAR_ERROR }
-  // Exchange OAuth Code
-  | { type: HostingProviderActionType.EXCHANGE_OAUTH_CODE_START }
-  | { type: HostingProviderActionType.EXCHANGE_OAUTH_CODE_SUCCESS }
-  | { type: HostingProviderActionType.EXCHANGE_OAUTH_CODE_ERROR; payload: string }
 /* Action Creators */
 interface FetchUserTokensParams {
   userClient: ApolloClient<any>;
@@ -122,55 +111,6 @@ export async function fetchAllHostingProviderTokens(
   } 
 }
 
-/* Action Creators */
-interface ExchangeOAuthCodeParams {
-  userClient: ApolloClient<NormalizedCacheObject>;
-  hostingProviderUuid: string;
-  code: string;
-}
-
-export async function exchangeHostingProviderOAuthCode(
-  { userClient, hostingProviderUuid, code }: ExchangeOAuthCodeParams,
-  dispatch?: Dispatch<HostingProviderAction>
-): Promise<boolean> {
-  if (dispatch) dispatch({ type: HostingProviderActionType.EXCHANGE_OAUTH_CODE_START });
-
-  try {
-    const { data } = await userClient.mutate<
-      ExchangeHostingProviderOAuthCodeMutation,
-      ExchangeHostingProviderOAuthCodeMutationVariables
-    >({
-      mutation: ExchangeHostingProviderOAuthCode,
-      variables: { hostingProviderUuid, code },
-      fetchPolicy: 'no-cache'
-    });
-
-    const result = data?.exchangeHostingProviderOAuthCode;
-    
-    if (!result) {
-      throw new Error('No response from server');
-    }
-
-    if (dispatch) {
-      dispatch({ type: HostingProviderActionType.EXCHANGE_OAUTH_CODE_SUCCESS });
-    }
-    
-    return result;
-  } catch (error: any) {
-    // Extract error message from GraphQL errors if available
-    const errorMessage = error?.graphQLErrors?.[0]?.message || 
-                        error?.message || 
-                        'Failed to exchange OAuth code';
-    
-    if (dispatch) {
-      dispatch({ 
-        type: HostingProviderActionType.EXCHANGE_OAUTH_CODE_ERROR, 
-        payload: errorMessage 
-      });
-    }
-    return false;
-  }
-}
 
 /* Reducer */
 export function hostingProviderReducer(
@@ -194,12 +134,6 @@ export function hostingProviderReducer(
       };
     case HostingProviderActionType.FETCH_USER_TOKENS_CLEAR_ERROR:
       return { ...state, error: null };
-    case HostingProviderActionType.EXCHANGE_OAUTH_CODE_START:
-      return { ...state, isExchangingCode: true, error: null, exchangeSuccess: false };
-    case HostingProviderActionType.EXCHANGE_OAUTH_CODE_SUCCESS:
-      return { ...state, isExchangingCode: false, exchangeSuccess: true };
-    case HostingProviderActionType.EXCHANGE_OAUTH_CODE_ERROR:
-      return { ...state, isExchangingCode: false, error: action.payload, exchangeSuccess: false };
     default:
       return state;
   }

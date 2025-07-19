@@ -10,7 +10,6 @@ import {
   userDetailsInitialState,
   getComicsFromPatreonCreators,
   subscribeToPatreonComics,
-  UserDetailsActionType
 } from '@inkverse/shared-client/dispatch/user-details';
 import { SetupPatreon } from '@/app/components/profile/SetupPatreon';
 import { PatreonConnected } from '@/app/components/profile/PatreonConnected';
@@ -112,7 +111,8 @@ export default function EditPatreonPage() {
 
       const result = await subscribeToPatreonComics({ 
         userClient: userClientRef.current,
-        seriesUuids
+        seriesUuids,
+        userId: user.id,
       }, dispatch);
 
       if (result.success) {
