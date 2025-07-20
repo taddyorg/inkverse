@@ -52,7 +52,7 @@ export function getCannySSORedirectUrl(ssoToken: string, redirectPath?: string):
 
   // Build redirect URL - if no path provided, redirect to main Canny page
   const redirect = redirectPath 
-    ? `https://inkverse.canny.io${redirectPath}` 
+    ? redirectPath 
     : 'https://inkverse.canny.io';
 
   // Construct the Canny SSO URL with required parameters

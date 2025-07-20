@@ -126,7 +126,7 @@ export const UserQueriesDefinitions = `
   """
   Generate Canny SSO redirect URL for the current user
   """
-  cannySso: CannySSO
+  cannySso(redirectPath: String): CannySSO
 `;
 
 export const UserMutationsDefinitions = `
@@ -334,7 +334,7 @@ export const UserQueries = {
     }
   },
 
-  cannySso: async (_parent: any, _args: any, context: any): Promise<{ userId: string; ssoToken: string; redirectUrl: string }> => {
+  cannySso: async (_parent: any, { redirectPath }: { redirectPath: string }, context: any): Promise<{ userId: string; ssoToken: string; redirectUrl: string }> => {
     if (!context.user) {
       throw new AuthenticationError('You must be logged in to access Canny SSO');
     }
@@ -349,7 +349,7 @@ export const UserQueries = {
       });
 
       // Get the redirect URL
-      const redirectUrl = getCannySSORedirectUrl(ssoToken);
+      const redirectUrl = getCannySSORedirectUrl(ssoToken, redirectPath);
 
       return { userId: context.user.id, ssoToken, redirectUrl };
     } catch (error: any) {

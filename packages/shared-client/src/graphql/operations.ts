@@ -1057,6 +1057,11 @@ export type Query = {
 };
 
 
+export type QueryCannySsoArgs = {
+  redirectPath?: InputMaybe<Scalars['String']['input']>;
+};
+
+
 export type QueryGetBlueskyProfileArgs = {
   handle: Scalars['String']['input'];
 };
@@ -1362,7 +1367,9 @@ export type UpdateUserProfileMutationVariables = Exact<{
 
 export type UpdateUserProfileMutation = { __typename?: 'Mutation', updateUserProfile?: { __typename?: 'User', id: string, username?: string | null, email?: string | null, isEmailVerified?: boolean | null, ageRange?: UserAgeRange | null, birthYear?: number | null, blueskyDid?: string | null } | null };
 
-export type CannySsoQueryVariables = Exact<{ [key: string]: never; }>;
+export type CannySsoQueryVariables = Exact<{
+  redirectPath?: InputMaybe<Scalars['String']['input']>;
+}>;
 
 
 export type CannySsoQuery = { __typename?: 'Query', cannySso?: { __typename?: 'CannySSO', userId: string, ssoToken: string, redirectUrl: string } | null };
@@ -1703,8 +1710,8 @@ export const UpdateUserProfile = gql`
 }
     ${UserDetails}`;
 export const CannySso = gql`
-    query CannySso {
-  cannySso {
+    query CannySso($redirectPath: String) {
+  cannySso(redirectPath: $redirectPath) {
     userId
     ssoToken
     redirectUrl

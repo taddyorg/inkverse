@@ -51,11 +51,12 @@ export const settingsInitialState: SettingsState = {
 // Props for the Canny SSO action creator
 export type GetCannySsoProps = {
   userClient: ApolloClient<any>;
+  redirectPath?: string;
 };
 
 // Canny SSO action creator
 export async function getCannySso(
-  { userClient }: GetCannySsoProps,
+  { userClient, redirectPath }: GetCannySsoProps,
   dispatch?: React.Dispatch<SettingsAction>
 ): Promise<CannySsoData | null> {
   if (dispatch) dispatch({ type: SettingsActionType.GET_CANNY_SSO_START });
@@ -64,6 +65,9 @@ export async function getCannySso(
     const result = await userClient.query<CannySsoQuery>({
       query: CannySso,
       fetchPolicy: 'network-only', // Always get fresh token
+      variables: {
+        redirectPath
+      }
     });
 
     if (!result.data?.cannySso) {

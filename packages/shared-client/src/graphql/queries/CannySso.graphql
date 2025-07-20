@@ -1,5 +1,5 @@
-query CannySso {
-  cannySso {
+query CannySso($redirectPath: String) {
+  cannySso(redirectPath: $redirectPath) {
     userId
     ssoToken
     redirectUrl

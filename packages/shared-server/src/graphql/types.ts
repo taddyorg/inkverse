@@ -1060,6 +1060,11 @@ export type Query = {
 };
 
 
+export type QueryCannySsoArgs = {
+  redirectPath?: InputMaybe<Scalars['String']['input']>;
+};
+
+
 export type QueryGetBlueskyProfileArgs = {
   handle: Scalars['String']['input'];
 };
@@ -1609,7 +1614,7 @@ export type ProfileComicSeriesResolvers<ContextType = any, ParentType extends Re
 }>;
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
-  cannySso?: Resolver<Maybe<ResolversTypes['CannySSO']>, ParentType, ContextType>;
+  cannySso?: Resolver<Maybe<ResolversTypes['CannySSO']>, ParentType, ContextType, Partial<QueryCannySsoArgs>>;
   getBlueskyProfile?: Resolver<Maybe<ResolversTypes['BlueskyProfile']>, ParentType, ContextType, RequireFields<QueryGetBlueskyProfileArgs, 'handle'>>;
   getComicIssue?: Resolver<Maybe<ResolversTypes['ComicIssue']>, ParentType, ContextType, RequireFields<QueryGetComicIssueArgs, 'seriesUuid' | 'uuid'>>;
   getComicSeries?: Resolver<Maybe<ResolversTypes['ComicSeries']>, ParentType, ContextType, Partial<QueryGetComicSeriesArgs>>;

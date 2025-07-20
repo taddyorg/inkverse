@@ -35,7 +35,7 @@ export default function CannyLogin() {
             throw new Error('User client not available');
           }
 
-          const cannyData = await getCannySso({ userClient }, settingsDispatch);
+          const cannyData = await getCannySso({ userClient, redirectPath: redirect }, settingsDispatch);
           
           if (cannyData && cannyData.redirectUrl) {
             // Navigate to the Canny SSO URL
