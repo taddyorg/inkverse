@@ -2,7 +2,7 @@ export default {
   expo: {
     name: "Inkverse",
     slug: "inkverse",
-    version: "3.1",
+    version: "3.1.1",
     orientation: "portrait",
     icon: "./assets/icons/ios-light.png",
     scheme: "inkverse",
@@ -11,7 +11,7 @@ export default {
     jsEngine: "hermes",
     ios: {
       bundleIdentifier: "art.bamcomics.taddy",
-      buildNumber: "11",
+      buildNumber: "4",
       supportsTablet: false,
       infoPlist: {
         LSApplicationQueriesSchemes: [
@@ -29,7 +29,7 @@ export default {
     },
     android: {
       package: "com.bamtoons",
-      versionCode: 88,
+      versionCode: 97,
       minSdkVersion: 35,
       adaptiveIcon: {
         foregroundImage: "./assets/icons/adaptive-icon.png",
