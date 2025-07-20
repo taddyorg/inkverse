@@ -37,6 +37,7 @@ export type CannySso = {
   __typename?: 'CannySSO';
   redirectUrl: Scalars['String']['output'];
   ssoToken: Scalars['String']['output'];
+  userId: Scalars['ID']['output'];
 };
 
 /**  Comic Issue Details  */
@@ -1364,7 +1365,7 @@ export type UpdateUserProfileMutation = { __typename?: 'Mutation', updateUserPro
 export type CannySsoQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type CannySsoQuery = { __typename?: 'Query', cannySso?: { __typename?: 'CannySSO', ssoToken: string, redirectUrl: string } | null };
+export type CannySsoQuery = { __typename?: 'Query', cannySso?: { __typename?: 'CannySSO', userId: string, ssoToken: string, redirectUrl: string } | null };
 
 export type GetBlueskyProfileQueryVariables = Exact<{
   handle: Scalars['String']['input'];
@@ -1704,6 +1705,7 @@ export const UpdateUserProfile = gql`
 export const CannySso = gql`
     query CannySso {
   cannySso {
+    userId
     ssoToken
     redirectUrl
   }

@@ -76,6 +76,7 @@ export const UserDefinitions = `
   Canny SSO redirect response
   """
   type CannySSO {
+    userId: ID!
     ssoToken: String!
     redirectUrl: String!
   }
@@ -333,7 +334,7 @@ export const UserQueries = {
     }
   },
 
-  cannySso: async (_parent: any, _args: any, context: any): Promise<{ ssoToken: string; redirectUrl: string }> => {
+  cannySso: async (_parent: any, _args: any, context: any): Promise<{ userId: string; ssoToken: string; redirectUrl: string }> => {
     if (!context.user) {
       throw new AuthenticationError('You must be logged in to access Canny SSO');
     }
@@ -350,7 +351,7 @@ export const UserQueries = {
       // Get the redirect URL
       const redirectUrl = getCannySSORedirectUrl(ssoToken);
 
-      return { ssoToken, redirectUrl };
+      return { userId: context.user.id, ssoToken, redirectUrl };
     } catch (error: any) {
       console.error('Error generating Canny SSO:', error);
       throw new Error(error.message || 'Failed to generate Canny SSO redirect');

@@ -38,6 +38,7 @@ export type CannySso = {
   __typename?: 'CannySSO';
   redirectUrl: Scalars['String']['output'];
   ssoToken: Scalars['String']['output'];
+  userId: Scalars['ID']['output'];
 };
 
 /**  Comic Issue Details  */
@@ -1409,6 +1410,7 @@ export type BlueskyProfileResolvers<ContextType = any, ParentType extends Resolv
 export type CannySsoResolvers<ContextType = any, ParentType extends ResolversParentTypes['CannySSO'] = ResolversParentTypes['CannySSO']> = ResolversObject<{
   redirectUrl?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   ssoToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  userId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

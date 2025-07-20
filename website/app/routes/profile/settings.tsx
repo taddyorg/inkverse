@@ -98,8 +98,8 @@ export default function ProfileSettings() {
       const cannyData = await getCannySso({ userClient }, settingsDispatch);
       
       if (cannyData && cannyData.redirectUrl) {
-        // Navigate to the Canny SSO URL
-        window.location.href = cannyData.redirectUrl;
+        // Open the Canny SSO URL in a new window/tab
+        window.open(cannyData.redirectUrl, '_blank');
       }
     } catch (error) {
       console.error('Error getting Canny SSO:', error);
