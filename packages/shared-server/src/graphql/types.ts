@@ -35,6 +35,13 @@ export type BlueskyProfile = {
   handle: Scalars['String']['output'];
 };
 
+/** Canny SSO redirect response */
+export type CannySso = {
+  __typename?: 'CannySSO';
+  redirectUrl: Scalars['String']['output'];
+  ssoToken: Scalars['String']['output'];
+};
+
 /**  Comic Issue Details  */
 export type ComicIssue = {
   __typename?: 'ComicIssue';
@@ -1001,6 +1008,8 @@ export type ProfileComicSeries = {
 
 export type Query = {
   __typename?: 'Query';
+  /** Generate Canny SSO redirect URL for the current user */
+  cannySso?: Maybe<CannySso>;
   /** Get Bluesky profile details for a given handle */
   getBlueskyProfile?: Maybe<BlueskyProfile>;
   /**  Get details on a comic issue */
@@ -1319,6 +1328,7 @@ export type ResolversTypes = ResolversObject<{
   AuthProvider: AuthProvider;
   BlueskyProfile: ResolverTypeWrapper<BlueskyProfile>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
+  CannySSO: ResolverTypeWrapper<CannySso>;
   ComicIssue: ResolverTypeWrapper<ComicIssueModel>;
   ComicIssueForSeries: ResolverTypeWrapper<Omit<ComicIssueForSeries, 'issues'> & { issues?: Maybe<Array<Maybe<ResolversTypes['ComicIssue']>>> }>;
   ComicSeries: ResolverTypeWrapper<ComicSeriesModel>;
@@ -1363,6 +1373,7 @@ export type ResolversTypes = ResolversObject<{
 export type ResolversParentTypes = ResolversObject<{
   BlueskyProfile: BlueskyProfile;
   Boolean: Scalars['Boolean']['output'];
+  CannySSO: CannySso;
   ComicIssue: ComicIssueModel;
   ComicIssueForSeries: Omit<ComicIssueForSeries, 'issues'> & { issues?: Maybe<Array<Maybe<ResolversParentTypes['ComicIssue']>>> };
   ComicSeries: ComicSeriesModel;
@@ -1394,6 +1405,12 @@ export type BlueskyProfileResolvers<ContextType = any, ParentType extends Resolv
   did?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   displayName?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   handle?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type CannySsoResolvers<ContextType = any, ParentType extends ResolversParentTypes['CannySSO'] = ResolversParentTypes['CannySSO']> = ResolversObject<{
+  redirectUrl?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  ssoToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -1590,6 +1607,7 @@ export type ProfileComicSeriesResolvers<ContextType = any, ParentType extends Re
 }>;
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
+  cannySso?: Resolver<Maybe<ResolversTypes['CannySSO']>, ParentType, ContextType>;
   getBlueskyProfile?: Resolver<Maybe<ResolversTypes['BlueskyProfile']>, ParentType, ContextType, RequireFields<QueryGetBlueskyProfileArgs, 'handle'>>;
   getComicIssue?: Resolver<Maybe<ResolversTypes['ComicIssue']>, ParentType, ContextType, RequireFields<QueryGetComicIssueArgs, 'seriesUuid' | 'uuid'>>;
   getComicSeries?: Resolver<Maybe<ResolversTypes['ComicSeries']>, ParentType, ContextType, Partial<QueryGetComicSeriesArgs>>;
@@ -1646,6 +1664,7 @@ export type UserComicSeriesResolvers<ContextType = any, ParentType extends Resol
 
 export type Resolvers<ContextType = any> = ResolversObject<{
   BlueskyProfile?: BlueskyProfileResolvers<ContextType>;
+  CannySSO?: CannySsoResolvers<ContextType>;
   ComicIssue?: ComicIssueResolvers<ContextType>;
   ComicIssueForSeries?: ComicIssueForSeriesResolvers<ContextType>;
   ComicSeries?: ComicSeriesResolvers<ContextType>;

@@ -1,4 +1,4 @@
-import React, { memo, useState, useRef } from 'react';
+import React, { memo, useState, useRef, useReducer } from 'react';
 import { StyleSheet, Platform, Appearance, useColorScheme, Switch, View, Animated } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -7,7 +7,7 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import { FlashList } from '@shopify/flash-list';
 import { Image } from 'expo-image';
 
-import { PressableOpacity, Screen, ScreenHeader, ThemedView, ThemedText, ThemedIcon, HeaderBackButton } from '../components/ui';
+import { PressableOpacity, Screen, ScreenHeader, ThemedView, ThemedText, ThemedIcon, HeaderBackButton, ThemedTextFontFamilyMap } from '../components/ui';
 import { Colors } from '@/constants/Colors';
 import { openURL, openEmail } from '@/lib/utils';
 import { showShareSheet } from '@/lib/share-sheet';
@@ -20,6 +20,7 @@ import { syncStorageClear } from '@/lib/storage/sync';
 import { inkverseAuthClear } from '@/lib/storage/secure';
 import { SIGNUP_SCREEN, EDIT_PROFILE_SCREEN } from '@/constants/Navigation';
 import { emit, EventNames } from '@inkverse/shared-client/pubsub';
+import { getCannySso, settingsReducer, settingsInitialState } from '@inkverse/shared-client/dispatch/settings';
 
 export type SettingsScreenParams = undefined;
 
@@ -37,6 +38,7 @@ export function SettingsScreen() {
   const [isDarkMode, setIsDarkMode] = useState(colorScheme === 'dark');
   const user = getUserDetails();
   const checkmarkOpacity = useRef(new Animated.Value(0)).current;
+  const [settingsState, settingsDispatch] = useReducer(settingsReducer, settingsInitialState);
   
   // Section 1: Main settings handlers
   const updateProfilePressed = () => {
@@ -158,13 +160,37 @@ export function SettingsScreen() {
     }
   };
 
-  const suggestFeatureButtonPressed = () => {
-    const url = 'https://inkverse.canny.io';
+  const suggestFeatureButtonPressed = async () => {
+    // If user is not logged in, open regular Canny URL
+    if (!user) {
+      try {
+        openURL({ url: 'https://inkverse.canny.io' });
+      } catch (e) {
+        console.error(e);
+      }
+      return;
+    }
+
+    // If already loading, don't make another request
+    if (settingsState.cannySso.isLoading) {
+      return;
+    }
 
     try {
-      openURL({ url });
-    } catch (e) {
-      console.error(e);
+      // Get the user Apollo client and fetch Canny SSO data
+      const userClient = getUserApolloClient();
+      if (!userClient) {
+        throw new Error('User client not available');
+      }
+
+      const cannyData = await getCannySso({ userClient }, settingsDispatch);
+      
+      if (cannyData && cannyData.redirectUrl) {
+        // Open the Canny SSO URL
+        openURL({ url: cannyData.redirectUrl });
+      }
+    } catch (error) {
+      console.error('Error getting Canny SSO:', error);
     }
   };
 
@@ -182,8 +208,8 @@ export function SettingsScreen() {
     showShareSheet({ type: 'share-inkverse', item: null });
   };
 
-  // Define settings items with improved copy
-  const accountItems: SettingItem[] = [
+  // Combine all items for the main list
+  const allSettingsItems: SettingItem[] = [
     { id: 'screen-header', type: 'screen-header', name: 'Account', onPress: () => {} },
     { id: 'light-dark-toggle', type: 'light-dark-toggle', name: isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode', onPress: () => {
       const newColorScheme = colorScheme === 'light' ? 'dark' : 'light';
@@ -194,29 +220,12 @@ export function SettingsScreen() {
     ...(user 
       ? [{ id: 'update-profile', type: 'button' as const, name: '📸 Edit Your Profile', onPress: updateProfilePressed }] 
       : [{ id: 'signup', type: 'button' as const, name: '✨ Sign Up / Log In', onPress: signupButtonPressed }]),
-    // { id: 'signup', type: 'button', name: '✨ Unlock Your Profile!', onPress: signupButtonPressed },
-    { id: 'add-your-comic', type: 'button', name: '✚ Publish your webtoon on Inkverse', onPress: addYourComicButtonPressed },
     { id: 'rate-app', type: 'button', name: `🏅 Rate App (5 stars 🙏)`, onPress: rateAppButtonPressed },
-    { id: 'clear-image-cache', type: 'button', name: '🗑️ Manually clear Image Cache', onPress: clearImageCacheButtonPressed },
+    // { id: 'share-inkverse', type: 'button' as const, name: '🤩 Share Inkverse with your friends', onPress: shareInkverseButtonPressed },
+    { id: 'add-your-comic', type: 'button', name: '✚ Publish your comic on Inkverse', onPress: addYourComicButtonPressed },
+    { id: 'clear-image-cache', type: 'button', name: '🗑️ Manually clear image cache', onPress: clearImageCacheButtonPressed },
     ...(user ? [{ id: 'logout', type: 'button' as const, name: '✌️ Logout', onPress: logoutButtonPressed }] : []),
   ];
-
-  const supportItems: SettingItem[] = [
-    { id: 'email-help', type: 'button' as const, name: '📧 Email me', onPress: emailHelpButtonPressed },
-    { id: 'suggest-feature', type: 'button' as const, name: '💡 Suggest a new feature', onPress: suggestFeatureButtonPressed },
-    { id: 'share-inkverse', type: 'button' as const, name: '🤩 Share Inkverse with your friends', onPress: shareInkverseButtonPressed },
-  ];
-
-  // const shareItems: SettingItem[] = [
-  // ];
-
-  // Combine all items for the main list
-  const allSettingsItems: SettingItem[] = [
-    ...accountItems,
-  ];
-
-  const founderAvatar = 'https://ax0.taddy.org/general/danny-avatar-2.jpg';
-  const founderDescription = "👋 Hey! I'm Danny, the founder & developer of Inkverse. I'd love to hear your feedback on the app!";
 
   const renderLightDarkToggle = (item: SettingItem) => {
     return (
@@ -251,10 +260,11 @@ export function SettingsScreen() {
     } else if (item.type === 'screen-header') {
       return renderScreenHeader();
     } else {
+      const isLastItem = item.id === 'logout';
       return (
         <PressableOpacity
           key={index}
-          style={styles.settingItem}
+          style={[styles.settingItem, isLastItem && styles.settingItemLast]}
           onPress={item.onPress}
         >
           <ThemedView style={styles.settingItemContent}>
@@ -289,40 +299,48 @@ export function SettingsScreen() {
 
   // Render the support section
   const renderCombinedFooterSection = () => {
+
+    const founderAvatar = 'https://ax0.taddy.org/general/danny-avatar-2.jpg';
+    const founderDescription = "👋 Hey! I'm Danny. I'm building Inkverse to help comic fans discover amazing indie comics. What would make Inkverse even better?";
+    
     return (
       <ThemedView style={styles.combinedSectionContainer}>
-        {/* Founder Card - Completely different style */}
+        {/* Founder Card */}
         <ThemedView style={styles.founderCard}>
           <Image 
             source={{ uri: founderAvatar }}
             style={styles.founderAvatar}
           />
-          <View style={styles.founderRightContainer}>
-            <ThemedView style={styles.founderContent}>
-              <ThemedText style={styles.founderDescription}>
-                {founderDescription}
-              </ThemedText>
-            </ThemedView>
-            <ThemedView style={styles.supportCardsContainer}>
-            {supportItems.map((item) => (
-              <PressableOpacity 
-                key={item.id} 
-                style={styles.supportCard}
-                onPress={item.onPress}
-              >
-                <ThemedView style={styles.supportCardContent}>
-                  <ThemedText style={styles.supportCardText}>
-                    {item.name}
-                  </ThemedText>
-                  <ThemedIcon size="small" style={styles.supportCardArrow}>
-                    <FontAwesome5 name="arrow-right" />
-                  </ThemedIcon>
-                </ThemedView>
-              </PressableOpacity>
-            ))}
-            </ThemedView>    
+          <View style={styles.founderContent}>
+            <ThemedText style={styles.founderDescription}>
+              {founderDescription}
+            </ThemedText>
           </View>
-        </ThemedView>  
+        </ThemedView>
+
+        {/* Primary CTA Button */}
+        <PressableOpacity 
+          style={[styles.primaryCTAButton, settingsState.cannySso.isLoading && styles.primaryCTAButtonDisabled]}
+          onPress={suggestFeatureButtonPressed}
+          disabled={settingsState.cannySso.isLoading}
+        >
+          <View style={styles.primaryCTAContent}>
+            {settingsState.cannySso.isLoading 
+              ? <FontAwesome5 name="spinner" solid size={18} color="#FFFFFF" style={styles.primaryCTAIcon} />
+              : <FontAwesome5 name="comments" solid size={18} color="#FFFFFF" style={styles.primaryCTAIcon} />
+            }
+            <ThemedText style={styles.primaryCTAText}>
+              Suggest an improvement
+            </ThemedText>
+          </View>
+        </PressableOpacity>
+
+        {/* Secondary email option */}
+        <PressableOpacity onPress={emailHelpButtonPressed}>
+          <ThemedText style={styles.secondaryEmailText}>
+            or email me
+          </ThemedText>
+        </PressableOpacity>
       </ThemedView>
     );
   };
@@ -372,6 +390,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     marginBottom: 0,
   },
+  settingItemLast: {
+    borderBottomWidth: 0,
+  },
   settingItemContent: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -409,77 +430,79 @@ const styles = StyleSheet.create({
   combinedSectionContainer: {
     marginTop: 32,
     marginBottom: 24,
-    padding: 16,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+  },
+  shareThoughtsHeader: {
+    backgroundColor: '#3E3E3E',
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    borderRadius: 12,
+    marginBottom: 20,
+    width: '100%',
+    alignItems: 'center',
+  },
+  shareThoughtsTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    letterSpacing: 0.3,
+  },
+  primaryCTAButton: {
+    backgroundColor: '#E85D4E',
+    paddingVertical: 14,
+    paddingHorizontal: 32,
+    borderRadius: 28,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  primaryCTAContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+  },
+  primaryCTAIcon: {
+    marginBottom: 0,
+  },
+  primaryCTAText: {
+    fontSize: 16,
+    fontFamily: ThemedTextFontFamilyMap.semiBold,
+    color: '#FFFFFF',
+    letterSpacing: 0.3,
+  },
+  secondaryEmailText: {
+    fontSize: 15,
+    textAlign: 'center',
   },
   founderCard: {
-    borderRadius: 16,
     flexDirection: 'row',
     alignItems: 'flex-start',
+    width: '100%',
+    marginBottom: 16,
   },
   founderAvatar: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    marginRight: 16,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    marginRight: 14,
     borderWidth: 2,
     borderColor: '#fff',
   },
-  founderRightContainer: {
+  founderContent: {
     flex: 1,
     paddingTop: 2,
   },
-  founderContent: {
-    flex: 1,
-    justifyContent: 'flex-start',
-  },
-  founderName: {
-    fontSize: 18,
-    fontWeight: '700',
-    marginBottom: 2,
-  },
-  founderRole: {
-    fontSize: 14,
-    opacity: 0.7,
-    marginBottom: 8,
-  },
   founderDescription: {
-    fontSize: 16,
-    paddingTop: 0,
+    fontSize: 15,
+    lineHeight: 21,
+    opacity: 0.9,
   },
-  supportSectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 16,
-    marginLeft: 8,
-  },
-  supportCardsContainer: {
-    flexDirection: 'column',
-    width: '100%',
-    marginTop: 8,
-  },
-  supportCard: {
-    width: '100%',
-    borderRadius: 12,
-    marginBottom: 6,
-    paddingVertical: 2,
-    // paddingHorizontal: 16,
-    // shadowColor: '#000',
-    // shadowOffset: { width: 0, height: 1 },
-    // shadowOpacity: 0.1,
-    // shadowRadius: 2,
-    // elevation: 2,
-  },
-  supportCardContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-  },
-  supportCardText: {
-    fontSize: 16,
-    marginRight: 4,
-  },
-  supportCardArrow: {
-    marginTop: 2,
-    marginLeft: 3,
+  primaryCTAButtonDisabled: {
+    opacity: 0.7,
   },
 });

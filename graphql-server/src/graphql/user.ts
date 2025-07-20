@@ -11,6 +11,7 @@ import { sendEmail } from '@inkverse/shared-server/messaging/email/index';
 import { inkverseWebsiteUrl } from '@inkverse/public/utils';
 import { isAValidEmail } from '@inkverse/public/utils';
 import { purgeCacheOnCdn } from '@inkverse/shared-server/cache/index';
+import { createCannySSOToken, getCannySSORedirectUrl } from '@inkverse/shared-server/utils/canny';
 
 // GraphQL Type Definitions
 export const UserDefinitions = `
@@ -70,6 +71,14 @@ export const UserDefinitions = `
     avatar: String
     description: String
   }
+
+  """
+  Canny SSO redirect response
+  """
+  type CannySSO {
+    ssoToken: String!
+    redirectUrl: String!
+  }
 `;
 
 // Query and Mutation Definitions
@@ -112,6 +121,11 @@ export const UserQueriesDefinitions = `
     limitPerPage: Int
     page: Int
   ): ProfileComicSeries
+
+  """
+  Generate Canny SSO redirect URL for the current user
+  """
+  cannySso: CannySSO
 `;
 
 export const UserMutationsDefinitions = `
@@ -316,6 +330,30 @@ export const UserQueries = {
     } catch (error) {
       console.error('Error getting user subscribed comics:', error);
       throw new Error('Failed to get subscribed comics');
+    }
+  },
+
+  cannySso: async (_parent: any, _args: any, context: any): Promise<{ ssoToken: string; redirectUrl: string }> => {
+    if (!context.user) {
+      throw new AuthenticationError('You must be logged in to access Canny SSO');
+    }
+
+    try {
+      // Create SSO token using the shared utility
+      const ssoToken = createCannySSOToken({
+        id: context.user.id,
+        email: context.user.email,
+        username: context.user.username,
+        name: context.user.name
+      });
+
+      // Get the redirect URL
+      const redirectUrl = getCannySSORedirectUrl(ssoToken);
+
+      return { ssoToken, redirectUrl };
+    } catch (error: any) {
+      console.error('Error generating Canny SSO:', error);
+      throw new Error(error.message || 'Failed to generate Canny SSO redirect');
     }
   },
 };

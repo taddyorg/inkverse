@@ -44,7 +44,6 @@ export default function ProfileEdit() {
   const navigate = useNavigate();
   const [verificationState, verificationDispatch] = useReducer(verificationReducer, verificationInitialState);
   const userClientRef = useRef<ReturnType<typeof getUserApolloClient> | null>(null);
-  const [theme, setTheme] = useState<string>('light');
   const [isPatreonConnected, setIsPatreonConnected] = useState(false);
   const [isBlueskyConnected, setIsBlueskyConnected] = useState(false);
 
@@ -53,11 +52,6 @@ export default function ProfileEdit() {
     userClientRef.current = userClient;
   }, []);
 
-  useEffect(() => {
-    // Get initial theme from document class
-    const currentTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
-    setTheme(currentTheme);
-  }, []);
 
   useEffect(() => {
     const checkPatreonConnection = async () => {
@@ -90,27 +84,6 @@ export default function ProfileEdit() {
     }
   };
 
-  const handleThemeToggle = async () => {
-    const newTheme = theme === 'dark' ? 'light' : 'dark';
-    setTheme(newTheme);
-    
-    // Update document class
-    document.documentElement.classList.remove('light', 'dark');
-    document.documentElement.classList.add(newTheme);
-    
-    // Update settings
-    try {
-      await fetch('/api/settings', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ theme: newTheme }),
-      });
-    } catch (error) {
-      console.error('Failed to save theme setting:', error);
-    }
-  };
 
   if (!user) {
     return (
@@ -126,11 +99,6 @@ export default function ProfileEdit() {
   }
 
   const profileProperties: ProfileProperty[] = [
-    {
-      type: 'switch',
-      label: 'Theme',
-      value: theme === 'dark' ? 'Dark' : 'Light',
-    },
     {
       type: 'list',
       label: 'Username',
@@ -161,50 +129,10 @@ export default function ProfileEdit() {
       value: isBlueskyConnected ? 'Connected' : 'Not Connected',
       editPath: '/profile/edit/bluesky?step=bluesky',
     },
-    {
-      type: 'action',
-      label: 'Logout',
-      value: '',
-      editPath: '/logout',
-    },
   ];
 
   function renderProperty(property: ProfileProperty) {
     if (property.type === 'switch') {
-      if (property.label === 'Theme') {
-        return (
-          <div key={property.label}>
-            <button
-              onClick={handleThemeToggle}
-              className="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors w-full"
-            >
-              <p className="text-lg font-medium text-inkverse-black dark:text-white">
-                {property.label}
-              </p>
-              <div className="flex items-center gap-2">
-                <span className="text-md text-gray-500 dark:text-gray-400">
-                  {property.value}
-                </span>
-                <div className="p-1 rounded-full">
-                  {theme === 'light' ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-800 dark:text-white stroke-current" fill="none" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                        d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" 
-                      />
-                    </svg>
-                  ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-800 dark:text-white stroke-current" fill="none" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                        d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" 
-                      />
-                    </svg>
-                  )}
-                </div>
-              </div>
-            </button>
-          </div>
-        );
-      }
       return (
         <div key={property.label}>
           <p className="text-lg font-medium text-inkverse-black dark:text-white">
@@ -213,18 +141,7 @@ export default function ProfileEdit() {
         </div>
       );
     }
-    if (property.type === 'action') {
-      return (
-        <div key={property.label}>
-          <Link
-            to={property.editPath || ''}
-            className="flex items-center justify-center p-4 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-red-600 dark:text-red-400 font-medium"
-          >
-            {property.label}
-          </Link>
-        </div>
-      );
-    }
+
     return (
       <div key={property.label}> 
           <Link

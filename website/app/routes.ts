@@ -19,6 +19,7 @@ export default [
     route("logout", "routes/logout.tsx"),
     route("hosting-provider/:uuid", "routes/hosting-provider.tsx"),
     route("profile/setup", "routes/profile/setup.tsx"),
+    route("profile/settings", "routes/profile/settings.tsx"),
     route("profile/edit", "routes/profile/edit.tsx"),
     route("profile/edit/username", "routes/profile/edit/username.tsx"),
     route("profile/edit/age", "routes/profile/edit/age.tsx"),

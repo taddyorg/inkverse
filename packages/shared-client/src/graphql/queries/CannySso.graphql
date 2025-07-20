@@ -1,0 +1,6 @@
+query CannySso {
+  cannySso {
+    ssoToken
+    redirectUrl
+  }
+}

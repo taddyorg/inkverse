@@ -9,6 +9,7 @@ import { ComicSeriesDetails } from '../components/comics/ComicSeriesDetails';
 import { loadUserProfileById, profileReducer, type ProfileState } from '@inkverse/shared-client/dispatch/profile';
 import { useEffect, useReducer } from 'react';
 import { getUserApolloClient } from '@/lib/apollo/client.client';
+import { IoSettingsOutline } from 'react-icons/io5';
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   if (!data) { return []; }
@@ -81,12 +82,21 @@ function ProfileContent({ initialData }: { initialData: Partial<ProfileState> })
           </h1>
           
           {isOwnProfile && (
-            <Link
-              to="/profile/edit"
-              className="bg-brand-pink dark:bg-taddy-blue text-white font-medium px-4 py-2 rounded-3xl transition-colors"
-            >
-              Edit your profile
-            </Link>
+            <div className="flex gap-2">
+              <Link
+                to="/profile/edit"
+                className="bg-brand-pink dark:bg-taddy-blue text-white font-medium px-4 py-2 rounded-3xl transition-colors"
+              >
+                Edit your profile
+              </Link>
+              <Link
+                to="/profile/settings"
+                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-center"
+                title="Settings"
+              >
+                <IoSettingsOutline className="h-6 w-6 text-gray-800 dark:text-white" />
+              </Link>
+            </div>
           )}
         </div>
 
