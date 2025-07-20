@@ -14,6 +14,7 @@ export default [
     route("tagged/:tag", "routes/tag.tsx"),
     route("search/:term/:types?", "routes/search.tsx"),
     route("api/settings", "routes/api.settings.ts"),
+    route("canny-login", "routes/canny-login.tsx"),
     route("download-app", "routes/download-app.tsx"),
     route("reset", "routes/reset.tsx"),
     route("logout", "routes/logout.tsx"),

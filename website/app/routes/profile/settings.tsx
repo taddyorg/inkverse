@@ -203,7 +203,7 @@ export default function ProfileSettings() {
               />
               <div className="flex-1 pt-0.5">
                 <p className="text-[15px] leading-[21px] text-gray-800 dark:text-gray-200 opacity-90">
-                  👋 Hey! I'm Danny. I'm building Inkverse to help comic fans discover amazing indie comics. What would make Inkverse even better?
+                  👋 Hey! I'm Danny. I'm building Inkverse to help comic fans discover awesome indie comics. What would make Inkverse even better?
                 </p>
               </div>
             </div>

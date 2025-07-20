@@ -301,7 +301,7 @@ export function SettingsScreen() {
   const renderCombinedFooterSection = () => {
 
     const founderAvatar = 'https://ax0.taddy.org/general/danny-avatar-2.jpg';
-    const founderDescription = "👋 Hey! I'm Danny. I'm building Inkverse to help comic fans discover amazing indie comics. What would make Inkverse even better?";
+    const founderDescription = "👋 Hey! I'm Danny. I'm building Inkverse to help comic fans discover awesome indie comics. What would make Inkverse even better?";
     
     return (
       <ThemedView style={styles.combinedSectionContainer}>
@@ -428,7 +428,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   combinedSectionContainer: {
-    marginTop: 32,
+    marginTop: 60,
     marginBottom: 24,
     paddingHorizontal: 16,
     alignItems: 'center',
@@ -476,6 +476,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
   secondaryEmailText: {
+    marginTop: 4,
     fontSize: 15,
     textAlign: 'center',
   },

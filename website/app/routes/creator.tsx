@@ -5,7 +5,7 @@ import { useLoaderData } from 'react-router';
 import { CreatorDetails } from '../components/creator/CreatorDetails';
 import { CreatorComics } from '../components/creator/CreatorComics';
 
-import { loadCreator } from '@/lib/loader/creator.server';
+import { loadCreator, type CreatorLoaderData } from '@/lib/loader/creator.server';
 import { getMetaTags } from '@/lib/seo';
 import { getInkverseUrl, inkverseWebsiteUrl } from '@inkverse/public/utils';
 import { getAvatarImageUrl } from '@inkverse/public/creator';
@@ -32,7 +32,7 @@ export default function Creator() {
   return <CreatorContent key={creatorKey} initialData={creatorData} />;
 }
 
-function CreatorContent({ initialData }: { initialData: typeof loader }) {
+function CreatorContent({ initialData }: { initialData: CreatorLoaderData }) {
   // const { match = {}, location, comicseries:SSRComicseries } = props;
 
   // const [ comicseriesQuery, comicseriesQueryDispatch] = useReducer(comicInfoReducer, {});
