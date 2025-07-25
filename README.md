@@ -12,7 +12,7 @@
 - [Helpful Commands](#-helpful-commands)
 - [Additional Docs](#-additional-docs)
 
-## 🏗️ Monorepo Structure
+## Monorepo Structure
 
 ```
 website/          # React web frontend
@@ -26,7 +26,7 @@ packages/         # Internal packages
   └── public/         # Shared constants and types
 ```
 
-## 🏛️ Architecture
+## Architecture
 
 ![Inkverse Monorepo Structure](./docs/images/inkverse-open-source-architecture.webp)
 
