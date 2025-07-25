@@ -4,13 +4,13 @@
 
 ## 📋 Table of Contents
 
-- [Monorepo Structure](#-monorepo-structure)
-- [Architecture](#-architecture)
-- [Quick Setup (Website)](#-quick-setup-website)
-- [Quick Setup (React Native)](#-quick-setup-react-native)
-- [Full Local Setup](#-full-local-setup)
-- [Helpful Commands](#-helpful-commands)
-- [Additional Docs](#-additional-docs)
+- [Monorepo Structure](#monorepo-structure)
+- [Architecture](#architecture)
+- [Quick Setup (Website)](#quick-setup-website)
+- [Quick Setup (React Native)](#quick-setup-react-native)
+- [Full Local Setup](#full-local-setup)
+- [Helpful Commands](#helpful-commands)
+- [Additional Docs](#additional-docs)
 
 ## Monorepo Structure
 
@@ -32,7 +32,7 @@ packages/         # Internal packages
 
 ---
 
-## ⚡ Quick Setup (Website)
+## Quick Setup (Website)
 
 > Setup the website by pointing it to Inkverse's production API for quick setup and without needing to setup a local server.
 
@@ -95,7 +95,7 @@ yarn dev
 
 ---
 
-## 📱 Quick Setup (React Native)
+## Quick Setup (React Native)
 
 > Setup the iOS/Android apps by pointing it to Inkverse's production API for quick setup and without needing to setup a local server.
 
@@ -163,7 +163,7 @@ yarn dev
 
 ---
 
-## 🛠️ Full Local Setup
+## Full Local Setup
 
 > **Complete Setup**: For building new features or fixing complex bugs, you'll need to setup the backend as well as the website and mobile apps. Follow the steps below to setup the backend locally.
 
@@ -274,9 +274,9 @@ yarn run dev
 
 ---
 
-## 💡 Helpful Commands
+## Helpful Commands
 
-### 🐳 Docker Management
+### Docker Management
 
 ```bash
 # Start all containers
@@ -289,7 +289,7 @@ docker stop inkverse-postgres && docker stop inkverse-queues
 docker ps -a
 ```
 
-### 🔧 Development Commands
+### Development Commands
 
 ```bash
 # Watch and rebuild internal packages
@@ -309,7 +309,7 @@ cd react-native && yarn run ios     # iOS
 cd react-native && yarn run android # Android
 ```
 
-### 📊 Database Commands
+### Database Commands
 
 ```bash
 # Run migrations
@@ -319,7 +319,7 @@ yarn run migrate
 yarn run migrate:rollback
 ```
 
-### 🔄 GraphQL Commands
+### GraphQL Commands
 
 ```bash
 # Generate types after schema changes
@@ -328,7 +328,7 @@ yarn run graphql-codegen
 
 ---
 
-## 📚 Additional Docs
+## Additional Docs
 
 | Document | Description |
 |----------|-------------|
