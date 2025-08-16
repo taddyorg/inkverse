@@ -272,6 +272,60 @@ yarn run dev
 
 🎉 **Success!** Inkverse Server is running on [inkverse.test:3010](http://inkverse.test:3010/).
 
+#### 10. Add comics to your local database
+
+Yay! You have Inkverse running locally, but you don't have any comics in your database to display! Let's fix that.  
+
+**What we'll do:**
+1. Download a list of comics from Taddy's Webcomics API
+2. Set up a queue to process the comic data
+3. Fetch detailed information for each comic and import it into your database
+
+**Step 1: Download comics list**
+
+Download the [full comics list from Taddy's Webcomics API](https://taddy.org/developers/comics-api/bulk-download-comicseries) and rename it to `comicseries.txt`. Place it in the `worker/input` directory.
+
+**Step 2: Create a queue to handle the responses from Taddy's API**
+
+```bash
+cd worker
+yarn run create-new-queue INKVERSE_HIGH_PRIORITY
+```
+
+**Step 3: Get detailed information about each comic and its episodes**
+
+Get your Taddy API User ID and API Key for free by [signing up here](https://taddy.org/signup/developers). Add them to your `.env` file in `packages/shared-server`:
+
+```env
+TADDY_USER_ID=your_user_id
+TADDY_API_KEY=your_api_key
+TADDY_WEBHOOK_SECRET=xyz
+TADDY_WEBHOOK_ENDPOINT_URL=http://inkverse.test:3010/api/worker/process-taddy-webhook
+```
+
+You will also need to add TADDY_WEBHOOK_SECRET and TADDY_WEBHOOK_ENDPOINT_URL to your `.env` file in `worker/.env`. You can use the same values as above. (You can use any value for WEBHOOK_SECRET, it just has to be the same for both files)
+
+```env
+TADDY_WEBHOOK_SECRET=xyz
+TADDY_WEBHOOK_ENDPOINT_URL=http://inkverse.test:3010/api/worker/process-taddy-webhook
+```
+
+Then run the following command to download detailed information about each comic and its episodes:
+
+```bash
+cd worker 
+yarn run import-all-comics
+```
+
+**Step 4: Add the comics to your local database**
+
+Finally, run the following command process every message in the INKVERSE_HIGH_PRIORITY queue (each message contains details about a comic and its episodes) and we will add these comics and episodes to your local database.
+
+```bash
+cd worker 
+yarn run receive-messages INKVERSE_HIGH_PRIORITY
+```
+
 ---
 
 ## Helpful Commands
@@ -292,7 +346,7 @@ docker ps -a
 ### Development Commands
 
 ```bash
-# Watch and rebuild internal packages
+# Watch and rebuild internal packages (you need to always have this running in the background to check for changes with  your internal packages)
 yarn watch:internal-packages
 
 # Start backend server
