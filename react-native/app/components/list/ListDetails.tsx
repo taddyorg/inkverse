@@ -1,11 +1,12 @@
 import React, { useCallback } from 'react';
 import { StyleSheet, View, TouchableOpacity, Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Image } from 'expo-image';
 import { FlashList } from '@shopify/flash-list';
 
 import { ThemedText, ThemedView, ThemedTextFontFamilyMap } from '../ui/index';
-import { LIST_SCREEN } from '@/constants/Navigation';
+import { LIST_SCREEN, RootStackParamList } from '@/constants/Navigation';
 import type { List } from '@inkverse/shared-client/graphql/operations';
 import { ComicSeriesDetails } from '../comics/ComicSeriesDetails';
 
@@ -20,7 +21,7 @@ interface ListDetailsProps {
 }
 
 export function ListDetails({ list, pageType, imagePriority }: ListDetailsProps) {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   if (pageType === 'featured-list') {
     return (
@@ -66,7 +67,6 @@ export function ListDetails({ list, pageType, imagePriority }: ListDetailsProps)
               />
             )}
             keyExtractor={series => series.uuid}
-            estimatedItemSize={100}
           />
         )}
         </View>

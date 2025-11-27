@@ -1,6 +1,6 @@
-import type { ApolloClient } from '@apollo/client';
+import { ApolloClient } from '@apollo/client';
 import type { Dispatch } from 'react';
-import gql from 'graphql-tag';
+import { ReportComicSeries, type ReportComicSeriesMutationVariables, type ReportComicSeriesMutation } from '../graphql/operations';
 
 /* Action Type Enum */
 export enum ReportActionType {
@@ -19,13 +19,6 @@ export type ReportAction =
   | { type: ReportActionType.REPORT_COMIC_SERIES_ERROR; payload: string }
   | { type: ReportActionType.RESET_REPORT };
 
-/* GraphQL Mutation */
-export const ReportComicSeriesMutation = gql`
-  mutation ReportComicSeries($uuid: ID!, $reportType: String) {
-    reportComicSeries(uuid: $uuid, reportType: $reportType)
-  }
-`;
-
 /* Types */
 export interface ReportState {
   isSubmitting: boolean;
@@ -41,7 +34,7 @@ export const reportInitialState: ReportState = {
 
 /* Action Creators */
 interface ReportComicSeriesProps {
-  publicClient: ApolloClient<any>;
+  publicClient: ApolloClient;
   uuid: string;
   reportType: string;
 }
@@ -53,8 +46,8 @@ export async function submitReportComicSeries(
   if (dispatch) dispatch({ type: ReportActionType.REPORT_COMIC_SERIES_START });
 
   try {
-    const result = await publicClient.mutate({
-      mutation: ReportComicSeriesMutation,
+    const result = await publicClient.mutate<ReportComicSeriesMutation, ReportComicSeriesMutationVariables>({
+      mutation: ReportComicSeries,
       variables: { 
         uuid,
         reportType

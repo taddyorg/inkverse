@@ -1,4 +1,5 @@
-import express, { Router, type NextFunction, type Request, type Response } from 'express';
+import express, { Router } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import { getSafeError } from '@inkverse/shared-server/utils/errors';
 import { sendMessage } from '@inkverse/shared-server/queues/utils';
 

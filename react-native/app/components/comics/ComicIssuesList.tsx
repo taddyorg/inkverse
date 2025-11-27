@@ -81,7 +81,6 @@ export const ComicIssuesList = (props: ComicIssuesListProps) => {
       <View style={styles.flashListContainer}>
         <FlashList
           data={listData}
-          estimatedItemSize={72}
           renderItem={renderItem}
           keyExtractor={(item) => item.key}
         />

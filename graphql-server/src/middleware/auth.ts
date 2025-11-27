@@ -3,6 +3,7 @@
  * 
  * Verifies JWT tokens and attaches user data to the request context
  */
+import type { Request } from 'express';
 import { verifyToken } from '@inkverse/shared-server/utils/authentication';
 import type { User } from '@inkverse/public/graphql/types';
 import { User as UserFns } from '@inkverse/shared-server/models/index';

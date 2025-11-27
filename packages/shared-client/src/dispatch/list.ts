@@ -1,4 +1,4 @@
-import type { ApolloClient } from '@apollo/client';
+import { ApolloClient } from '@apollo/client';
 import type { Dispatch } from 'react';
 import { type GetListQuery, type GetListQueryVariables, GetList, type List } from "../graphql/operations.js";
 
@@ -31,7 +31,7 @@ export const listInitialState: ListLoaderData = {
 
 /* Action Creators */
 interface GetListProps {
-  publicClient: ApolloClient<any>;
+  publicClient: ApolloClient;
   id: string;
   forceRefresh?: boolean;
 }

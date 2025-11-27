@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { View, StyleSheet, TextInput } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { FlashList } from '@shopify/flash-list';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { useState, useCallback, useEffect, useReducer } from 'react';
@@ -12,7 +13,7 @@ import { Colors, useThemeColor } from '@/constants/Colors';
 import { ComicSeriesDetails } from '@/app/components/comics/ComicSeriesDetails';
 import { getPublicApolloClient } from '@/lib/apollo';
 import { searchReducer, searchInitialState, searchComics, debouncedSearchComics } from '@inkverse/shared-client/dispatch/search';
-import { COMICS_LIST_SCREEN } from '@/constants/Navigation';
+import { COMICS_LIST_SCREEN, RootStackParamList } from '@/constants/Navigation';
 
 // Popular webtoon tags
 // const POPULAR_TAGS = [
@@ -143,7 +144,7 @@ function useSearch() {
 }
 
 export function SearchScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { 
     searchText, 
     setSearchText, 
@@ -282,7 +283,6 @@ export function SearchScreen() {
         <FlashList
           data={getListData()}
           renderItem={renderItem}
-          estimatedItemSize={300}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.listContent}
         />
@@ -433,10 +433,12 @@ interface SectionProps {
 
 const Section: React.FC<SectionProps> = ({ title, children }) => (
   <View style={styles.section}>
-    <ThemedText size='subtitle' style={styles.sectionTitle}>
-      {title}
-    </ThemedText>
-    {children}
+    <>
+      <ThemedText size='subtitle' style={styles.sectionTitle}>
+        {title}
+      </ThemedText>
+      {children}
+    </>
   </View>
 );
 

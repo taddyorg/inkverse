@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AuthProvider } from '@inkverse/public/graphql/types';
 import { 
   authReducer, 
@@ -22,18 +23,20 @@ import { ThemedView, ThemedText, PressableOpacity } from '@/app/components/ui';
 import { Colors, useThemeColor } from '@/constants/Colors';
 import { SPACING } from '@/constants/Spacing';
 import { SvgXml } from 'react-native-svg';
-import { SIGNUP_EMAIL_SCREEN, SIGNUP_NOTIFICATIONS_SCREEN, SIGNUP_USERNAME_SCREEN } from '@/constants/Navigation';
+import { SIGNUP_EMAIL_SCREEN, SIGNUP_NOTIFICATIONS_SCREEN, SIGNUP_USERNAME_SCREEN, RootStackParamList } from '@/constants/Navigation';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import config from '@/config';
 import { getUserDetails, mobileStorageFunctions } from '@/lib/auth/user';
 import { saveHostingProviderRefreshToken, refreshHostingProviderAccessToken } from '@/lib/auth/hosting-provider';
 import { getUserApolloClient } from '@/lib/apollo';
 import { fetchAllHostingProviderTokens } from '@inkverse/shared-client/dispatch/hosting-provider';
+import { useAnalytics, AnalyticsEvent } from '@/lib/analytics';
 
 export function SignupScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [authState, dispatch] = useReducer(authReducer, authInitialState);
   const colorScheme = useColorScheme();
+  const analytics = useAnalytics();
 
   if (Platform.OS === 'ios' && !__DEV__) {
     const { GoogleSignin } = require('@react-native-google-signin/google-signin');
@@ -62,6 +65,21 @@ export function SignupScreen() {
       saveHostingProviderRefreshToken, 
       refreshHostingProviderAccessToken 
     })
+
+    if (user && user.id) {
+      // Identify user with analytics
+      analytics.identify(user.id, {
+        userId: user.id,
+        username: user.username || undefined,
+        email: user.email || undefined,
+      });
+
+      // Track login event
+      analytics.track(AnalyticsEvent.USER_LOGGED_IN, {
+        method: 'oauth', // authState doesn't have currentProvider
+        isNewUser: !user.username,
+      });
+    }
 
     if (!user?.username) {
       navigation.navigate(SIGNUP_USERNAME_SCREEN);

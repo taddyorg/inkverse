@@ -1,5 +1,5 @@
 import type { Dispatch } from 'react';
-import type { ApolloClient, FetchResult } from '@apollo/client';
+import { ApolloClient } from '@apollo/client';
 import { 
   ResendVerificationEmail,
 } from '../graphql/operations';
@@ -43,7 +43,7 @@ export const verificationReducer = (state: VerificationState, action: Verificati
 };
 
 interface ResendVerificationEmailParams {
-  userClient: ApolloClient<any>;
+  userClient: ApolloClient;
 }
 
 export async function resendVerificationEmail(
@@ -53,14 +53,15 @@ export async function resendVerificationEmail(
   if (dispatch) dispatch({ type: VerificationActionType.VERIFICATION_START });
 
   try {
-    const result: FetchResult<ResendVerificationEmailMutation> = await userClient.mutate<
+    const result = await userClient.mutate<
       ResendVerificationEmailMutation,
       ResendVerificationEmailMutationVariables
     >({
       mutation: ResendVerificationEmail,
     });
 
-    const { data, errors } = result;
+    const { data } = result;
+    const errors = (result as any).errors;
 
     if (errors) {
       throw new Error(errors[0]?.message || 'Failed to resend verification email');

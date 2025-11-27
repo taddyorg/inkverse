@@ -1,12 +1,13 @@
 import React from 'react';
 import { StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Image } from 'expo-image';
 import { FlashList } from '@shopify/flash-list';
 
 import { ThemedText, ThemedView } from '../ui';
 
-import { COMICSERIES_SCREEN } from '@/constants/Navigation';
+import { COMICSERIES_SCREEN, RootStackParamList } from '@/constants/Navigation';
 import { getCoverImageUrl } from '@inkverse/public/comicseries';
 import { type ComicSeries } from '@inkverse/shared-client/graphql/operations';
 
@@ -15,7 +16,7 @@ interface CreatorComicsProps {
 }
 
 export function CreatorComics({ comicseries }: CreatorComicsProps) {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   if (!comicseries || comicseries.length === 0) {
     return null;
@@ -47,7 +48,6 @@ export function CreatorComics({ comicseries }: CreatorComicsProps) {
       <FlashList
         data={comicseries}
         keyExtractor={(item) => item.uuid}
-        estimatedItemSize={200}
         renderItem={renderComicItem}
         numColumns={2}
         showsHorizontalScrollIndicator={false}

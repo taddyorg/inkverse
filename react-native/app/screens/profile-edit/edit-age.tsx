@@ -5,8 +5,9 @@ import { SetupAge } from '@/app/components/profile/SetupAge';
 import { getUserApolloClient } from '@/lib/apollo';
 import { userDetailsReducer, userDetailsInitialState, updateAgeRange } from '@inkverse/shared-client/dispatch/user-details';
 import { UserAgeRange } from '@inkverse/shared-client/graphql/operations';
-import type { ApolloClient, NormalizedCacheObject } from '@apollo/client';
+import type { ApolloClient } from '@apollo/client';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { EDIT_AGE_SCREEN, RootStackParamList } from '@/constants/Navigation';
 
@@ -16,7 +17,7 @@ export interface EditAgeScreenParams {
 }
 
 export function EditAgeScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<NativeStackScreenProps<RootStackParamList, typeof EDIT_AGE_SCREEN>['route']>();
   const { passedInAgeRange, passedInBirthYear } = route.params || {};
   
@@ -24,7 +25,7 @@ export function EditAgeScreen() {
   const [birthYear, setBirthYear] = useState(passedInBirthYear?.toString() || '');
 
   const userClient = getUserApolloClient();
-  const userClientRef = useRef<ApolloClient<NormalizedCacheObject> | null>(null);
+  const userClientRef = useRef<ApolloClient | null>(null);
   userClientRef.current = userClient;
   
   const [userDetailsState, userDetailsDispatch] = useReducer(userDetailsReducer, userDetailsInitialState);

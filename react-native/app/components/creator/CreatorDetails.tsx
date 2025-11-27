@@ -7,6 +7,8 @@ import { getAvatarImageUrl } from '@inkverse/public/creator';
 import { type Creator } from '@inkverse/shared-client/graphql/operations';
 import { CREATOR_SCREEN } from '@/constants/Navigation';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '@/constants/Navigation';
 import { CreatorLinks } from './CreatorLinks';
 
 type CreatorPageType = 
@@ -26,7 +28,7 @@ export function CreatorDetails({ creator, pageType }: CreatorDetailsProps) {
   const avatarUrl = getAvatarImageUrl({ avatarImageAsString: creator.avatarImageAsString });
 
   if (pageType === 'mini-creator') {
-    const navigation = useNavigation();
+    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
     return (
       <TouchableOpacity 

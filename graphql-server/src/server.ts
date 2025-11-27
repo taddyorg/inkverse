@@ -1,9 +1,10 @@
 import express from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import http from 'http';
 import type { ValidationRule } from 'graphql';
 import { ApolloServer } from '@apollo/server';
-import { expressMiddleware } from '@apollo/server/express4';
+import { expressMiddleware } from '@as-integrations/express5';
 
 import { depthLimit } from './graphql/validators/depth-limit.js';
 import { requiredFields } from './graphql/validators/required-fields.js';
@@ -80,7 +81,7 @@ async function startServer() {
     expressMiddleware(server, {
       context: async ({ req }) => {
         // Use the auth middleware to create context with user if authenticated
-        return createAuthContext(req as unknown as Request);
+        return createAuthContext(req as Request);
       },
     }),
   );
@@ -97,7 +98,7 @@ async function startServer() {
   app.use('/api/auth', cors(authCorsOptions), authRouter);
   app.use('/api/hosting-provider', hostingProviderRouter);
 
-  app.use((error: any, req: any, res: any, next: any) => {
+  app.use((error: any, req: Request, res: Response, next: NextFunction) => {
     return errorMessageToJsonError(res, error)
   });
 

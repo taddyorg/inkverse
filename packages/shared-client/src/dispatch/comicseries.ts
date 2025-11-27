@@ -1,4 +1,4 @@
-import type { ApolloClient, ApolloQueryResult } from '@apollo/client';
+import { ApolloClient } from '@apollo/client';
 import type { Dispatch } from 'react';
 import { type GetComicSeriesQuery, type GetComicSeriesQueryVariables, SortOrder, GetComicSeries, type ComicIssue, type ComicSeries, GetMiniComicSeries, type GetMiniComicSeriesQuery, type GetMiniComicSeriesQueryVariables, type SubscribeToSeriesMutation, type SubscribeToSeriesMutationVariables, SubscribeToSeries, type UnsubscribeFromSeriesMutation, type UnsubscribeFromSeriesMutationVariables, UnsubscribeFromSeries, GetUserComicSeries, type GetUserComicSeriesQuery, type GetUserComicSeriesQueryVariables, type EnableNotificationsForSeriesMutation, type EnableNotificationsForSeriesMutationVariables, EnableNotificationsForSeries, type DisableNotificationsForSeriesMutation, type DisableNotificationsForSeriesMutationVariables, DisableNotificationsForSeries, GetProfileByUserId } from "../graphql/operations.js";
 import { emit, EventNames } from '../pubsub';
@@ -102,45 +102,45 @@ export const comicSeriesInitialState: Partial<ComicSeriesLoaderData> = {
 
 /* Action Creators */
 interface GetComicSeriesProps {
-  publicClient: ApolloClient<any>;
+  publicClient: ApolloClient;
   uuid: string;
   forceRefresh?: boolean;
 }
 
 /* Action Creators */
 interface WrappedGetComicSeriesProps {
-  publicClient: ApolloClient<any>;
+  publicClient: ApolloClient;
   shortUrl: string;
 }
 
 /* User Comic Data Actions */
 interface GetUserComicDataProps {
-  userClient: ApolloClient<any>;
+  userClient: ApolloClient;
   seriesUuid: string;
   forceRefresh?: boolean;
 }
 
 interface SubscribeToSeriesProps {
-  userClient: ApolloClient<any>;
+  userClient: ApolloClient;
   seriesUuid: string;
   userId: string;
 }
 
 interface UnsubscribeFromSeriesProps {
-  userClient: ApolloClient<any>;
+  userClient: ApolloClient;
   seriesUuid: string;
   userId: string;
 }
 
 /* Notification Actions */
 interface EnableNotificationsProps {
-  userClient: ApolloClient<any>;
+  userClient: ApolloClient;
   seriesUuid: string;
   userId: string;
 }
 
 interface DisableNotificationsProps {
-  userClient: ApolloClient<any>;
+  userClient: ApolloClient;
   seriesUuid: string;
   userId: string;
 }
@@ -153,7 +153,7 @@ export async function loadComicSeriesUrl(
 
   try {
     // Then get the full comic series data
-    const getComicSeriesUuid: ApolloQueryResult<GetMiniComicSeriesQuery> = await publicClient.query<GetMiniComicSeriesQuery, GetMiniComicSeriesQueryVariables>({
+    const getComicSeriesUuid = await publicClient.query<GetMiniComicSeriesQuery, GetMiniComicSeriesQueryVariables>({
       query: GetMiniComicSeries,
       variables: { shortUrl },
     });
@@ -473,10 +473,10 @@ export function parseLoaderComicSeries(data: GetComicSeriesQuery): Partial<Comic
   };
 }
 
-export function parseLoaderUserComicSeries(data: GetUserComicSeriesQuery): Partial<ComicSeriesLoaderData> {
+export function parseLoaderUserComicSeries(data: GetUserComicSeriesQuery | undefined): Partial<ComicSeriesLoaderData> {
   return {
     isUserDataLoading: false,
-    userComicData: data.getUserComicSeries
+    userComicData: data?.getUserComicSeries || null
   };
 }
 

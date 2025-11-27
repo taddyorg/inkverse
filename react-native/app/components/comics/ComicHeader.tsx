@@ -1,6 +1,8 @@
 import React from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '@/constants/Navigation';
 import { Ionicons } from '@expo/vector-icons';
 
 import { ThemedText, PressableOpacity } from '../ui';
@@ -15,7 +17,7 @@ interface ComicHeaderProps {
 }
 
 export function ComicHeader({ headerPosition, comicseries, comicissue }: ComicHeaderProps) {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   
   return (
     <Animated.View style={[styles.header, { transform: [{ translateY: headerPosition }] }]}>

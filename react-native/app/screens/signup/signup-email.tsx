@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { isAValidEmail } from '@inkverse/public/utils';
 import { 
   authReducer, 
@@ -21,7 +22,7 @@ import config from '@/config';
 import { ThemedView, ThemedText, ThemedButton, PressableOpacity, HeaderBackButton } from '@/app/components/ui';
 import { Colors, useThemeColor } from '@/constants/Colors';
 import { SPACING } from '@/constants/Spacing';
-import { SIGNUP_RESET_SCREEN } from '@/constants/Navigation';
+import { SIGNUP_RESET_SCREEN, RootStackParamList } from '@/constants/Navigation';
 
 function getOTP(url: string): string | null {
   try {
@@ -41,7 +42,7 @@ function getOTP(url: string): string | null {
 }
 
 export function SignupEmailScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [email, setEmail] = useState('');
   const [link, setLink] = useState('');
   const [mode, setMode] = useState<'enter-email' | 'check-email'>('enter-email');

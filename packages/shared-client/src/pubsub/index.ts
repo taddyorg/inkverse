@@ -1,5 +1,5 @@
 import mitt, { type Emitter } from 'mitt';
-import type { ApolloClient, NormalizedCacheObject } from '@apollo/client';
+import type { ApolloClient } from '@apollo/client';
 
 // Create a typed mitt instance
 export const pubsub: Emitter<PubSubEvents> = mitt<PubSubEvents>();
@@ -52,7 +52,7 @@ export type EventName = keyof PubSubEvents;
  * 
  * @param apolloClient - The Apollo client instance to manage cache for
  */
-export function setupUserClientEventListeners(apolloClient: ApolloClient<NormalizedCacheObject>): void {
+export function setupUserClientEventListeners(apolloClient: ApolloClient): void {
   // Handle comic subscription changes
   on(EventNames.COMIC_SUBSCRIBED, (event: PubSubEvents['COMIC_SUBSCRIBED']) => {
     evictUserComicSeries(apolloClient, event.seriesUuid);
@@ -69,7 +69,7 @@ export function setupUserClientEventListeners(apolloClient: ApolloClient<Normali
  * @param apolloClient - The Apollo client instance
  * @param seriesUuid - The UUID of the comic series to evict
  */
-function evictUserComicSeries(userClient: ApolloClient<NormalizedCacheObject>, seriesUuid: string): void {
+function evictUserComicSeries(userClient: ApolloClient, seriesUuid: string): void {
   try {
     // Evict the UserComicSeries entry for this series
     const evicted = userClient.cache.evict({ 

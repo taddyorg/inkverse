@@ -1,6 +1,7 @@
 import { useState, useReducer, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { 
   userDetailsReducer, 
   userDetailsInitialState,
@@ -8,13 +9,13 @@ import {
 } from '@inkverse/shared-client/dispatch/user-details';
 import { Screen, ThemedView, ThemedText, PressableOpacity } from '@/app/components/ui';
 import { SetupUsername } from '@/app/components/profile/SetupUsername';
-import { SIGNUP_AGE_SCREEN } from '@/constants/Navigation';
+import { SIGNUP_AGE_SCREEN, RootStackParamList } from '@/constants/Navigation';
 import { getUserApolloClient } from '@/lib/apollo';
 import { mobileStorageFunctions } from '@/lib/auth/user';
 import { updateUsername } from '@inkverse/shared-client/dispatch/user-details';
 
 export function SignupUsernameScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [username, setUsername] = useState('');
   const [userDetailsState, dispatch] = useReducer(userDetailsReducer, userDetailsInitialState);
 

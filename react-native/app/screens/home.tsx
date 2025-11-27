@@ -1,13 +1,14 @@
 import { useReducer, useState, useCallback, useEffect, memo, useRef } from 'react';
 import { StyleSheet, TouchableOpacity, View, FlatList, ListRenderItem } from 'react-native';
 import { useNavigation, useScrollToTop } from '@react-navigation/native';
-import { FlashList } from '@shopify/flash-list';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { FlashList, FlashListRef } from '@shopify/flash-list';
 
 import { Screen, ThemedText, ThemedActivityIndicator, ThemedTextFontFamilyMap, PressableOpacity, ThemedRefreshControl } from '@/app/components/ui';
 import { ComicSeriesDetails } from '@/app/components/comics/ComicSeriesDetails';
 import { ListDetails } from '@/app/components/list/ListDetails';
 import { Header } from '@/app/components/home/Header';
-import { BLOG_SCREEN, LIST_SCREEN } from '@/constants/Navigation';
+import { BLOG_SCREEN, LIST_SCREEN, RootStackParamList } from '@/constants/Navigation';
 
 import { getPublicApolloClient } from '@/lib/apollo';
 import { ComicSeries, List } from '@inkverse/shared-client/graphql/operations';
@@ -27,7 +28,7 @@ type SectionType =
 export function HomeScreen() {
   const [homeScreenState, dispatch] = useReducer(homefeedReducer, homeScreenInitialState);
   const [refreshing, setRefreshing] = useState(false);
-  const flashListRef = useRef<FlashList<SectionType>>(null);
+  const flashListRef = useRef<FlashListRef<SectionType>>(null);
   const publicClient = getPublicApolloClient();
   
   useScrollToTop(flashListRef);
@@ -110,7 +111,6 @@ export function HomeScreen() {
         data={sections()}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
-        estimatedItemSize={300}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -121,7 +121,7 @@ export function HomeScreen() {
   );
 }
 
-const FeaturedWebtoons = memo(({ comicSeries }: { comicSeries: ComicSeries[] | null | undefined }) => {
+const FeaturedWebtoons = ({ comicSeries }: { comicSeries: ComicSeries[] | null | undefined }) => {
   const firstComicSeries = comicSeries?.[0];
   return (
     <View style={styles.section}>
@@ -134,11 +134,11 @@ const FeaturedWebtoons = memo(({ comicSeries }: { comicSeries: ComicSeries[] | n
       )}
     </View>
   );
-});
+};
 
-const MostRecommendedWebtoons = memo(({ comicSeries }: { comicSeries: ComicSeries[] | null | undefined }) => {
+const MostRecommendedWebtoons = ({ comicSeries }: { comicSeries: ComicSeries[] | null | undefined }) => {
   const slicedComicSeries = comicSeries?.slice(0, 3);
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   
   const renderItem: ListRenderItem<ComicSeries> = useCallback(({ item, index }) => (
     <ComicSeriesDetails
@@ -171,9 +171,9 @@ const MostRecommendedWebtoons = memo(({ comicSeries }: { comicSeries: ComicSerie
       </PressableOpacity>
     </View>
   );
-});
+};
 
-const CuratedLists = memo(({ lists }: { lists: List[] | null | undefined }) => {
+const CuratedLists = ({ lists }: { lists: List[] | null | undefined }) => {
   const renderItem: ListRenderItem<List> = useCallback(({ item, index }) => (
     <ListDetails 
       list={item} 
@@ -197,9 +197,9 @@ const CuratedLists = memo(({ lists }: { lists: List[] | null | undefined }) => {
       />
     </View>
   );
-});
+};
 
-const RecentlyUpdatedWebtoons = memo(({ comicSeries }: { comicSeries: ComicSeries[] | null | undefined }) => {
+const RecentlyUpdatedWebtoons = ({ comicSeries }: { comicSeries: ComicSeries[] | null | undefined }) => {
   const renderItem: ListRenderItem<ComicSeries> = useCallback(({ item, index }) => (
     <View style={styles.horizontalComicItem}>
       <ComicSeriesDetails
@@ -225,9 +225,9 @@ const RecentlyUpdatedWebtoons = memo(({ comicSeries }: { comicSeries: ComicSerie
       />
     </View>
   );
-});
+};
 
-const RecentlyAddedWebtoons = memo(({ comicSeries }: { comicSeries: ComicSeries[] | null | undefined }) => {
+const RecentlyAddedWebtoons = ({ comicSeries }: { comicSeries: ComicSeries[] | null | undefined }) => {
   const renderItem: ListRenderItem<ComicSeries> = useCallback(({ item, index }) => (
     <View style={styles.horizontalComicItem}>
       <ComicSeriesDetails
@@ -253,10 +253,10 @@ const RecentlyAddedWebtoons = memo(({ comicSeries }: { comicSeries: ComicSeries[
       />
     </View>
   );
-});
+};
 
-const InkverseNews = memo(({ newsItems }: { newsItems: NewsItem[] | null | undefined }) => {
-  const navigation = useNavigation();
+const InkverseNews = ({ newsItems }: { newsItems: NewsItem[] | null | undefined }) => {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const renderItem: ListRenderItem<NewsItem> = useCallback(({ item }) => (
     <TouchableOpacity 
@@ -283,7 +283,7 @@ const InkverseNews = memo(({ newsItems }: { newsItems: NewsItem[] | null | undef
       />
     </View>
   );
-});
+};
 
 const styles = StyleSheet.create({
   container: {

@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useReducer, useRef } from 'react';
 import { View, ScrollView, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList, EDIT_USERNAME_SCREEN, EDIT_AGE_SCREEN, EDIT_EMAIL_SCREEN, EDIT_PATREON_SCREEN, EDIT_BLUESKY_SCREEN } from '@/constants/Navigation';
 import { HeaderBackButton, ThemedRefreshControl, ThemedText, ThemedView } from '@/app/components/ui';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -12,7 +13,7 @@ import { TADDY_HOSTING_PROVIDER_UUID } from '@inkverse/public/hosting-providers'
 import { jwtDecode } from 'jwt-decode';
 import { getUserApolloClient } from '@/lib/apollo';
 import { userDetailsReducer, userDetailsInitialState, getMeDetails } from '@inkverse/shared-client/dispatch/user-details';
-import type { ApolloClient, NormalizedCacheObject } from '@apollo/client';
+import type { ApolloClient } from '@apollo/client';
 import { getUserDetails } from '@/lib/auth/user';
 import { on, off, EventNames } from '@inkverse/shared-client/pubsub';
 
@@ -25,9 +26,9 @@ interface ProfileProperty {
 }
 
 export function EditProfileScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const userClient = getUserApolloClient();
-  const userClientRef = useRef<ApolloClient<NormalizedCacheObject> | null>(null);
+  const userClientRef = useRef<ApolloClient | null>(null);
   userClientRef.current = userClient;
 
   const user = getUserDetails();
@@ -64,7 +65,7 @@ export function EditProfileScreen() {
     try {
       if (userClientRef.current) {
         await getMeDetails({
-          userClient: userClientRef.current as any,
+          userClient: userClientRef.current,
           forceRefresh,
         }, userDetailsDispatch);
       }

@@ -1,4 +1,4 @@
-import { ApolloClient, type ApolloQueryResult } from '@apollo/client';
+import { ApolloClient } from '@apollo/client';
 import type { Dispatch } from 'react';
 import { GetCreator, type GetCreatorQuery, type Creator, type ComicSeries, GetMiniCreator, type GetMiniCreatorQuery, type GetMiniCreatorQueryVariables } from '../graphql/operations.js';
 
@@ -34,13 +34,13 @@ export const creatorInitialState: CreatorLoaderData = {
 
 /* Action Creators */
 interface GetCreatorScreenProps {
-  publicClient: ApolloClient<any>;
+  publicClient: ApolloClient;
   uuid: string;
   forceRefresh?: boolean;
 }
 
 interface WrappedGetCreatorProps {
-  publicClient: ApolloClient<any>;
+  publicClient: ApolloClient;
   shortUrl: string;
 }
 
@@ -95,7 +95,7 @@ export async function loadCreatorUrl(
 
   try {
     // Get the creator UUID from shortUrl
-    const getCreatorUuid: ApolloQueryResult<GetMiniCreatorQuery> = await publicClient.query<GetMiniCreatorQuery, GetMiniCreatorQueryVariables>({
+    const getCreatorUuid = await publicClient.query<GetMiniCreatorQuery, GetMiniCreatorQueryVariables>({
       query: GetMiniCreator,
       variables: { shortUrl },
     });
@@ -104,7 +104,7 @@ export async function loadCreatorUrl(
       throw new Response("Not Found", { status: 404 });
     }
 
-    const parsedData = parseLoaderCreator(getCreatorUuid.data);
+    const parsedData = parseLoaderCreator(getCreatorUuid.data as GetCreatorQuery);
 
     if (dispatch) {
       dispatch({ 

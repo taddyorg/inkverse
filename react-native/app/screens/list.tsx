@@ -90,7 +90,6 @@ export function ListScreen() {
       <FlashList
         data={listData}
         renderItem={renderItem}
-        estimatedItemSize={200}
         contentContainerStyle={styles.contentContainer}
         refreshControl={
           <ThemedRefreshControl
@@ -111,11 +110,13 @@ type ListScreenWrapperProps = {
 const ListScreenWrapper = memo(({ children, list }: ListScreenWrapperProps) => {
   return (
     <Screen style={styles.container}>
+      <>
         <View>
           <HeaderBackButton />
           <HeaderShareButton type="list" item={list} />
         </View>
       {children}
+      </>
     </Screen>
   );
 });

@@ -3,6 +3,7 @@ import { StyleSheet, Platform, Appearance, useColorScheme, Switch, View, Animate
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { FlashList } from '@shopify/flash-list';
 import { Image } from 'expo-image';
@@ -18,9 +19,10 @@ import { getPublicApolloClient } from '@/lib/apollo';
 import { asyncClear } from '@/lib/storage/async';
 import { syncStorageClear } from '@/lib/storage/sync';
 import { inkverseAuthClear } from '@/lib/storage/secure';
-import { SIGNUP_SCREEN, EDIT_PROFILE_SCREEN } from '@/constants/Navigation';
+import { SIGNUP_SCREEN, EDIT_PROFILE_SCREEN, RootStackParamList } from '@/constants/Navigation';
 import { emit, EventNames } from '@inkverse/shared-client/pubsub';
 import { getCannySso, settingsReducer, settingsInitialState } from '@inkverse/shared-client/dispatch/settings';
+import { useAnalytics, AnalyticsEvent } from '@/lib/analytics';
 
 export type SettingsScreenParams = undefined;
 
@@ -33,11 +35,12 @@ type SettingItem = {
 
 // No longer need the SettingSection type or FlashListItem type with headers
 export function SettingsScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const colorScheme = useColorScheme() ?? 'light';
   const [isDarkMode, setIsDarkMode] = useState(colorScheme === 'dark');
   const user = getUserDetails();
   const checkmarkOpacity = useRef(new Animated.Value(0)).current;
+  const analytics = useAnalytics();
   const [settingsState, settingsDispatch] = useReducer(settingsReducer, settingsInitialState);
   
   // Section 1: Main settings handlers
@@ -61,6 +64,12 @@ export function SettingsScreen() {
   };
 
   const logoutButtonPressed = async () => {
+    // Track logout event
+    analytics.track(AnalyticsEvent.USER_LOGGED_OUT);
+    
+    // Reset analytics user
+    analytics.reset();
+    
     // Implement logout functionality
     Image.clearMemoryCache();
     Image.clearDiskCache();
@@ -351,7 +360,6 @@ export function SettingsScreen() {
         <FlashList
           data={allSettingsItems}
           renderItem={renderSettingItem}
-          estimatedItemSize={50}
           showsVerticalScrollIndicator={false}
           ListFooterComponent={renderCombinedFooterSection}
           contentContainerStyle={styles.flashListContent}
@@ -365,10 +373,12 @@ export function SettingsScreen() {
 const SettingsScreenWrapper = memo(({ children }: { children: React.ReactNode }) => {
   return (
     <Screen>
-      <View>
-        <HeaderBackButton />
-      </View>
-      {children}
+      <>
+        <View>
+          <HeaderBackButton />
+        </View>
+        {children}
+      </>
     </Screen>
   );
 });

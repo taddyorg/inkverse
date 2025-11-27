@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useEffect, useReducer, useState } from 'react';
 import { StyleSheet, Image, View, Dimensions, SectionList, FlatList } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { Screen, ThemedView, ThemedText, ThemedButton, ThemedActivityIndicator, HeaderBackButton, ThemedRefreshControl } from '@/app/components/ui';
 import { HeaderSettingsButton } from '@/app/components/profile/HeaderSettingsButton';
@@ -48,7 +49,7 @@ export function ProfileScreen() {
   const { userId } = route?.params || {};
   const currentUser = getUserDetails();
   const isLoggedIn = !!currentUser;
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   
   // Set up reducer for profile data
   const [state, dispatch] = useReducer(profileReducer, profileInitialState);

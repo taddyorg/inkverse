@@ -3,6 +3,7 @@ import { StyleSheet, View, BackHandler } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useRoute, useFocusEffect, useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 
 import { RootStackParamList, BLOG_SCREEN } from '@/constants/Navigation';
@@ -15,7 +16,7 @@ export type BlogScreenParams = {
 
 export function BlogScreen() {
   const route = useRoute<NativeStackScreenProps<RootStackParamList, typeof BLOG_SCREEN>['route']>();
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const path = route.path;
   const { url } = route.params;
   const [canGoBack, setCanGoBack] = useState(false);

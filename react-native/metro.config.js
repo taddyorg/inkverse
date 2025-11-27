@@ -1,5 +1,4 @@
 const { getDefaultConfig } = require('expo/metro-config');
-const { getSentryExpoConfig } = require('@sentry/react-native/metro');
 const path = require('path');
 const { FileStore } = require('metro-cache');
 
@@ -8,13 +7,6 @@ const monorepoRoot = path.resolve(projectRoot, '..');
 
 // Start with Expo's default config
 const config = getDefaultConfig(projectRoot);
-
-// Apply Sentry configuration
-const sentryConfig = getSentryExpoConfig(projectRoot);
-config.transformer = {
-  ...config.transformer,
-  ...sentryConfig.transformer,
-};
 
 // 1. Set up Metro to understand the monorepo structure
 config.watchFolders = [monorepoRoot];

@@ -41,7 +41,7 @@ export async function addFeedByUuid(taddyType: TaddyWebhookType, uuid: string, a
     await new Promise(resolve => setTimeout(resolve, 300));
   }
 
-  if (taddyType === 'comicseries') {
+  if (taddyType === 'comicseries' && action !== 'deleted') {
     const creatorsQuery = getQuery('comicseries-with-creator');
     const creatorsVariables = { uuid };
     const creatorsData = await taddyGraphqlRequest(creatorsQuery, creatorsVariables);

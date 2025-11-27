@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "author": "Daniel Mathews <danny@taddy.org>",
   "private": true,
+  "license": "AGPL-3.0",
   "workspaces": {
     "packages": [
       "packages/public",

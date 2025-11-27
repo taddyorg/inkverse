@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { View, StyleSheet, Dimensions, FlatList } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useState, useCallback, useEffect, useReducer } from 'react';
 
 import { Screen, ThemedText, PressableOpacity, ScreenHeader, HeaderBackButton, ThemedActivityIndicator } from '@/app/components/ui';
@@ -9,7 +10,7 @@ import { Colors } from '@/constants/Colors';
 import { ComicSeriesDetails } from '@/app/components/comics/ComicSeriesDetails';
 import { getPublicApolloClient } from '@/lib/apollo';
 import { comicsListReducer, comicsListInitialState, fetchComics } from '@inkverse/shared-client/dispatch/comicslist';
-import { COMICSERIES_SCREEN } from '@/constants/Navigation';
+import { COMICSERIES_SCREEN, RootStackParamList } from '@/constants/Navigation';
 
 // Define page types for the Comics List screen
 export type ComicsListPageType = 'tag' | 'genre';
@@ -23,7 +24,7 @@ export interface ComicsListScreenParams {
 const LIMIT_PER_PAGE = 12; // Items per page for grid view
 
 export function ComicsListScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute();
   const { pageType, value } = route.params as ComicsListScreenParams;
   const publicClient = getPublicApolloClient();

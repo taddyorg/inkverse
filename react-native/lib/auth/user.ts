@@ -6,6 +6,7 @@ import { User } from '@inkverse/shared-client/graphql/operations';
 import { dispatchRefreshAccessToken, dispatchRefreshRefreshToken } from '@inkverse/shared-client/dispatch/authentication';
 import config from '@/config';
 import { isTokenExpired } from './utils';
+import { analytics, AnalyticsEvent } from '../analytics';
 
 // Key constants
 export const ACCESS_TOKEN_KEY = 'inkverse-access-token';
@@ -104,6 +105,12 @@ export function isAuthenticated(): boolean {
  * Clear all authentication data
  */
 export async function clearUserData(): Promise<void> {
+  // Track logout event before clearing data
+  analytics.track(AnalyticsEvent.USER_LOGGED_OUT);
+  
+  // Reset analytics (clears user identification)
+  analytics.reset();
+  
   // Clear tokens from secure storage
   await secureDeleteMultiple([ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY]);
   

@@ -1,6 +1,8 @@
 import React from 'react';
 import { View, StyleSheet, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '@/constants/Navigation';
 import { ThemedText, ThemedView, ThemedIcon, PressableOpacity } from '@/app/components/ui';
 import { ComicSeries } from '@inkverse/shared-client/graphql/operations';
 import { getPrettySeriesStatus } from '@inkverse/public/status';
@@ -13,7 +15,7 @@ interface ComicSeriesInfoProps {
 }
 
 export function ComicSeriesInfo({ comicseries }: ComicSeriesInfoProps) {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   
   const handleReportComic = () => {
     navigation.navigate(REPORTS_SCREEN, {

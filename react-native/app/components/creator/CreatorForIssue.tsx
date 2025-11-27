@@ -3,6 +3,8 @@ import { View, StyleSheet, useWindowDimensions, Linking } from 'react-native';
 import sanitizeHtml from 'sanitize-html';
 import RenderHtml, { MixedStyleDeclaration } from 'react-native-render-html';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '@/constants/Navigation';
 
 import { ThemedText } from '../ui';
 import { CreatorDetails } from './CreatorDetails';
@@ -19,7 +21,7 @@ export function CreatorForIssue({ creators, comicissue }: CreatorForIssueProps) 
   const { width } = useWindowDimensions();
   const textColor = useThemeColor({}, 'text');
   const [renderError, setRenderError] = useState(false);
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const linkColor = useThemeColor({}, 'link');
 

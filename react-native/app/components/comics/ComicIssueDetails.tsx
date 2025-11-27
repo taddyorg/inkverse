@@ -3,6 +3,8 @@ import { View, StyleSheet } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '@/constants/Navigation';
 
 import { ThemedText, ThemedTextFontFamilyMap, PressableOpacity } from '@/app/components/ui';
 import { ComicIssue, ComicSeries } from '@inkverse/shared-client/graphql/operations';
@@ -21,7 +23,7 @@ interface ComicIssueDetailsProps {
 }
 
 export const ComicIssueDetails = memo(({ comicissue, comicseries, position, isCurrentIssue, imagePriority }: ComicIssueDetailsProps) => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const isPatreonExclusive = comicissue.scopesForExclusiveContent?.includes('patreon');
   const freeInDays = comicissue.dateExclusiveContentAvailable != null 

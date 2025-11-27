@@ -1,13 +1,15 @@
 import React, { useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '@/constants/Navigation';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { ThemedText } from '@/app/components/ui';
 import { SPACING } from '@/constants/Spacing';
 import { getUserDetails } from '@/lib/auth/user';
 
 export function SetupComplete() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   
   useEffect(() => {
     const user = getUserDetails();

@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { getAuthorizationCodeUrl } from '@inkverse/public/hosting-providers';
 import config from '@/config';
 import { getUserDetails } from '@/lib/auth/user';
@@ -17,7 +18,7 @@ import {
 import { fetchAllHostingProviderTokens } from '@inkverse/shared-client/dispatch/hosting-provider';
 import { Screen, ThemedView } from '@/app/components/ui';
 import { on, off, EventNames } from '@inkverse/shared-client/pubsub';
-import { SIGNUP_BLUESKY_SCREEN } from '@/constants/Navigation';
+import { SIGNUP_BLUESKY_SCREEN, RootStackParamList } from '@/constants/Navigation';
 import { saveHostingProviderRefreshToken, refreshHostingProviderAccessToken } from '@/lib/auth/hosting-provider';
 import { TADDY_HOSTING_PROVIDER_UUID } from '@inkverse/public/hosting-providers';
 
@@ -26,7 +27,7 @@ export interface SignupPatreonScreenParams {
 }
 
 export function SignupPatreonScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [currentStep, setCurrentStep] = useState<'patreon' | 'patreon-connected'>('patreon');
   
   const [userDetailsState, dispatch] = useReducer(userDetailsReducer, userDetailsInitialState);

@@ -1,6 +1,6 @@
-import type { ApolloClient, ApolloQueryResult, NormalizedCacheObject } from '@apollo/client';
+import { ApolloClient } from '@apollo/client';
 import type { Dispatch } from 'react';
-import { type GetComicIssueQuery, type GetComicIssueQueryVariables, SortOrder, GetComicIssue, type ComicIssue, type ComicSeries, GetMiniComicSeries, type GetMiniComicSeriesQuery, type GetMiniComicSeriesQueryVariables, type CreatorLinkDetails } from "../graphql/operations.js";
+import { type GetComicIssueQuery, type GetComicIssueQueryVariables, GetComicIssue, type ComicIssue, type ComicSeries, GetMiniComicSeries, type GetMiniComicSeriesQuery, type GetMiniComicSeriesQueryVariables, type CreatorLinkDetails } from "../graphql/operations.js";
 
 /* Action Type Enum */
 export enum ComicIssueActionType {
@@ -55,7 +55,7 @@ export const comicIssueInitialState: Partial<ComicIssueLoaderData> = {
 
 /* Action Creators */
 interface GetComicIssueProps {
-  publicClient: ApolloClient<NormalizedCacheObject>;
+  publicClient: ApolloClient;
   issueUuid: string;
   seriesUuid: string;
   forceRefresh?: boolean;
@@ -63,7 +63,7 @@ interface GetComicIssueProps {
 
 /* Action Creators */
 interface WrappedGetComicIssueProps {
-  publicClient: ApolloClient<NormalizedCacheObject>;
+  publicClient: ApolloClient;
   shortUrl: string;
   episodeId: string;
 }
@@ -76,7 +76,7 @@ export async function loadComicIssueUrl(
 
   try {
     // First get the comic series uuid from the shortUrl
-    const getComicSeriesUuid: ApolloQueryResult<GetMiniComicSeriesQuery> = await publicClient.query<GetMiniComicSeriesQuery, GetMiniComicSeriesQueryVariables>({
+    const getComicSeriesUuid = await publicClient.query<GetMiniComicSeriesQuery, GetMiniComicSeriesQueryVariables>({
       query: GetMiniComicSeries,
       variables: { shortUrl },
     });

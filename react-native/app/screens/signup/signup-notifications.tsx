@@ -1,13 +1,14 @@
 import React, { useState, useReducer, useEffect } from 'react';
 import { StyleSheet, View, Alert, Platform } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import * as Notifications from 'expo-notifications';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 import { Screen, ThemedView, ThemedText, PressableOpacity, HeaderBackButton, ThemedActivityIndicator, ThemedTextFontFamilyMap } from '@/app/components/ui';
 import { useThemeColor } from '@/constants/Colors';
 import { SPACING } from '@/constants/Spacing';
-import { SIGNUP_PATREON_SCREEN } from '@/constants/Navigation';
+import { SIGNUP_PATREON_SCREEN, RootStackParamList } from '@/constants/Navigation';
 import { RouteProp } from '@react-navigation/native';
 import { getUserApolloClient } from '@/lib/apollo';
 import { 
@@ -25,7 +26,7 @@ export function SignupNotificationsScreen() {
   const route = useRoute<RouteProp<{ params: SignupNotificationsScreenParams }, 'params'>>();
   const { isReturningUser } = route.params;
 
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [userDetailsState, dispatch] = useReducer(userDetailsReducer, userDetailsInitialState);
   const userClient = getUserApolloClient();
 

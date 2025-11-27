@@ -1,4 +1,4 @@
-import type { ApolloClient } from '@apollo/client';
+import { ApolloClient } from '@apollo/client';
 import { CannySso } from '../graphql/operations';
 import type { CannySsoQuery } from '../graphql/operations';
 
@@ -50,7 +50,7 @@ export const settingsInitialState: SettingsState = {
 
 // Props for the Canny SSO action creator
 export type GetCannySsoProps = {
-  userClient: ApolloClient<any>;
+  userClient: ApolloClient;
   redirectPath?: string;
 };
 

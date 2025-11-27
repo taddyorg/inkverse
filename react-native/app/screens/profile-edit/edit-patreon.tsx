@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { getAuthorizationCodeUrl } from '@inkverse/public/hosting-providers';
 import config from '@/config';
 import { getUserDetails } from '@/lib/auth/user';
@@ -19,13 +20,14 @@ import { HeaderBackButton, ThemedView } from '@/app/components/ui';
 import { on, off, EventNames, emit } from '@inkverse/shared-client/pubsub';
 import { saveHostingProviderRefreshToken, refreshHostingProviderAccessToken } from '@/lib/auth/hosting-provider';
 import { TADDY_HOSTING_PROVIDER_UUID } from '@inkverse/public/hosting-providers';
+import { RootStackParamList } from '@/constants/Navigation';
 
 export interface EditPatreonScreenParams {
   context?: 'signup' | 'profile';
 }
 
 export function EditPatreonScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [currentStep, setCurrentStep] = useState<'patreon' | 'patreon-connected'>('patreon');
   
   const [userDetailsState, dispatch] = useReducer(userDetailsReducer, userDetailsInitialState);

@@ -2,13 +2,14 @@ import React, { useRef, useEffect, useLayoutEffect, memo } from 'react';
 import { View, StyleSheet, Pressable } from 'react-native';
 import { Image } from 'expo-image';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MaterialIcons } from '@expo/vector-icons';
-import { FlashList } from '@shopify/flash-list';
+import { FlashList, FlashListRef } from '@shopify/flash-list';
 
 import { ThemedText, PressableOpacity, ThemedTextFontFamilyMap } from '../ui';
 import { ComicIssue, ComicSeries } from '@inkverse/shared-client/graphql/operations';
 import { getThumbnailImageUrl } from '@inkverse/public/comicissue';
-import { COMICISSUE_SCREEN } from '@/constants/Navigation';
+import { COMICISSUE_SCREEN, RootStackParamList } from '@/constants/Navigation';
 
 interface GridOfComicIssuesProps {
   comicseries?: ComicSeries | null;
@@ -110,8 +111,8 @@ const PreviewComicIssue = memo(({
 // });
 
 export const GridOfComicIssues = ({ comicseries, comicissue, allIssues }: GridOfComicIssuesProps) => {
-  const navigation = useNavigation();
-  const flashListRef = useRef<FlashList<ComicIssue>>(null);
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const flashListRef = useRef<FlashListRef<ComicIssue>>(null);
   const currentIndex = comicissue ? allIssues.findIndex(issue => issue.uuid === comicissue.uuid) : -1;
 
   const handleIssuePress = (issue: ComicIssue) => {
@@ -183,7 +184,6 @@ export const GridOfComicIssues = ({ comicseries, comicissue, allIssues }: GridOf
           keyExtractor={(item) => item.uuid}
           horizontal
           showsHorizontalScrollIndicator={false}
-          estimatedItemSize={styles.gridItem.width as number}
           initialScrollIndex={currentIndex > -1 ? currentIndex : undefined}
         />
       </View>

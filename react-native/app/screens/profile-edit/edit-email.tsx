@@ -6,8 +6,9 @@ import { HeaderBackButton, ThemedView } from '@/app/components/ui';
 import { SetupEmail } from '@/app/components/profile/SetupEmail';
 import { getUserApolloClient } from '@/lib/apollo';
 import { userDetailsReducer, userDetailsInitialState, updateUserEmail } from '@inkverse/shared-client/dispatch/user-details';
-import type { ApolloClient, NormalizedCacheObject } from '@apollo/client';
+import type { ApolloClient } from '@apollo/client';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { mobileStorageFunctions } from '@/lib/auth/user';
 
 export interface EditEmailScreenParams {
@@ -15,13 +16,13 @@ export interface EditEmailScreenParams {
 }
 
 export function EditEmailScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<RouteProp<{ params: EditEmailScreenParams }, 'params'>>();
   const { passedInEmail } = route.params || {};
   const [email, setEmail] = useState(passedInEmail || '');
 
   const userClient = getUserApolloClient();
-  const userClientRef = useRef<ApolloClient<NormalizedCacheObject> | null>(null);
+  const userClientRef = useRef<ApolloClient | null>(null);
   userClientRef.current = userClient;
 
   const [userDetailsState, userDetailsDispatch] = useReducer(userDetailsReducer, userDetailsInitialState);

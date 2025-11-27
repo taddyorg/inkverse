@@ -1,5 +1,5 @@
 import type { Dispatch } from 'react';
-import type { ApolloClient, FetchResult } from '@apollo/client';
+import { ApolloClient } from '@apollo/client';
 import { 
   UpdateUserProfile, 
   UpdateUserEmail,
@@ -232,13 +232,13 @@ export function clearUserDetailsError(dispatch: Dispatch<UserDetailsAction>): vo
 }
 
 interface UpdateUsernameParams {
-  userClient: ApolloClient<any>;
+  userClient: ApolloClient;
   username: string;
   storageFunctions: StorageFunctions;
 }
 
 interface GetMeDetailsParams {
-  userClient: ApolloClient<any>;
+  userClient: ApolloClient;
   forceRefresh?: boolean;
 }
 
@@ -257,7 +257,8 @@ export async function getMeDetails(
       ...(forceRefresh ? { fetchPolicy: 'network-only' } : {}),
     });
 
-    const { data, errors } = result;
+    const { data } = result;
+    const errors = (result as any).errors;
 
     if (errors) {
       throw new Error(errors[0]?.message || 'Failed to get user details');
@@ -289,7 +290,7 @@ export async function updateUsername(
   if (dispatch) dispatch({ type: UserDetailsActionType.USER_DETAILS_START });
 
   try {
-    const result: FetchResult<UpdateUserProfileMutation> = await userClient.mutate<
+    const result = await userClient.mutate<
       UpdateUserProfileMutation,
       UpdateUserProfileMutationVariables
     >({
@@ -297,7 +298,8 @@ export async function updateUsername(
       variables: { username },
     });
 
-    const { data, errors } = result;
+    const { data } = result;
+    const errors = (result as any).errors;  
 
     if (errors) {
       throw new Error(errors[0]?.message || 'Failed to update username');
@@ -330,7 +332,7 @@ export async function updateUsername(
 }
 
 interface UpdateAgeRangeParams {
-  userClient: ApolloClient<any>;
+  userClient: ApolloClient;
   ageRange: UserAgeRange;
   birthYear?: number;
 }
@@ -342,7 +344,7 @@ export async function updateAgeRange(
   if (dispatch) dispatch({ type: UserDetailsActionType.USER_DETAILS_START });
 
   try {
-    const result: FetchResult<UpdateUserProfileMutation> = await userClient.mutate<
+    const result = await userClient.mutate<
       UpdateUserProfileMutation,
       UpdateUserProfileMutationVariables
     >({
@@ -350,7 +352,8 @@ export async function updateAgeRange(
       variables: { ageRange, birthYear: ageRange === UserAgeRange.UNDER_18 ? birthYear : null },
     });
 
-    const { data, errors } = result;
+    const { data } = result;
+    const errors = (result as any).errors;
 
     if (errors) {
       throw new Error(errors[0]?.message || 'Failed to update age range');
@@ -381,7 +384,7 @@ export async function updateAgeRange(
 }
 
 interface UpdateUserEmailParams {
-  userClient: ApolloClient<any>;
+  userClient: ApolloClient;
   email: string;
   storageFunctions: StorageFunctions;
 }
@@ -393,7 +396,7 @@ export async function updateUserEmail(
   if (dispatch) dispatch({ type: UserDetailsActionType.USER_DETAILS_START });
 
   try {
-    const result: FetchResult<UpdateUserEmailMutation> = await userClient.mutate<
+    const result = await userClient.mutate<
       UpdateUserEmailMutation,
       UpdateUserEmailMutationVariables
     >({
@@ -401,7 +404,8 @@ export async function updateUserEmail(
       variables: { email },
     });
 
-    const { data, errors } = result;
+    const { data } = result;
+    const errors = (result as any).errors;
 
     if (errors) {
       throw new Error(errors[0]?.message || 'Failed to update email');
@@ -434,7 +438,7 @@ export async function updateUserEmail(
 }
 
 interface SaveBlueskyDidParams {
-  userClient: ApolloClient<any>;
+  userClient: ApolloClient;
   did: string;
 }
 
@@ -445,7 +449,7 @@ export async function saveBlueskyDid(
   if (dispatch) dispatch({ type: UserDetailsActionType.USER_DETAILS_START });
 
   try {
-    const result: FetchResult<SaveBlueskyDidMutation> = await userClient.mutate<
+    const result = await userClient.mutate<
       SaveBlueskyDidMutation,
       SaveBlueskyDidMutationVariables
     >({
@@ -453,7 +457,8 @@ export async function saveBlueskyDid(
       variables: { did },
     });
 
-    const { data, errors } = result;
+    const { data } = result;
+    const errors = (result as any).errors;
 
     if (errors) {
       throw new Error(errors[0]?.message || 'Failed to save Bluesky DID');
@@ -477,7 +482,7 @@ export async function saveBlueskyDid(
 }
 
 interface GetComicsFromBlueskyCreatorsParams {
-  userClient: ApolloClient<any>;
+  userClient: ApolloClient;
 }
 
 export async function getComicsFromBlueskyCreators(
@@ -494,7 +499,8 @@ export async function getComicsFromBlueskyCreators(
       query: GetComicsFromBlueskyCreators,
     });
 
-    const { data, errors } = result;
+    const { data } = result;
+    const errors = (result as any).errors;
 
     if (errors) {
       throw new Error(errors[0]?.message || 'Failed to get comics from Bluesky creators');
@@ -504,7 +510,7 @@ export async function getComicsFromBlueskyCreators(
       throw new Error('Failed to get comics from Bluesky creators');
     }
 
-    const comicSeries = data.getComicsFromBlueskyCreators?.filter((series): series is ComicSeries => series !== null) || [];
+    const comicSeries = data.getComicsFromBlueskyCreators?.filter((series: ComicSeries | null): series is ComicSeries => series !== null) || [];
 
     if (dispatch) {
       dispatch({ type: UserDetailsActionType.BLUESKY_COMIC_SERIES_SUCCESS, payload: comicSeries });
@@ -528,7 +534,7 @@ export async function getBlueskyFollowers(
 }
 
 interface VerifyBlueskyHandleParams {
-  userClient: ApolloClient<any>;
+  userClient: ApolloClient;
   handle: string;
 }
 
@@ -548,7 +554,8 @@ export async function verifyBlueskyHandle(
       fetchPolicy: 'network-only'
     });
 
-    const { data, errors } = result;
+    const { data } = result;
+    const errors = (result as any).errors;
 
     if (errors) {
       throw new Error(errors[0]?.message || 'Failed to verify Bluesky handle');
@@ -574,7 +581,7 @@ export async function verifyBlueskyHandle(
 }
 
 interface FollowComicsFromBlueskyCreatorsParams {
-  userClient: ApolloClient<any>;
+  userClient: ApolloClient;
 }
 
 interface FollowComicsFromBlueskyCreatorsResult {
@@ -597,7 +604,7 @@ export async function followComicsFromBlueskyCreators(
       fetchPolicy: 'network-only'
     });
     
-    const comicSeries = comicsResult.data?.getComicsFromBlueskyCreators?.filter((series): series is ComicSeries => series !== null) || [];
+    const comicSeries = comicsResult.data?.getComicsFromBlueskyCreators?.filter((series: ComicSeries | null): series is ComicSeries => series !== null) || [];
 
     if (dispatch) {
       dispatch({ type: UserDetailsActionType.BLUESKY_COMIC_SERIES_SUCCESS, payload: comicSeries });
@@ -618,7 +625,7 @@ export async function followComicsFromBlueskyCreators(
 
 interface SubscribeToComicsParams {
   userId: string;
-  userClient: ApolloClient<any>;
+  userClient: ApolloClient;
   seriesUuids: string[];
 }
 
@@ -687,7 +694,7 @@ export async function subscribeToComics(
 }
 
 interface GetComicsFromPatreonCreatorsParams {
-  userClient: ApolloClient<any>;
+  userClient: ApolloClient;
 }
 
 interface GetComicsFromPatreonCreatorsResult {
@@ -710,7 +717,7 @@ export async function getComicsFromPatreonCreators(
       fetchPolicy: 'network-only'
     });
     
-    const comicSeries = comicsResult.data?.getComicsFromPatreonCreators?.filter((series): series is ComicSeries => series !== null) || [];
+    const comicSeries = comicsResult.data?.getComicsFromPatreonCreators?.filter((series: ComicSeries | null): series is ComicSeries => series !== null) || [];
 
     if (dispatch) {
       dispatch({ type: UserDetailsActionType.PATREON_COMIC_SERIES_SUCCESS, payload: comicSeries });
@@ -730,7 +737,7 @@ export async function getComicsFromPatreonCreators(
 }
 
 interface SubscribeToPatreonComicsParams {
-  userClient: ApolloClient<any>;
+  userClient: ApolloClient;
   seriesUuids: string[];
   userId: string;
 }
@@ -800,7 +807,7 @@ export async function subscribeToPatreonComics(
 }
 
 interface SavePushTokenParams {
-  userClient: ApolloClient<any>;
+  userClient: ApolloClient;
   fcmToken: string;
   platform: string;
 }
@@ -812,7 +819,7 @@ export async function savePushToken(
   if (dispatch) dispatch({ type: UserDetailsActionType.PUSH_NOTIFICATION_START });
 
   try {
-    const result: FetchResult<SavePushTokenMutation> = await userClient.mutate<
+    const result = await userClient.mutate<
       SavePushTokenMutation,
       SavePushTokenMutationVariables
     >({
@@ -820,7 +827,8 @@ export async function savePushToken(
       variables: { fcmToken, platform },
     });
 
-    const { data, errors } = result;
+    const { data } = result;
+    const errors = (result as any).errors;
 
     if (errors) {
       throw new Error(errors[0]?.message || 'Failed to save push token');

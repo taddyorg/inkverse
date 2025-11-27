@@ -1,8 +1,10 @@
-import { HttpLink, InMemoryCache, NormalizedCacheObject } from '@apollo/client';
-import { setContext } from '@apollo/client/link/context';
-import { onError } from '@apollo/client/link/error';
-import { ApolloClient, from } from '@apollo/client';
-import * as Sentry from '@sentry/react-native';
+import { ApolloClient, HttpLink, InMemoryCache, ApolloLink } from '@apollo/client';
+import { SetContextLink } from '@apollo/client/link/context';
+import type { SetContextLink as SetContextLinkType } from '@apollo/client/link/context';
+import { ErrorLink } from '@apollo/client/link/error';
+import type { ErrorLink as ErrorLinkType } from '@apollo/client/link/error';
+import { CombinedGraphQLErrors } from '@apollo/client/errors';
+import type { GraphQLFormattedError } from 'graphql';
 import { typePolicies } from '@inkverse/public/apollo';
 import { setupUserClientEventListeners } from '@inkverse/shared-client/pubsub';
 import config from '@/config';
@@ -12,73 +14,64 @@ const cache = new InMemoryCache({ typePolicies });
 
 const httpLink = new HttpLink({
   uri: `${config.SERVER_URL}`,
+  headers: {
+    'client-name': 'Inkverse RN App',
+    'client-version': '3.0.0',
+  },
 });
 
-const authLink = setContext(async (_, { headers }) => {
+const authLink = new SetContextLink(async (
+  prevContext: Readonly<ApolloLink.OperationContext>,
+  operation: SetContextLinkType.SetContextOperation
+): Promise<Partial<ApolloLink.OperationContext>> => {
   // Get token from secure storage
   const token = await getValidToken();
-  if (!token) { throw new Error('setContext - No refresh or access token found'); }
+  if (!token) { throw new Error('SetContextLink - No refresh or access token found'); }
   
   return {
     headers: {
-      ...headers,
+      ...prevContext.headers,
       ...(!!token && { authorization: `Bearer ${token}`})
     }
   }
 });
 
-const errorLink = onError(({ graphQLErrors, networkError }) => {
-  if (graphQLErrors)
-    graphQLErrors.map((error) => {
-      const graphQLError = new Error(error.message)
-      try {
-        Sentry.captureException(graphQLError);
-      }
-      catch(err) {
-        console.log('sentry isnt loaded yet');
-      }
-      const { message, path, locations } = error
+const errorLink = new ErrorLink(({ error }: ErrorLinkType.ErrorHandlerOptions): void => {
+  if (CombinedGraphQLErrors.is(error)) {
+    error.errors.forEach((graphQLError: GraphQLFormattedError) => {
+      const { message, path, locations } = graphQLError;
       __DEV__ && console.log(`[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`);
     });
-
-  if (networkError) {
-    __DEV__ && console.log(`[Network error]: ${networkError}`);
+  } else if (error) {
+    __DEV__ && console.log(`[Network error]: ${error}`);
   }
 });
 
 const publicClient = new ApolloClient({
-  link: from([errorLink, httpLink]),
+  link: ApolloLink.from([errorLink, httpLink]),
   cache,
-  connectToDevTools: __DEV__,
-  headers: {
-    'client-name': 'Inkverse RN App (Public)',
-    'client-version': '3.0.0',
-  },
+  assumeImmutableResults: true
 });
 
 const userClient = new ApolloClient({
-  link: from([errorLink, authLink, httpLink]),
+  link: ApolloLink.from([errorLink, authLink, httpLink]),
   cache,
-  connectToDevTools: __DEV__,
-  headers: {
-    'client-name': 'Inkverse RN App (User)',
-    'client-version': '3.0.0',
-  },
+  assumeImmutableResults: true
 });
 
 // Set up cache event listeners for the user client
-setupUserClientEventListeners(userClient as any);
+setupUserClientEventListeners(userClient);
 
 /**
  * Get the public client
  */
-export function getPublicApolloClient(): any {
+export function getPublicApolloClient() {
   return publicClient;
 }
 
 /**
  * Get the user client
  */
-export function getUserApolloClient(): any {
+export function getUserApolloClient() {
   return userClient;
 }

@@ -1,6 +1,7 @@
 import React, { useState, useReducer, useRef, useCallback } from 'react';
 import { StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { 
   userDetailsReducer,
   userDetailsInitialState,
@@ -15,7 +16,7 @@ import { Screen, ThemedView, HeaderBackButton } from '@/app/components/ui';
 import { SetupBluesky } from '@/app/components/profile/SetupBluesky';
 import { BlueskyConnected } from '@/app/components/profile/BlueskyConnected';
 import { getUserApolloClient } from '@/lib/apollo';
-import { SIGNUP_COMPLETE_SCREEN } from '@/constants/Navigation';
+import { SIGNUP_COMPLETE_SCREEN, RootStackParamList } from '@/constants/Navigation';
 import { getUserDetails } from '@/lib/auth/user';
 
 export interface SignupBlueskyScreenParams {
@@ -23,7 +24,7 @@ export interface SignupBlueskyScreenParams {
 }
 
 export function SignupBlueskyScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [currentStep, setCurrentStep] = useState<'bluesky' | 'bluesky-verify' | 'bluesky-connected'>('bluesky');
   const [blueskyHandle, setBlueskyHandle] = useState('');
   

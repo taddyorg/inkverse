@@ -2,6 +2,8 @@ import * as React from 'react';
 import { StyleSheet, TouchableOpacity, View, Dimensions, Pressable } from 'react-native';
 import { Image } from 'expo-image';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '@/constants/Navigation';
 
 import { ThemedText, ThemedTextFontFamilyMap, ThemedView, PressableOpacity } from '../ui';
 import { CreatorDetails } from '../creator/CreatorDetails';
@@ -31,7 +33,7 @@ interface ComicSeriesDetailsProps {
 }
 
 export function ComicSeriesDetails({ comicseries, pageType, isHeaderVisible, onHeaderVisibilityChange, imagePriority }: ComicSeriesDetailsProps) {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   if (!comicseries) return null;
 

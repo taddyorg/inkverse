@@ -14,7 +14,7 @@ declare global {
 import { HydratedRouter } from "react-router/dom";
 import { startTransition, StrictMode, useEffect } from "react";
 import { hydrateRoot } from "react-dom/client";
-import { ApolloProvider } from '@apollo/client';
+import { ApolloProvider } from '@apollo/client/react';
 import { initPublicApolloClient } from "@/lib/apollo/client.client"
 import posthog from "posthog-js";
 import config from "@/config";

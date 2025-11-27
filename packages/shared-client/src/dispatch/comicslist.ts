@@ -1,4 +1,4 @@
-import type { ApolloClient } from '@apollo/client';
+import { ApolloClient } from '@apollo/client';
 import type { Dispatch } from 'react';
 import { mergeItemsWithUuid } from './utils.js';
 import { type SearchQuery, type SearchQueryVariables, type ComicSeries, type Genre, Search } from "../graphql/operations.js";
@@ -36,7 +36,7 @@ export const comicsListInitialState: ComicsListLoaderData = {
 
 /* Action Creators */
 interface ComicsListProps {
-  publicClient: ApolloClient<any>;
+  publicClient: ApolloClient;
   page?: number;
   limitPerPage?: number;
   filterForTypes?: string[];

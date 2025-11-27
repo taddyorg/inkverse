@@ -5,6 +5,8 @@ import Svg, { Path } from 'react-native-svg';
 import { ThemedText } from '../ui/ThemedText';
 import { HeaderBackButton } from '../ui/HeaderBackButton';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '@/constants/Navigation';
 import { SPACING } from '@/constants/Spacing';
 
 interface SetupPatreonProps {
@@ -16,7 +18,7 @@ interface SetupPatreonProps {
 }
 
 export function SetupPatreon({ currentStep, onConnect, onSkip, onBack, onContinue }: SetupPatreonProps) {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   return (
     <View style={styles.container}>
       <HeaderBackButton />

@@ -1,9 +1,10 @@
 import React, { useCallback, useReducer, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, useWindowDimensions, Animated, View, NativeSyntheticEvent, NativeScrollEvent, TouchableWithoutFeedback, Pressable, Text } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList, COMICISSUE_SCREEN, COMICSERIES_SCREEN, EDIT_PATREON_SCREEN, SIGNUP_SCREEN } from '@/constants/Navigation';
-import { FlashList } from '@shopify/flash-list';
+import { FlashList, FlashListRef } from '@shopify/flash-list';
 import { Image } from 'expo-image';
 import { jwtDecode } from 'jwt-decode';
 import * as Linking from 'expo-linking';
@@ -25,6 +26,7 @@ import { LinkType } from '@inkverse/public/graphql/types';
 import { getUserDetails } from '@/lib/auth/user';
 import { getConnectedHostingProviderUuids, getContentTokenForProviderAndSeries } from '@/lib/auth/hosting-provider';
 import { useThemeColor } from '@/constants/Colors';
+import { useAnalytics } from '@/lib/analytics';
 
 type ListItemType = 'story' | 'grid' | 'creator' | 'next-episode' | 'exclusive-signup' | 'exclusive-connect-patreon' | 'exclusive-checking-access' | 'exclusive-no-access' | 'patreon-exclusive';
 
@@ -68,12 +70,12 @@ const preloadImagesInBatch = async (imageUrls: string[]) => {
 
 export function ComicIssueScreen() {
   const route = useRoute<NativeStackScreenProps<RootStackParamList, typeof COMICISSUE_SCREEN>['route']>();
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { issueUuid, seriesUuid } = route.params;
   const screenDetails = useWindowDimensions();
-  const flatListRef = useRef<FlashList<ListItem>>(null);
+  const flatListRef = useRef<FlashListRef<ListItem>>(null);
   const publicClient = getPublicApolloClient();
-  
+  const analytics = useAnalytics();
   // Header and footer animation state
   const headerTranslateY = useRef(new Animated.Value(HEADER_OPEN_POSITION)).current;
   const footerTranslateY = useRef(new Animated.Value(FOOTER_OPEN_POSITION)).current;
@@ -135,6 +137,9 @@ export function ComicIssueScreen() {
   }, [issueUuid]);
 
   useEffect(() => {
+    // Track screen view
+    analytics.screen('Comic Issue', { issueUuid, seriesUuid });
+
     loadData();
   }, [issueUuid, seriesUuid]);
 
@@ -433,13 +438,12 @@ export function ComicIssueScreen() {
         renderItem={TappableItem}
         keyExtractor={(item) => item.key}
         showsVerticalScrollIndicator={false}
-        estimatedItemSize={ESTIMATED_ITEM_SIZE}
         onScroll={handleScroll}
         scrollEventThrottle={16}
-        estimatedListSize={{
-          height: screenDetails.height,
-          width: screenDetails.width
-        }}
+        // estimatedListSize={{
+        //   height: screenDetails.height,
+        //   width: screenDetails.width
+        // }}
         refreshControl={
           <ThemedRefreshControl 
             refreshing={refreshing} 

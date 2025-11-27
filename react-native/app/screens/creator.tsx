@@ -86,7 +86,6 @@ export function CreatorScreen() {
       <FlashList
         data={listData}
         renderItem={renderItem}
-        estimatedItemSize={300}
         contentContainerStyle={styles.contentContainer}
         refreshControl={
           <ThemedRefreshControl
@@ -104,17 +103,19 @@ type CreatorScreenWrapperProps = {
   creator: Creator | null;
 }
 
-const CreatorScreenWrapper = memo(({ children, creator }: CreatorScreenWrapperProps) => {
+const CreatorScreenWrapper = ({ children, creator }: CreatorScreenWrapperProps) => {
   return (
     <Screen>
-      <View>
-        <HeaderBackButton />
-        <HeaderShareButton type="creator" item={creator} />
-      </View>
-      {children}
+      <>
+        <View>
+          <HeaderBackButton />
+          <HeaderShareButton type="creator" item={creator} />
+        </View>
+        {children}
+      </>
     </Screen>
   );
-});
+};
 
 const styles = StyleSheet.create({
   loadingContainer: {

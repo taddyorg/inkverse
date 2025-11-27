@@ -1,6 +1,7 @@
 import { useEffect, useReducer } from 'react';
 import { StyleSheet } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { 
   dispatchExchangeOTPForTokens,
@@ -24,7 +25,7 @@ export interface SignupResetScreenParams {
 
 export function SignupResetScreen() {
   const route = useRoute<NativeStackScreenProps<RootStackParamList, typeof SIGNUP_RESET_SCREEN>['route']>();
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [authState, dispatch] = useReducer(authReducer, authInitialState);
   
   const backgroundColor = useThemeColor({}, 'background');

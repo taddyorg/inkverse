@@ -1,4 +1,4 @@
-import type { ApolloClient } from '@apollo/client';
+import { ApolloClient } from '@apollo/client';
 import type { Dispatch } from 'react';
 import { HomeScreen, type ComicSeries, type HomeScreenQuery, type List } from "../graphql/operations.js";
 
@@ -38,7 +38,7 @@ export const homeScreenInitialState: HomeScreenLoaderData = {
 
 /* Action Creators */
 interface GetHomeScreenProps {
-  publicClient: ApolloClient<any>;
+  publicClient: ApolloClient;
   forceRefresh?: boolean;
 }
 
@@ -79,8 +79,8 @@ export async function loadHomeScreen(
   }
 }
 
-export function parseLoaderHomeScreen(data: HomeScreenQuery): HomeScreenLoaderData {
-  const featuredSeries = data.getFeaturedComicSeries?.comicSeries?.filter(
+export function parseLoaderHomeScreen(data: HomeScreenQuery | undefined): HomeScreenLoaderData {
+  const featuredSeries = data?.getFeaturedComicSeries?.comicSeries?.filter(
     (series): series is ComicSeries => series !== null
   );
 
@@ -88,18 +88,18 @@ export function parseLoaderHomeScreen(data: HomeScreenQuery): HomeScreenLoaderDa
   const randomSeries = randomIndex !== -1 && featuredSeries ? featuredSeries[randomIndex] : undefined;
   const randomFeaturedSeries = randomSeries ? [randomSeries] : [];
 
-  const mostPopularSeries = data.getMostPopularComicSeries?.comicSeries?.filter(
+  const mostPopularSeries = data?.getMostPopularComicSeries?.comicSeries?.filter(
     (series): series is ComicSeries => series !== null
   );
 
   return {
     isHomeScreenLoading: false,
     featuredComicSeries: randomFeaturedSeries,
-    curatedLists: data.getCuratedLists?.lists?.filter((list): list is List => list !== null) || [],
+    curatedLists: data?.getCuratedLists?.lists?.filter((list): list is List => list !== null) || [],
     mostPopularComicSeries: shuffleAndLimitMostPopular(mostPopularSeries),
-    recentlyAddedComicSeries: data.getRecentlyAddedComicSeries?.comicSeries?.filter(
+    recentlyAddedComicSeries: data?.getRecentlyAddedComicSeries?.comicSeries?.filter(
       (series): series is ComicSeries => series !== null) || [],
-    recentlyUpdatedComicSeries: data.getRecentlyUpdatedComicSeries?.comicSeries?.filter(
+    recentlyUpdatedComicSeries: data?.getRecentlyUpdatedComicSeries?.comicSeries?.filter(
       (series): series is ComicSeries => series !== null) || [],
   };
 }

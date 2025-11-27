@@ -1,6 +1,7 @@
 import React, { useState, useReducer, useEffect } from 'react';
 import { StyleSheet, View, FlatList, Alert, ScrollView } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@/constants/Navigation';
 import DropDownPicker from 'react-native-dropdown-picker';
 
@@ -16,7 +17,7 @@ export type ReportsScreenParams = {
 };
 
 export function ReportsScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<RouteProp<RootStackParamList, 'ReportsScreen'>>();
   const publicClient = getPublicApolloClient();
   

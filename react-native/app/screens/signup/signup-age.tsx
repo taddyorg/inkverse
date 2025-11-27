@@ -1,16 +1,17 @@
 import { useState, useReducer } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { UserAgeRange } from '@inkverse/public/graphql/types';
 import { updateAgeRange, UserDetailsActionType, userDetailsInitialState, userDetailsReducer } from '@inkverse/shared-client/dispatch/user-details';
 import { Screen, ThemedView, HeaderBackButton } from '@/app/components/ui';
 import { SetupAge } from '@/app/components/profile/SetupAge';
 import { useThemeColor } from '@/constants/Colors';
-import { SIGNUP_NOTIFICATIONS_SCREEN } from '@/constants/Navigation';
+import { SIGNUP_NOTIFICATIONS_SCREEN, RootStackParamList } from '@/constants/Navigation';
 import { getUserApolloClient } from '@/lib/apollo';
 
 export function SignupAgeScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   
   const [ageRange, setAgeRange] = useState<UserAgeRange | ''>('');
   const [birthYear, setBirthYear] = useState('');

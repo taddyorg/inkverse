@@ -2,7 +2,7 @@ export default {
   expo: {
     name: "Inkverse",
     slug: "inkverse",
-    version: "3.1.1",
+    version: "3.2",
     orientation: "portrait",
     icon: "./assets/icons/ios-light.png",
     scheme: "inkverse",
@@ -11,7 +11,7 @@ export default {
     jsEngine: "hermes",
     ios: {
       bundleIdentifier: "art.bamcomics.taddy",
-      buildNumber: "4",
+      buildNumber: "2",
       supportsTablet: false,
       infoPlist: {
         LSApplicationQueriesSchemes: [
@@ -58,14 +58,6 @@ export default {
     },
     plugins: [
       "@bacons/apple-targets",
-      [
-        "@sentry/react-native/expo",
-        {
-          organization: "inkverse",
-          project: "react-native",
-          url: "https://sentry.io/"
-        }
-      ],
       [
         "expo-splash-screen",
         {

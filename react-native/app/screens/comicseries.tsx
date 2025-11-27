@@ -1,6 +1,7 @@
 import { useReducer, useState, useCallback, useEffect, memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { FlashList } from '@shopify/flash-list';
 
 import { Screen, HeaderBackButton, HeaderShareButton, ThemedActivityIndicator, ThemedRefreshControl } from '@/app/components/ui';
@@ -16,6 +17,7 @@ import { loadComicSeries, loadUserComicData, subscribeToSeries, unsubscribeFromS
 import { RootStackParamList, COMICSERIES_SCREEN, COMICISSUE_SCREEN, SIGNUP_SCREEN } from '@/constants/Navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ReadNextEpisode } from '../components/comics/ReadNextEpisode';
+import { useAnalytics } from '@/lib/analytics';
 
 export interface ComicSeriesScreenParams {
   uuid: string;
@@ -31,7 +33,8 @@ type ListItem =
 export function ComicSeriesScreen() {
   const route = useRoute<NativeStackScreenProps<RootStackParamList, typeof COMICSERIES_SCREEN>['route']>();
   const { uuid } = route.params;
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const analytics = useAnalytics();
   
   // Authentication and clients
   const currentUser = getUserDetails();
@@ -46,6 +49,9 @@ export function ComicSeriesScreen() {
   const { isComicSeriesLoading, comicseries, issues, userComicData, isUserDataLoading, isSubscriptionLoading, isNotificationLoading } = comicSeriesState;
 
   useEffect(() => {
+    // Track screen view
+    analytics.screen('Comic Series', { uuid });
+    
     // Always load public comic series data
     loadComicSeries({ publicClient, uuid }, dispatch);
     
@@ -204,7 +210,6 @@ export function ComicSeriesScreen() {
         renderItem={renderItem}
         keyExtractor={keyExtractor}
         showsVerticalScrollIndicator={false}
-        estimatedItemSize={300}
         onScroll={(event) => {
           const yOffset = event.nativeEvent.contentOffset.y;
           if (yOffset <= 0) {
@@ -228,7 +233,7 @@ interface ComicSeriesScreenWrapperProps {
   comicseries: ComicSeries | null;
 }
 
-const ComicSeriesScreenWrapper = memo(({ children, isHeaderVisible, comicseries }: ComicSeriesScreenWrapperProps) => {
+const ComicSeriesScreenWrapper = ({ children, isHeaderVisible, comicseries }: ComicSeriesScreenWrapperProps) => {
   return (
     <Screen style={styles.container}>
       {isHeaderVisible && (
@@ -240,7 +245,7 @@ const ComicSeriesScreenWrapper = memo(({ children, isHeaderVisible, comicseries 
       {children}
     </Screen>
   );
-});
+};
 
 const styles = StyleSheet.create({
   container: {

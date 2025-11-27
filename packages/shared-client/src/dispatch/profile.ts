@@ -1,7 +1,7 @@
 import type { Dispatch } from 'react';
-import type { ApolloClient } from '@apollo/client';
+import { ApolloClient } from '@apollo/client';
 import type { StorageFunctions } from './utils';
-import { emit, EventNames } from '../pubsub';
+
 import { 
   GetMeDetails, 
   type GetMeDetailsQuery, 
@@ -49,7 +49,7 @@ export type ProfileAction =
   | { type: ProfileActionType.LOGOUT_PROFILE };
 
 export interface GetMeDetailsParams {
-  userClient: ApolloClient<any>;
+  userClient: ApolloClient;
   storageFunctions: StorageFunctions;
 }
 
@@ -78,18 +78,18 @@ export async function getAndSaveMeDetails(
 
 // Action Creators
 interface LoadProfileByUsernameProps {
-  publicClient: ApolloClient<any>;
+  publicClient: ApolloClient;
   username: string;
 }
 
 interface LoadPublicProfileByIdProps {
-  publicClient: ApolloClient<any>;
+  publicClient: ApolloClient;
   userId: string;
   forceRefresh?: boolean;
 }
 
 interface LoadUserProfileByIdProps {
-  userClient: ApolloClient<any>;
+  userClient: ApolloClient;
   userId: string;
   forceRefresh?: boolean;
 }
@@ -205,7 +205,7 @@ export async function logoutUserProfile(
   if (dispatch) dispatch({ type: ProfileActionType.LOGOUT_PROFILE });
 }
 
-export function parseProfileData(data: GetProfileByUserIdQuery): ProfileState {
+export function parseProfileData(data: GetProfileByUserIdQuery | undefined): ProfileState {
   return {
     user: data?.getUserById,
     subscribedComics: data?.getUserSubscribedComics?.comicSeries?.filter((comic): comic is ComicSeries => comic !== null) || null,

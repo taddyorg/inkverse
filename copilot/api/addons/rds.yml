@@ -46,9 +46,9 @@ Resources:
       EngineVersion: '13.18'
       DBInstanceClass: 'db.t4g.micro'
       AllocatedStorage: 20
-      StorageType: gp2
+      StorageType: gp3
       MultiAZ: false
-      AllowMajorVersionUpgrade: false
+      AllowMajorVersionUpgrade: true
       AutoMinorVersionUpgrade: true
       DeletionProtection: true
       EnablePerformanceInsights : true

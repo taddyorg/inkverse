@@ -8,7 +8,8 @@ const __dirname = path.dirname(__filename);
 const envPath = path.resolve(__dirname, '..', '..', '.env');
 dotenv.config({ path: envPath });
 
-import express, { Router, type Request, type Response } from 'express';
+import express, { Router } from 'express';
+import type { Request, Response } from 'express';
 import cookieParser from 'cookie-parser';
 import { User } from '@inkverse/shared-server/models/index';
 import { type UserModel } from '@inkverse/shared-server/database/types';

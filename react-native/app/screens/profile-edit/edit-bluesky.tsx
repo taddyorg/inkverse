@@ -1,6 +1,7 @@
 import React, { useState, useReducer, useRef, useCallback } from 'react';
 import { StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { 
   userDetailsReducer,
   userDetailsInitialState,
@@ -17,13 +18,14 @@ import { BlueskyConnected } from '@/app/components/profile/BlueskyConnected';
 import { getUserApolloClient } from '@/lib/apollo';
 import { getUserDetails } from '@/lib/auth/user';
 import { emit, EventNames } from '@inkverse/shared-client/pubsub';
+import { RootStackParamList } from '@/constants/Navigation';
 
 export interface EditBlueskyScreenParams {
   context?: 'signup' | 'profile';
 }
 
 export function EditBlueskyScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [currentStep, setCurrentStep] = useState<'bluesky' | 'bluesky-verify' | 'bluesky-connected'>('bluesky');
   const [blueskyHandle, setBlueskyHandle] = useState('');
   

@@ -71,7 +71,6 @@ const femaleLeadComicSeriesUuids = [
 const isekaiComicSeriesUuids = [
   "f69f96d7-15d1-4dd8-9560-117c06f129aa", // Book Of Domination
   "3065ae8b-9128-4cd1-a0ed-52e618effffd", // The Dance
-  "13e52f7e-8a2b-4425-b760-4feb87153736", // The Bookworm
   "0ea33c3f-582e-4280-a589-ec371486ce21", // D-Link
   "1d6bf248-a4e7-4f2b-a585-a8a747038c50", // City Of Souls
   "6f9568a2-3a7d-4d75-a021-48735eaf9116", // Eternal Reverie: 2000-year Odyssey
