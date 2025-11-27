@@ -79,3 +79,7 @@ yarn run pre-download-comic-stories-height-and-width
 ### Send push notification
 ===============
 yarn run mock-push-notification '{"pushNotificationType": "NEW_EPISODE_RELEASED", "seriesUuid": "abc123", "issueUuid": "def456"}'
+
+### Test push notification directly
+===============
+yarn run test-push-direct 123

@@ -137,7 +137,7 @@ async function processComicIssueWebhook(body: TaddyWebhook) {
       // add push notification to queue
       await sendMessage('INKVERSE_HIGH_PRIORITY', {
         type: 'SEND_PUSH_NOTIFICATION',
-        pushNotificationType: 'NEW_EPISODE_RELEASE', 
+        pushNotificationType: 'NEW_EPISODE_RELEASED',
         issueUuid: comicissue.uuid,
         seriesUuid: comicissue.seriesUuid,
       });
