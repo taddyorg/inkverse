@@ -56,8 +56,8 @@ export function getPushNotificationPayload(params: PushNotificationsPayloadParam
       }
 
       return {
-        title: `A new episode of ${seriesName} just dropped!`,
-        body: `${issueName} is now available to read!`,
+        title: `New Episode Released`,
+        body: `A new episode of ${seriesName} just got released!`,
         data: {
           type: 'NEW_EPISODE_RELEASED',
           seriesUuid,
