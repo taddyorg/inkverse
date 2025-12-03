@@ -26,5 +26,8 @@ export const getMetaTags = (metaTags: MetaTags) => {
 		{ property: 'og:image', content: imageURL },
 		{ property: 'og:description', content: description },
 		{ property: 'og:site_name', content: 'Inkverse Webtoons & Webcomics' },
+
+		{ tagName: 'link', rel: 'canonical', href: url },
+		{ tagName: 'link', rel: 'image_src', href: imageURL },
 	];
 };
