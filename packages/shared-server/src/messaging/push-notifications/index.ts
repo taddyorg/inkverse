@@ -128,8 +128,6 @@ export async function sendPushNotification({
           imageUrl: getBannerImageUrl({ bannerImageAsString: JSON.stringify(comicissue.bannerImage), variant: 'medium' }),
         });
 
-        console.log('Sending push notification:', pushNotificationPayload);
-
         // Send notifications in batches
         return sendPushNotificationInBatches({
           getDevices: (limit, offset) => NotificationPreference.getDevicesForSeriesNotifications(seriesUuid, limit, offset),
