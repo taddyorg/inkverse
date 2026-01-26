@@ -201,3 +201,25 @@ export type NotificationPreferenceModel = {
   notificationType: NotificationType;
   value: string | null;
 }
+
+// Likes system enums
+export enum LikeableType {
+  COMICISSUE = 'COMICISSUE',
+  COMMENT = 'COMMENT', // Future use
+}
+
+export enum ParentType {
+  COMICSERIES = 'COMICSERIES',
+  COMICISSUE = 'COMICISSUE', // Future use (for comment likes)
+}
+
+export type UserLikeModel = {
+  id: number;
+  createdAt: number;
+  updatedAt: number | null;
+  userId: number;
+  likeableUuid: string;
+  likeableType: LikeableType;
+  parentUuid: string;
+  parentType: ParentType;
+}

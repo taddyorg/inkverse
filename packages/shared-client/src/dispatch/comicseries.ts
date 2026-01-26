@@ -1,6 +1,6 @@
 import { ApolloClient } from '@apollo/client';
 import type { Dispatch } from 'react';
-import { type GetComicSeriesQuery, type GetComicSeriesQueryVariables, SortOrder, GetComicSeries, type ComicIssue, type ComicSeries, GetMiniComicSeries, type GetMiniComicSeriesQuery, type GetMiniComicSeriesQueryVariables, type SubscribeToSeriesMutation, type SubscribeToSeriesMutationVariables, SubscribeToSeries, type UnsubscribeFromSeriesMutation, type UnsubscribeFromSeriesMutationVariables, UnsubscribeFromSeries, GetUserComicSeries, type GetUserComicSeriesQuery, type GetUserComicSeriesQueryVariables, type EnableNotificationsForSeriesMutation, type EnableNotificationsForSeriesMutationVariables, EnableNotificationsForSeries, type DisableNotificationsForSeriesMutation, type DisableNotificationsForSeriesMutationVariables, DisableNotificationsForSeries, GetProfileByUserId } from "../graphql/operations.js";
+import { type GetComicSeriesQuery, type GetComicSeriesQueryVariables, SortOrder, GetComicSeries, type ComicIssue, type ComicSeries, GetMiniComicSeries, type GetMiniComicSeriesQuery, type GetMiniComicSeriesQueryVariables, type SubscribeToSeriesMutation, type SubscribeToSeriesMutationVariables, SubscribeToSeries, type UnsubscribeFromSeriesMutation, type UnsubscribeFromSeriesMutationVariables, UnsubscribeFromSeries, GetUserComicSeries, type GetUserComicSeriesQuery, type GetUserComicSeriesQueryVariables, type EnableNotificationsForSeriesMutation, type EnableNotificationsForSeriesMutationVariables, EnableNotificationsForSeries, type DisableNotificationsForSeriesMutation, type DisableNotificationsForSeriesMutationVariables, DisableNotificationsForSeries, GetProfileByUserId, type LikeComicIssueMutation, type LikeComicIssueMutationVariables, LikeComicIssue, type UnlikeComicIssueMutation, type UnlikeComicIssueMutationVariables, UnlikeComicIssue, GetComicSeriesStats, type GetComicSeriesStatsQuery, type GetComicSeriesStatsQueryVariables, GetComicIssueStats } from "../graphql/operations.js";
 import { emit, EventNames } from '../pubsub';
 
 /* Action Type Enum */
@@ -32,13 +32,29 @@ export enum ComicSeriesActionType {
   DISABLE_NOTIFICATIONS_FOR_SERIES_START = 'DISABLE_NOTIFICATIONS_FOR_SERIES_START',
   DISABLE_NOTIFICATIONS_FOR_SERIES_SUCCESS = 'DISABLE_NOTIFICATIONS_FOR_SERIES_SUCCESS',
   DISABLE_NOTIFICATIONS_FOR_SERIES_ERROR = 'DISABLE_NOTIFICATIONS_FOR_SERIES_ERROR',
+
+  // Like Management (for individual issues in series page)
+  LIKE_COMIC_ISSUE_START = 'LIKE_COMIC_ISSUE_START',
+  LIKE_COMIC_ISSUE_SUCCESS = 'LIKE_COMIC_ISSUE_SUCCESS',
+  LIKE_COMIC_ISSUE_ERROR = 'LIKE_COMIC_ISSUE_ERROR',
+
+  UNLIKE_COMIC_ISSUE_START = 'UNLIKE_COMIC_ISSUE_START',
+  UNLIKE_COMIC_ISSUE_SUCCESS = 'UNLIKE_COMIC_ISSUE_SUCCESS',
+  UNLIKE_COMIC_ISSUE_ERROR = 'UNLIKE_COMIC_ISSUE_ERROR',
 }
 
 /* Action Types */
-interface UserComicData {
+export interface UserComicData {
   isSubscribed: boolean;
   isRecommended: boolean;
   hasNotificationEnabled: boolean;
+  likedComicIssueUuids: string[];
+}
+
+export interface ComicIssueStats {
+  seriesUuid: string;
+  issueUuid: string;
+  likeCount: number;
 }
 
 export type ComicSeriesAction =
@@ -68,23 +84,30 @@ export type ComicSeriesAction =
   
   | { type: ComicSeriesActionType.DISABLE_NOTIFICATIONS_FOR_SERIES_START }
   | { type: ComicSeriesActionType.DISABLE_NOTIFICATIONS_FOR_SERIES_SUCCESS; payload: { userComicData: UserComicData } }
-  | { type: ComicSeriesActionType.DISABLE_NOTIFICATIONS_FOR_SERIES_ERROR; payload: string };
+  | { type: ComicSeriesActionType.DISABLE_NOTIFICATIONS_FOR_SERIES_ERROR; payload: string }
+
+  // Like Management (for individual issues in series page)
+  | { type: ComicSeriesActionType.LIKE_COMIC_ISSUE_START; payload: { issueUuid: string } }
+  | { type: ComicSeriesActionType.LIKE_COMIC_ISSUE_SUCCESS; payload: { issueUuid: string; seriesUuid: string; userComicData: UserComicData; likeCount: number } }
+  | { type: ComicSeriesActionType.LIKE_COMIC_ISSUE_ERROR; payload: { issueUuid: string; error: string } }
+
+  | { type: ComicSeriesActionType.UNLIKE_COMIC_ISSUE_START; payload: { issueUuid: string } }
+  | { type: ComicSeriesActionType.UNLIKE_COMIC_ISSUE_SUCCESS; payload: { issueUuid: string; seriesUuid: string; userComicData: UserComicData; likeCount: number } }
+  | { type: ComicSeriesActionType.UNLIKE_COMIC_ISSUE_ERROR; payload: { issueUuid: string; error: string } };
 
 export type ComicSeriesLoaderData = {
   isComicSeriesLoading: boolean;
   comicseries: ComicSeries | null;
   issues: ComicIssue[];
-  userComicData: {
-    isSubscribed: boolean;
-    isRecommended: boolean;
-    hasNotificationEnabled: boolean;
-  } | null;
+  userComicData: UserComicData | null;
   isUserDataLoading: boolean;
   userDataError: string | null;
   isSubscriptionLoading: boolean;
   subscriptionError: string | null;
   isNotificationLoading: boolean;
   notificationError: string | null;
+  comicIssueStats: ComicIssueStats[];
+  issueLikeLoadingMap: Record<string, boolean>;
 };
 
 export const comicSeriesInitialState: Partial<ComicSeriesLoaderData> = {
@@ -98,6 +121,8 @@ export const comicSeriesInitialState: Partial<ComicSeriesLoaderData> = {
   subscriptionError: null,
   isNotificationLoading: false,
   notificationError: null,
+  comicIssueStats: [],
+  issueLikeLoadingMap: {},
 }
 
 /* Action Creators */
@@ -294,15 +319,16 @@ export async function subscribeToSeries(
       isSubscribed: result.data.subscribeToSeries.isSubscribed,
       isRecommended: result.data.subscribeToSeries.isRecommended,
       hasNotificationEnabled: result.data.subscribeToSeries.hasNotificationEnabled,
+      likedComicIssueUuids: result.data.subscribeToSeries.likedComicIssueUuids?.filter((uuid): uuid is string => uuid !== null),
     };
-    
+
     if (dispatch) {
-      dispatch({ 
-        type: ComicSeriesActionType.SUBSCRIBE_TO_SERIES_SUCCESS, 
+      dispatch({
+        type: ComicSeriesActionType.SUBSCRIBE_TO_SERIES_SUCCESS,
         payload: { userComicData }
       });
     }
-    
+
     // Emit event for other components to listen
     emit(EventNames.COMIC_SUBSCRIBED, { seriesUuid, userId });
     
@@ -343,15 +369,16 @@ export async function unsubscribeFromSeries(
       isSubscribed: result.data.unsubscribeFromSeries.isSubscribed,
       isRecommended: result.data.unsubscribeFromSeries.isRecommended,
       hasNotificationEnabled: result.data.unsubscribeFromSeries.hasNotificationEnabled,
+      likedComicIssueUuids: result.data.unsubscribeFromSeries.likedComicIssueUuids?.filter((uuid): uuid is string => uuid !== null),
     };
-    
+
     if (dispatch) {
-      dispatch({ 
-        type: ComicSeriesActionType.UNSUBSCRIBE_FROM_SERIES_SUCCESS, 
+      dispatch({
+        type: ComicSeriesActionType.UNSUBSCRIBE_FROM_SERIES_SUCCESS,
         payload: { userComicData }
       });
     }
-    
+
     // Emit event for other components to listen
     emit(EventNames.COMIC_UNSUBSCRIBED, { seriesUuid, userId });
     
@@ -392,15 +419,16 @@ export async function enableNotificationsForSeries(
       isSubscribed: result.data.enableNotificationsForSeries.isSubscribed,
       isRecommended: result.data.enableNotificationsForSeries.isRecommended,
       hasNotificationEnabled: result.data.enableNotificationsForSeries.hasNotificationEnabled,
+      likedComicIssueUuids: result.data.enableNotificationsForSeries.likedComicIssueUuids?.filter((uuid): uuid is string => uuid !== null),
     };
-    
+
     if (dispatch) {
-      dispatch({ 
-        type: ComicSeriesActionType.ENABLE_NOTIFICATIONS_FOR_SERIES_SUCCESS, 
+      dispatch({
+        type: ComicSeriesActionType.ENABLE_NOTIFICATIONS_FOR_SERIES_SUCCESS,
         payload: { userComicData }
       });
     }
-    
+
     return userComicData;
   } catch (error: any) {
     const errorMessage = error?.response?.data?.error || 
@@ -437,15 +465,16 @@ export async function disableNotificationsForSeries(
       isSubscribed: result.data.disableNotificationsForSeries.isSubscribed,
       isRecommended: result.data.disableNotificationsForSeries.isRecommended,
       hasNotificationEnabled: result.data.disableNotificationsForSeries.hasNotificationEnabled,
+      likedComicIssueUuids: result.data.disableNotificationsForSeries.likedComicIssueUuids?.filter((uuid): uuid is string => uuid !== null),
     };
-    
+
     if (dispatch) {
-      dispatch({ 
-        type: ComicSeriesActionType.DISABLE_NOTIFICATIONS_FOR_SERIES_SUCCESS, 
+      dispatch({
+        type: ComicSeriesActionType.DISABLE_NOTIFICATIONS_FOR_SERIES_SUCCESS,
         payload: { userComicData }
       });
     }
-    
+
     return userComicData;
   } catch (error: any) {
     const errorMessage = error?.response?.data?.error || 
@@ -462,6 +491,133 @@ export async function disableNotificationsForSeries(
   }
 }
 
+/* Like Comic Issue in Series Actions */
+interface LikeComicIssueInSeriesProps {
+  userClient: ApolloClient;
+  issueUuid: string;
+  seriesUuid: string;
+}
+
+export async function likeComicIssueInSeries(
+  { userClient, issueUuid, seriesUuid }: LikeComicIssueInSeriesProps,
+  dispatch?: Dispatch<ComicSeriesAction>
+): Promise<UserComicData | null> {
+  if (dispatch) dispatch({ type: ComicSeriesActionType.LIKE_COMIC_ISSUE_START, payload: { issueUuid } });
+
+  try {
+    const result = await userClient.mutate<LikeComicIssueMutation, LikeComicIssueMutationVariables>({
+      mutation: LikeComicIssue,
+      variables: { issueUuid, seriesUuid },
+      refetchQueries: [
+        { query: GetComicSeriesStats, variables: { seriesUuid } },
+        { query: GetComicIssueStats, variables: { issueUuid, seriesUuid } }
+      ],
+      awaitRefetchQueries: true
+    });
+
+    if (!result.data?.likeComicIssue) {
+      throw new Error('Failed to like comic issue');
+    }
+
+    // Read fresh stats from cache after refetch
+    const statsData = userClient.readQuery<GetComicSeriesStatsQuery, GetComicSeriesStatsQueryVariables>({
+      query: GetComicSeriesStats,
+      variables: { seriesUuid }
+    });
+
+    const userComicData: UserComicData = {
+      isSubscribed: result.data.likeComicIssue.isSubscribed,
+      isRecommended: result.data.likeComicIssue.isRecommended,
+      hasNotificationEnabled: result.data.likeComicIssue.hasNotificationEnabled,
+      likedComicIssueUuids: result.data.likeComicIssue.likedComicIssueUuids?.filter((uuid): uuid is string => uuid !== null) || [],
+    };
+
+    // Get the fresh like count for this specific issue from the refetched stats
+    const likeCount = statsData?.getStatsForComicSeries?.find(stat => stat.issueUuid === issueUuid)?.likeCount ?? 0;
+
+    if (dispatch) {
+      dispatch({
+        type: ComicSeriesActionType.LIKE_COMIC_ISSUE_SUCCESS,
+        payload: { issueUuid, seriesUuid, userComicData, likeCount }
+      });
+    }
+
+    return userComicData;
+  } catch (error: any) {
+    const errorMessage = error?.response?.data?.error ||
+                        error?.message ||
+                        'Failed to like comic issue';
+
+    if (dispatch) {
+      dispatch({
+        type: ComicSeriesActionType.LIKE_COMIC_ISSUE_ERROR,
+        payload: { issueUuid, error: errorMessage }
+      });
+    }
+    return null;
+  }
+}
+
+export async function unlikeComicIssueInSeries(
+  { userClient, issueUuid, seriesUuid }: LikeComicIssueInSeriesProps,
+  dispatch?: Dispatch<ComicSeriesAction>
+): Promise<UserComicData | null> {
+  if (dispatch) dispatch({ type: ComicSeriesActionType.UNLIKE_COMIC_ISSUE_START, payload: { issueUuid } });
+
+  try {
+    const result = await userClient.mutate<UnlikeComicIssueMutation, UnlikeComicIssueMutationVariables>({
+      mutation: UnlikeComicIssue,
+      variables: { issueUuid, seriesUuid },
+      refetchQueries: [
+        { query: GetComicSeriesStats, variables: { seriesUuid } },
+        { query: GetComicIssueStats, variables: { issueUuid, seriesUuid } }
+      ],
+      awaitRefetchQueries: true
+    });
+
+    if (!result.data?.unlikeComicIssue) {
+      throw new Error('Failed to unlike comic issue');
+    }
+
+    // Read fresh stats from cache after refetch
+    const statsData = userClient.readQuery<GetComicSeriesStatsQuery, GetComicSeriesStatsQueryVariables>({
+      query: GetComicSeriesStats,
+      variables: { seriesUuid }
+    });
+
+    const userComicData: UserComicData = {
+      isSubscribed: result.data.unlikeComicIssue.isSubscribed,
+      isRecommended: result.data.unlikeComicIssue.isRecommended,
+      hasNotificationEnabled: result.data.unlikeComicIssue.hasNotificationEnabled,
+      likedComicIssueUuids: result.data.unlikeComicIssue.likedComicIssueUuids?.filter((uuid): uuid is string => uuid !== null) || [],
+    };
+
+    // Get the fresh like count for this specific issue from the refetched stats
+    const likeCount = statsData?.getStatsForComicSeries?.find(stat => stat.issueUuid === issueUuid)?.likeCount ?? 0;
+
+    if (dispatch) {
+      dispatch({
+        type: ComicSeriesActionType.UNLIKE_COMIC_ISSUE_SUCCESS,
+        payload: { issueUuid, seriesUuid, userComicData, likeCount }
+      });
+    }
+
+    return userComicData;
+  } catch (error: any) {
+    const errorMessage = error?.response?.data?.error ||
+                        error?.message ||
+                        'Failed to unlike comic issue';
+
+    if (dispatch) {
+      dispatch({
+        type: ComicSeriesActionType.UNLIKE_COMIC_ISSUE_ERROR,
+        payload: { issueUuid, error: errorMessage }
+      });
+    }
+    return null;
+  }
+}
+
 export function parseLoaderComicSeries(data: GetComicSeriesQuery): Partial<ComicSeriesLoaderData> {
   return {
     isComicSeriesLoading: false,
@@ -469,14 +625,23 @@ export function parseLoaderComicSeries(data: GetComicSeriesQuery): Partial<Comic
     issues: data.getIssuesForComicSeries?.issues?.filter(
       (issue: ComicIssue | null): issue is ComicIssue => issue !== null
     ) || [],
-    // Don't include user-related loading states to avoid overwriting them
+    comicIssueStats: data.getStatsForComicSeries?.map(stat => ({
+      seriesUuid: stat.seriesUuid,
+      issueUuid: stat.issueUuid,
+      likeCount: stat.likeCount || 0,
+    })) || [],
   };
 }
 
 export function parseLoaderUserComicSeries(data: GetUserComicSeriesQuery | undefined): Partial<ComicSeriesLoaderData> {
   return {
     isUserDataLoading: false,
-    userComicData: data?.getUserComicSeries || null
+    userComicData: data?.getUserComicSeries ? {
+      isSubscribed: data.getUserComicSeries?.isSubscribed || false,
+      isRecommended: data.getUserComicSeries?.isRecommended || false,
+      hasNotificationEnabled: data.getUserComicSeries?.hasNotificationEnabled || false,
+      likedComicIssueUuids: data.getUserComicSeries?.likedComicIssueUuids?.filter((uuid): uuid is string => uuid !== null) || [] as string[],
+    } : null
   };
 }
 
@@ -607,7 +772,82 @@ export function comicSeriesReducer(
         isNotificationLoading: false,
         notificationError: action.payload,
       };
-      
+
+    // Like Management (for individual issues in series page)
+    case ComicSeriesActionType.LIKE_COMIC_ISSUE_START:
+      return {
+        ...state,
+        issueLikeLoadingMap: {
+          ...state.issueLikeLoadingMap,
+          [action.payload.issueUuid]: true,
+        },
+      };
+    case ComicSeriesActionType.LIKE_COMIC_ISSUE_SUCCESS: {
+      const existingStats = state.comicIssueStats || [];
+      const statExists = existingStats.some(stat => stat.issueUuid === action.payload.issueUuid);
+
+      const updatedStats = statExists
+        ? existingStats.map(stat =>
+            stat.issueUuid === action.payload.issueUuid
+              ? { ...stat, likeCount: action.payload.likeCount }
+              : stat
+          )
+        : [...existingStats, { seriesUuid: action.payload.seriesUuid, issueUuid: action.payload.issueUuid, likeCount: action.payload.likeCount }];
+
+      return {
+        ...state,
+        userComicData: action.payload.userComicData,
+        comicIssueStats: updatedStats,
+        issueLikeLoadingMap: {
+          ...state.issueLikeLoadingMap,
+          [action.payload.issueUuid]: false,
+        },
+      };
+    }
+    case ComicSeriesActionType.LIKE_COMIC_ISSUE_ERROR:
+      return {
+        ...state,
+        issueLikeLoadingMap: {
+          ...state.issueLikeLoadingMap,
+          [action.payload.issueUuid]: false,
+        },
+      };
+
+    case ComicSeriesActionType.UNLIKE_COMIC_ISSUE_START:
+      return {
+        ...state,
+        issueLikeLoadingMap: {
+          ...state.issueLikeLoadingMap,
+          [action.payload.issueUuid]: true,
+        },
+      };
+    case ComicSeriesActionType.UNLIKE_COMIC_ISSUE_SUCCESS: {
+      const existingStats = state.comicIssueStats || [];
+      const updatedStats = existingStats.map(stat =>
+        stat.issueUuid === action.payload.issueUuid
+          ? { ...stat, likeCount: action.payload.likeCount }
+          : stat
+      );
+
+      return {
+        ...state,
+        userComicData: action.payload.userComicData,
+        comicIssueStats: updatedStats,
+        issueLikeLoadingMap: {
+          ...state.issueLikeLoadingMap,
+          [action.payload.issueUuid]: false,
+        },
+      };
+    }
+    case ComicSeriesActionType.UNLIKE_COMIC_ISSUE_ERROR:
+      return {
+        ...state,
+        issueLikeLoadingMap: {
+          ...state.issueLikeLoadingMap,
+          [action.payload.issueUuid]: false,
+        },
+      };
+
     default:
       return state;
   }

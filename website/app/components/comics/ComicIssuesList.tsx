@@ -1,5 +1,6 @@
 import { ComicIssueDetails } from './ComicIssueDetails';
 import type { ComicSeries, ComicIssue } from '@inkverse/shared-client/graphql/operations';
+import type { ComicIssueStats } from '@inkverse/shared-client/dispatch/comicseries';
 import { useState, useMemo } from 'react';
 import { FaSortAmountDown, FaSortAmountUp } from 'react-icons/fa';
 
@@ -7,10 +8,14 @@ type ComicIssuesBoxProps = {
   comicseries: ComicSeries | null | undefined;
   issues: ComicIssue[] | null | undefined;
   currentIssueUuid: string | undefined;
+  comicIssueStats?: ComicIssueStats[];
+  likedIssueUuids?: string[];
+  issueLikeLoadingMap?: Record<string, boolean>;
+  onLikeIssue?: (issueUuid: string) => void;
 }
   
 export function ComicIssuesList(props: ComicIssuesBoxProps) {
-  const { comicseries, issues, currentIssueUuid } = props;
+  const { comicseries, issues, currentIssueUuid, comicIssueStats, likedIssueUuids, issueLikeLoadingMap, onLikeIssue } = props;
   const [isNewestFirst, setIsNewestFirst] = useState(false);
 
   if (!comicseries || !issues) {
@@ -46,18 +51,28 @@ export function ComicIssuesList(props: ComicIssuesBoxProps) {
           }
         </button>
       </div>
-      {sortedIssues.map((comicissue, index) => (
-        <ComicIssueDetails
-          key={comicissue.uuid}
-          comicseries={comicseries}
-          comicissue={comicissue}
-          position={isNewestFirst 
-            ? sortedIssues.length - 1 - index // Count down for newest first
-            : index // Count up for oldest first
-          }
-          isCurrentIssue={comicissue.uuid === currentIssueUuid}
-        />
-      ))}
+      {sortedIssues.map((comicissue, index) => {
+        const stats = comicIssueStats?.find(s => s.issueUuid === comicissue.uuid);
+        const isLiked = likedIssueUuids?.includes(comicissue.uuid) || false;
+        const isLikeLoading = issueLikeLoadingMap?.[comicissue.uuid] || false;
+
+        return (
+          <ComicIssueDetails
+            key={comicissue.uuid}
+            comicseries={comicseries}
+            comicissue={comicissue}
+            position={isNewestFirst
+              ? sortedIssues.length - 1 - index // Count down for newest first
+              : index // Count up for oldest first
+            }
+            isCurrentIssue={comicissue.uuid === currentIssueUuid}
+            likeCount={stats?.likeCount || 0}
+            isLiked={isLiked}
+            isLikeLoading={isLikeLoading}
+            onLikePress={onLikeIssue ? () => onLikeIssue(comicissue.uuid) : undefined}
+          />
+        );
+      })}
     </div>
   );
 }

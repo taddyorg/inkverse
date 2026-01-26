@@ -1,20 +1,20 @@
-import type { ApolloError } from "@apollo/client";
-import type { ServerError } from "@apollo/client/link/utils";
+import { ServerError, CombinedGraphQLErrors } from "@apollo/client/errors";
 
 export function handleLoaderError(error: unknown, context?: string): never {
-  const apolloError = error as ApolloError;
-  
-  if (apolloError.networkError && 'result' in apolloError.networkError) {
+  if (ServerError.is(error)) {
     console.error(
-      `GraphQL Errors${context ? ` in ${context}` : ''}:`, 
-      apolloError.networkError.result
+      `Server Error${context ? ` in ${context}` : ''}:`,
+      error.bodyText
+    );
+    throw new Response("Error fetching data", { status: error.statusCode });
+  }
+
+  if (CombinedGraphQLErrors.is(error)) {
+    console.error(
+      `GraphQL Errors${context ? ` in ${context}` : ''}:`,
+      error.errors
     );
   }
 
-  const statusCode = (apolloError.networkError as ServerError)?.statusCode;
-  
-  throw new Response(
-    "Error fetching data", 
-    { status: statusCode || 500 }
-  );
+  throw new Response("Error fetching data", { status: 500 });
 } 

@@ -37,6 +37,17 @@ yarn run start
 - **Validation**: Query validation includes depth limiting and complexity analysis
 - **Caching**: Uses Redis for server-side caching and Stellate for GraphQL CDN caching
 
+### GraphQL Design Principles
+
+- **Separate User vs Public Data**: User-specific data (requires auth) and public data (same for all users) should be in separate types and files
+  - User data: fetched via `userClient`, e.g., `UserComicSeries.likedComicIssueUuids`
+  - Public data: fetched via `publicClient`, e.g., `ComicIssueStats.likeCount`
+- **Batch Queries Over Field Resolvers**: For lists, prefer batch queries (e.g., `getStatsForComicSeries(seriesUuid)`) over field resolvers to avoid N+1 queries
+- **Extensible Types**: Name types for future expansion (e.g., `ComicIssueStats` not `ComicIssueLikeCount` to allow adding `commentCount` later)
+- **File Organization**: Group by data ownership
+  - `usercomicseries.ts` - user-specific series data (auth required)
+  - `comicissuestats.ts` - public episode stats (no auth)
+
 ## Security Measures
 
 - **Authentication**: JWT-based authentication using the auth route

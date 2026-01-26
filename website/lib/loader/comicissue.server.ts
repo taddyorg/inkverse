@@ -1,8 +1,7 @@
 import { type LoaderFunctionArgs } from "react-router";
 import { getPublicApolloClient } from "@/lib/apollo/client.server";
-import { type GetMiniComicSeriesQuery, type GetMiniComicSeriesQueryVariables, GetMiniComicSeries, SortOrder, type GetComicIssueQuery, type GetComicIssueQueryVariables, GetComicIssue } from "@inkverse/shared-client/graphql/operations";
+import { type GetMiniComicSeriesQuery, type GetMiniComicSeriesQueryVariables, GetMiniComicSeries, SortOrder, type GetComicIssueQuery, type GetComicIssueQueryVariables, GetComicIssue, type CreatorLinkDetails } from "@inkverse/shared-client/graphql/operations";
 import { handleLoaderError } from "./error-handler";
-import type { ApolloQueryResult } from "@apollo/client";
 import type { ComicIssueLoaderData } from "@inkverse/shared-client/dispatch/comicissue";
 
 export async function loadComicIssue({ params, request, context }: LoaderFunctionArgs): Promise<Partial<ComicIssueLoaderData>> {
@@ -17,7 +16,7 @@ export async function loadComicIssue({ params, request, context }: LoaderFunctio
     }
   
     // Get comic series data first
-    const getComicSeriesUuid: ApolloQueryResult<GetMiniComicSeriesQuery> = await client.query<GetMiniComicSeriesQuery, GetMiniComicSeriesQueryVariables>({
+    const getComicSeriesUuid = await client.query<GetMiniComicSeriesQuery, GetMiniComicSeriesQueryVariables>({
       query: GetMiniComicSeries,
       variables: { shortUrl },
     });
@@ -50,7 +49,10 @@ export async function loadComicIssue({ params, request, context }: LoaderFunctio
     return {
       comicissue: comicIssueResult.data.getComicIssue,
       comicseries: comicIssueResult.data.getComicSeries,
-      creatorLinks: comicIssueResult.data.getCreatorLinksForSeries,
+      creatorLinks: comicIssueResult.data.getCreatorLinksForSeries?.filter(
+        (link): link is CreatorLinkDetails => link !== null
+      ) ?? [],
+      likeCount: comicIssueResult.data.getStatsForComicIssue?.likeCount ?? 0,
       isCheckingAccess: isPatreonExclusive,
     };
     

@@ -62,6 +62,12 @@ await knex.schema.createTable('comicseries', (table) => {
 });
 ```
 
+### Database Design Principles
+
+- **Index Column Order**: Put lower-cardinality columns first (e.g., `(type, uuid)` not `(uuid, type)`)
+- **Naming Conventions**: User-action tables should be prefixed with `User` (e.g., `user_likes`, `UserLike`) matching `UserSeriesSubscription` pattern
+- **Parent References**: If helpful, include `uuid` and `type` for hierarchical data to enable efficient querying and cache invalidation. Example: `parent_uuid` and `parent_type`.
+
 ### knex and knex-stringcase
 
 For the database layer, we use knex and knex-stringcase. Stringcase is useful to use camelCase for the database column names.

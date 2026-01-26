@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { PressableOpacity } from '../ui';
 import { ComicIssue } from '@inkverse/shared-client/graphql/operations';
+import { LikeButton } from './LikeButton';
 
 // Use the same height as the header for consistency
 export const FOOTER_HEIGHT = 80;
@@ -14,14 +15,22 @@ interface ComicFooterProps {
   nextIssue?: ComicIssue | null;
   previousIssue?: ComicIssue | null;
   onNavigateToIssue: (issueUuid: string, seriesUuid: string) => void;
+  isLiked: boolean;
+  likeCount: number;
+  isLikeLoading: boolean;
+  onLikePress: () => void;
 }
 
-export function ComicFooter({ 
-  footerPosition, 
-  comicissue, 
-  nextIssue, 
-  previousIssue, 
-  onNavigateToIssue 
+export function ComicFooter({
+  footerPosition,
+  comicissue,
+  nextIssue,
+  previousIssue,
+  onNavigateToIssue,
+  isLiked,
+  likeCount,
+  isLikeLoading,
+  onLikePress,
 }: ComicFooterProps) {
   // Handle navigation to previous issue
   const handlePreviousIssue = () => {
@@ -39,6 +48,15 @@ export function ComicFooter({
 
   return (
     <Animated.View style={[styles.footer, { transform: [{ translateY: footerPosition }] }]}>
+      <View style={styles.left}>
+        <LikeButton
+          isLiked={isLiked}
+          likeCount={likeCount}
+          isLoading={isLikeLoading}
+          onPress={onLikePress}
+          variant="footer"
+        />
+      </View>
       <View style={styles.right}>
         {previousIssue && (
           <PressableOpacity onPress={handlePreviousIssue} style={styles.navigationButton}>
@@ -70,6 +88,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 14,
     zIndex: 10,
+  },
+  left: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
   },
   right: {
     flex: 1,

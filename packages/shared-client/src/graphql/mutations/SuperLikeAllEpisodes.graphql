@@ -1,0 +1,5 @@
+mutation SuperLikeAllEpisodes($seriesUuid: ID!) {
+  superLikeAllEpisodes(seriesUuid: $seriesUuid) {
+    ...userComicSeriesDetails
+  }
+}

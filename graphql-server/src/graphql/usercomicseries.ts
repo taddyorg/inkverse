@@ -1,6 +1,7 @@
 import { AuthenticationError } from './error.js';
-import { UserSeriesSubscription, NotificationPreference } from '@inkverse/shared-server/models/index';
-import { NotificationType, type MutationResolvers } from '@inkverse/shared-server/graphql/types';
+import { UserSeriesSubscription, NotificationPreference, UserLike, ComicIssue } from '@inkverse/shared-server/models/index';
+import { NotificationType, SortOrder, type MutationResolvers } from '@inkverse/shared-server/graphql/types';
+import { LikeableType, ParentType } from '@inkverse/shared-server/database/types';
 import { purgeCacheOnCdn } from '@inkverse/shared-server/cache/index';
 
 // GraphQL Type Definitions
@@ -13,6 +14,7 @@ export const UserComicSeriesDefinitions = `
     isSubscribed: Boolean!
     isRecommended: Boolean!
     hasNotificationEnabled: Boolean!
+    likedComicIssueUuids: [String]!
   }
 `;
 
@@ -40,12 +42,48 @@ export const UserComicSeriesMutationsDefinitions = `
   Enable notifications for a comic series
   """
   enableNotificationsForSeries(seriesUuid: ID!): UserComicSeries!
-  
+
   """
   Disable notifications for a comic series
   """
   disableNotificationsForSeries(seriesUuid: ID!): UserComicSeries!
+
+  """
+  Like a comic issue
+  """
+  likeComicIssue(issueUuid: ID!, seriesUuid: ID!): UserComicSeries!
+
+  """
+  Unlike a comic issue
+  """
+  unlikeComicIssue(issueUuid: ID!, seriesUuid: ID!): UserComicSeries!
+
+  """
+  Super-like all episodes in a series (creates individual like records)
+  """
+  superLikeAllEpisodes(seriesUuid: ID!): UserComicSeries!
 `;
+
+// Helper function to build UserComicSeries response
+async function buildUserComicSeriesResponse(userId: number, seriesUuid: string) {
+  const [subscription, hasNotificationEnabled, userLikes] = await Promise.all([
+    UserSeriesSubscription.getSubscription(userId, seriesUuid),
+    NotificationPreference.hasNotificationEnabled(
+      userId,
+      NotificationType.NEW_EPISODE_RELEASED,
+      seriesUuid
+    ),
+    UserLike.getUserLikesForParent(userId, seriesUuid, ParentType.COMICSERIES),
+  ]);
+
+  return {
+    seriesUuid,
+    isSubscribed: !!subscription,
+    isRecommended: false, // Future implementation
+    hasNotificationEnabled,
+    likedComicIssueUuids: userLikes.map(like => like.likeableUuid),
+  };
+}
 
 // Resolvers
 export const UserComicSeriesQueries = {
@@ -55,22 +93,7 @@ export const UserComicSeriesQueries = {
     }
 
     try {
-      // Get subscription status
-      const [subscription, hasNotificationEnabled] = await Promise.all([
-        UserSeriesSubscription.getSubscription(context.user.id, seriesUuid),
-        NotificationPreference.hasNotificationEnabled(
-          context.user.id,
-          NotificationType.NEW_EPISODE_RELEASED,
-          seriesUuid
-        ),
-      ]);
-      
-      return {
-        seriesUuid,
-        isSubscribed: !!subscription,
-        isRecommended: false, // Future implementation
-        hasNotificationEnabled,
-      };
+      return await buildUserComicSeriesResponse(context.user.id, seriesUuid);
     } catch (error) {
       console.error('Error getting user comic data:', error);
       throw new Error('Failed to get user comic data');
@@ -85,23 +108,11 @@ export const UserComicSeriesMutations: MutationResolvers = {
     }
 
     await UserSeriesSubscription.subscribeToComicSeries(context.user.id, seriesUuid);
-    
+
     // Purge the ProfileComicSeries cache for this user
     await purgeCacheOnCdn({ type: 'profilecomicseries', id: String(context.user.id), shortUrl: context.user.username });
-    
-    // Get notification preference
-    const hasNotificationEnabled = await NotificationPreference.hasNotificationEnabled(
-      context.user.id,
-      NotificationType.NEW_EPISODE_RELEASED,
-      seriesUuid
-    );
-    
-    return {
-      seriesUuid,
-      isSubscribed: true,
-      isRecommended: false,
-      hasNotificationEnabled,
-    };
+
+    return await buildUserComicSeriesResponse(context.user.id, seriesUuid);
   },
 
   unsubscribeFromSeries: async (_parent: any, { seriesUuid }: { seriesUuid: string }, context: any) => {
@@ -110,28 +121,16 @@ export const UserComicSeriesMutations: MutationResolvers = {
     }
 
     await UserSeriesSubscription.unsubscribeFromComicSeries(context.user.id, seriesUuid);
-    
+
     // Purge the ProfileComicSeries cache for this user
     await purgeCacheOnCdn({ type: 'profilecomicseries', id: String(context.user.id), shortUrl: context.user.username });
-    
-    // Get notification preference
-    const hasNotificationEnabled = await NotificationPreference.hasNotificationEnabled(
-      context.user.id,
-      NotificationType.NEW_EPISODE_RELEASED,
-      seriesUuid
-    );
-    
-    return {
-      seriesUuid,
-      isSubscribed: false,
-      isRecommended: false,
-      hasNotificationEnabled,
-    };
+
+    return await buildUserComicSeriesResponse(context.user.id, seriesUuid);
   },
 
   enableNotificationsForSeries: async (
-    _parent: any, 
-    { seriesUuid }: { seriesUuid: string }, 
+    _parent: any,
+    { seriesUuid }: { seriesUuid: string },
     context: any
   ) => {
     if (!context.user) {
@@ -144,20 +143,12 @@ export const UserComicSeriesMutations: MutationResolvers = {
       seriesUuid
     );
 
-    // Get updated subscription status
-    const subscription = await UserSeriesSubscription.getSubscription(context.user.id, seriesUuid);
-
-    return {
-      seriesUuid,
-      isSubscribed: !!subscription,
-      isRecommended: false,
-      hasNotificationEnabled: true,
-    };
+    return await buildUserComicSeriesResponse(context.user.id, seriesUuid);
   },
 
   disableNotificationsForSeries: async (
-    _parent: any, 
-    { seriesUuid }: { seriesUuid: string }, 
+    _parent: any,
+    { seriesUuid }: { seriesUuid: string },
     context: any
   ) => {
     if (!context.user) {
@@ -170,14 +161,76 @@ export const UserComicSeriesMutations: MutationResolvers = {
       seriesUuid
     );
 
-    // Get updated subscription status
-    const subscription = await UserSeriesSubscription.getSubscription(context.user.id, seriesUuid);
+    return await buildUserComicSeriesResponse(context.user.id, seriesUuid);
+  },
 
-    return {
+  likeComicIssue: async (
+    _parent: any,
+    { issueUuid, seriesUuid }: { issueUuid: string; seriesUuid: string },
+    context: any
+  ) => {
+    if (!context.user) {
+      throw new AuthenticationError('You must be logged in to like a comic issue');
+    }
+
+    await UserLike.likeItem(
+      context.user.id,
+      issueUuid,
+      LikeableType.COMICISSUE,
       seriesUuid,
-      isSubscribed: !!subscription,
-      isRecommended: false,
-      hasNotificationEnabled: false,
-    };
+      ParentType.COMICSERIES
+    );
+
+    await purgeCacheOnCdn({ type: 'comicissuestats', id: seriesUuid, issueUuid });
+
+    return await buildUserComicSeriesResponse(context.user.id, seriesUuid);
+  },
+
+  unlikeComicIssue: async (
+    _parent: any,
+    { issueUuid, seriesUuid }: { issueUuid: string; seriesUuid: string },
+    context: any
+  ) => {
+    if (!context.user) {
+      throw new AuthenticationError('You must be logged in to unlike a comic issue');
+    }
+
+    await UserLike.unlikeItem(
+      context.user.id,
+      issueUuid,
+      LikeableType.COMICISSUE
+    );
+
+    await purgeCacheOnCdn({ type: 'comicissuestats', id: seriesUuid, issueUuid });
+
+    return await buildUserComicSeriesResponse(context.user.id, seriesUuid);
+  },
+
+  superLikeAllEpisodes: async (
+    _parent: any,
+    { seriesUuid }: { seriesUuid: string },
+    context: any
+  ) => {
+    if (!context.user) {
+      throw new AuthenticationError('You must be logged in to super-like episodes');
+    }
+
+    // Get all episodes for the series
+    const issues = await ComicIssue.getComicIssuesForSeries(seriesUuid, SortOrder.LATEST, 10000);
+    const issueUuids = issues.map(issue => issue.uuid);
+
+    if (issueUuids.length > 0) {
+      await UserLike.likeMultipleItems(
+        context.user.id,
+        issueUuids,
+        LikeableType.COMICISSUE,
+        seriesUuid,
+        ParentType.COMICSERIES
+      );
+    }
+
+    await purgeCacheOnCdn({ type: 'comicissuestats', id: seriesUuid });
+
+    return await buildUserComicSeriesResponse(context.user.id, seriesUuid);
   },
 };

@@ -6,6 +6,7 @@ import { Octicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { ThemedText, ThemedIcon } from '../ui';
 import { ComicIssue, ComicSeries } from '@inkverse/shared-client/graphql/operations';
+import type { ComicIssueStats } from '@inkverse/shared-client/dispatch/comicseries';
 import { ComicIssueDetails } from './ComicIssueDetails';
 import { PressableOpacity } from '../ui/PressableOpacity';
 
@@ -13,10 +14,14 @@ export interface ComicIssuesListProps {
   comicissues: ComicIssue[];
   comicseries: ComicSeries;
   currentIssueUuid: string | undefined;
+  comicIssueStats?: ComicIssueStats[];
+  likedIssueUuids?: string[];
+  issueLikeLoadingMap?: Record<string, boolean>;
+  onLikeIssue?: (issueUuid: string) => void;
 }
 
 export const ComicIssuesList = (props: ComicIssuesListProps) => {
-  const { comicissues, comicseries, currentIssueUuid } = props;
+  const { comicissues, comicseries, currentIssueUuid, comicIssueStats, likedIssueUuids, issueLikeLoadingMap, onLikeIssue } = props;
   const [isNewestFirst, setIsNewestFirst] = useState(false);
 
   const [tokenQuery, tokenDispatch] = useReducer((state: any, action: any) => state, {});
@@ -32,24 +37,30 @@ export const ComicIssuesList = (props: ComicIssuesListProps) => {
         // Get position values with defaults if null/undefined
         const posA = a.position ?? 0;
         const posB = b.position ?? 0;
-        
+
         // For newest first (default): descending order
         // For oldest first: ascending order
-        return isNewestFirst 
+        return isNewestFirst
           ? posB - posA // Newest first
           : posA - posB; // Oldest first
       });
-      
-    return sortedData.map((comicissue, index) => ({
-      key: comicissue.uuid,
-      type: "issue",
-      comicissue,
-      comicseries,
-      position: isNewestFirst 
-        ? sortedData.length - 1 - index // Count down for newest first
-        : index, // Count up for oldest first
-    }));
-  }, [comicissues, comicseries, isNewestFirst]);
+
+    return sortedData.map((comicissue, index) => {
+      const stats = comicIssueStats?.find(s => s.issueUuid === comicissue.uuid);
+      return {
+        key: comicissue.uuid,
+        type: "issue",
+        comicissue,
+        comicseries,
+        position: isNewestFirst
+          ? sortedData.length - 1 - index // Count down for newest first
+          : index, // Count up for oldest first
+        likeCount: stats?.likeCount || 0,
+        isLiked: likedIssueUuids?.includes(comicissue.uuid) || false,
+        isLikeLoading: issueLikeLoadingMap?.[comicissue.uuid] || false,
+      };
+    });
+  }, [comicissues, comicseries, isNewestFirst, comicIssueStats, likedIssueUuids, issueLikeLoadingMap]);
 
   const toggleSortOrder = () => {
     setIsNewestFirst(!isNewestFirst);
@@ -62,6 +73,10 @@ export const ComicIssuesList = (props: ComicIssuesListProps) => {
       position={item.position}
       isCurrentIssue={item.comicissue.uuid === currentIssueUuid}
       imagePriority={index <= 4 ? 'normal' : 'low'}
+      likeCount={item.likeCount}
+      isLiked={item.isLiked}
+      isLikeLoading={item.isLikeLoading}
+      onLikePress={onLikeIssue ? () => onLikeIssue(item.comicissue.uuid) : undefined}
     />
   );
 

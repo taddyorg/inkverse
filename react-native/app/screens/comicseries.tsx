@@ -1,6 +1,6 @@
-import { useReducer, useState, useCallback, useEffect, memo } from 'react';
+import { useReducer, useState, useCallback, useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { FlashList } from '@shopify/flash-list';
 
@@ -13,7 +13,7 @@ import { AddToProfileButton, NotificationButton } from '@/app/components/comics/
 import { getPublicApolloClient, getUserApolloClient } from '@/lib/apollo';
 import { getUserDetails } from '@/lib/auth/user';
 import { ComicIssue, ComicSeries } from '@inkverse/shared-client/graphql/operations';
-import { loadComicSeries, loadUserComicData, subscribeToSeries, unsubscribeFromSeries, enableNotificationsForSeries, disableNotificationsForSeries, comicSeriesReducer, comicSeriesInitialState } from '@inkverse/shared-client/dispatch/comicseries';
+import { loadComicSeries, loadUserComicData, subscribeToSeries, unsubscribeFromSeries, enableNotificationsForSeries, disableNotificationsForSeries, comicSeriesReducer, comicSeriesInitialState, likeComicIssueInSeries, unlikeComicIssueInSeries } from '@inkverse/shared-client/dispatch/comicseries';
 import { RootStackParamList, COMICSERIES_SCREEN, COMICISSUE_SCREEN, SIGNUP_SCREEN } from '@/constants/Navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ReadNextEpisode } from '../components/comics/ReadNextEpisode';
@@ -46,20 +46,22 @@ export function ComicSeriesScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
 
-  const { isComicSeriesLoading, comicseries, issues, userComicData, isUserDataLoading, isSubscriptionLoading, isNotificationLoading } = comicSeriesState;
+  const { isComicSeriesLoading, comicseries, issues, userComicData, isUserDataLoading, isSubscriptionLoading, isNotificationLoading, comicIssueStats, issueLikeLoadingMap } = comicSeriesState;
 
+  // Load public comic series data once on mount
   useEffect(() => {
-    // Track screen view
     analytics.screen('Comic Series', { uuid });
-    
-    // Always load public comic series data
-    loadComicSeries({ publicClient, uuid }, dispatch);
-    
-    // Load user-specific data if authenticated
-    if (isLoggedIn && userClient) {
-      loadUserComicData({ userClient, seriesUuid: uuid }, dispatch);
-    }
-  }, [uuid, isLoggedIn]);
+  }, [uuid]);
+
+  // Refetch user data and stats when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      loadComicSeries({ publicClient, uuid }, dispatch);
+      if (isLoggedIn && userClient) {
+        loadUserComicData({ userClient, seriesUuid: uuid }, dispatch);
+      }
+    }, [uuid, isLoggedIn, userClient, publicClient])
+  )
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -117,6 +119,22 @@ export function ComicSeriesScreen() {
     }
   }, [isLoggedIn, userClient, userComicData?.hasNotificationEnabled, uuid]);
 
+  const handleLikeIssue = useCallback(async (issueUuid: string) => {
+    if (!isLoggedIn || !userClient || !currentUser?.id) {
+      navigation.navigate(SIGNUP_SCREEN);
+      return;
+    }
+    if (!comicseries) return;
+
+    const isCurrentlyLiked = userComicData?.likedComicIssueUuids?.includes(issueUuid) || false;
+
+    if (isCurrentlyLiked) {
+      await unlikeComicIssueInSeries({ userClient, issueUuid, seriesUuid: comicseries.uuid }, dispatch);
+    } else {
+      await likeComicIssueInSeries({ userClient, issueUuid, seriesUuid: comicseries.uuid }, dispatch);
+    }
+  }, [isLoggedIn, userClient, currentUser?.id, comicseries?.uuid, userComicData?.likedComicIssueUuids, navigation]);
+
   const renderItem = useCallback(({ item }: { item: ListItem }) => {
     switch (item.type) {
       case 'header':
@@ -149,10 +167,14 @@ export function ComicSeriesScreen() {
         return <ComicSeriesInfo comicseries={item.data} />;
       case 'issues':
         return (
-          <ComicIssuesList 
-            comicissues={item.data.comicissues} 
-            comicseries={item.data.comicseries} 
-            currentIssueUuid={item.data.comicissues?.[0]?.uuid}
+          <ComicIssuesList
+            comicissues={item.data.comicissues}
+            comicseries={item.data.comicseries}
+            currentIssueUuid={item.data.currentIssueUuid}
+            comicIssueStats={comicIssueStats}
+            likedIssueUuids={userComicData?.likedComicIssueUuids}
+            issueLikeLoadingMap={issueLikeLoadingMap}
+            onLikeIssue={handleLikeIssue}
           />
         );
       case 'next-episode':
@@ -169,7 +191,7 @@ export function ComicSeriesScreen() {
       default:
         return null;
     }
-  }, [comicseries, issues, userComicData, isUserDataLoading, isSubscriptionLoading, isNotificationLoading, isHeaderVisible, setIsHeaderVisible, handleAddToProfile, handleGetNotifications, handleNavigateToIssue]);
+  }, [comicseries, issues, userComicData, isUserDataLoading, isSubscriptionLoading, isNotificationLoading, isHeaderVisible, setIsHeaderVisible, handleAddToProfile, handleGetNotifications, handleNavigateToIssue, comicIssueStats, issueLikeLoadingMap, handleLikeIssue]);
 
   const keyExtractor = useCallback((item: ListItem) => {
     switch (item.type) {

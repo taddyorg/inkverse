@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom';
 import { MdLock } from 'react-icons/md';
 
-import type { ComicIssue, ComicSeries } from '@inkverse/shared-client/graphql/operations';
+import type { ComicIssue, ComicSeries, Creator } from '@inkverse/shared-client/graphql/operations';
 import { getThumbnailImageUrl } from '@inkverse/public/comicissue';
 import { getInkverseUrl } from '@inkverse/public/utils';
+import { SuperLikeButton } from './SuperLikeButton';
 
 interface ReadNextEpisodeProps {
   comicissue: ComicIssue | null | undefined;
@@ -11,23 +12,40 @@ interface ReadNextEpisodeProps {
   showEmptyState?: boolean;
   firstTextCTA?: string;
   secondTextCTA?: string;
+  // SuperLike props (optional - only shown in empty state when authenticated)
+  isAuthenticated?: boolean;
+  isSuperLikeLoading?: boolean;
+  onSuperLike?: () => void;
+  hasLikedAllEpisodes?: boolean;
 }
 
-export function ReadNextEpisode({ 
-  comicissue, 
+export function ReadNextEpisode({
+  comicissue,
   comicseries,
-  showEmptyState = true, 
-  firstTextCTA = 'NEXT', 
-  secondTextCTA = 'EPISODE' 
+  showEmptyState = true,
+  firstTextCTA = 'NEXT',
+  secondTextCTA = 'EPISODE',
+  isAuthenticated,
+  isSuperLikeLoading,
+  onSuperLike,
+  hasLikedAllEpisodes,
 }: ReadNextEpisodeProps) {
   if (!comicseries) { return null; }
-  
+
   if (!comicissue) {
     if (!showEmptyState) { return null; }
     return (
       <div className="w-full mt-6 px-4">
         <div className="text-center mt-8">
           <p className="text-lg font-medium">You are up to date with this series!</p>
+          {isAuthenticated && onSuperLike && (
+            <SuperLikeButton
+              isLoading={isSuperLikeLoading ?? false}
+              onPress={onSuperLike}
+              hasLikedAll={hasLikedAllEpisodes ?? false}
+              creators={comicseries.creators?.filter((creator): creator is Creator => creator !== null) ?? []}
+            />
+          )}
         </div>
       </div>
     );

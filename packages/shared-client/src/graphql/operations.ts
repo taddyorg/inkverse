@@ -91,6 +91,14 @@ export type ComicIssueForSeries = {
   seriesUuid: Scalars['ID']['output'];
 };
 
+/** Public stats for a comic issue (like count, future: comment count) */
+export type ComicIssueStats = {
+  __typename?: 'ComicIssueStats';
+  issueUuid: Scalars['ID']['output'];
+  likeCount?: Maybe<Scalars['Int']['output']>;
+  seriesUuid: Scalars['ID']['output'];
+};
+
 /**  Comic Series Details  */
 export type ComicSeries = {
   __typename?: 'ComicSeries';
@@ -887,6 +895,8 @@ export type Mutation = {
   fetchAllHostingProviderTokens?: Maybe<Array<Scalars['String']['output']>>;
   /** Fetch user's OAuth tokens for a specific hosting provider */
   fetchRefreshTokenForHostingProvider?: Maybe<Scalars['String']['output']>;
+  /** Like a comic issue */
+  likeComicIssue: UserComicSeries;
   /**  Report a comic series  */
   reportComicSeries?: Maybe<Scalars['Boolean']['output']>;
   /** Resend verification email */
@@ -899,6 +909,10 @@ export type Mutation = {
   subscribeToMultipleComicSeries: Scalars['Boolean']['output'];
   /** Subscribe to a comic series */
   subscribeToSeries: UserComicSeries;
+  /** Super-like all episodes in a series (creates individual like records) */
+  superLikeAllEpisodes: UserComicSeries;
+  /** Unlike a comic issue */
+  unlikeComicIssue: UserComicSeries;
   /** Unsubscribe from a comic series */
   unsubscribeFromSeries: UserComicSeries;
   /** Update user email */
@@ -920,6 +934,12 @@ export type MutationEnableNotificationsForSeriesArgs = {
 
 export type MutationFetchRefreshTokenForHostingProviderArgs = {
   hostingProviderUuid: Scalars['String']['input'];
+};
+
+
+export type MutationLikeComicIssueArgs = {
+  issueUuid: Scalars['ID']['input'];
+  seriesUuid: Scalars['ID']['input'];
 };
 
 
@@ -946,6 +966,17 @@ export type MutationSubscribeToMultipleComicSeriesArgs = {
 
 
 export type MutationSubscribeToSeriesArgs = {
+  seriesUuid: Scalars['ID']['input'];
+};
+
+
+export type MutationSuperLikeAllEpisodesArgs = {
+  seriesUuid: Scalars['ID']['input'];
+};
+
+
+export type MutationUnlikeComicIssueArgs = {
+  issueUuid: Scalars['ID']['input'];
   seriesUuid: Scalars['ID']['input'];
 };
 
@@ -1042,6 +1073,10 @@ export type Query = {
   getRecentlyAddedComicSeries?: Maybe<HomeScreenComicSeries>;
   /**  Get a list of recently updated comics  */
   getRecentlyUpdatedComicSeries?: Maybe<HomeScreenComicSeries>;
+  /** Get stats (like count) for a single episode */
+  getStatsForComicIssue?: Maybe<ComicIssueStats>;
+  /** Get stats (like counts) for all episodes in a series */
+  getStatsForComicSeries?: Maybe<Array<ComicIssueStats>>;
   /** Get a user by their ID */
   getUserById?: Maybe<User>;
   /** Get a user by their username */
@@ -1150,6 +1185,17 @@ export type QueryGetRecentlyUpdatedComicSeriesArgs = {
 };
 
 
+export type QueryGetStatsForComicIssueArgs = {
+  issueUuid: Scalars['ID']['input'];
+  seriesUuid: Scalars['ID']['input'];
+};
+
+
+export type QueryGetStatsForComicSeriesArgs = {
+  seriesUuid: Scalars['ID']['input'];
+};
+
+
 export type QueryGetUserByIdArgs = {
   id: Scalars['ID']['input'];
 };
@@ -1253,6 +1299,7 @@ export type UserComicSeries = {
   hasNotificationEnabled: Scalars['Boolean']['output'];
   isRecommended: Scalars['Boolean']['output'];
   isSubscribed: Scalars['Boolean']['output'];
+  likedComicIssueUuids: Array<Maybe<Scalars['String']['output']>>;
   seriesUuid: Scalars['ID']['output'];
 };
 
@@ -1272,7 +1319,7 @@ export type MiniCreatorDetailsFragment = { __typename?: 'Creator', uuid: string,
 
 export type MiniUserDetailsFragment = { __typename?: 'User', id: string, username?: string | null };
 
-export type UserComicSeriesDetailsFragment = { __typename?: 'UserComicSeries', seriesUuid: string, isSubscribed: boolean, isRecommended: boolean, hasNotificationEnabled: boolean };
+export type UserComicSeriesDetailsFragment = { __typename?: 'UserComicSeries', seriesUuid: string, isSubscribed: boolean, isRecommended: boolean, hasNotificationEnabled: boolean, likedComicIssueUuids: Array<string | null> };
 
 export type UserDetailsFragment = { __typename?: 'User', id: string, username?: string | null, email?: string | null, isEmailVerified?: boolean | null, ageRange?: UserAgeRange | null, birthYear?: number | null, blueskyDid?: string | null };
 
@@ -1281,14 +1328,14 @@ export type DisableNotificationsForSeriesMutationVariables = Exact<{
 }>;
 
 
-export type DisableNotificationsForSeriesMutation = { __typename?: 'Mutation', disableNotificationsForSeries: { __typename?: 'UserComicSeries', seriesUuid: string, isSubscribed: boolean, isRecommended: boolean, hasNotificationEnabled: boolean } };
+export type DisableNotificationsForSeriesMutation = { __typename?: 'Mutation', disableNotificationsForSeries: { __typename?: 'UserComicSeries', seriesUuid: string, isSubscribed: boolean, isRecommended: boolean, hasNotificationEnabled: boolean, likedComicIssueUuids: Array<string | null> } };
 
 export type EnableNotificationsForSeriesMutationVariables = Exact<{
   seriesUuid: Scalars['ID']['input'];
 }>;
 
 
-export type EnableNotificationsForSeriesMutation = { __typename?: 'Mutation', enableNotificationsForSeries: { __typename?: 'UserComicSeries', seriesUuid: string, isSubscribed: boolean, isRecommended: boolean, hasNotificationEnabled: boolean } };
+export type EnableNotificationsForSeriesMutation = { __typename?: 'Mutation', enableNotificationsForSeries: { __typename?: 'UserComicSeries', seriesUuid: string, isSubscribed: boolean, isRecommended: boolean, hasNotificationEnabled: boolean, likedComicIssueUuids: Array<string | null> } };
 
 export type FetchAllHostingProviderTokensMutationVariables = Exact<{ [key: string]: never; }>;
 
@@ -1301,6 +1348,14 @@ export type FetchRefreshTokenForHostingProviderMutationVariables = Exact<{
 
 
 export type FetchRefreshTokenForHostingProviderMutation = { __typename?: 'Mutation', fetchRefreshTokenForHostingProvider?: string | null };
+
+export type LikeComicIssueMutationVariables = Exact<{
+  issueUuid: Scalars['ID']['input'];
+  seriesUuid: Scalars['ID']['input'];
+}>;
+
+
+export type LikeComicIssueMutation = { __typename?: 'Mutation', likeComicIssue: { __typename?: 'UserComicSeries', seriesUuid: string, isSubscribed: boolean, isRecommended: boolean, hasNotificationEnabled: boolean, likedComicIssueUuids: Array<string | null> } };
 
 export type ReportComicSeriesMutationVariables = Exact<{
   uuid: Scalars['ID']['input'];
@@ -1342,14 +1397,29 @@ export type SubscribeToSeriesMutationVariables = Exact<{
 }>;
 
 
-export type SubscribeToSeriesMutation = { __typename?: 'Mutation', subscribeToSeries: { __typename?: 'UserComicSeries', seriesUuid: string, isSubscribed: boolean, isRecommended: boolean, hasNotificationEnabled: boolean } };
+export type SubscribeToSeriesMutation = { __typename?: 'Mutation', subscribeToSeries: { __typename?: 'UserComicSeries', seriesUuid: string, isSubscribed: boolean, isRecommended: boolean, hasNotificationEnabled: boolean, likedComicIssueUuids: Array<string | null> } };
+
+export type SuperLikeAllEpisodesMutationVariables = Exact<{
+  seriesUuid: Scalars['ID']['input'];
+}>;
+
+
+export type SuperLikeAllEpisodesMutation = { __typename?: 'Mutation', superLikeAllEpisodes: { __typename?: 'UserComicSeries', seriesUuid: string, isSubscribed: boolean, isRecommended: boolean, hasNotificationEnabled: boolean, likedComicIssueUuids: Array<string | null> } };
+
+export type UnlikeComicIssueMutationVariables = Exact<{
+  issueUuid: Scalars['ID']['input'];
+  seriesUuid: Scalars['ID']['input'];
+}>;
+
+
+export type UnlikeComicIssueMutation = { __typename?: 'Mutation', unlikeComicIssue: { __typename?: 'UserComicSeries', seriesUuid: string, isSubscribed: boolean, isRecommended: boolean, hasNotificationEnabled: boolean, likedComicIssueUuids: Array<string | null> } };
 
 export type UnsubscribeFromSeriesMutationVariables = Exact<{
   seriesUuid: Scalars['ID']['input'];
 }>;
 
 
-export type UnsubscribeFromSeriesMutation = { __typename?: 'Mutation', unsubscribeFromSeries: { __typename?: 'UserComicSeries', seriesUuid: string, isSubscribed: boolean, isRecommended: boolean, hasNotificationEnabled: boolean } };
+export type UnsubscribeFromSeriesMutation = { __typename?: 'Mutation', unsubscribeFromSeries: { __typename?: 'UserComicSeries', seriesUuid: string, isSubscribed: boolean, isRecommended: boolean, hasNotificationEnabled: boolean, likedComicIssueUuids: Array<string | null> } };
 
 export type UpdateUserEmailMutationVariables = Exact<{
   email: Scalars['String']['input'];
@@ -1381,13 +1451,28 @@ export type GetBlueskyProfileQueryVariables = Exact<{
 
 export type GetBlueskyProfileQuery = { __typename?: 'Query', getBlueskyProfile?: { __typename?: 'BlueskyProfile', did: string, handle: string, displayName?: string | null, avatar?: string | null, description?: string | null } | null };
 
+export type GetComicIssueStatsQueryVariables = Exact<{
+  issueUuid: Scalars['ID']['input'];
+  seriesUuid: Scalars['ID']['input'];
+}>;
+
+
+export type GetComicIssueStatsQuery = { __typename?: 'Query', getStatsForComicIssue?: { __typename?: 'ComicIssueStats', seriesUuid: string, issueUuid: string, likeCount?: number | null } | null };
+
+export type GetComicSeriesStatsQueryVariables = Exact<{
+  seriesUuid: Scalars['ID']['input'];
+}>;
+
+
+export type GetComicSeriesStatsQuery = { __typename?: 'Query', getStatsForComicSeries?: Array<{ __typename?: 'ComicIssueStats', seriesUuid: string, issueUuid: string, likeCount?: number | null }> | null };
+
 export type GetComicIssueQueryVariables = Exact<{
   issueUuid: Scalars['ID']['input'];
   seriesUuid: Scalars['ID']['input'];
 }>;
 
 
-export type GetComicIssueQuery = { __typename?: 'Query', getComicIssue?: { __typename?: 'ComicIssue', bannerImageAsString?: string | null, creatorNote?: string | null, uuid: string, seriesUuid: string, name?: string | null, position?: number | null, thumbnailImageAsString?: string | null, datePublished?: number | null, scopesForExclusiveContent?: Array<string | null> | null, dateExclusiveContentAvailable?: number | null, stories?: Array<{ __typename?: 'ComicStory', uuid: string, issueUuid: string, seriesUuid: string, storyImageAsString?: string | null, width?: number | null, height?: number | null } | null> | null, previousIssue?: { __typename?: 'ComicIssue', uuid: string, seriesUuid: string, name?: string | null, position?: number | null, thumbnailImageAsString?: string | null, datePublished?: number | null, scopesForExclusiveContent?: Array<string | null> | null, dateExclusiveContentAvailable?: number | null } | null, nextIssue?: { __typename?: 'ComicIssue', uuid: string, seriesUuid: string, name?: string | null, position?: number | null, thumbnailImageAsString?: string | null, datePublished?: number | null, scopesForExclusiveContent?: Array<string | null> | null, dateExclusiveContentAvailable?: number | null } | null } | null, getComicSeries?: { __typename?: 'ComicSeries', uuid: string, name?: string | null, description?: string | null, datePublished?: number | null, hash?: string | null, issuesHash?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, tags?: Array<string | null> | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null, language?: Language | null, status?: SeriesStatus | null, contentRating?: ContentRating | null, seriesType?: ComicSeriesType | null, isCompleted?: boolean | null, issueCount?: number | null, hostingProviderUuid?: string | null, creators?: Array<{ __typename?: 'Creator', uuid: string, name?: string | null, shortUrl?: string | null, avatarImageAsString?: string | null, links?: Array<{ __typename?: 'LinkDetails', url?: string | null, type?: LinkType | null } | null> | null } | null> | null } | null, getCreatorLinksForSeries?: Array<{ __typename?: 'CreatorLinkDetails', creatorUuid: string, type?: LinkType | null, url?: string | null } | null> | null };
+export type GetComicIssueQuery = { __typename?: 'Query', getComicIssue?: { __typename?: 'ComicIssue', bannerImageAsString?: string | null, creatorNote?: string | null, uuid: string, seriesUuid: string, name?: string | null, position?: number | null, thumbnailImageAsString?: string | null, datePublished?: number | null, scopesForExclusiveContent?: Array<string | null> | null, dateExclusiveContentAvailable?: number | null, stories?: Array<{ __typename?: 'ComicStory', uuid: string, issueUuid: string, seriesUuid: string, storyImageAsString?: string | null, width?: number | null, height?: number | null } | null> | null, previousIssue?: { __typename?: 'ComicIssue', uuid: string, seriesUuid: string, name?: string | null, position?: number | null, thumbnailImageAsString?: string | null, datePublished?: number | null, scopesForExclusiveContent?: Array<string | null> | null, dateExclusiveContentAvailable?: number | null } | null, nextIssue?: { __typename?: 'ComicIssue', uuid: string, seriesUuid: string, name?: string | null, position?: number | null, thumbnailImageAsString?: string | null, datePublished?: number | null, scopesForExclusiveContent?: Array<string | null> | null, dateExclusiveContentAvailable?: number | null } | null } | null, getComicSeries?: { __typename?: 'ComicSeries', uuid: string, name?: string | null, description?: string | null, datePublished?: number | null, hash?: string | null, issuesHash?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, tags?: Array<string | null> | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null, language?: Language | null, status?: SeriesStatus | null, contentRating?: ContentRating | null, seriesType?: ComicSeriesType | null, isCompleted?: boolean | null, issueCount?: number | null, hostingProviderUuid?: string | null, creators?: Array<{ __typename?: 'Creator', uuid: string, name?: string | null, shortUrl?: string | null, avatarImageAsString?: string | null, links?: Array<{ __typename?: 'LinkDetails', url?: string | null, type?: LinkType | null } | null> | null } | null> | null } | null, getCreatorLinksForSeries?: Array<{ __typename?: 'CreatorLinkDetails', creatorUuid: string, type?: LinkType | null, url?: string | null } | null> | null, getStatsForComicIssue?: { __typename?: 'ComicIssueStats', seriesUuid: string, issueUuid: string, likeCount?: number | null } | null };
 
 export type GetComicsFromBlueskyCreatorsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1407,7 +1492,7 @@ export type GetComicSeriesQueryVariables = Exact<{
 }>;
 
 
-export type GetComicSeriesQuery = { __typename?: 'Query', getComicSeries?: { __typename?: 'ComicSeries', uuid: string, name?: string | null, description?: string | null, datePublished?: number | null, hash?: string | null, issuesHash?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, tags?: Array<string | null> | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null, language?: Language | null, status?: SeriesStatus | null, contentRating?: ContentRating | null, seriesType?: ComicSeriesType | null, isCompleted?: boolean | null, issueCount?: number | null, hostingProviderUuid?: string | null, creators?: Array<{ __typename?: 'Creator', uuid: string, name?: string | null, shortUrl?: string | null, avatarImageAsString?: string | null, links?: Array<{ __typename?: 'LinkDetails', url?: string | null, type?: LinkType | null } | null> | null } | null> | null } | null, getIssuesForComicSeries?: { __typename?: 'ComicIssueForSeries', seriesUuid: string, issues?: Array<{ __typename?: 'ComicIssue', uuid: string, seriesUuid: string, name?: string | null, position?: number | null, thumbnailImageAsString?: string | null, datePublished?: number | null, scopesForExclusiveContent?: Array<string | null> | null, dateExclusiveContentAvailable?: number | null } | null> | null } | null };
+export type GetComicSeriesQuery = { __typename?: 'Query', getComicSeries?: { __typename?: 'ComicSeries', uuid: string, name?: string | null, description?: string | null, datePublished?: number | null, hash?: string | null, issuesHash?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, tags?: Array<string | null> | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null, language?: Language | null, status?: SeriesStatus | null, contentRating?: ContentRating | null, seriesType?: ComicSeriesType | null, isCompleted?: boolean | null, issueCount?: number | null, hostingProviderUuid?: string | null, creators?: Array<{ __typename?: 'Creator', uuid: string, name?: string | null, shortUrl?: string | null, avatarImageAsString?: string | null, links?: Array<{ __typename?: 'LinkDetails', url?: string | null, type?: LinkType | null } | null> | null } | null> | null } | null, getIssuesForComicSeries?: { __typename?: 'ComicIssueForSeries', seriesUuid: string, issues?: Array<{ __typename?: 'ComicIssue', uuid: string, seriesUuid: string, name?: string | null, position?: number | null, thumbnailImageAsString?: string | null, datePublished?: number | null, scopesForExclusiveContent?: Array<string | null> | null, dateExclusiveContentAvailable?: number | null } | null> | null } | null, getStatsForComicSeries?: Array<{ __typename?: 'ComicIssueStats', seriesUuid: string, issueUuid: string, likeCount?: number | null }> | null };
 
 export type GetCreatorQueryVariables = Exact<{
   uuid: Scalars['ID']['input'];
@@ -1470,7 +1555,7 @@ export type GetUserComicSeriesQueryVariables = Exact<{
 }>;
 
 
-export type GetUserComicSeriesQuery = { __typename?: 'Query', getUserComicSeries?: { __typename?: 'UserComicSeries', seriesUuid: string, isSubscribed: boolean, isRecommended: boolean, hasNotificationEnabled: boolean } | null };
+export type GetUserComicSeriesQuery = { __typename?: 'Query', getUserComicSeries?: { __typename?: 'UserComicSeries', seriesUuid: string, isSubscribed: boolean, isRecommended: boolean, hasNotificationEnabled: boolean, likedComicIssueUuids: Array<string | null> } | null };
 
 export type HomeScreenQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1612,6 +1697,7 @@ export const UserComicSeriesDetails = gql`
   isSubscribed
   isRecommended
   hasNotificationEnabled
+  likedComicIssueUuids
 }
     `;
 export const UserDetails = gql`
@@ -1649,6 +1735,13 @@ export const FetchRefreshTokenForHostingProvider = gql`
   fetchRefreshTokenForHostingProvider(hostingProviderUuid: $hostingProviderUuid)
 }
     `;
+export const LikeComicIssue = gql`
+    mutation LikeComicIssue($issueUuid: ID!, $seriesUuid: ID!) {
+  likeComicIssue(issueUuid: $issueUuid, seriesUuid: $seriesUuid) {
+    ...userComicSeriesDetails
+  }
+}
+    ${UserComicSeriesDetails}`;
 export const ReportComicSeries = gql`
     mutation ReportComicSeries($uuid: ID!, $reportType: String) {
   reportComicSeries(uuid: $uuid, reportType: $reportType)
@@ -1680,6 +1773,20 @@ export const SubscribeToMultipleComicSeries = gql`
 export const SubscribeToSeries = gql`
     mutation SubscribeToSeries($seriesUuid: ID!) {
   subscribeToSeries(seriesUuid: $seriesUuid) {
+    ...userComicSeriesDetails
+  }
+}
+    ${UserComicSeriesDetails}`;
+export const SuperLikeAllEpisodes = gql`
+    mutation SuperLikeAllEpisodes($seriesUuid: ID!) {
+  superLikeAllEpisodes(seriesUuid: $seriesUuid) {
+    ...userComicSeriesDetails
+  }
+}
+    ${UserComicSeriesDetails}`;
+export const UnlikeComicIssue = gql`
+    mutation UnlikeComicIssue($issueUuid: ID!, $seriesUuid: ID!) {
+  unlikeComicIssue(issueUuid: $issueUuid, seriesUuid: $seriesUuid) {
     ...userComicSeriesDetails
   }
 }
@@ -1729,6 +1836,24 @@ export const GetBlueskyProfile = gql`
   }
 }
     `;
+export const GetComicIssueStats = gql`
+    query GetComicIssueStats($issueUuid: ID!, $seriesUuid: ID!) {
+  getStatsForComicIssue(issueUuid: $issueUuid, seriesUuid: $seriesUuid) {
+    seriesUuid
+    issueUuid
+    likeCount
+  }
+}
+    `;
+export const GetComicSeriesStats = gql`
+    query GetComicSeriesStats($seriesUuid: ID!) {
+  getStatsForComicSeries(seriesUuid: $seriesUuid) {
+    seriesUuid
+    issueUuid
+    likeCount
+  }
+}
+    `;
 export const GetComicIssue = gql`
     query GetComicIssue($issueUuid: ID!, $seriesUuid: ID!) {
   getComicIssue(uuid: $issueUuid, seriesUuid: $seriesUuid) {
@@ -1744,6 +1869,11 @@ export const GetComicIssue = gql`
     creatorUuid
     type
     url
+  }
+  getStatsForComicIssue(issueUuid: $issueUuid, seriesUuid: $seriesUuid) {
+    seriesUuid
+    issueUuid
+    likeCount
   }
 }
     ${ComicIssueDetails}
@@ -1781,6 +1911,11 @@ export const GetComicSeries = gql`
     issues {
       ...miniComicIssueDetails
     }
+  }
+  getStatsForComicSeries(seriesUuid: $uuid) {
+    seriesUuid
+    issueUuid
+    likeCount
   }
 }
     ${ComicSeriesDetails}
@@ -1857,13 +1992,10 @@ export const GetUserByUsername = gql`
 export const GetUserComicSeries = gql`
     query GetUserComicSeries($seriesUuid: ID!) {
   getUserComicSeries(seriesUuid: $seriesUuid) {
-    seriesUuid
-    isSubscribed
-    isRecommended
-    hasNotificationEnabled
+    ...userComicSeriesDetails
   }
 }
-    `;
+    ${UserComicSeriesDetails}`;
 export const HomeScreen = gql`
     query HomeScreen {
   getFeaturedComicSeries {

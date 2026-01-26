@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { MdLock } from 'react-icons/md';
+import { MdLock, MdFavorite, MdFavoriteBorder } from 'react-icons/md';
 
 import { prettyFormattedDate, prettyFormattedFreeInDays } from '@inkverse/shared-client/utils/date';
 import { getThumbnailImageUrl } from '@inkverse/public/comicseries';
@@ -11,11 +11,21 @@ type ComicIssueDetailsProps = {
   comicissue: ComicIssue,
   position: number,
   isCurrentIssue?: boolean,
+  likeCount?: number,
+  isLiked?: boolean,
+  isLikeLoading?: boolean,
+  onLikePress?: () => void,
 };
 
-export const ComicIssueDetails = ({ comicseries, comicissue, position, isCurrentIssue }: ComicIssueDetailsProps) => {
+export const ComicIssueDetails = ({ comicseries, comicissue, position, isCurrentIssue, likeCount, isLiked, isLikeLoading, onLikePress }: ComicIssueDetailsProps) => {
   const freeInDaysText = prettyFormattedFreeInDays(comicissue.dateExclusiveContentAvailable || undefined);
   const isPatreonExclusive = comicissue.scopesForExclusiveContent && comicissue.scopesForExclusiveContent.includes('patreon');
+
+  const handleLikeClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onLikePress?.();
+  };
 
   const dateAndFreeContent = (
     <div className="text-sm">
@@ -65,7 +75,27 @@ export const ComicIssueDetails = ({ comicseries, comicissue, position, isCurrent
             </div>
           </div>
         </div>
-        <span className={`text-base pr-4 ${isCurrentIssue ? 'text-white font-bold' : ''}`}>#{position + 1}</span>
+        <div className="flex items-center pr-4 gap-3">
+          {onLikePress && (
+            <button
+              onClick={handleLikeClick}
+              disabled={isLikeLoading}
+              className="flex items-center gap-1 px-2 py-1 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors disabled:opacity-50"
+            >
+              {isLikeLoading ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />
+              ) : isLiked ? (
+                <MdFavorite className={isCurrentIssue ? "text-white font-bold" : "text-rose-500"} size={18} />
+              ) : (
+                <MdFavoriteBorder className={isCurrentIssue ? "text-white font-bold" : ""} size={18} />
+              )}
+              <span className={`text-sm ${isCurrentIssue ? "text-white font-bold" : ""}`}>{likeCount?.toLocaleString() || 0}</span>
+            </button>
+          )}
+          <span className={`text-base ${isCurrentIssue ? 'text-white font-bold' : ''}`}>
+            #{position + 1}
+          </span>
+        </div>
       </div>
     </Link>
   );

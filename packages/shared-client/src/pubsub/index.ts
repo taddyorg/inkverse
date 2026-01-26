@@ -20,14 +20,14 @@ export type PubSubEvents = {
   // Authentication events
   USER_AUTHENTICATED: { userId: string };
   USER_LOGGED_OUT: undefined;
-  
+
   // Hosting provider events (existing pattern from React Native)
   HOSTING_PROVIDER_CONNECTED: { hostingProviderUuid: string; success: boolean };
-  
+
   // Comic subscription events
   COMIC_SUBSCRIBED: { seriesUuid: string; userId: string };
   COMIC_UNSUBSCRIBED: { seriesUuid: string; userId: string };
-  
+
   // User profile events
   USER_PROFILE_UPDATED: { userId: string; };
 };

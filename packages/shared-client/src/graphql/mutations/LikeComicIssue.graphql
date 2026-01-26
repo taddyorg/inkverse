@@ -1,0 +1,5 @@
+mutation LikeComicIssue($issueUuid: ID!, $seriesUuid: ID!) {
+  likeComicIssue(issueUuid: $issueUuid, seriesUuid: $seriesUuid) {
+    ...userComicSeriesDetails
+  }
+}

@@ -35,6 +35,7 @@ import { getAndSaveMeDetails } from "@inkverse/shared-client/dispatch/profile";
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   { rel: "preconnect", href: "https://ink0.inkverse.co" },
+  { rel: "dns-prefetch", href: "https://ax0.taddy.org" },
   { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
   {
     rel: "stylesheet",

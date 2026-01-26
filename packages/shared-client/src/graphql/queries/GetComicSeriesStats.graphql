@@ -1,0 +1,7 @@
+query GetComicSeriesStats($seriesUuid: ID!) {
+  getStatsForComicSeries(seriesUuid: $seriesUuid) {
+    seriesUuid
+    issueUuid
+    likeCount
+  }
+}

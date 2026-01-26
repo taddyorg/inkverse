@@ -15,11 +15,21 @@ import { ComicHeader, HEADER_HEIGHT } from '../components/comics/ComicHeader';
 import { ComicFooter, FOOTER_HEIGHT } from '../components/comics/ComicFooter';
 import { CreatorForIssue } from '../components/creator/CreatorForIssue';
 import { ReadNextEpisode } from '../components/comics/ReadNextEpisode';
+import { LikeButton } from '../components/comics/LikeButton';
 import { Screen, ScrollIndicator, ThemedActivityIndicator, ThemedRefreshControl, ThemedView, ThemedText, ThemedButton, PressableOpacity, ThemedTextFontFamilyMap } from '@/app/components/ui';
 
-import { getPublicApolloClient } from '@/lib/apollo';
-import { comicIssueReducer, comicIssueInitialState, loadComicIssue, checkPatreonAccess } from '@inkverse/shared-client/dispatch/comicissue';
-import { ComicIssue, Creator } from '@inkverse/shared-client/graphql/operations';
+import { getPublicApolloClient, getUserApolloClient } from '@/lib/apollo';
+import {
+  comicIssueReducer,
+  comicIssueInitialState,
+  loadComicIssue,
+  checkPatreonAccess,
+  likeComicIssue,
+  unlikeComicIssue,
+  superLikeAllEpisodes,
+  ComicIssueActionType,
+} from '@inkverse/shared-client/dispatch/comicissue';
+import { ComicIssue, Creator, GetUserComicSeries, type GetUserComicSeriesQuery, type GetUserComicSeriesQueryVariables } from '@inkverse/shared-client/graphql/operations';
 import { getStoryImageUrl } from '@inkverse/public/comicstory';
 import { getAvatarImageUrl } from '@inkverse/public/creator';
 import { LinkType } from '@inkverse/public/graphql/types';
@@ -28,7 +38,7 @@ import { getConnectedHostingProviderUuids, getContentTokenForProviderAndSeries }
 import { useThemeColor } from '@/constants/Colors';
 import { useAnalytics } from '@/lib/analytics';
 
-type ListItemType = 'story' | 'grid' | 'creator' | 'next-episode' | 'exclusive-signup' | 'exclusive-connect-patreon' | 'exclusive-checking-access' | 'exclusive-no-access' | 'patreon-exclusive';
+type ListItemType = 'story' | 'like' | 'grid' | 'creator' | 'next-episode' | 'exclusive-signup' | 'exclusive-connect-patreon' | 'exclusive-checking-access' | 'exclusive-no-access' | 'patreon-exclusive';
 
 interface ListItem {
   type: ListItemType;
@@ -118,7 +128,18 @@ export function ComicIssueScreen() {
   }, []);
   
   const [state, dispatch] = useReducer(comicIssueReducer, comicIssueInitialState);
-  const { isComicIssueLoading, comicissue, comicseries, isCheckingAccess, contentToken, creatorLinks } = state;
+  const {
+    isComicIssueLoading,
+    comicissue,
+    comicseries,
+    isCheckingAccess,
+    contentToken,
+    creatorLinks,
+    likeCount,
+    userComicData,
+    isLikeLoading,
+    isSuperLikeLoading,
+  } = state;
   
   const isPatreonExclusive = comicissue?.scopesForExclusiveContent?.includes('patreon');
   const decodedToken = contentToken && jwtDecode(contentToken) as any;
@@ -126,7 +147,14 @@ export function ComicIssueScreen() {
   const connectedProviders = getConnectedHostingProviderUuids();
   const isConnectedToHostingProvider = comicseries?.hostingProviderUuid && connectedProviders.includes(comicseries.hostingProviderUuid);
   const isAuthenticated = !!getUserDetails();
-  
+
+  // Like state
+  const isLiked = userComicData?.likedComicIssueUuids?.includes(comicissue?.uuid || '') ?? false;
+  const displayLikeCount = likeCount ?? 0;
+  const totalEpisodes = comicseries?.issueCount ?? 0;
+  const likedEpisodesCount = userComicData?.likedComicIssueUuids?.length ?? 0;
+  const hasLikedAllEpisodes = isAuthenticated && totalEpisodes > 0 && likedEpisodesCount >= totalEpisodes;
+
   const loadData = useCallback(async (forceRefresh = false) => {
     await loadComicIssue({
       publicClient,
@@ -153,6 +181,41 @@ export function ComicIssueScreen() {
       }, dispatch);
     }
   }, [isPatreonExclusive, comicseries?.hostingProviderUuid, comicseries?.uuid, comicissue?.uuid]);
+
+  // Load user's like status when authenticated
+  useEffect(() => {
+    if (!isAuthenticated || !comicseries?.uuid) return;
+
+    const loadUserData = async () => {
+      const userClient = getUserApolloClient();
+      if (!userClient) return;
+
+      try {
+        const result = await userClient.query<GetUserComicSeriesQuery, GetUserComicSeriesQueryVariables>({
+          query: GetUserComicSeries,
+          variables: { seriesUuid: comicseries.uuid },
+        });
+
+        if (result.data?.getUserComicSeries) {
+          dispatch({
+            type: ComicIssueActionType.GET_COMICISSUE_SUCCESS,
+            payload: {
+              userComicData: {
+                isSubscribed: result.data.getUserComicSeries.isSubscribed,
+                isRecommended: result.data.getUserComicSeries.isRecommended,
+                hasNotificationEnabled: result.data.getUserComicSeries.hasNotificationEnabled,
+                likedComicIssueUuids: result.data.getUserComicSeries.likedComicIssueUuids?.filter((uuid: string | null): uuid is string => uuid !== null) || [],
+              }
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Failed to load user comic data:', error);
+      }
+    };
+
+    loadUserData();
+  }, [isAuthenticated, comicseries?.uuid]);
 
   const handleRefresh = useCallback(() => {
     setRefreshing(true);
@@ -196,8 +259,49 @@ export function ComicIssueScreen() {
     isFooterOpen.current = false;
     setIsHeaderVisible(false);
     headerTranslateY.setValue(HEADER_CLOSED_POSITION);
-    footerTranslateY.setValue(FOOTER_CLOSED_POSITION);    
+    footerTranslateY.setValue(FOOTER_CLOSED_POSITION);
   }, [navigation]);
+
+  // Handle like/unlike
+  const handleLikePress = useCallback(async () => {
+    if (!isAuthenticated) {
+      navigation.navigate(SIGNUP_SCREEN);
+      return;
+    }
+
+    const userClient = getUserApolloClient();
+    if (!userClient || !comicissue?.uuid || !comicseries?.uuid) return;
+
+    if (isLiked) {
+      await unlikeComicIssue({
+        userClient,
+        issueUuid: comicissue.uuid,
+        seriesUuid: comicseries.uuid,
+      }, dispatch);
+    } else {
+      await likeComicIssue({
+        userClient,
+        issueUuid: comicissue.uuid,
+        seriesUuid: comicseries.uuid,
+      }, dispatch);
+    }
+  }, [isAuthenticated, isLiked, comicissue?.uuid, comicseries?.uuid, navigation]);
+
+  // Handle super-like all episodes
+  const handleSuperLikePress = useCallback(async () => {
+    if (!isAuthenticated) {
+      navigation.navigate(SIGNUP_SCREEN);
+      return;
+    }
+
+    const userClient = getUserApolloClient();
+    if (!userClient || !comicseries?.uuid) return;
+
+    await superLikeAllEpisodes({
+      userClient,
+      seriesUuid: comicseries.uuid,
+    }, dispatch);
+  }, [isAuthenticated, comicseries?.uuid, navigation]);
 
   const exclusiveListItemStyle = useMemo(() => ({
     ...styles.exclusiveListItem,
@@ -212,6 +316,15 @@ export function ComicIssueScreen() {
             story={item.data}
             screenDetails={screenDetails}
             contentToken={contentToken}
+          />
+        );
+      case 'like':
+        return (
+          <LikeButton
+            isLiked={isLiked}
+            likeCount={displayLikeCount}
+            isLoading={isLikeLoading ?? false}
+            onPress={handleLikePress}
           />
         );
       case 'creator':
@@ -235,6 +348,11 @@ export function ComicIssueScreen() {
             <ReadNextEpisode
               comicissue={item.data.comicissue}
               handleNavigateToIssue={handleNavigateToIssue}
+              isAuthenticated={isAuthenticated}
+              isSuperLikeLoading={isSuperLikeLoading}
+              onSuperLike={handleSuperLikePress}
+              hasLikedAllEpisodes={hasLikedAllEpisodes}
+              creators={comicseries?.creators ?? undefined}
             />
           </View>
         );
@@ -275,7 +393,7 @@ export function ComicIssueScreen() {
       default:
         return null;
     }
-  }, [screenDetails, contentToken, handleNavigateToIssue, navigation, exclusiveListItemStyle]);
+  }, [screenDetails, contentToken, handleNavigateToIssue, navigation, exclusiveListItemStyle, isLiked, displayLikeCount, isLikeLoading, handleLikePress, isAuthenticated, isSuperLikeLoading, handleSuperLikePress, hasLikedAllEpisodes, comicseries?.creators]);
 
   const listData = useMemo(() => {
     if (!comicissue || !comicseries) return [];
@@ -324,6 +442,12 @@ export function ComicIssueScreen() {
       data: story,
     })) ?? [];
 
+    const likeItem: ListItem = {
+      type: 'like' as const,
+      key: 'like-button',
+      data: {},
+    };
+
     const creatorItem: ListItem = {
       type: 'creator' as const,
       key: `creator-details`,
@@ -344,6 +468,7 @@ export function ComicIssueScreen() {
     const items = [
       ...patreonExclusiveItem,
       ...storyItems,
+      likeItem,
       creatorItem,
       nextEpisodeItem
     ];
@@ -458,6 +583,10 @@ export function ComicIssueScreen() {
         nextIssue={comicissue?.nextIssue}
         previousIssue={comicissue?.previousIssue}
         onNavigateToIssue={handleNavigateToIssue}
+        isLiked={isLiked}
+        likeCount={displayLikeCount}
+        isLikeLoading={isLikeLoading ?? false}
+        onLikePress={handleLikePress}
       />
       <ScrollIndicator 
         scrollPosition={scrollPosition}

@@ -4,8 +4,9 @@ import { Image } from 'expo-image';
 import { MaterialIcons } from '@expo/vector-icons';
 
 import { ThemedText, ThemedTextFontFamilyMap, PressableOpacity } from '../ui';
+import { SuperLikeButton } from './SuperLikeButton';
 
-import { ComicIssue } from '@inkverse/shared-client/graphql/operations';
+import { ComicIssue, Creator } from '@inkverse/shared-client/graphql/operations';
 import { getThumbnailImageUrl } from '@inkverse/public/comicissue';
 import { useThemeColor } from '@/constants/Colors';
 
@@ -15,9 +16,26 @@ interface ReadNextEpisodeProps {
   firstTextCTA?: string;
   secondTextCTA?: string;
   handleNavigateToIssue: (issueUuid: string, seriesUuid: string) => void;
+  // SuperLike props (optional - only shown in empty state when authenticated)
+  isAuthenticated?: boolean;
+  isSuperLikeLoading?: boolean;
+  onSuperLike?: () => void;
+  hasLikedAllEpisodes?: boolean;
+  creators?: (Creator | null)[];
 }
 
-export function ReadNextEpisode({ comicissue, showEmptyState = true, firstTextCTA = 'NEXT', secondTextCTA = 'EPISODE', handleNavigateToIssue }: ReadNextEpisodeProps) {
+export function ReadNextEpisode({
+  comicissue,
+  showEmptyState = true,
+  firstTextCTA = 'NEXT',
+  secondTextCTA = 'EPISODE',
+  handleNavigateToIssue,
+  isAuthenticated,
+  isSuperLikeLoading,
+  onSuperLike,
+  hasLikedAllEpisodes,
+  creators,
+}: ReadNextEpisodeProps) {
   const color = useThemeColor({}, 'action');
 
   if (!comicissue) {
@@ -28,6 +46,14 @@ export function ReadNextEpisode({ comicissue, showEmptyState = true, firstTextCT
           <ThemedText style={styles.emptyText}>
             You are up to date with this series!
           </ThemedText>
+          {isAuthenticated && onSuperLike && (
+            <SuperLikeButton
+              isLoading={isSuperLikeLoading ?? false}
+              onPress={onSuperLike}
+              hasLikedAll={hasLikedAllEpisodes ?? false}
+              creators={creators}
+            />
+          )}
         </View>
       </View>
     );

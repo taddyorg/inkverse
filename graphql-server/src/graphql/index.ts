@@ -87,6 +87,12 @@ import {
   NotificationPreferenceDefinitions,
 } from './notificationpreference.js';
 
+import {
+  ComicIssueStatsDefinitions,
+  ComicIssueStatsQueriesDefinitions,
+  ComicIssueStatsQueries,
+} from './comicissuestats.js';
+
 export const typeDefs = gql`#graphql
   ${CommonDefinitions}
   ${ComicSeriesDefinitions}
@@ -103,6 +109,7 @@ export const typeDefs = gql`#graphql
   ${UserDefinitions}
   ${UserComicSeriesDefinitions}
   ${NotificationPreferenceDefinitions}
+  ${ComicIssueStatsDefinitions}
 
   type Query {
     ${ComicSeriesQueriesDefinitions}
@@ -116,6 +123,7 @@ export const typeDefs = gql`#graphql
     ${SearchQueriesDefinitions}
     ${UserQueriesDefinitions}
     ${UserComicSeriesQueriesDefinitions}
+    ${ComicIssueStatsQueriesDefinitions}
   }
 
   type Mutation {
@@ -139,6 +147,7 @@ export const resolvers: Resolvers = {
     ...SearchQueries,
     ...UserQueries,
     ...UserComicSeriesQueries,
+    ...ComicIssueStatsQueries,
   },
   Mutation: {
     ...UserMutations,

@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, ActivityIndicator } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useNavigation } from '@react-navigation/native';
@@ -20,9 +20,16 @@ interface ComicIssueDetailsProps {
   position: number;
   isCurrentIssue: boolean;
   imagePriority?: 'high' | 'normal' | 'low';
+  likeCount?: number;
+  isLiked?: boolean;
+  isLikeLoading?: boolean;
+  onLikePress?: () => void;
 }
 
-export const ComicIssueDetails = memo(({ comicissue, comicseries, position, isCurrentIssue, imagePriority }: ComicIssueDetailsProps) => {
+export const ComicIssueDetails = memo(({
+  comicissue, comicseries, position, isCurrentIssue, imagePriority,
+  likeCount, isLiked, isLikeLoading, onLikePress
+}: ComicIssueDetailsProps) => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const isPatreonExclusive = comicissue.scopesForExclusiveContent?.includes('patreon');
@@ -37,6 +44,10 @@ export const ComicIssueDetails = memo(({ comicissue, comicseries, position, isCu
       issueUuid: comicissue.uuid,
       seriesUuid: comicseries.uuid,
     });
+  };
+
+  const handleLikeClick = () => {
+    onLikePress?.();
   };
 
   const actionColor = useThemeColor({}, 'action');
@@ -115,11 +126,32 @@ export const ComicIssueDetails = memo(({ comicissue, comicseries, position, isCu
               )}
             </View>
           </View>
+        </View>
+        <View style={styles.rightSection}>
+          {onLikePress && (
+            <PressableOpacity
+              onPress={handleLikeClick}
+              disabled={isLikeLoading}
+              style={[styles.likeButton, isLikeLoading && styles.likeButtonDisabled]}
+            >
+              <View style={styles.likeButtonContent}>
+                {isLikeLoading ? (
+                  <ActivityIndicator size="small" color={isCurrentIssue ? actionTextColor : tintColor} />
+                ) : isLiked ? (
+                  <MaterialIcons name="favorite" size={18} color={isCurrentIssue ? actionTextColor : "#f43f5e"} />
+                ) : (
+                  <MaterialIcons name="favorite-border" size={18} color={isCurrentIssue ? actionTextColor : tintColor} />
+                )}
+                <ThemedText style={[styles.likeCount, isCurrentIssue && { color: actionTextColor }]}>
+                  {(likeCount || 0).toLocaleString()}
+                </ThemedText>
+              </View>
+            </PressableOpacity>
+          )}
           <ThemedText style={[
             styles.episodeNumber,
             isCurrentIssue && { color: actionTextColor, fontFamily: ThemedTextFontFamilyMap.bold }
-          ]}>#{position + 1}
-          </ThemedText>
+          ]}>#{position + 1}</ThemedText>
         </View>
       </View>
     </PressableOpacity>
@@ -143,6 +175,7 @@ const styles = StyleSheet.create({
   episodeItemLeft: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
   },
   episodeItemContent: {
     marginLeft: 16,
@@ -211,5 +244,27 @@ const styles = StyleSheet.create({
     top: '50%',
     left: '50%',
     transform: [{ translateX: -17 }, { translateY: -17 }],
+  },
+  rightSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  likeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 4,
+    paddingHorizontal: 6,
+  },
+  likeButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  likeButtonDisabled: {
+    opacity: 0.5,
+  },
+  likeCount: {
+    marginLeft: 4,
+    fontSize: 14,
   },
 }); 

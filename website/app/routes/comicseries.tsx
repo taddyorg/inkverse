@@ -13,14 +13,16 @@ import { getInkverseUrl, inkverseWebsiteUrl } from '@inkverse/public/utils';
 import { getBannerImageUrl } from '@inkverse/public/comicseries';
 import { getUserDetails } from '@/lib/auth/user';
 import { getUserApolloClient } from '@/lib/apollo/client.client';
-import { 
-  loadUserComicData, 
-  subscribeToSeries, 
-  unsubscribeFromSeries, 
-  enableNotificationsForSeries, 
-  disableNotificationsForSeries, 
+import {
+  loadUserComicData,
+  subscribeToSeries,
+  unsubscribeFromSeries,
+  enableNotificationsForSeries,
+  disableNotificationsForSeries,
+  likeComicIssueInSeries,
+  unlikeComicIssueInSeries,
   comicSeriesReducer,
-  type ComicSeriesLoaderData, 
+  type ComicSeriesLoaderData,
 } from '@inkverse/shared-client/dispatch/comicseries';
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
@@ -52,10 +54,12 @@ function ComicSeriesContent({ initialData }: { initialData: Partial<ComicSeriesL
     comicseries,
     issues,
     isComicSeriesLoading,
-    userComicData, 
-    isUserDataLoading, 
-    isSubscriptionLoading, 
+    userComicData,
+    isUserDataLoading,
+    isSubscriptionLoading,
     isNotificationLoading,
+    comicIssueStats,
+    issueLikeLoadingMap,
   } = comicSeriesState;
   
   // Load user-specific data if authenticated
@@ -63,9 +67,9 @@ function ComicSeriesContent({ initialData }: { initialData: Partial<ComicSeriesL
     const currentUser = getUserDetails();
     if (currentUser && comicseries?.uuid) {
       const userClient = getUserApolloClient();
-      loadUserComicData({ 
-        userClient, 
-        seriesUuid: comicseries.uuid 
+      loadUserComicData({
+        userClient,
+        seriesUuid: comicseries.uuid
       }, dispatch);
     }
   }, [comicseries?.uuid]);
@@ -135,7 +139,40 @@ function ComicSeriesContent({ initialData }: { initialData: Partial<ComicSeriesL
       console.error('Error updating notifications:', error);
     }
   };
-  
+
+  const handleLikeIssue = async (issueUuid: string) => {
+    const currentUser = getUserDetails();
+    if (!currentUser || !currentUser.id) {
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('openSignupModal'));
+      }
+      return;
+    }
+
+    if (!comicseries) return;
+
+    try {
+      const userClient = getUserApolloClient();
+      const isCurrentlyLiked = userComicData?.likedComicIssueUuids?.includes(issueUuid) || false;
+
+      if (isCurrentlyLiked) {
+        await unlikeComicIssueInSeries({
+          userClient,
+          issueUuid,
+          seriesUuid: comicseries.uuid,
+        }, dispatch);
+      } else {
+        await likeComicIssueInSeries({
+          userClient,
+          issueUuid,
+          seriesUuid: comicseries.uuid,
+        }, dispatch);
+      }
+    } catch (error) {
+      console.error('Error updating like status:', error);
+    }
+  };
+
   if (!isComicSeriesLoading && !comicseries) {
     return (
       <div className="max-w-3xl mx-auto sm:p-6 lg:p-8 h-96 flex items-center justify-center">
@@ -159,10 +196,14 @@ function ComicSeriesContent({ initialData }: { initialData: Partial<ComicSeriesL
           onAddToProfile={handleAddToProfile}
           onGetNotifications={handleGetNotifications}
         />
-        <ComicIssuesList 
-          comicseries={comicseries} 
+        <ComicIssuesList
+          comicseries={comicseries}
           issues={issues?.filter((issue) => issue !== null)}
           currentIssueUuid={issues?.[0]?.uuid}
+          comicIssueStats={comicIssueStats}
+          likedIssueUuids={userComicData?.likedComicIssueUuids || []}
+          issueLikeLoadingMap={issueLikeLoadingMap || {}}
+          onLikeIssue={handleLikeIssue}
         />
         {comicseries && (
           <ComicSeriesInfo comicseries={comicseries} />

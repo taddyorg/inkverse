@@ -17,11 +17,18 @@ import { getStoryImageUrl } from "@inkverse/public/comicstory";
 import { CreatorsForIssue } from "../components/creator/CreatorsForIssue";
 import { getUserDetails } from "@/lib/auth/user";
 import { getConnectedHostingProviderUuids, getContentTokenForProviderAndSeries } from "@/lib/auth/hosting-provider";
-import { 
-  comicIssueReducer, 
+import {
+  comicIssueReducer,
   checkPatreonAccess,
+  likeComicIssue,
+  unlikeComicIssue,
+  superLikeAllEpisodes,
+  ComicIssueActionType,
   type ComicIssueLoaderData,
 } from "@inkverse/shared-client/dispatch/comicissue";
+import { GetUserComicSeries, type GetUserComicSeriesQuery, type GetUserComicSeriesQueryVariables } from "@inkverse/shared-client/graphql/operations";
+import { LikeButton } from "../components/comics/LikeButton";
+import { getUserApolloClient } from "@/lib/apollo/client.client";
 import { LinkType } from "@inkverse/public/graphql/types";
 import { getAvatarImageUrl } from "@inkverse/public/creator";
 
@@ -49,12 +56,16 @@ export default function ComicIssue() {
 function ComicIssueContent({ initialData }: { initialData: Partial<ComicIssueLoaderData> }) {
   const [state, dispatch] = useReducer(comicIssueReducer, initialData);
 
-  const { 
-    comicissue, 
-    comicseries, 
+  const {
+    comicissue,
+    comicseries,
     creatorLinks,
     contentToken,
     isCheckingAccess,
+    likeCount,
+    userComicData,
+    isLikeLoading,
+    isSuperLikeLoading,
   } = state;
 
   const comicSeriesLink = getInkverseUrl({ type: "comicseries", shortUrl: comicseries?.shortUrl });
@@ -64,6 +75,62 @@ function ComicIssueContent({ initialData }: { initialData: Partial<ComicIssueLoa
   const connectedProviders = getConnectedHostingProviderUuids();
   const isConnectedToHostingProvider = comicseries?.hostingProviderUuid && connectedProviders.includes(comicseries.hostingProviderUuid);
   const isAuthenticated = !!getUserDetails();
+
+  // Like state
+  const isLiked = userComicData?.likedComicIssueUuids?.includes(comicissue?.uuid || '') ?? false;
+  const displayLikeCount = likeCount ?? 0;
+
+  const handleLikePress = async () => {
+    if (!isAuthenticated) {
+      // Prompt user to sign up
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('openSignupModal'));
+      }
+      return;
+    }
+
+    const userClient = getUserApolloClient();
+    if (!userClient || !comicissue?.uuid || !comicseries?.uuid) return;
+
+    if (isLiked) {
+      await unlikeComicIssue({
+        userClient,
+        issueUuid: comicissue.uuid,
+        seriesUuid: comicseries.uuid,
+      }, dispatch);
+    } else {
+      await likeComicIssue({
+        userClient,
+        issueUuid: comicissue.uuid,
+        seriesUuid: comicseries.uuid,
+      }, dispatch);
+    }
+  };
+
+  const handleSuperLikePress = async () => {
+    if (!isAuthenticated) {
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('openSignupModal'));
+      }
+      return;
+    }
+
+    const userClient = getUserApolloClient();
+    if (!userClient || !comicseries?.uuid) return;
+
+    await superLikeAllEpisodes({
+      userClient,
+      seriesUuid: comicseries.uuid,
+    }, dispatch);
+  };
+
+  // Check if user is on the last episode (no next issue)
+  const isLastEpisode = !comicissue?.nextIssue;
+
+  // Check if user has liked all episodes in the series
+  const totalEpisodes = comicseries?.issueCount ?? 0;
+  const likedEpisodesCount = userComicData?.likedComicIssueUuids?.length ?? 0;
+  const hasLikedAllEpisodes = isAuthenticated && totalEpisodes > 0 && likedEpisodesCount >= totalEpisodes;
 
   useEffect(() => {
     if (isPatreonExclusive && comicseries?.hostingProviderUuid && comicseries?.uuid && isConnectedToHostingProvider) {
@@ -75,6 +142,41 @@ function ComicIssueContent({ initialData }: { initialData: Partial<ComicIssueLoa
       }, dispatch);
     }
   }, [isPatreonExclusive, comicseries?.hostingProviderUuid, comicseries?.uuid, comicissue?.uuid]);
+
+  // Load user's like status when authenticated
+  useEffect(() => {
+    if (!isAuthenticated || !comicseries?.uuid) return;
+
+    const loadUserData = async () => {
+      const userClient = getUserApolloClient();
+      if (!userClient) return;
+
+      try {
+        const result = await userClient.query<GetUserComicSeriesQuery, GetUserComicSeriesQueryVariables>({
+          query: GetUserComicSeries,
+          variables: { seriesUuid: comicseries.uuid },
+        });
+
+        if (result.data?.getUserComicSeries) {
+          dispatch({
+            type: ComicIssueActionType.GET_COMICISSUE_SUCCESS,
+            payload: {
+              userComicData: {
+                isSubscribed: result.data.getUserComicSeries.isSubscribed,
+                isRecommended: result.data.getUserComicSeries.isRecommended,
+                hasNotificationEnabled: result.data.getUserComicSeries.hasNotificationEnabled,
+                likedComicIssueUuids: result.data.getUserComicSeries.likedComicIssueUuids?.filter((uuid: string | null): uuid is string => uuid !== null) || [],
+              }
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Failed to load user comic data:', error);
+      }
+    };
+
+    loadUserData();
+  }, [isAuthenticated, comicseries?.uuid]);
 
   if (isPatreonExclusive && (!isAuthenticated || !isConnectedToHostingProvider)) {
     return (
@@ -182,18 +284,28 @@ function ComicIssueContent({ initialData }: { initialData: Partial<ComicIssueLoa
             />
           )
         })}
+        <LikeButton
+          isLiked={isLiked}
+          likeCount={displayLikeCount}
+          isLoading={isLikeLoading ?? false}
+          onPress={handleLikePress}
+        />
         <div className="px-4 sm:px-0">
-          <CreatorsForIssue 
-            comicissue={comicissue} 
+          <CreatorsForIssue
+            comicissue={comicissue}
             creators={comicseries?.creators?.map((creator) => creator as Creator) ?? []}/>
           {/* <GridOfComicIssues
             comicseries={comicseries}
             comicissue={comicissue}
             allIssues={allIssues?.issues?.map((issue) => issue as ComicIssue) ?? []}
           /> */}
-          <ReadNextEpisode 
-            comicissue={comicissue?.nextIssue} 
+          <ReadNextEpisode
+            comicissue={comicissue?.nextIssue}
             comicseries={comicseries}
+            isAuthenticated={isAuthenticated}
+            isSuperLikeLoading={isSuperLikeLoading ?? false}
+            onSuperLike={handleSuperLikePress}
+            hasLikedAllEpisodes={hasLikedAllEpisodes}
           />
         </div>
       </div>

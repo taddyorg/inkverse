@@ -47,4 +47,7 @@ export const typePolicies = {
   CannySSO: {
     keyFields: ["userId"]
   },
+  ComicIssueStats: {
+    keyFields: ["seriesUuid", "issueUuid"]
+  },
 }

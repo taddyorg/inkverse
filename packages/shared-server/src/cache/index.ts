@@ -2,6 +2,7 @@ import axios from "axios";
 import { GraphQLClient, gql } from 'graphql-request';
 
 import { getInkverseUrl, inkverseWebsiteUrl } from "@inkverse/public/utils";
+import { ComicIssue, ComicSeries } from "../models/index.js";
 
 import path from 'path';
 import { fileURLToPath } from "url";
@@ -12,13 +13,14 @@ const __dirname = path.dirname(__filename);
 const envPath = path.resolve(__dirname, '..', '..', '.env');
 dotenv.config({ path: envPath });
 
-export type CacheType = 
+export type CacheType =
   'everything' |
   'documentation' |
   'sitemap' |
   'comicseries' |
   'comicissue' |
   'comicissueforseries' |
+  'comicissuestats' |
   'comicstory' |
   'creator' |
   'creatorcontent' |
@@ -34,11 +36,12 @@ interface PurgeCacheParams {
   shortUrl?: string;
   name?: string;
   seriesUuid?: string;
+  issueUuid?: string;
 }
 
-export async function purgeCacheOnCdn({ type, id, shortUrl, name, seriesUuid }: PurgeCacheParams) {
+export async function purgeCacheOnCdn({ type, id, shortUrl, name, seriesUuid, issueUuid }: PurgeCacheParams) {
   if (process.env.NODE_ENV !== "production") {
-    console.log('LocalHost purgeCacheOnCdn', type, id, shortUrl, name);
+    console.log('LocalHost purgeCacheOnCdn', type, id, shortUrl, name, issueUuid);
   }
 
   switch (type) {
@@ -62,6 +65,24 @@ export async function purgeCacheOnCdn({ type, id, shortUrl, name, seriesUuid }: 
       if (!id) { throw new Error('purgeCacheOnCdn - id (userId) is required for type: ' + type); }
       await purgeApiCache(type, id)
       await purgeWebsiteCache({ type: 'profile', shortUrl })
+      return
+    case 'comicissuestats':
+      if (!id) { throw new Error('purgeCacheOnCdn - id (seriesUuid) is required for type: ' + type); }
+      
+      await purgeApiCache(type, id)
+      // Fetch data needed for website cache purging
+      const [comicIssue, comicSeries] = await Promise.all([
+        issueUuid ? ComicIssue.getComicIssueByUuid(issueUuid) : null,
+        ComicSeries.getComicSeriesByUuid(id),
+      ]);
+      
+      // Purge website caches
+      if (comicIssue && comicSeries) {
+        await purgeWebsiteCache({ type: 'comicissue', id: issueUuid, shortUrl: comicSeries.shortUrl, name: comicIssue.name ?? undefined, seriesUuid: id });
+      }
+      if (comicSeries) {
+        await purgeWebsiteCache({ type: 'comicseries', id, shortUrl: comicSeries.shortUrl });
+      }
       return
     case 'everything':
       await purgeApiCache(type, "")
@@ -164,6 +185,12 @@ function getGraphCDNQuery(type: CacheType) {
           purgeProfileComicSeries(userId: $userId)
         }
       `
+    case 'comicissuestats':
+      return `
+        mutation ComicIssueStatsPurge ($seriesUuid: [ID!]) {
+          purgeComicIssueStats(seriesUuid: $seriesUuid)
+        }
+      `
     default:
       throw new Error(`inside getGraphCDNQuery() - Dont have logic for type: ${type}`)
   }
@@ -187,6 +214,8 @@ function getGraphCDNVariables(type: CacheType, id?:string, ids?:string[]) {
       return { id: [id] }
     case 'profilecomicseries':
       return { userId: ids || [id] }
+    case 'comicissuestats':
+      return { seriesUuid: ids || [id] }
     default:
       throw new Error(`inside getGraphCDNVariables() - Dont have logic for type: ${type}`)
   }
