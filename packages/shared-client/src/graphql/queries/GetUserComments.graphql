@@ -1,0 +1,5 @@
+query GetUserComments($targetUuid: ID!, $targetType: InkverseType!) {
+  getUserComments(targetUuid: $targetUuid, targetType: $targetType) {
+    ...userCommentDetails
+  }
+}

@@ -113,7 +113,7 @@ function ProfileContent({ initialData }: { initialData: Partial<ProfileState> })
             </div>
           ) : (
             <>
-              <h2 className="text-xl font-semibold mb-4 sm:mb-2">Your Comics</h2>
+              <h2 className="text-xl font-semibold mb-4 sm:mb-2">{isOwnProfile ? 'Your Comics' : 'Comics I\'ve saved' }</h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
                 {subscriptions.map((comic: ComicSeries) => {
                   return (

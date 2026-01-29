@@ -44,7 +44,7 @@ export function CreatorComics({ comicseries }: CreatorComicsProps) {
 
   return (
     <ThemedView style={styles.container}>
-      <ThemedText size="subtitle" style={styles.sectionTitle}>Comics</ThemedText>
+      <ThemedText size="subtitle" style={styles.sectionTitle}>My Comics</ThemedText>
       <FlashList
         data={comicseries}
         keyExtractor={(item) => item.uuid}

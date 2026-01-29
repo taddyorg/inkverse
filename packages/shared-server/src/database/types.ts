@@ -7,8 +7,10 @@ import type {
   LinkType, 
   SeriesStatus,
   TaddyType,
+  InkverseType,
   UserAgeRange,
   NotificationType,
+  ReportType,
 } from "../graphql/types.js";
 
 export type ComicSeriesModel = {
@@ -222,4 +224,30 @@ export type UserLikeModel = {
   likeableType: LikeableType;
   parentUuid: string;
   parentType: ParentType;
+}
+
+export type UserCommentModel = {
+  id: number;
+  uuid: string;
+  createdAt: number;
+  updatedAt: number | null;
+  userId: number;
+  text: string;
+  targetUuid: string;
+  targetType: InkverseType;
+  parentUuid: string;
+  parentType: InkverseType;
+  replyToCommentUuid: string | null;
+  isVisible: boolean;
+  pinnedPosition: number | null;
+}
+
+export type UserReportModel = {
+  id: number;
+  createdAt: number;
+  reporterUserId: number;
+  targetUuid: string;
+  targetType: InkverseType;
+  reportType: ReportType;
+  additionalInfo: string | null;
 }

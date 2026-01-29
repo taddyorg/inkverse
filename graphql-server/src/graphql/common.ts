@@ -510,6 +510,18 @@ enum TaddyType {
   CREATORCONTENT
 }
 
+" Types of media available on Inkverse "
+enum InkverseType {
+  COMMENT
+  COMICSERIES
+  COMICISSUE
+  COMICSTORY
+  CREATOR
+  CREATORCONTENT
+  LIST
+  USER
+}
+
 " Status of Series "
  enum SeriesStatus {
   ONGOING

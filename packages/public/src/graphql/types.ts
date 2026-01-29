@@ -198,6 +198,33 @@ export type ComicStory = {
   width?: Maybe<Scalars['Int']['output']>;
 };
 
+/** Public comment data (no auth required) */
+export type Comment = {
+  __typename?: 'Comment';
+  createdAt: Scalars['Int']['output'];
+  replyToUuid?: Maybe<Scalars['ID']['output']>;
+  stats?: Maybe<CommentStats>;
+  targetType: InkverseType;
+  targetUuid: Scalars['ID']['output'];
+  text: Scalars['String']['output'];
+  user?: Maybe<User>;
+  uuid: Scalars['ID']['output'];
+};
+
+/** Sort type for comments */
+export enum CommentSortType {
+  NEWEST = 'NEWEST',
+  TOP = 'TOP'
+}
+
+/** Stats for a comment (like count, reply count) */
+export type CommentStats = {
+  __typename?: 'CommentStats';
+  likeCount?: Maybe<Scalars['Int']['output']>;
+  replyCount?: Maybe<Scalars['Int']['output']>;
+  uuid: Scalars['ID']['output'];
+};
+
 /**  Content rating for different media types. Follows format: TYPE_RATING  */
 export enum ContentRating {
   COMICSERIES_ADULTS = 'COMICSERIES_ADULTS',
@@ -618,6 +645,18 @@ export type HomeScreenCuratedList = {
   lists?: Maybe<Array<Maybe<List>>>;
 };
 
+/**  Types of media available on Inkverse  */
+export enum InkverseType {
+  COMICISSUE = 'COMICISSUE',
+  COMICSERIES = 'COMICSERIES',
+  COMICSTORY = 'COMICSTORY',
+  COMMENT = 'COMMENT',
+  CREATOR = 'CREATOR',
+  CREATORCONTENT = 'CREATORCONTENT',
+  LIST = 'LIST',
+  USER = 'USER'
+}
+
 /**  Languages (ISO 639-2 https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes)  */
 export enum Language {
   ABKHAZIAN = 'ABKHAZIAN',
@@ -888,8 +927,14 @@ export enum ListType {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  /** Add a new comment or reply to a comic issue */
+  addComment?: Maybe<Comment>;
+  /** Delete a comment permanently */
+  deleteComment: Scalars['Boolean']['output'];
   /** Disable notifications for a comic series */
   disableNotificationsForSeries: UserComicSeries;
+  /** Edit an existing comment */
+  editComment?: Maybe<Comment>;
   /** Enable notifications for a comic series */
   enableNotificationsForSeries: UserComicSeries;
   /** Fetch all hosting provider tokens for the user */
@@ -898,14 +943,20 @@ export type Mutation = {
   fetchRefreshTokenForHostingProvider?: Maybe<Scalars['String']['output']>;
   /** Like a comic issue */
   likeComicIssue: UserComicSeries;
+  /** Like a comment */
+  likeComment?: Maybe<UserComment>;
   /**  Report a comic series  */
   reportComicSeries?: Maybe<Scalars['Boolean']['output']>;
+  /** Report a comment */
+  reportComment: Scalars['Boolean']['output'];
   /** Resend verification email */
   resendVerificationEmail: Scalars['Boolean']['output'];
   /** Save or update the user's Bluesky handle */
   saveBlueskyDid?: Maybe<User>;
   /** Save a push notification token for the user's device */
   savePushToken: Scalars['Boolean']['output'];
+  /** Set comment visibility (soft delete/restore) */
+  setCommentVisibility?: Maybe<Comment>;
   /** Subscribe to multiple comic series */
   subscribeToMultipleComicSeries: Scalars['Boolean']['output'];
   /** Subscribe to a comic series */
@@ -914,6 +965,8 @@ export type Mutation = {
   superLikeAllEpisodes: UserComicSeries;
   /** Unlike a comic issue */
   unlikeComicIssue: UserComicSeries;
+  /** Unlike a comment */
+  unlikeComment?: Maybe<UserComment>;
   /** Unsubscribe from a comic series */
   unsubscribeFromSeries: UserComicSeries;
   /** Update user email */
@@ -923,8 +976,27 @@ export type Mutation = {
 };
 
 
+export type MutationAddCommentArgs = {
+  issueUuid: Scalars['ID']['input'];
+  replyToCommentUuid?: InputMaybe<Scalars['ID']['input']>;
+  seriesUuid: Scalars['ID']['input'];
+  text: Scalars['String']['input'];
+};
+
+
+export type MutationDeleteCommentArgs = {
+  commentUuid: Scalars['ID']['input'];
+};
+
+
 export type MutationDisableNotificationsForSeriesArgs = {
   seriesUuid: Scalars['ID']['input'];
+};
+
+
+export type MutationEditCommentArgs = {
+  commentUuid: Scalars['ID']['input'];
+  text: Scalars['String']['input'];
 };
 
 
@@ -944,9 +1016,22 @@ export type MutationLikeComicIssueArgs = {
 };
 
 
+export type MutationLikeCommentArgs = {
+  commentUuid: Scalars['ID']['input'];
+  issueUuid: Scalars['ID']['input'];
+};
+
+
 export type MutationReportComicSeriesArgs = {
-  reportType?: InputMaybe<Scalars['String']['input']>;
+  reportType: ReportType;
   uuid: Scalars['ID']['input'];
+};
+
+
+export type MutationReportCommentArgs = {
+  additionalInfo?: InputMaybe<Scalars['String']['input']>;
+  commentUuid: Scalars['ID']['input'];
+  reportType: ReportType;
 };
 
 
@@ -958,6 +1043,12 @@ export type MutationSaveBlueskyDidArgs = {
 export type MutationSavePushTokenArgs = {
   fcmToken: Scalars['String']['input'];
   platform: Scalars['String']['input'];
+};
+
+
+export type MutationSetCommentVisibilityArgs = {
+  commentUuid: Scalars['ID']['input'];
+  isVisible: Scalars['Boolean']['input'];
 };
 
 
@@ -979,6 +1070,12 @@ export type MutationSuperLikeAllEpisodesArgs = {
 export type MutationUnlikeComicIssueArgs = {
   issueUuid: Scalars['ID']['input'];
   seriesUuid: Scalars['ID']['input'];
+};
+
+
+export type MutationUnlikeCommentArgs = {
+  commentUuid: Scalars['ID']['input'];
+  issueUuid: Scalars['ID']['input'];
 };
 
 
@@ -1052,6 +1149,8 @@ export type Query = {
   getComicsFromBlueskyCreators?: Maybe<Array<Maybe<ComicSeries>>>;
   /** Get all comics from Patreon creators */
   getComicsFromPatreonCreators?: Maybe<Array<Maybe<ComicSeries>>>;
+  /** Get paginated comments for a target (e.g., comic issue) */
+  getComments: Array<Comment>;
   /**  Get details on a Creator  */
   getCreator?: Maybe<Creator>;
   /**  Get details on a Creator Content  */
@@ -1074,6 +1173,8 @@ export type Query = {
   getRecentlyAddedComicSeries?: Maybe<HomeScreenComicSeries>;
   /**  Get a list of recently updated comics  */
   getRecentlyUpdatedComicSeries?: Maybe<HomeScreenComicSeries>;
+  /** Get replies for a specific comment */
+  getRepliesForComment: Array<Comment>;
   /** Get stats (like count) for a single episode */
   getStatsForComicIssue?: Maybe<ComicIssueStats>;
   /** Get stats (like counts) for all episodes in a series */
@@ -1084,6 +1185,8 @@ export type Query = {
   getUserByUsername?: Maybe<User>;
   /** Get user's relationship data for a specific comic series */
   getUserComicSeries?: Maybe<UserComicSeries>;
+  /** Get user's comment data for a target (liked comments, etc.) */
+  getUserComments?: Maybe<UserComment>;
   /** Get the current user's subscribed comics */
   getUserSubscribedComics?: Maybe<ProfileComicSeries>;
   /** Get the current authenticated user */
@@ -1117,6 +1220,15 @@ export type QueryGetComicSeriesArgs = {
 
 export type QueryGetComicStoryArgs = {
   uuid?: InputMaybe<Scalars['ID']['input']>;
+};
+
+
+export type QueryGetCommentsArgs = {
+  limitPerPage?: InputMaybe<Scalars['Int']['input']>;
+  page?: InputMaybe<Scalars['Int']['input']>;
+  sortBy?: InputMaybe<CommentSortType>;
+  targetType: InkverseType;
+  targetUuid: Scalars['ID']['input'];
 };
 
 
@@ -1186,6 +1298,15 @@ export type QueryGetRecentlyUpdatedComicSeriesArgs = {
 };
 
 
+export type QueryGetRepliesForCommentArgs = {
+  commentUuid: Scalars['ID']['input'];
+  limitPerPage?: InputMaybe<Scalars['Int']['input']>;
+  page?: InputMaybe<Scalars['Int']['input']>;
+  targetType: InkverseType;
+  targetUuid: Scalars['ID']['input'];
+};
+
+
 export type QueryGetStatsForComicIssueArgs = {
   issueUuid: Scalars['ID']['input'];
   seriesUuid: Scalars['ID']['input'];
@@ -1212,6 +1333,12 @@ export type QueryGetUserComicSeriesArgs = {
 };
 
 
+export type QueryGetUserCommentsArgs = {
+  targetType: InkverseType;
+  targetUuid: Scalars['ID']['input'];
+};
+
+
 export type QueryGetUserSubscribedComicsArgs = {
   limitPerPage?: InputMaybe<Scalars['Int']['input']>;
   page?: InputMaybe<Scalars['Int']['input']>;
@@ -1227,6 +1354,21 @@ export type QuerySearchArgs = {
   page?: InputMaybe<Scalars['Int']['input']>;
   term?: InputMaybe<Scalars['String']['input']>;
 };
+
+/** Report type for reporting content */
+export enum ReportType {
+  COMICSERIES_CONTAINS_HATE_SPEECH = 'COMICSERIES_CONTAINS_HATE_SPEECH',
+  COMICSERIES_CONTAINS_SEXUALLY_EXPLICIT_CONTENT = 'COMICSERIES_CONTAINS_SEXUALLY_EXPLICIT_CONTENT',
+  COMICSERIES_CONTAINS_UNLAWFUL_CONTENT = 'COMICSERIES_CONTAINS_UNLAWFUL_CONTENT',
+  COMICSERIES_DECEPTIVE_OR_FRAUDULENT_CONTENT = 'COMICSERIES_DECEPTIVE_OR_FRAUDULENT_CONTENT',
+  COMICSERIES_GENERATIVE_AI_CONTENT = 'COMICSERIES_GENERATIVE_AI_CONTENT',
+  COMICSERIES_INTELLECTUAL_PROPERTY_VIOLATION = 'COMICSERIES_INTELLECTUAL_PROPERTY_VIOLATION',
+  COMICSERIES_IS_SPAM = 'COMICSERIES_IS_SPAM',
+  COMMENT_HARASSMENT = 'COMMENT_HARASSMENT',
+  COMMENT_MEAN_OR_RUDE = 'COMMENT_MEAN_OR_RUDE',
+  COMMENT_SPAM = 'COMMENT_SPAM',
+  COMMENT_SPOILER = 'COMMENT_SPOILER'
+}
 
 /**  A search result  */
 export type SearchResults = {
@@ -1302,6 +1444,14 @@ export type UserComicSeries = {
   isSubscribed: Scalars['Boolean']['output'];
   likedComicIssueUuids: Array<Maybe<Scalars['String']['output']>>;
   seriesUuid: Scalars['ID']['output'];
+};
+
+/** User-specific comment data (auth required) */
+export type UserComment = {
+  __typename?: 'UserComment';
+  likedCommentUuids: Array<Maybe<Scalars['String']['output']>>;
+  targetType: InkverseType;
+  targetUuid: Scalars['ID']['output'];
 };
 
 export type WithIndex<TObject> = TObject & Record<string, any>;
@@ -1387,6 +1537,9 @@ export type ResolversTypes = ResolversObject<{
   ComicSeriesLayoutType: ComicSeriesLayoutType;
   ComicSeriesType: ComicSeriesType;
   ComicStory: ResolverTypeWrapper<ComicStory>;
+  Comment: ResolverTypeWrapper<Comment>;
+  CommentSortType: CommentSortType;
+  CommentStats: ResolverTypeWrapper<CommentStats>;
   ContentRating: ContentRating;
   ContentRole: ContentRole;
   Country: Country;
@@ -1398,6 +1551,7 @@ export type ResolversTypes = ResolversObject<{
   HomeScreenComicSeries: ResolverTypeWrapper<HomeScreenComicSeries>;
   HomeScreenCuratedList: ResolverTypeWrapper<HomeScreenCuratedList>;
   ID: ResolverTypeWrapper<Scalars['ID']['output']>;
+  InkverseType: InkverseType;
   Int: ResolverTypeWrapper<Scalars['Int']['output']>;
   Language: Language;
   LinkDetails: ResolverTypeWrapper<LinkDetails>;
@@ -1411,6 +1565,7 @@ export type ResolversTypes = ResolversObject<{
   PrivacyType: PrivacyType;
   ProfileComicSeries: ResolverTypeWrapper<ProfileComicSeries>;
   Query: ResolverTypeWrapper<{}>;
+  ReportType: ReportType;
   SearchResults: ResolverTypeWrapper<SearchResults>;
   SeriesStatus: SeriesStatus;
   SortOrder: SortOrder;
@@ -1419,6 +1574,7 @@ export type ResolversTypes = ResolversObject<{
   User: ResolverTypeWrapper<User>;
   UserAgeRange: UserAgeRange;
   UserComicSeries: ResolverTypeWrapper<UserComicSeries>;
+  UserComment: ResolverTypeWrapper<UserComment>;
 }>;
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -1431,6 +1587,8 @@ export type ResolversParentTypes = ResolversObject<{
   ComicIssueStats: ComicIssueStats;
   ComicSeries: ComicSeries;
   ComicStory: ComicStory;
+  Comment: Comment;
+  CommentStats: CommentStats;
   Creator: Creator;
   CreatorContent: CreatorContent;
   CreatorLinkDetails: CreatorLinkDetails;
@@ -1450,6 +1608,7 @@ export type ResolversParentTypes = ResolversObject<{
   String: Scalars['String']['output'];
   User: User;
   UserComicSeries: UserComicSeries;
+  UserComment: UserComment;
 }>;
 
 export type BlueskyProfileResolvers<ContextType = any, ParentType extends ResolversParentTypes['BlueskyProfile'] = ResolversParentTypes['BlueskyProfile']> = ResolversObject<{
@@ -1551,6 +1710,25 @@ export type ComicStoryResolvers<ContextType = any, ParentType extends ResolversP
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type CommentResolvers<ContextType = any, ParentType extends ResolversParentTypes['Comment'] = ResolversParentTypes['Comment']> = ResolversObject<{
+  createdAt?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  replyToUuid?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
+  stats?: Resolver<Maybe<ResolversTypes['CommentStats']>, ParentType, ContextType>;
+  targetType?: Resolver<ResolversTypes['InkverseType'], ParentType, ContextType>;
+  targetUuid?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  text?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  uuid?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type CommentStatsResolvers<ContextType = any, ParentType extends ResolversParentTypes['CommentStats'] = ResolversParentTypes['CommentStats']> = ResolversObject<{
+  likeCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  replyCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  uuid?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type CreatorResolvers<ContextType = any, ParentType extends ResolversParentTypes['Creator'] = ResolversParentTypes['Creator']> = ResolversObject<{
   avatarImageAsString?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   bio?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -1636,19 +1814,26 @@ export type ListResolvers<ContextType = any, ParentType extends ResolversParentT
 }>;
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
+  addComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationAddCommentArgs, 'issueUuid' | 'seriesUuid' | 'text'>>;
+  deleteComment?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteCommentArgs, 'commentUuid'>>;
   disableNotificationsForSeries?: Resolver<ResolversTypes['UserComicSeries'], ParentType, ContextType, RequireFields<MutationDisableNotificationsForSeriesArgs, 'seriesUuid'>>;
+  editComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationEditCommentArgs, 'commentUuid' | 'text'>>;
   enableNotificationsForSeries?: Resolver<ResolversTypes['UserComicSeries'], ParentType, ContextType, RequireFields<MutationEnableNotificationsForSeriesArgs, 'seriesUuid'>>;
   fetchAllHostingProviderTokens?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   fetchRefreshTokenForHostingProvider?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationFetchRefreshTokenForHostingProviderArgs, 'hostingProviderUuid'>>;
   likeComicIssue?: Resolver<ResolversTypes['UserComicSeries'], ParentType, ContextType, RequireFields<MutationLikeComicIssueArgs, 'issueUuid' | 'seriesUuid'>>;
-  reportComicSeries?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationReportComicSeriesArgs, 'uuid'>>;
+  likeComment?: Resolver<Maybe<ResolversTypes['UserComment']>, ParentType, ContextType, RequireFields<MutationLikeCommentArgs, 'commentUuid' | 'issueUuid'>>;
+  reportComicSeries?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationReportComicSeriesArgs, 'reportType' | 'uuid'>>;
+  reportComment?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationReportCommentArgs, 'commentUuid' | 'reportType'>>;
   resendVerificationEmail?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   saveBlueskyDid?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationSaveBlueskyDidArgs, 'did'>>;
   savePushToken?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationSavePushTokenArgs, 'fcmToken' | 'platform'>>;
+  setCommentVisibility?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationSetCommentVisibilityArgs, 'commentUuid' | 'isVisible'>>;
   subscribeToMultipleComicSeries?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationSubscribeToMultipleComicSeriesArgs, 'seriesUuids'>>;
   subscribeToSeries?: Resolver<ResolversTypes['UserComicSeries'], ParentType, ContextType, RequireFields<MutationSubscribeToSeriesArgs, 'seriesUuid'>>;
   superLikeAllEpisodes?: Resolver<ResolversTypes['UserComicSeries'], ParentType, ContextType, RequireFields<MutationSuperLikeAllEpisodesArgs, 'seriesUuid'>>;
   unlikeComicIssue?: Resolver<ResolversTypes['UserComicSeries'], ParentType, ContextType, RequireFields<MutationUnlikeComicIssueArgs, 'issueUuid' | 'seriesUuid'>>;
+  unlikeComment?: Resolver<Maybe<ResolversTypes['UserComment']>, ParentType, ContextType, RequireFields<MutationUnlikeCommentArgs, 'commentUuid' | 'issueUuid'>>;
   unsubscribeFromSeries?: Resolver<ResolversTypes['UserComicSeries'], ParentType, ContextType, RequireFields<MutationUnsubscribeFromSeriesArgs, 'seriesUuid'>>;
   updateUserEmail?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationUpdateUserEmailArgs, 'email'>>;
   updateUserProfile?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, Partial<MutationUpdateUserProfileArgs>>;
@@ -1678,6 +1863,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getComicStory?: Resolver<Maybe<ResolversTypes['ComicStory']>, ParentType, ContextType, Partial<QueryGetComicStoryArgs>>;
   getComicsFromBlueskyCreators?: Resolver<Maybe<Array<Maybe<ResolversTypes['ComicSeries']>>>, ParentType, ContextType>;
   getComicsFromPatreonCreators?: Resolver<Maybe<Array<Maybe<ResolversTypes['ComicSeries']>>>, ParentType, ContextType>;
+  getComments?: Resolver<Array<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<QueryGetCommentsArgs, 'targetType' | 'targetUuid'>>;
   getCreator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType, Partial<QueryGetCreatorArgs>>;
   getCreatorContent?: Resolver<Maybe<ResolversTypes['CreatorContent']>, ParentType, ContextType, Partial<QueryGetCreatorContentArgs>>;
   getCreatorLinksForSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['CreatorLinkDetails']>>>, ParentType, ContextType, RequireFields<QueryGetCreatorLinksForSeriesArgs, 'seriesUuid'>>;
@@ -1689,11 +1875,13 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getMostPopularComicSeries?: Resolver<Maybe<ResolversTypes['HomeScreenComicSeries']>, ParentType, ContextType, Partial<QueryGetMostPopularComicSeriesArgs>>;
   getRecentlyAddedComicSeries?: Resolver<Maybe<ResolversTypes['HomeScreenComicSeries']>, ParentType, ContextType, Partial<QueryGetRecentlyAddedComicSeriesArgs>>;
   getRecentlyUpdatedComicSeries?: Resolver<Maybe<ResolversTypes['HomeScreenComicSeries']>, ParentType, ContextType, Partial<QueryGetRecentlyUpdatedComicSeriesArgs>>;
+  getRepliesForComment?: Resolver<Array<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<QueryGetRepliesForCommentArgs, 'commentUuid' | 'targetType' | 'targetUuid'>>;
   getStatsForComicIssue?: Resolver<Maybe<ResolversTypes['ComicIssueStats']>, ParentType, ContextType, RequireFields<QueryGetStatsForComicIssueArgs, 'issueUuid' | 'seriesUuid'>>;
   getStatsForComicSeries?: Resolver<Maybe<Array<ResolversTypes['ComicIssueStats']>>, ParentType, ContextType, RequireFields<QueryGetStatsForComicSeriesArgs, 'seriesUuid'>>;
   getUserById?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryGetUserByIdArgs, 'id'>>;
   getUserByUsername?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryGetUserByUsernameArgs, 'username'>>;
   getUserComicSeries?: Resolver<Maybe<ResolversTypes['UserComicSeries']>, ParentType, ContextType, RequireFields<QueryGetUserComicSeriesArgs, 'seriesUuid'>>;
+  getUserComments?: Resolver<Maybe<ResolversTypes['UserComment']>, ParentType, ContextType, RequireFields<QueryGetUserCommentsArgs, 'targetType' | 'targetUuid'>>;
   getUserSubscribedComics?: Resolver<Maybe<ResolversTypes['ProfileComicSeries']>, ParentType, ContextType, RequireFields<QueryGetUserSubscribedComicsArgs, 'userId'>>;
   me?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   search?: Resolver<Maybe<ResolversTypes['SearchResults']>, ParentType, ContextType, Partial<QuerySearchArgs>>;
@@ -1729,6 +1917,13 @@ export type UserComicSeriesResolvers<ContextType = any, ParentType extends Resol
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type UserCommentResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserComment'] = ResolversParentTypes['UserComment']> = ResolversObject<{
+  likedCommentUuids?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  targetType?: Resolver<ResolversTypes['InkverseType'], ParentType, ContextType>;
+  targetUuid?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type Resolvers<ContextType = any> = ResolversObject<{
   BlueskyProfile?: BlueskyProfileResolvers<ContextType>;
   CannySSO?: CannySsoResolvers<ContextType>;
@@ -1737,6 +1932,8 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ComicIssueStats?: ComicIssueStatsResolvers<ContextType>;
   ComicSeries?: ComicSeriesResolvers<ContextType>;
   ComicStory?: ComicStoryResolvers<ContextType>;
+  Comment?: CommentResolvers<ContextType>;
+  CommentStats?: CommentStatsResolvers<ContextType>;
   Creator?: CreatorResolvers<ContextType>;
   CreatorContent?: CreatorContentResolvers<ContextType>;
   CreatorLinkDetails?: CreatorLinkDetailsResolvers<ContextType>;
@@ -1752,5 +1949,6 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   SearchResults?: SearchResultsResolvers<ContextType>;
   User?: UserResolvers<ContextType>;
   UserComicSeries?: UserComicSeriesResolvers<ContextType>;
+  UserComment?: UserCommentResolvers<ContextType>;
 }>;
 

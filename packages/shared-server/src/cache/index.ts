@@ -257,16 +257,17 @@ interface PurgeWebsiteCacheParams {
   shortUrl?: string;
   name?: string;
   seriesUuid?: string;
+  username?: string;
 }
 
-async function purgeWebsiteCache({ type, id, shortUrl, name, seriesUuid }: PurgeWebsiteCacheParams) {
+async function purgeWebsiteCache({ type, id, shortUrl, name, seriesUuid, username }: PurgeWebsiteCacheParams) {
   try {
     if (process.env.NODE_ENV !== "production") {
       console.log('LocalHost purgeWebsiteCache', type, id, shortUrl, name);
       return;
     }
 
-    const data = getCloudflareDataObject({ type, id, shortUrl, name, seriesUuid })
+    const data = getCloudflareDataObject({ type, id, shortUrl, name, seriesUuid, username })
 
     if (!data) {
       console.log('purgeWebsiteCache - No data to purge', type, id, shortUrl, name);
@@ -290,7 +291,7 @@ async function purgeWebsiteCache({ type, id, shortUrl, name, seriesUuid }: Purge
   }
 }
 
-function getCloudflareDataObject({ type, id, shortUrl, name, seriesUuid }: PurgeWebsiteCacheParams): { purge_everything: boolean } | { files: string[] } | null {
+function getCloudflareDataObject({ type, id, shortUrl, name, seriesUuid, username }: PurgeWebsiteCacheParams): { purge_everything: boolean } | { files: string[] } | null {
   switch (type) {
     case 'everything':
     case 'documentation':
@@ -302,7 +303,7 @@ function getCloudflareDataObject({ type, id, shortUrl, name, seriesUuid }: Purge
     case 'recentlyAdded':
     case 'recentlyUpdated':
     case 'profile':
-      return { files: [urlToPurge({ type, id, shortUrl, name, seriesUuid })] }
+      return { files: [urlToPurge({ type, id, shortUrl, name, seriesUuid, username })] }
     case 'comicstory':
     case 'creatorcontent':
       return null;
@@ -311,7 +312,7 @@ function getCloudflareDataObject({ type, id, shortUrl, name, seriesUuid }: Purge
   }
 }
 
-function urlToPurge({ type, id, shortUrl, name, seriesUuid }: PurgeWebsiteCacheParams) {
+function urlToPurge({ type, id, shortUrl, name, seriesUuid, username }: PurgeWebsiteCacheParams) {
   switch (type) {
     case 'comicseries':
       return `${inkverseWebsiteUrl}${getInkverseUrl({ type: 'comicseries', shortUrl })}`
@@ -327,7 +328,7 @@ function urlToPurge({ type, id, shortUrl, name, seriesUuid }: PurgeWebsiteCacheP
     case 'sitemap':
       return `https://ink0.inkverse.co/sitemap/${id}`
     case 'profile':
-      return `${inkverseWebsiteUrl}${getInkverseUrl({ type: 'profile', shortUrl })}`
+      return `${inkverseWebsiteUrl}${getInkverseUrl({ type: 'profile', username })}`
     default:
       throw new Error(`inside getURLsToPurge() - Dont have logic for type: ${type}`)
   }

@@ -1,0 +1,17 @@
+query GetRepliesForComment(
+  $targetUuid: ID!
+  $targetType: InkverseType!
+  $commentUuid: ID!
+  $page: Int
+  $limitPerPage: Int
+) {
+  getRepliesForComment(
+    targetUuid: $targetUuid
+    targetType: $targetType
+    commentUuid: $commentUuid
+    page: $page
+    limitPerPage: $limitPerPage
+  ) {
+    ...commentDetails
+  }
+}

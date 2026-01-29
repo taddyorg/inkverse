@@ -1,0 +1,11 @@
+mutation ReportComment(
+  $commentUuid: ID!
+  $reportType: ReportType!
+  $additionalInfo: String
+) {
+  reportComment(
+    commentUuid: $commentUuid
+    reportType: $reportType
+    additionalInfo: $additionalInfo
+  )
+}

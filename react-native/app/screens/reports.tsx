@@ -1,36 +1,87 @@
-import React, { useState, useReducer, useEffect } from 'react';
-import { StyleSheet, View, FlatList, Alert, ScrollView } from 'react-native';
+import React, { useState, useReducer, useEffect, useMemo } from 'react';
+import { StyleSheet, View, Alert } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@/constants/Navigation';
 import DropDownPicker from 'react-native-dropdown-picker';
 
 import { Screen, ScreenHeader, ThemedView, ThemedText, HeaderBackButton, ThemedButton } from '../components/ui';
-import { ReportType, getPrettyReportType } from '@inkverse/public/report';
-import { getPublicApolloClient } from '@/lib/apollo';
-import { reportReducer, reportInitialState, submitReportComicSeries } from '@inkverse/shared-client/dispatch/reports';
+import { ReportType } from '@inkverse/shared-client/graphql/operations';
+import { getUserApolloClient } from '@/lib/apollo';
+import { reportReducer, reportInitialState, submitReportComicSeries, submitReportComment } from '@inkverse/shared-client/dispatch/reports';
 import { BLOG_SCREEN } from '@/constants/Navigation';
 
-export type ReportsScreenParams = {
-  uuid: string;
-  type: 'comicseries' | 'comicissue' | 'creator';
+// Map report types to human-readable labels for comic series reports
+const COMIC_SERIES_REPORT_LABELS: Record<string, string> = {
+  [ReportType.COMICSERIES_INTELLECTUAL_PROPERTY_VIOLATION]: 'Violation of intellectual property rights',
+  [ReportType.COMICSERIES_GENERATIVE_AI_CONTENT]: 'Contains generative AI content',
+  [ReportType.COMICSERIES_CONTAINS_SEXUALLY_EXPLICIT_CONTENT]: 'Contains genitalia, breasts or depicts a sex act',
+  [ReportType.COMICSERIES_DECEPTIVE_OR_FRAUDULENT_CONTENT]: 'Deceptive or Fraudulent Content',
+  [ReportType.COMICSERIES_CONTAINS_HATE_SPEECH]: 'Contains hate speech',
+  [ReportType.COMICSERIES_IS_SPAM]: 'Is Spam',
+  [ReportType.COMICSERIES_CONTAINS_UNLAWFUL_CONTENT]: 'Contains unlawful content',
 };
+
+// Comic series report types
+const COMIC_SERIES_REPORT_TYPES = [
+  ReportType.COMICSERIES_INTELLECTUAL_PROPERTY_VIOLATION,
+  ReportType.COMICSERIES_GENERATIVE_AI_CONTENT,
+  ReportType.COMICSERIES_CONTAINS_SEXUALLY_EXPLICIT_CONTENT,
+  ReportType.COMICSERIES_DECEPTIVE_OR_FRAUDULENT_CONTENT,
+  ReportType.COMICSERIES_CONTAINS_HATE_SPEECH,
+  ReportType.COMICSERIES_IS_SPAM,
+  ReportType.COMICSERIES_CONTAINS_UNLAWFUL_CONTENT,
+];
+
+// Map report types to human-readable labels for comment reports
+const COMMENT_REPORT_LABELS: Record<string, string> = {
+  [ReportType.COMMENT_SPAM]: 'Is spam',
+  [ReportType.COMMENT_HARASSMENT]: 'Harasses me, or another user',
+  [ReportType.COMMENT_SPOILER]: 'Contains a spoiler that reveals important plot points',
+  [ReportType.COMMENT_MEAN_OR_RUDE]: 'Is unnecessarily mean or rude',
+};
+
+// Comment report types
+const COMMENT_REPORT_TYPES = [
+  ReportType.COMMENT_SPAM,
+  ReportType.COMMENT_HARASSMENT,
+  ReportType.COMMENT_SPOILER,
+  ReportType.COMMENT_MEAN_OR_RUDE,
+];
+
+export type ReportsScreenParams =
+  | {
+      type: 'comicseries' | 'comicissue' | 'creator';
+      uuid: string;
+    }
+  | {
+      type: 'comment';
+      commentUuid: string;
+    };
 
 export function ReportsScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<RouteProp<RootStackParamList, 'ReportsScreen'>>();
-  const publicClient = getPublicApolloClient();
-  
-  const { uuid, type } = route.params || {};
+
+  const { type } = route.params || {};
+  const uuid = route.params && 'uuid' in route.params ? route.params.uuid : undefined;
+  const commentUuid = route.params && 'commentUuid' in route.params ? route.params.commentUuid : undefined;
   const [selectedReportType, setSelectedReportType] = useState<ReportType | null>(null);
   const [open, setOpen] = useState(false);
   const [reportState, dispatch] = useReducer(reportReducer, reportInitialState);
-  const [items, setItems] = useState(
-    Object.values(ReportType).map(reportType => ({
-      label: getPrettyReportType(reportType),
+
+  const items = useMemo(() => {
+    if (type === 'comment') {
+      return COMMENT_REPORT_TYPES.map(reportType => ({
+        label: COMMENT_REPORT_LABELS[reportType],
+        value: reportType
+      }));
+    }
+    return COMIC_SERIES_REPORT_TYPES.map(reportType => ({
+      label: COMIC_SERIES_REPORT_LABELS[reportType],
       value: reportType
-    }))
-  );
+    }));
+  }, [type]);
 
   useEffect(() => {
     if (reportState.success) {
@@ -45,10 +96,20 @@ export function ReportsScreen() {
   }, [reportState.success, reportState.error, navigation]);
 
   const handleSubmitReport = async () => {
-    if (!selectedReportType || !uuid) return;
-    
-    if (type === 'comicseries') {
-      submitReportComicSeries({ publicClient, uuid, reportType: selectedReportType }, dispatch);
+    if (!selectedReportType) return;
+
+    const userClient = getUserApolloClient();
+    if (!userClient) return;
+
+    if (type === 'comicseries' && uuid) {
+      submitReportComicSeries({ userClient, uuid, reportType: selectedReportType }, dispatch);
+    } else if (type === 'comment' && commentUuid) {
+      submitReportComment({
+        userClient,
+        commentUuid,
+        reportType: selectedReportType,
+        additionalInfo: null
+      }, dispatch);
     }
   };
 
@@ -60,7 +121,11 @@ export function ReportsScreen() {
       <ScreenHeader />
       <ThemedView style={styles.container}>
         {/* Dropdown Selection using react-native-dropdown-picker */}
-        <ThemedText size="subtitle" style={styles.headerTitle}>Choose a reason for reporting this content:</ThemedText>
+        <ThemedText size="subtitle" style={styles.headerTitle}>
+          {type === 'comment'
+            ? 'Choose a reason for reporting this comment:'
+            : 'Choose a reason for reporting this content:'}
+        </ThemedText>
         <View style={styles.dropdownContainer}>
           <DropDownPicker
             open={open}
@@ -68,7 +133,6 @@ export function ReportsScreen() {
             items={items}
             setOpen={setOpen}
             setValue={setSelectedReportType}
-            setItems={setItems}
             maxHeight={300}
             placeholder="Select a reason"
             style={styles.dropdownButton}
@@ -83,17 +147,19 @@ export function ReportsScreen() {
           />
         </View>
 
-        <View style={styles.guidelinesContainer}>
-          <ThemedText style={styles.guidelinesText}>
-            See our content guidelines{' '}
-            <ThemedText 
-              style={styles.guidelinesLink}
-              onPress={() => navigation.navigate(BLOG_SCREEN, { url: 'https://inkverse.co/terms-of-service/content-policy' })}
-            >
-              here
-            </ThemedText>.
-          </ThemedText>
-        </View>
+        {type === 'comicseries' && 
+          <View style={styles.guidelinesContainer}>
+            <ThemedText style={styles.guidelinesText}>
+              See our content guidelines{' '}
+              <ThemedText 
+                style={styles.guidelinesLink}
+                onPress={() => navigation.navigate(BLOG_SCREEN, { url: 'https://inkverse.co/terms-of-service/content-policy' })}
+              >
+                here
+              </ThemedText>.
+            </ThemedText>
+          </View>
+        }
 
         {/* Submit Button */}
         <View style={styles.submitButtonContainer}>

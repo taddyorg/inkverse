@@ -1,0 +1,5 @@
+mutation LikeComment($commentUuid: ID!, $issueUuid: ID!) {
+  likeComment(commentUuid: $commentUuid, issueUuid: $issueUuid) {
+    ...userCommentDetails
+  }
+}

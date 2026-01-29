@@ -1,0 +1,5 @@
+mutation UnlikeComment($commentUuid: ID!, $issueUuid: ID!) {
+  unlikeComment(commentUuid: $commentUuid, issueUuid: $issueUuid) {
+    ...userCommentDetails
+  }
+}

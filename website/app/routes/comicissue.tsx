@@ -28,6 +28,7 @@ import {
 } from "@inkverse/shared-client/dispatch/comicissue";
 import { GetUserComicSeries, type GetUserComicSeriesQuery, type GetUserComicSeriesQueryVariables } from "@inkverse/shared-client/graphql/operations";
 import { LikeButton } from "../components/comics/LikeButton";
+import { CommentsSection } from "../components/comics/CommentsSection";
 import { getUserApolloClient } from "@/lib/apollo/client.client";
 import { LinkType } from "@inkverse/public/graphql/types";
 import { getAvatarImageUrl } from "@inkverse/public/creator";
@@ -290,6 +291,13 @@ function ComicIssueContent({ initialData }: { initialData: Partial<ComicIssueLoa
           isLoading={isLikeLoading ?? false}
           onPress={handleLikePress}
         />
+        <div className="px-4 sm:px-0">
+          <CommentsSection
+            issueUuid={comicissue?.uuid || ''}
+            seriesUuid={comicseries?.uuid || ''}
+            isAuthenticated={isAuthenticated}
+          />
+        </div>
         <div className="px-4 sm:px-0">
           <CreatorsForIssue
             comicissue={comicissue}

@@ -1,0 +1,17 @@
+query GetComments(
+  $targetUuid: ID!
+  $targetType: InkverseType!
+  $page: Int
+  $limitPerPage: Int
+  $sortBy: CommentSortType
+) {
+  getComments(
+    targetUuid: $targetUuid
+    targetType: $targetType
+    page: $page
+    limitPerPage: $limitPerPage
+    sortBy: $sortBy
+  ) {
+    ...commentDetails
+  }
+}

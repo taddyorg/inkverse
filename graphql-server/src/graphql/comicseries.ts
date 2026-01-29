@@ -114,7 +114,7 @@ const ComicSeriesMutationsDefinitions = `
     uuid: ID!
 
     " The type of report to send "
-    reportType: String
+    reportType: ReportType!
   ): Boolean
 `
 
@@ -151,7 +151,7 @@ const ComicSeriesMutations: MutationResolvers = {
     }
 
     await sendSlackNotification('general', {
-      text: `*COMIC SERIES REPORTED*\n:warning: *Name:* ${comicSeries.name}\n*UUID:* ${trimmedUuid}\n*Report Type:* ${reportType}`,
+      text: `*🔔* *COMIC SERIES REPORTED*\n:warning: *Name:* ${comicSeries.name}\n*UUID:* ${trimmedUuid}\n*Report Type:* ${reportType}`,
     });
 
     return true;

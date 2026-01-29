@@ -1,0 +1,5 @@
+mutation EditComment($commentUuid: ID!, $text: String!) {
+  editComment(commentUuid: $commentUuid, text: $text) {
+    ...commentDetails
+  }
+}

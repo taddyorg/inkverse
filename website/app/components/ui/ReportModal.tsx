@@ -1,28 +1,68 @@
 import React, { useState, useReducer, useEffect, useRef } from 'react';
-import { ReportType, getPrettyReportType } from '@inkverse/public/report';
-import { getPublicApolloClient } from '@/lib/apollo/client.client';
-import { submitReportComicSeries, reportReducer, reportInitialState, resetReportComicSeries } from '@inkverse/shared-client/dispatch/reports';
+import { ReportType } from '@inkverse/shared-client/graphql/operations';
+import { getUserApolloClient } from '@/lib/apollo/client.client';
+import { submitReportComicSeries, submitReportComment, reportReducer, reportInitialState, resetReport } from '@inkverse/shared-client/dispatch/reports';
 import { IoClose } from 'react-icons/io5';
 
-interface ReportModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  uuid: string;
-  type: 'comicseries' | 'comicissue' | 'creator';
-}
+const COMIC_SERIES_REPORT_CONFIG = {
+  title: 'Report this Comic',
+  prompt: 'Why are you reporting this comic?',
+  staringPhrase: 'This comic',
+  types: [
+    { type: ReportType.COMICSERIES_INTELLECTUAL_PROPERTY_VIOLATION, label: 'violates intellectual property rights' },
+    { type: ReportType.COMICSERIES_GENERATIVE_AI_CONTENT, label: 'contains generative AI content' },
+    { type: ReportType.COMICSERIES_CONTAINS_SEXUALLY_EXPLICIT_CONTENT, label: 'contains genitalia, breasts or depicts a sex act' },
+    { type: ReportType.COMICSERIES_DECEPTIVE_OR_FRAUDULENT_CONTENT, label: 'is deceptive or fraudulent' },
+    { type: ReportType.COMICSERIES_CONTAINS_HATE_SPEECH, label: 'contains hate speech' },
+    { type: ReportType.COMICSERIES_IS_SPAM, label: 'is spam' },
+    { type: ReportType.COMICSERIES_CONTAINS_UNLAWFUL_CONTENT, label: 'contains unlawful content' },
+  ],
+};
 
-export function ReportModal({ isOpen, onClose, uuid, type }: ReportModalProps) {
+const COMMENT_REPORT_CONFIG = {
+  title: 'Report this Comment',
+  prompt: 'Why are you reporting this comment?',
+  staringPhrase: 'This comment',
+  types: [
+    { type: ReportType.COMMENT_SPAM, label: 'is spam' },
+    { type: ReportType.COMMENT_HARASSMENT, label: 'harasses me, or another user' },
+    { type: ReportType.COMMENT_SPOILER, label: 'contains a spoiler that reveals important plot points' },
+    { type: ReportType.COMMENT_MEAN_OR_RUDE, label: 'is unnecessarily mean or rude' },
+  ],
+};
+
+type ReportModalProps =
+  | {
+      variant: 'comicseries';
+      isOpen: boolean;
+      onClose: () => void;
+      uuid: string;
+    }
+  | {
+      variant: 'comment';
+      isOpen: boolean;
+      onClose: () => void;
+      commentUuid: string;
+    };
+
+export function ReportModal(props: ReportModalProps) {
+  const { isOpen, onClose } = props;
+  const config = props.variant === 'comicseries' ? COMIC_SERIES_REPORT_CONFIG : COMMENT_REPORT_CONFIG;
+
   const [selectedReportType, setSelectedReportType] = useState<ReportType | null>(null);
-  const [reportState, dispatch] = useReducer(reportReducer, reportInitialState);
+  const [additionalInfo, setAdditionalInfo] = useState('');
+  const [reportState, reportDispatch] = useReducer(reportReducer, reportInitialState);
   const modalRef = useRef<HTMLDivElement>(null);
   const initialFocusRef = useRef<HTMLButtonElement>(null);
 
+  // Reset state when modal opens
   useEffect(() => {
-    if (reportState.success) {
-      onClose();
-      resetReportComicSeries(dispatch);
+    if (isOpen) {
+      setSelectedReportType(null);
+      setAdditionalInfo('');
+      resetReport(reportDispatch);
     }
-  }, [reportState.success, onClose]);
+  }, [isOpen]);
 
   // Handle body scroll locking
   useEffect(() => {
@@ -104,15 +144,38 @@ export function ReportModal({ isOpen, onClose, uuid, type }: ReportModalProps) {
   }, [isOpen, onClose]);
 
   const handleSubmit = async () => {
-    if (!selectedReportType || !uuid) return;
-    
-    try {
-      const client = getPublicApolloClient();
-      if (type === 'comicseries' && client) {
-        await submitReportComicSeries({ publicClient: client, uuid, reportType: selectedReportType }, dispatch);
+    if (!selectedReportType) return;
+
+    const userClient = getUserApolloClient();
+    if (!userClient) return;
+
+    switch (props.variant) {
+      case 'comicseries': {
+        const { uuid } = props;
+        if (!uuid) return;
+
+        try {
+          await submitReportComicSeries({ userClient, uuid, reportType: selectedReportType }, reportDispatch);
+        } catch (error) {
+          console.error('Error submitting report:', error);
+        }
+        break;
       }
-    } catch (error) {
-      console.error('Error submitting report:', error);
+      case 'comment': {
+        const { commentUuid } = props;
+
+        try {
+          await submitReportComment({
+            userClient,
+            commentUuid,
+            reportType: selectedReportType,
+            additionalInfo: additionalInfo.trim() || null,
+          }, reportDispatch);
+        } catch (error) {
+          console.error('Error submitting report:', error);
+        }
+        break;
+      }
     }
   };
 
@@ -124,15 +187,133 @@ export function ReportModal({ isOpen, onClose, uuid, type }: ReportModalProps) {
 
   if (!isOpen) return null;
 
+  const isSubmitting = reportState.isSubmitting;
+
+  const renderComicSeriesContent = () => {
+    if (reportState.success) {
+      return (
+        <div className="py-8 text-center">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
+            <svg className="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <p className="text-lg font-medium text-gray-900 dark:text-gray-100">
+            Thank you for your report
+          </p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            We'll review this comic and get back to you shortly.
+          </p>
+        </div>
+      );
+    }
+    return (
+      <>
+      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+        {config.prompt}
+      </p>
+      <div className="space-y-3">
+        {COMIC_SERIES_REPORT_CONFIG.types.map(({ type, label }) => (
+          <button
+            key={type}
+            onClick={() => setSelectedReportType(type)}
+            className={`w-full text-left px-4 py-3 rounded-lg transition-colors text-base ${
+              selectedReportType === type
+                ? 'bg-brand-pink text-white dark:bg-taddy-blue dark:text-white'
+                : 'bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600'
+            }`}
+          >
+            {config.staringPhrase} {label}
+          </button>
+        ))}
+      </div>
+      <p className="mt-4 text-sm text-muted-foreground mb-4">
+        See our content guidelines <a href="/terms-of-service/content-policy" className="text-brand-pink dark:text-taddy-blue" target="_blank" rel="noopener noreferrer">here</a>.
+      </p>
+      <div className="mt-4">
+        <button
+          onClick={handleSubmit}
+          disabled={!selectedReportType || isSubmitting}
+          className={`w-full px-4 py-3 text-base font-medium text-white rounded-lg transition-colors ${
+            !selectedReportType || isSubmitting
+              ? 'bg-gray-400 cursor-not-allowed'
+              : 'bg-brand-pink hover:bg-brand-pink-dark dark:bg-taddy-blue dark:hover:bg-taddy-blue-dark'
+          }`}
+        >
+          {isSubmitting ? 'Submitting...' : 'Submit'}
+        </button>
+      </div>
+    </>
+    );
+  };
+
+  const renderCommentContent = () => {
+    if (reportState.success) {
+      return (
+        <div className="py-8 text-center">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
+            <svg className="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <p className="text-lg font-medium text-gray-900 dark:text-gray-100">
+            Thank you for your report
+          </p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            We'll review this comment and get back to you shortly.
+          </p>
+        </div>
+      );
+    }
+    return (
+      <>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+          {config.prompt}
+        </p>
+        <div className="space-y-2">
+          {COMMENT_REPORT_CONFIG.types.map(({ type, label }) => (
+            <button
+              key={type}
+              onClick={() => setSelectedReportType(type)}
+              className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
+                selectedReportType === type
+                  ? 'bg-brand-pink text-white dark:bg-taddy-blue'
+                  : 'bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600'
+              }`}
+            >
+              <div className="font-medium text-sm">{config.staringPhrase} {label}</div>
+            </button>
+          ))}
+        </div>
+        {reportState.error && (
+          <p className="mt-3 text-sm text-red-600 dark:text-red-400">{reportState.error}</p>
+        )}
+        <div className="mt-4">
+          <button
+            onClick={handleSubmit}
+            disabled={!selectedReportType || isSubmitting}
+            className={`w-full px-4 py-3 text-base font-medium text-white rounded-lg transition-colors ${
+              !selectedReportType || isSubmitting
+                ? 'bg-gray-400 cursor-not-allowed'
+                : 'bg-brand-pink hover:bg-brand-pink-dark dark:bg-taddy-blue dark:hover:bg-taddy-blue-dark'
+            }`}
+          >
+            {isSubmitting ? 'Submitting...' : 'Submit'}
+          </button>
+        </div>
+      </>
+    );
+  };
+
   return (
-    <div 
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" 
+    <div
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
       onClick={handleBackdropClick}
       role="dialog"
       aria-modal="true"
       aria-labelledby="report-modal-title"
     >
-      <div 
+      <div
         ref={modalRef}
         className="bg-white dark:bg-gray-800 rounded-lg p-4 w-full max-w-md mx-auto relative"
         onClick={(e) => e.stopPropagation()}
@@ -145,42 +326,12 @@ export function ReportModal({ isOpen, onClose, uuid, type }: ReportModalProps) {
         >
           <IoClose className="w-5 h-5" />
         </button>
-        <h2 id="report-modal-title" className="text-xl font-semibold mb-3 pr-10">Report Content</h2>
-        <p className="text-md font-semibold mb-4">Choose a reason for reporting this content:</p>
-        
-        <div className="space-y-3">
-          {Object.values(ReportType).map((reportType) => (
-            <button
-              key={reportType}
-              onClick={() => setSelectedReportType(reportType)}
-              className={`w-full text-left px-4 py-3 rounded-lg transition-colors text-base ${
-                selectedReportType === reportType
-                  ? 'bg-brand-pink text-white dark:bg-taddy-blue dark:text-white'
-                  : 'bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600'
-              }`}
-            >
-              {getPrettyReportType(reportType)}
-            </button>
-          ))}
-        </div>
 
-        <p className="mt-4 text-sm text-muted-foreground mb-4">
-          See our content guidelines <a href="/terms-of-service/content-policy" className="text-brand-pink dark:text-taddy-blue" target="_blank" rel="noopener noreferrer">here</a>.
-        </p>
+        <h2 id="report-modal-title" className="text-xl font-semibold mb-3 pr-10">
+          {config.title}
+        </h2>
 
-        <div className="mt-4 flex justify-end">
-          <button
-            onClick={handleSubmit}
-            disabled={!selectedReportType || reportState.isSubmitting}
-            className={`w-full px-4 py-3 text-base font-medium text-white rounded-lg ${
-              !selectedReportType || reportState.isSubmitting
-                ? 'bg-gray-400 cursor-not-allowed'
-                : 'bg-brand-pink hover:bg-brand-pink-dark dark:bg-taddy-blue dark:hover:bg-taddy-blue-dark'
-            }`}
-          >
-            {reportState.isSubmitting ? 'Submitting...' : 'Submit'}
-          </button>
-        </div>
+        {props.variant === 'comicseries' ? renderComicSeriesContent() : renderCommentContent()}
       </div>
     </div>
   );

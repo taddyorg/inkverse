@@ -1,0 +1,16 @@
+fragment commentDetails on Comment {
+  uuid
+  text
+  createdAt
+  user {
+    ...miniUserDetails
+  }
+  targetUuid
+  targetType
+  replyToUuid
+  stats {
+    uuid
+    likeCount
+    replyCount
+  }
+}

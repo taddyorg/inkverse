@@ -1,0 +1,5 @@
+fragment userCommentDetails on UserComment {
+  targetUuid
+  targetType
+  likedCommentUuids
+}

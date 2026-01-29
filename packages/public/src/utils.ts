@@ -34,7 +34,8 @@ export type InkverseUrlParams = {
   uuid?: string | null,
   id?: string | null,
   term?: string | null,
-  types?: string[] | null
+  types?: string[] | null,
+  username?: string | null,
 }
 
 function safeName(name: string | null): string {
@@ -82,8 +83,8 @@ export function getInkverseUrl(
       return '/';
 
     case 'profile':
-      if (!params.shortUrl) return undefined;
-      return `/${params.shortUrl}`;
+      if (!params.username) return undefined;
+      return `/${params.username}`;
 
   default:
     throw new Error('getInkverseLink - type is invalid');

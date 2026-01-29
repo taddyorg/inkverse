@@ -12,3 +12,5 @@ export { OAuthToken } from './oauth_token.js';
 export { UserSeriesSubscription } from './userseries_subscription.js';
 export { NotificationPreference } from './notification_preference.js';
 export { UserLike } from './user_like.js';
+export { UserComment } from './user_comment.js';
+export { UserReport } from './user_report.js';

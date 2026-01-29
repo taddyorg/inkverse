@@ -45,10 +45,10 @@ export function ComicSeriesInfo({ comicseries }: ComicSeriesInfoProps) {
       </div>
 
       <ReportModal
+        variant="comicseries"
         isOpen={isReportModalOpen}
         onClose={() => setIsReportModalOpen(false)}
         uuid={comicseries.uuid}
-        type="comicseries"
       />
     </div>
   );

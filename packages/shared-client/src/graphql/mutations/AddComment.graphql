@@ -1,0 +1,15 @@
+mutation AddComment(
+  $issueUuid: ID!
+  $seriesUuid: ID!
+  $text: String!
+  $replyToCommentUuid: ID
+) {
+  addComment(
+    issueUuid: $issueUuid
+    seriesUuid: $seriesUuid
+    text: $text
+    replyToCommentUuid: $replyToCommentUuid
+  ) {
+    ...commentDetails
+  }
+}
