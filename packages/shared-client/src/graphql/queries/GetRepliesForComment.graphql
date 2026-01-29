@@ -12,6 +12,10 @@ query GetRepliesForComment(
     page: $page
     limitPerPage: $limitPerPage
   ) {
-    ...commentDetails
+    targetUuid
+    targetType
+    comments {
+      ...commentDetails
+    }
   }
 }

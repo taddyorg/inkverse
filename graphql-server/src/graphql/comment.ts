@@ -35,6 +35,15 @@ export const CommentDefinitions = `
     NEWEST
     TOP
   }
+
+  """
+  Wrapper type for comments on a target, enabling Stellate caching by targetUuid
+  """
+  type CommentsForTarget {
+    targetUuid: ID!
+    targetType: InkverseType!
+    comments: [Comment!]!
+  }
 `;
 
 // Query Definitions
@@ -48,7 +57,7 @@ export const CommentQueriesDefinitions = `
     page: Int
     limitPerPage: Int
     sortBy: CommentSortType
-  ): [Comment!]!
+  ): CommentsForTarget!
 
   """
   Get replies for a specific comment
@@ -59,7 +68,7 @@ export const CommentQueriesDefinitions = `
     commentUuid: ID!
     page: Int
     limitPerPage: Int
-  ): [Comment!]!
+  ): CommentsForTarget!
 `;
 
 // Helper to build Comment response
@@ -92,7 +101,7 @@ export const CommentQueries: QueryResolvers = {
     _parent: any,
     { targetUuid, targetType, page = 1, limitPerPage = 25, sortBy = 'TOP' }: {
       targetUuid: string;
-      targetType: string;
+      targetType: InkverseType;
       page?: number | null;
       limitPerPage?: number | null;
       sortBy?: 'NEWEST' | 'TOP' | null;
@@ -104,21 +113,21 @@ export const CommentQueries: QueryResolvers = {
     const actualSortBy = sortBy ?? 'TOP';
 
     // Validate target type
-    if (!Object.values(InkverseType).includes(targetType as InkverseType)) {
+    if (!Object.values(InkverseType).includes(targetType)) {
       throw new Error(`Invalid target type: ${targetType}`);
     }
 
     // Get comments (already sorted by database: NEWEST or TOP)
     const comments = await UserComment.getCommentsForTarget(
       targetUuid,
-      targetType as InkverseType,
+      targetType,
       actualSortBy,
       actualPage,
       actualLimit
     );
 
     if (comments.length === 0) {
-      return [];
+      return { targetUuid, targetType, comments: [] };
     }
 
     // Get comment UUIDs for batch queries
@@ -137,16 +146,20 @@ export const CommentQueries: QueryResolvers = {
     userIds.forEach((id, index) => userMap.set(id, users[index] ?? null));
 
     // Build responses
-    return comments.map(comment =>
-      buildComment(comment, userMap, likeCounts, replyCounts)
-    );
+    return {
+      targetUuid,
+      targetType,
+      comments: comments.map(comment =>
+        buildComment(comment, userMap, likeCounts, replyCounts)
+      ),
+    };
   },
 
   getRepliesForComment: async (
     _parent: any,
     { targetUuid, targetType, commentUuid, page = 1, limitPerPage = 25 }: {
       targetUuid: string;
-      targetType: string;
+      targetType: InkverseType;
       commentUuid: string;
       page?: number | null;
       limitPerPage?: number | null;
@@ -164,7 +177,7 @@ export const CommentQueries: QueryResolvers = {
     );
 
     if (replies.length === 0) {
-      return [];
+      return { targetUuid, targetType, comments: [] };
     }
 
     // Get reply UUIDs for batch queries
@@ -185,9 +198,13 @@ export const CommentQueries: QueryResolvers = {
     const emptyReplyCounts = new Map<string, number>();
 
     // Build responses
-    return replies.map(reply =>
-      buildComment(reply, userMap, likeCounts, emptyReplyCounts)
-    );
+    return {
+      targetUuid,
+      targetType,
+      comments: replies.map(reply =>
+        buildComment(reply, userMap, likeCounts, emptyReplyCounts)
+      ),
+    };
   },
 };
 

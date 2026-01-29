@@ -7,6 +7,7 @@ import {
 import { InkverseType, ReportType } from '@inkverse/shared-server/graphql/types';
 import type { MutationResolvers } from '@inkverse/shared-server/graphql/types';
 import { sendSlackNotification } from '@inkverse/shared-server/messaging/slack';
+import { purgeCacheOnCdn } from '@inkverse/shared-server/cache/index';
 import { inkverseWebsiteUrl } from '@inkverse/public/utils';
 
 // GraphQL Type Definitions
@@ -61,7 +62,7 @@ export const UserCommentMutationsDefinitions = `
   """
   Edit an existing comment
   """
-  editComment(commentUuid: ID!, text: String!): Comment
+  editComment(commentUuid: ID!, text: String!, targetUuid: ID!, targetType: InkverseType!): Comment
 
   """
   Set comment visibility (soft delete/restore)
@@ -71,7 +72,7 @@ export const UserCommentMutationsDefinitions = `
   """
   Delete a comment permanently
   """
-  deleteComment(commentUuid: ID!): Boolean!
+  deleteComment(commentUuid: ID!, targetUuid: ID!, targetType: InkverseType!): Boolean!
 
   """
   Like a comment
@@ -238,6 +239,9 @@ export const UserCommentMutations: MutationResolvers = {
       comicIssue?.position || null
     );
 
+    // Purge comments cache on CDN (fire-and-forget)
+    purgeCacheOnCdn({ type: 'comments', id: issueUuid });
+
     // Return complete comment with all fields expected by commentDetails fragment
     return {
       ...comment,
@@ -251,7 +255,7 @@ export const UserCommentMutations: MutationResolvers = {
 
   editComment: async (
     _parent: any,
-    { commentUuid, text }: { commentUuid: string; text: string },
+    { commentUuid, text, targetUuid }: { commentUuid: string; text: string; targetUuid: string; targetType: InkverseType },
     context: any
   ) => {
     if (!context.user) {
@@ -284,8 +288,10 @@ export const UserCommentMutations: MutationResolvers = {
       UserComment.getReplyCount(commentUuid),
     ]);
 
+    // Purge comments cache on CDN (fire-and-forget)
+    purgeCacheOnCdn({ type: 'comments', id: targetUuid });
+
     // Return complete comment with all fields expected by commentDetails fragment
-    // Stats are not fetched since edit doesn't change them - client already has them
     return {
       ...comment,
       stats: {
@@ -321,6 +327,9 @@ export const UserCommentMutations: MutationResolvers = {
       UserComment.getReplyCount(commentUuid),
     ]);
 
+    // Purge comments cache on CDN (fire-and-forget)
+    purgeCacheOnCdn({ type: 'comments', id: comment.targetUuid });
+
     // Return complete comment with all fields expected by commentDetails fragment
     return {
       uuid: comment.uuid,
@@ -340,7 +349,7 @@ export const UserCommentMutations: MutationResolvers = {
 
   deleteComment: async (
     _parent: any,
-    { commentUuid }: { commentUuid: string },
+    { commentUuid, targetUuid }: { commentUuid: string; targetUuid: string; targetType: InkverseType },
     context: any
   ) => {
     if (!context.user) {
@@ -352,6 +361,9 @@ export const UserCommentMutations: MutationResolvers = {
     if (!deleted) {
       throw new UserInputError('Comment not found or you do not have permission to delete it');
     }
+
+    // Purge comments cache on CDN (fire-and-forget)
+    purgeCacheOnCdn({ type: 'comments', id: targetUuid });
 
     return true;
   },

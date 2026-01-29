@@ -27,7 +27,8 @@ export type CacheType =
   'recentlyAdded' |
   'recentlyUpdated' |
   'profilecomicseries' |
-  'profile'
+  'profile' |
+  'comments'
 
 interface PurgeCacheParams {
   type: CacheType;
@@ -84,10 +85,14 @@ export async function purgeCacheOnCdn({ type, id, shortUrl, name, seriesUuid, is
         await purgeWebsiteCache({ type: 'comicseries', id, shortUrl: comicSeries.shortUrl });
       }
       return
+    case 'comments':
+      if (!id) { throw new Error('purgeCacheOnCdn - id (targetUuid) is required for type: ' + type); }
+      await purgeApiCache(type, id)
+      return
     case 'everything':
       await purgeApiCache(type, "")
       await purgeWebsiteCache({ type })
-      return 
+      return
     case 'recentlyAdded':
       await purgeApiCache(type, 'recently-added')
       await purgeWebsiteCache({ type, id: 'recently-added' })
@@ -191,6 +196,12 @@ function getGraphCDNQuery(type: CacheType) {
           purgeComicIssueStats(seriesUuid: $seriesUuid)
         }
       `
+    case 'comments':
+      return `
+        mutation CommentsForTargetPurge ($targetUuid: [ID!]) {
+          purgeCommentsForTarget(targetUuid: $targetUuid)
+        }
+      `
     default:
       throw new Error(`inside getGraphCDNQuery() - Dont have logic for type: ${type}`)
   }
@@ -216,6 +227,8 @@ function getGraphCDNVariables(type: CacheType, id?:string, ids?:string[]) {
       return { userId: ids || [id] }
     case 'comicissuestats':
       return { seriesUuid: ids || [id] }
+    case 'comments':
+      return { targetUuid: ids || [id] }
     default:
       throw new Error(`inside getGraphCDNVariables() - Dont have logic for type: ${type}`)
   }

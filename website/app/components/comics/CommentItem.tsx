@@ -14,6 +14,7 @@ import {
 } from '@inkverse/shared-client/dispatch/comments';
 import { CommentForm } from './CommentForm';
 import { ReportModal } from '../ui/ReportModal';
+import { ConfirmModal } from '../ui/ConfirmModal';
 import { InkverseType } from '@inkverse/shared-client/graphql/operations';
 import { getInkverseUrl } from '@inkverse/public/utils';
 import { Link } from 'react-router-dom';
@@ -50,6 +51,7 @@ export function CommentItem({
   const [showEditForm, setShowEditForm] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showRepliesSection, setShowRepliesSection] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -136,14 +138,14 @@ export function CommentItem({
       userClient,
       commentUuid: comment.uuid,
       text,
+      targetUuid: issueUuid,
+      targetType: InkverseType.COMICISSUE,
     }, dispatch);
     setIsSubmitting(false);
     setShowEditForm(false);
   };
 
-  const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this comment?')) return;
-
+  const confirmDelete = async () => {
     const userClient = getUserApolloClient();
     if (!userClient) return;
 
@@ -151,8 +153,10 @@ export function CommentItem({
       userClient,
       commentUuid: comment.uuid,
       replyToUuid: comment.replyToUuid,
+      targetUuid: issueUuid,
+      targetType: InkverseType.COMICISSUE,
     }, dispatch);
-    setShowMenu(false);
+    setShowDeleteModal(false);
   };
 
   const handleToggleRepliesSection = () => {
@@ -285,7 +289,10 @@ export function CommentItem({
                               Edit
                             </button>
                             <button
-                              onClick={handleDelete}
+                              onClick={() => {
+                                setShowMenu(false);
+                                setShowDeleteModal(true);
+                              }}
                               className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                             >
                               <MdDelete size={16} />
@@ -368,6 +375,18 @@ export function CommentItem({
           isOpen={showReportModal}
           onClose={() => setShowReportModal(false)}
           commentUuid={comment.uuid}
+        />
+      )}
+
+      {/* Delete confirm modal */}
+      {showDeleteModal && (
+        <ConfirmModal
+          isOpen={showDeleteModal}
+          onClose={() => setShowDeleteModal(false)}
+          onConfirm={confirmDelete}
+          title="Delete Comment"
+          message="Are you sure you want to delete this comment?"
+          confirmLabel="Delete"
         />
       )}
     </div>

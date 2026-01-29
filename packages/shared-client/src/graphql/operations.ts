@@ -224,6 +224,14 @@ export type CommentStats = {
   uuid: Scalars['ID']['output'];
 };
 
+/** Wrapper type for comments on a target, enabling Stellate caching by targetUuid */
+export type CommentsForTarget = {
+  __typename?: 'CommentsForTarget';
+  comments: Array<Comment>;
+  targetType: InkverseType;
+  targetUuid: Scalars['ID']['output'];
+};
+
 /**  Content rating for different media types. Follows format: TYPE_RATING  */
 export enum ContentRating {
   COMICSERIES_ADULTS = 'COMICSERIES_ADULTS',
@@ -985,6 +993,8 @@ export type MutationAddCommentArgs = {
 
 export type MutationDeleteCommentArgs = {
   commentUuid: Scalars['ID']['input'];
+  targetType: InkverseType;
+  targetUuid: Scalars['ID']['input'];
 };
 
 
@@ -995,6 +1005,8 @@ export type MutationDisableNotificationsForSeriesArgs = {
 
 export type MutationEditCommentArgs = {
   commentUuid: Scalars['ID']['input'];
+  targetType: InkverseType;
+  targetUuid: Scalars['ID']['input'];
   text: Scalars['String']['input'];
 };
 
@@ -1149,7 +1161,7 @@ export type Query = {
   /** Get all comics from Patreon creators */
   getComicsFromPatreonCreators?: Maybe<Array<Maybe<ComicSeries>>>;
   /** Get paginated comments for a target (e.g., comic issue) */
-  getComments: Array<Comment>;
+  getComments: CommentsForTarget;
   /**  Get details on a Creator  */
   getCreator?: Maybe<Creator>;
   /**  Get details on a Creator Content  */
@@ -1173,7 +1185,7 @@ export type Query = {
   /**  Get a list of recently updated comics  */
   getRecentlyUpdatedComicSeries?: Maybe<HomeScreenComicSeries>;
   /** Get replies for a specific comment */
-  getRepliesForComment: Array<Comment>;
+  getRepliesForComment: CommentsForTarget;
   /** Get stats (like count) for a single episode */
   getStatsForComicIssue?: Maybe<ComicIssueStats>;
   /** Get stats (like counts) for all episodes in a series */
@@ -1489,6 +1501,8 @@ export type AddCommentMutation = { __typename?: 'Mutation', addComment?: { __typ
 
 export type DeleteCommentMutationVariables = Exact<{
   commentUuid: Scalars['ID']['input'];
+  targetUuid: Scalars['ID']['input'];
+  targetType: InkverseType;
 }>;
 
 
@@ -1504,6 +1518,8 @@ export type DisableNotificationsForSeriesMutation = { __typename?: 'Mutation', d
 export type EditCommentMutationVariables = Exact<{
   commentUuid: Scalars['ID']['input'];
   text: Scalars['String']['input'];
+  targetUuid: Scalars['ID']['input'];
+  targetType: InkverseType;
 }>;
 
 
@@ -1707,7 +1723,7 @@ export type GetCommentsQueryVariables = Exact<{
 }>;
 
 
-export type GetCommentsQuery = { __typename?: 'Query', getComments: Array<{ __typename?: 'Comment', uuid: string, text: string, createdAt: number, targetUuid: string, targetType: InkverseType, replyToUuid?: string | null, user?: { __typename?: 'User', id: string, username?: string | null } | null, stats?: { __typename?: 'CommentStats', uuid: string, likeCount?: number | null, replyCount?: number | null } | null }> };
+export type GetCommentsQuery = { __typename?: 'Query', getComments: { __typename?: 'CommentsForTarget', targetUuid: string, targetType: InkverseType, comments: Array<{ __typename?: 'Comment', uuid: string, text: string, createdAt: number, targetUuid: string, targetType: InkverseType, replyToUuid?: string | null, user?: { __typename?: 'User', id: string, username?: string | null } | null, stats?: { __typename?: 'CommentStats', uuid: string, likeCount?: number | null, replyCount?: number | null } | null }> } };
 
 export type GetCreatorQueryVariables = Exact<{
   uuid: Scalars['ID']['input'];
@@ -1767,7 +1783,7 @@ export type GetRepliesForCommentQueryVariables = Exact<{
 }>;
 
 
-export type GetRepliesForCommentQuery = { __typename?: 'Query', getRepliesForComment: Array<{ __typename?: 'Comment', uuid: string, text: string, createdAt: number, targetUuid: string, targetType: InkverseType, replyToUuid?: string | null, user?: { __typename?: 'User', id: string, username?: string | null } | null, stats?: { __typename?: 'CommentStats', uuid: string, likeCount?: number | null, replyCount?: number | null } | null }> };
+export type GetRepliesForCommentQuery = { __typename?: 'Query', getRepliesForComment: { __typename?: 'CommentsForTarget', targetUuid: string, targetType: InkverseType, comments: Array<{ __typename?: 'Comment', uuid: string, text: string, createdAt: number, targetUuid: string, targetType: InkverseType, replyToUuid?: string | null, user?: { __typename?: 'User', id: string, username?: string | null } | null, stats?: { __typename?: 'CommentStats', uuid: string, likeCount?: number | null, replyCount?: number | null } | null }> } };
 
 export type GetUserByUsernameQueryVariables = Exact<{
   username: Scalars['String']['input'];
@@ -1983,8 +1999,12 @@ export const AddComment = gql`
 }
     ${CommentDetails}`;
 export const DeleteComment = gql`
-    mutation DeleteComment($commentUuid: ID!) {
-  deleteComment(commentUuid: $commentUuid)
+    mutation DeleteComment($commentUuid: ID!, $targetUuid: ID!, $targetType: InkverseType!) {
+  deleteComment(
+    commentUuid: $commentUuid
+    targetUuid: $targetUuid
+    targetType: $targetType
+  )
 }
     `;
 export const DisableNotificationsForSeries = gql`
@@ -1995,8 +2015,13 @@ export const DisableNotificationsForSeries = gql`
 }
     ${UserComicSeriesDetails}`;
 export const EditComment = gql`
-    mutation EditComment($commentUuid: ID!, $text: String!) {
-  editComment(commentUuid: $commentUuid, text: $text) {
+    mutation EditComment($commentUuid: ID!, $text: String!, $targetUuid: ID!, $targetType: InkverseType!) {
+  editComment(
+    commentUuid: $commentUuid
+    text: $text
+    targetUuid: $targetUuid
+    targetType: $targetType
+  ) {
     ...commentDetails
   }
 }
@@ -2236,7 +2261,11 @@ export const GetComments = gql`
     limitPerPage: $limitPerPage
     sortBy: $sortBy
   ) {
-    ...commentDetails
+    targetUuid
+    targetType
+    comments {
+      ...commentDetails
+    }
   }
 }
     ${CommentDetails}`;
@@ -2310,7 +2339,11 @@ export const GetRepliesForComment = gql`
     page: $page
     limitPerPage: $limitPerPage
   ) {
-    ...commentDetails
+    targetUuid
+    targetType
+    comments {
+      ...commentDetails
+    }
   }
 }
     ${CommentDetails}`;

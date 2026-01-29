@@ -12,6 +12,10 @@ query GetComments(
     limitPerPage: $limitPerPage
     sortBy: $sortBy
   ) {
-    ...commentDetails
+    targetUuid
+    targetType
+    comments {
+      ...commentDetails
+    }
   }
 }

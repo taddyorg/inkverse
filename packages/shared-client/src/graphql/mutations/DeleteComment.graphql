@@ -1,3 +1,3 @@
-mutation DeleteComment($commentUuid: ID!) {
-  deleteComment(commentUuid: $commentUuid)
+mutation DeleteComment($commentUuid: ID!, $targetUuid: ID!, $targetType: InkverseType!) {
+  deleteComment(commentUuid: $commentUuid, targetUuid: $targetUuid, targetType: $targetType)
 }

@@ -194,7 +194,7 @@ export async function loadComments(
       variables: { targetUuid, targetType, page, limitPerPage, sortBy },
     });
 
-    const comments = (result.data?.getComments || []) as Comment[];
+    const comments = (result.data?.getComments?.comments || []) as Comment[];
     const hasMore = comments.length >= limitPerPage;
 
     if (dispatch) {
@@ -235,7 +235,7 @@ export async function loadMoreComments(
       variables: { targetUuid, targetType, page, limitPerPage, sortBy },
     });
 
-    const comments = (result.data?.getComments || []) as Comment[];
+    const comments = (result.data?.getComments?.comments || []) as Comment[];
     const hasMore = comments.length >= limitPerPage;
 
     if (dispatch) {
@@ -276,7 +276,7 @@ export async function loadReplies(
       variables: { targetUuid, targetType, commentUuid, page, limitPerPage },
     });
 
-    const replies = (result.data?.getRepliesForComment || []) as Comment[];
+    const replies = (result.data?.getRepliesForComment?.comments || []) as Comment[];
 
     if (dispatch) {
       dispatch({
@@ -380,10 +380,12 @@ interface EditCommentProps {
   userClient: ApolloClient;
   commentUuid: string;
   text: string;
+  targetUuid: string;
+  targetType: InkverseType;
 }
 
 export async function editComment(
-  { userClient, commentUuid, text }: EditCommentProps,
+  { userClient, commentUuid, text, targetUuid, targetType }: EditCommentProps,
   dispatch?: Dispatch<CommentsAction>
 ): Promise<boolean> {
   if (dispatch) dispatch({ type: CommentsActionType.EDIT_COMMENT_START });
@@ -391,7 +393,7 @@ export async function editComment(
   try {
     const result = await userClient.mutate<EditCommentMutation, EditCommentMutationVariables>({
       mutation: EditComment,
-      variables: { commentUuid, text },
+      variables: { commentUuid, text, targetUuid, targetType },
     });
 
     if (!result.data?.editComment) {
@@ -419,10 +421,12 @@ interface DeleteCommentProps {
   userClient: ApolloClient;
   commentUuid: string;
   replyToUuid?: string | null;
+  targetUuid: string;
+  targetType: InkverseType;
 }
 
 export async function deleteComment(
-  { userClient, commentUuid, replyToUuid }: DeleteCommentProps,
+  { userClient, commentUuid, replyToUuid, targetUuid, targetType }: DeleteCommentProps,
   dispatch?: Dispatch<CommentsAction>
 ): Promise<boolean> {
   if (dispatch) dispatch({ type: CommentsActionType.DELETE_COMMENT_START });
@@ -430,7 +434,7 @@ export async function deleteComment(
   try {
     const result = await userClient.mutate<DeleteCommentMutation, DeleteCommentMutationVariables>({
       mutation: DeleteComment,
-      variables: { commentUuid },
+      variables: { commentUuid, targetUuid, targetType },
     });
 
     if (!result.data?.deleteComment) {

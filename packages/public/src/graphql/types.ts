@@ -225,6 +225,14 @@ export type CommentStats = {
   uuid: Scalars['ID']['output'];
 };
 
+/** Wrapper type for comments on a target, enabling Stellate caching by targetUuid */
+export type CommentsForTarget = {
+  __typename?: 'CommentsForTarget';
+  comments: Array<Comment>;
+  targetType: InkverseType;
+  targetUuid: Scalars['ID']['output'];
+};
+
 /**  Content rating for different media types. Follows format: TYPE_RATING  */
 export enum ContentRating {
   COMICSERIES_ADULTS = 'COMICSERIES_ADULTS',
@@ -986,6 +994,8 @@ export type MutationAddCommentArgs = {
 
 export type MutationDeleteCommentArgs = {
   commentUuid: Scalars['ID']['input'];
+  targetType: InkverseType;
+  targetUuid: Scalars['ID']['input'];
 };
 
 
@@ -996,6 +1006,8 @@ export type MutationDisableNotificationsForSeriesArgs = {
 
 export type MutationEditCommentArgs = {
   commentUuid: Scalars['ID']['input'];
+  targetType: InkverseType;
+  targetUuid: Scalars['ID']['input'];
   text: Scalars['String']['input'];
 };
 
@@ -1150,7 +1162,7 @@ export type Query = {
   /** Get all comics from Patreon creators */
   getComicsFromPatreonCreators?: Maybe<Array<Maybe<ComicSeries>>>;
   /** Get paginated comments for a target (e.g., comic issue) */
-  getComments: Array<Comment>;
+  getComments: CommentsForTarget;
   /**  Get details on a Creator  */
   getCreator?: Maybe<Creator>;
   /**  Get details on a Creator Content  */
@@ -1174,7 +1186,7 @@ export type Query = {
   /**  Get a list of recently updated comics  */
   getRecentlyUpdatedComicSeries?: Maybe<HomeScreenComicSeries>;
   /** Get replies for a specific comment */
-  getRepliesForComment: Array<Comment>;
+  getRepliesForComment: CommentsForTarget;
   /** Get stats (like count) for a single episode */
   getStatsForComicIssue?: Maybe<ComicIssueStats>;
   /** Get stats (like counts) for all episodes in a series */
@@ -1540,6 +1552,7 @@ export type ResolversTypes = ResolversObject<{
   Comment: ResolverTypeWrapper<Comment>;
   CommentSortType: CommentSortType;
   CommentStats: ResolverTypeWrapper<CommentStats>;
+  CommentsForTarget: ResolverTypeWrapper<CommentsForTarget>;
   ContentRating: ContentRating;
   ContentRole: ContentRole;
   Country: Country;
@@ -1589,6 +1602,7 @@ export type ResolversParentTypes = ResolversObject<{
   ComicStory: ComicStory;
   Comment: Comment;
   CommentStats: CommentStats;
+  CommentsForTarget: CommentsForTarget;
   Creator: Creator;
   CreatorContent: CreatorContent;
   CreatorLinkDetails: CreatorLinkDetails;
@@ -1729,6 +1743,13 @@ export type CommentStatsResolvers<ContextType = any, ParentType extends Resolver
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type CommentsForTargetResolvers<ContextType = any, ParentType extends ResolversParentTypes['CommentsForTarget'] = ResolversParentTypes['CommentsForTarget']> = ResolversObject<{
+  comments?: Resolver<Array<ResolversTypes['Comment']>, ParentType, ContextType>;
+  targetType?: Resolver<ResolversTypes['InkverseType'], ParentType, ContextType>;
+  targetUuid?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type CreatorResolvers<ContextType = any, ParentType extends ResolversParentTypes['Creator'] = ResolversParentTypes['Creator']> = ResolversObject<{
   avatarImageAsString?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   bio?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -1815,9 +1836,9 @@ export type ListResolvers<ContextType = any, ParentType extends ResolversParentT
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
   addComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationAddCommentArgs, 'issueUuid' | 'seriesUuid' | 'text'>>;
-  deleteComment?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteCommentArgs, 'commentUuid'>>;
+  deleteComment?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteCommentArgs, 'commentUuid' | 'targetType' | 'targetUuid'>>;
   disableNotificationsForSeries?: Resolver<ResolversTypes['UserComicSeries'], ParentType, ContextType, RequireFields<MutationDisableNotificationsForSeriesArgs, 'seriesUuid'>>;
-  editComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationEditCommentArgs, 'commentUuid' | 'text'>>;
+  editComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationEditCommentArgs, 'commentUuid' | 'targetType' | 'targetUuid' | 'text'>>;
   enableNotificationsForSeries?: Resolver<ResolversTypes['UserComicSeries'], ParentType, ContextType, RequireFields<MutationEnableNotificationsForSeriesArgs, 'seriesUuid'>>;
   fetchAllHostingProviderTokens?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   fetchRefreshTokenForHostingProvider?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationFetchRefreshTokenForHostingProviderArgs, 'hostingProviderUuid'>>;
@@ -1863,7 +1884,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getComicStory?: Resolver<Maybe<ResolversTypes['ComicStory']>, ParentType, ContextType, Partial<QueryGetComicStoryArgs>>;
   getComicsFromBlueskyCreators?: Resolver<Maybe<Array<Maybe<ResolversTypes['ComicSeries']>>>, ParentType, ContextType>;
   getComicsFromPatreonCreators?: Resolver<Maybe<Array<Maybe<ResolversTypes['ComicSeries']>>>, ParentType, ContextType>;
-  getComments?: Resolver<Array<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<QueryGetCommentsArgs, 'targetType' | 'targetUuid'>>;
+  getComments?: Resolver<ResolversTypes['CommentsForTarget'], ParentType, ContextType, RequireFields<QueryGetCommentsArgs, 'targetType' | 'targetUuid'>>;
   getCreator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType, Partial<QueryGetCreatorArgs>>;
   getCreatorContent?: Resolver<Maybe<ResolversTypes['CreatorContent']>, ParentType, ContextType, Partial<QueryGetCreatorContentArgs>>;
   getCreatorLinksForSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['CreatorLinkDetails']>>>, ParentType, ContextType, RequireFields<QueryGetCreatorLinksForSeriesArgs, 'seriesUuid'>>;
@@ -1875,7 +1896,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getMostPopularComicSeries?: Resolver<Maybe<ResolversTypes['HomeScreenComicSeries']>, ParentType, ContextType, Partial<QueryGetMostPopularComicSeriesArgs>>;
   getRecentlyAddedComicSeries?: Resolver<Maybe<ResolversTypes['HomeScreenComicSeries']>, ParentType, ContextType, Partial<QueryGetRecentlyAddedComicSeriesArgs>>;
   getRecentlyUpdatedComicSeries?: Resolver<Maybe<ResolversTypes['HomeScreenComicSeries']>, ParentType, ContextType, Partial<QueryGetRecentlyUpdatedComicSeriesArgs>>;
-  getRepliesForComment?: Resolver<Array<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<QueryGetRepliesForCommentArgs, 'commentUuid' | 'targetType' | 'targetUuid'>>;
+  getRepliesForComment?: Resolver<ResolversTypes['CommentsForTarget'], ParentType, ContextType, RequireFields<QueryGetRepliesForCommentArgs, 'commentUuid' | 'targetType' | 'targetUuid'>>;
   getStatsForComicIssue?: Resolver<Maybe<ResolversTypes['ComicIssueStats']>, ParentType, ContextType, RequireFields<QueryGetStatsForComicIssueArgs, 'issueUuid' | 'seriesUuid'>>;
   getStatsForComicSeries?: Resolver<Maybe<Array<ResolversTypes['ComicIssueStats']>>, ParentType, ContextType, RequireFields<QueryGetStatsForComicSeriesArgs, 'seriesUuid'>>;
   getUserById?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryGetUserByIdArgs, 'id'>>;
@@ -1934,6 +1955,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ComicStory?: ComicStoryResolvers<ContextType>;
   Comment?: CommentResolvers<ContextType>;
   CommentStats?: CommentStatsResolvers<ContextType>;
+  CommentsForTarget?: CommentsForTargetResolvers<ContextType>;
   Creator?: CreatorResolvers<ContextType>;
   CreatorContent?: CreatorContentResolvers<ContextType>;
   CreatorLinkDetails?: CreatorLinkDetailsResolvers<ContextType>;

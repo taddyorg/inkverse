@@ -110,11 +110,10 @@ export function CommentForm({
           className="flex items-center gap-2 px-5 py-2.5 bg-brand-pink dark:bg-taddy-blue text-white rounded-full
             hover:bg-brand-pink-dark dark:hover:bg-taddy-blue-dark
             disabled:opacity-50
-            transition-colors shadow-sm hover:shadow-md"
-        >
+            transition-colors shadow-sm hover:shadow-md">
           {isSubmitting
             ? <div className="animate-spin rounded-full h-4 w-4" />
-            : <span className="text-sm font-semibold">{isReply ? 'Reply' : isEdit ? 'Edit comment' : 'Add comment'}</span>
+            : <span className="text-sm font-semibold">{isReply ? 'Reply' : isEdit ? 'Save' : 'Add comment'}</span>
           }
         </button>
       </div>

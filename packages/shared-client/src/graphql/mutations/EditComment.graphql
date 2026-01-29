@@ -1,5 +1,5 @@
-mutation EditComment($commentUuid: ID!, $text: String!) {
-  editComment(commentUuid: $commentUuid, text: $text) {
+mutation EditComment($commentUuid: ID!, $text: String!, $targetUuid: ID!, $targetType: InkverseType!) {
+  editComment(commentUuid: $commentUuid, text: $text, targetUuid: $targetUuid, targetType: $targetType) {
     ...commentDetails
   }
 }
