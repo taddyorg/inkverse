@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from "react";
 import { Link, useLoaderData, type LoaderFunctionArgs, type MetaFunction } from "react-router";
 
 import { ComicSeriesDetails } from "../components/comics/ComicSeriesDetails";
@@ -5,8 +6,12 @@ import { GetAppButton } from "../components/ui/GetAppButton";
 
 import { getMetaTags } from "@/lib/seo";
 import { loadHomeScreen } from "@/lib/loader/home.server";
+import { getPublicApolloClient } from "@/lib/apollo/client.client";
 import type { ComicSeries, List } from "@inkverse/shared-client/graphql/operations";
+import { loadTrendingComicSeries, trendingMetricOptions, trendingPeriodOptions } from "@inkverse/shared-client/dispatch/homefeed";
+import { TrendingMetric, TrendingPeriod } from "@inkverse/shared-client/graphql/operations";
 import { getInkverseUrl } from "@inkverse/public/utils";
+import { MdKeyboardArrowDown } from "react-icons/md";
 import type { NewsItem } from "@inkverse/public/news-items";
 import { inkverseNewsItems } from "@inkverse/public/news-items";
 
@@ -108,7 +113,7 @@ export default function Home() {
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       <main className="flex flex-col gap-4 p-2 md:p-10 lg:p-20 lg:pt-10">
         <FeaturedWebtoons comicSeries={homeScreenData.featuredComicSeries} />
-        <MostRecommendedWebtoons comicSeries={homeScreenData.mostPopularComicSeries} />
+        <MostTrendingComics initialComicSeries={homeScreenData.trendingComicSeries} />
         <CuratedLists lists={homeScreenData.curatedLists} />
         <Announcements newsItems={inkverseNewsItems} />
         <RecentlyUpdatedWebtoons comicSeries={homeScreenData.recentlyUpdatedComicSeries} />
@@ -136,30 +141,128 @@ const FeaturedWebtoons = ({ comicSeries }: { comicSeries: ComicSeries[] | null |
   );
 }
 
-const MostRecommendedWebtoons = ({ comicSeries }: { comicSeries: ComicSeries[] | null | undefined }) => {
-  const seeAllUrl = getInkverseUrl({ type: "list", id: '1', name: 'Most Recommended' });
+const TrendingDropdown = <T extends string>({ value, options, onChange }: {
+  value: T;
+  options: { value: T; label: string }[];
+  onChange: (value: T) => void;
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isOpen]);
+
+  return (
+    <div className="relative inline-block" ref={menuRef}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="inline-flex items-center gap-1 mx-1 px-3 py-1.5 text-base text-inkverse-black font-semibold bg-white/80 hover:bg-white rounded-full transition-colors"
+      >
+        <span>{options.find(o => o.value === value)?.label}</span>
+        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {isOpen && (
+        <div className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 z-10 overflow-hidden">
+          {options.map((option) => (
+            <button
+              key={option.value}
+              onClick={() => { onChange(option.value); setIsOpen(false); }}
+              className={`block w-full text-left px-4 py-2.5 text-sm whitespace-nowrap hover:bg-gray-100 transition-colors ${
+                value === option.value ? 'text-brand-pink dark:text-taddy-blue font-semibold bg-gray-50' : 'text-gray-700'
+              }`}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const MostTrendingComics = ({ initialComicSeries }: { initialComicSeries: ComicSeries[] | null }) => {
+  const [metric, setMetric] = useState<TrendingMetric>(TrendingMetric.LIKED);
+  const [period, setPeriod] = useState<TrendingPeriod>(TrendingPeriod.WEEK);
+  const [comicSeries, setComicSeries] = useState<ComicSeries[] | null>(initialComicSeries);
+  const [isLoading, setIsLoading] = useState(false);
+  const prevMetric = useRef(metric);
+  const prevPeriod = useRef(period);
+
+  useEffect(() => {
+    if (prevMetric.current === metric && prevPeriod.current === period) {
+      return;
+    }
+    prevMetric.current = metric;
+    prevPeriod.current = period;
+
+    let cancelled = false;
+    setIsLoading(true);
+
+    const publicClient = getPublicApolloClient();
+    if (publicClient) {
+      loadTrendingComicSeries({ publicClient, metric, period }).then((result) => {
+        if (!cancelled) {
+          setComicSeries(result);
+          setIsLoading(false);
+        }
+      });
+    }
+
+    return () => { cancelled = true; };
+  }, [metric, period]);
 
   return (
     <div className="mb-2 sm:mb-6">
-      <h2 className='text-2xl font-semibold mt-2 mb-4'>Most Recommended Comics</h2>
-      <div>
+      <h2 className='text-2xl font-semibold flex items-center flex-wrap gap-1 mt-2 mb-4'>
+        <span>Most</span>
+        <TrendingDropdown
+          value={metric}
+          options={trendingMetricOptions}
+          onChange={setMetric}
+        />
+        <span>Comics</span>
+        <TrendingDropdown
+          value={period}
+          options={trendingPeriodOptions}
+          onChange={setPeriod}
+        />
+      </h2>
+      {isLoading ? (
+        <div className="flex justify-center items-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
+        </div>
+      ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {comicSeries?.map((series) => (
-            <ComicSeriesDetails 
-              key={series.uuid} 
-              comicseries={series} 
-              pageType={'most-popular'} 
-            />
+          {comicSeries?.map((series, index) => (
+            <div key={series.uuid} className={index >= 3 ? 'hidden md:block' : undefined}>
+              <ComicSeriesDetails
+                comicseries={series}
+                pageType={'most-popular'}
+              />
+            </div>
           ))}
         </div>
-      </div>
-      {seeAllUrl && (
-        <div className="flex justify-center mt-6">
-          <Link to={seeAllUrl} className="font-semibold hover:text-gray-500">
-            See All
-          </Link>
-        </div>
       )}
+      <div className="flex justify-center sm:mt-8 mt-4">
+        <Link
+          to={metric === TrendingMetric.DISCUSSED ? '/most-discussed' : '/most-liked'}
+          className="text-base font-medium text-inkverse-black dark:text-white hover:text-gray-700 dark:hover:text-gray-200"
+        >
+          See All <MdKeyboardArrowDown className="inline text-inkverse-black dark:text-white ml-1 h-4 w-4" />
+        </Link>
+      </div>
     </div>
   );
 }

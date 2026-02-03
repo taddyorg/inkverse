@@ -1191,6 +1191,8 @@ export type Query = {
   getStatsForComicIssue?: Maybe<ComicIssueStats>;
   /** Get stats (like counts) for all episodes in a series */
   getStatsForComicSeries?: Maybe<Array<ComicIssueStats>>;
+  /**  Get trending comic series by metric and time period  */
+  getTrendingComicSeries?: Maybe<HomeScreenComicSeries>;
   /** Get a user by their ID */
   getUserById?: Maybe<User>;
   /** Get a user by their username */
@@ -1330,6 +1332,14 @@ export type QueryGetStatsForComicSeriesArgs = {
 };
 
 
+export type QueryGetTrendingComicSeriesArgs = {
+  limitPerPage?: InputMaybe<Scalars['Int']['input']>;
+  metric?: InputMaybe<TrendingMetric>;
+  page?: InputMaybe<Scalars['Int']['input']>;
+  period?: InputMaybe<TrendingPeriod>;
+};
+
+
 export type QueryGetUserByIdArgs = {
   id: Scalars['ID']['input'];
 };
@@ -1416,6 +1426,17 @@ export enum TaddyType {
   COMICSERIES = 'COMICSERIES',
   CREATOR = 'CREATOR',
   CREATORCONTENT = 'CREATORCONTENT'
+}
+
+export enum TrendingMetric {
+  DISCUSSED = 'DISCUSSED',
+  LIKED = 'LIKED'
+}
+
+export enum TrendingPeriod {
+  MONTH = 'MONTH',
+  WEEK = 'WEEK',
+  YEAR = 'YEAR'
 }
 
 /** User Type */
@@ -1584,6 +1605,8 @@ export type ResolversTypes = ResolversObject<{
   SortOrder: SortOrder;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
   TaddyType: TaddyType;
+  TrendingMetric: TrendingMetric;
+  TrendingPeriod: TrendingPeriod;
   User: ResolverTypeWrapper<User>;
   UserAgeRange: UserAgeRange;
   UserComicSeries: ResolverTypeWrapper<UserComicSeries>;
@@ -1899,6 +1922,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getRepliesForComment?: Resolver<ResolversTypes['CommentsForTarget'], ParentType, ContextType, RequireFields<QueryGetRepliesForCommentArgs, 'commentUuid' | 'targetType' | 'targetUuid'>>;
   getStatsForComicIssue?: Resolver<Maybe<ResolversTypes['ComicIssueStats']>, ParentType, ContextType, RequireFields<QueryGetStatsForComicIssueArgs, 'issueUuid' | 'seriesUuid'>>;
   getStatsForComicSeries?: Resolver<Maybe<Array<ResolversTypes['ComicIssueStats']>>, ParentType, ContextType, RequireFields<QueryGetStatsForComicSeriesArgs, 'seriesUuid'>>;
+  getTrendingComicSeries?: Resolver<Maybe<ResolversTypes['HomeScreenComicSeries']>, ParentType, ContextType, Partial<QueryGetTrendingComicSeriesArgs>>;
   getUserById?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryGetUserByIdArgs, 'id'>>;
   getUserByUsername?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryGetUserByUsernameArgs, 'username'>>;
   getUserComicSeries?: Resolver<Maybe<ResolversTypes['UserComicSeries']>, ParentType, ContextType, RequireFields<QueryGetUserComicSeriesArgs, 'seriesUuid'>>;

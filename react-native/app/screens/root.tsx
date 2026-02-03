@@ -19,6 +19,7 @@ import { CreatorScreen } from './creator';
 import { SettingsScreen } from './settings';
 import { ListScreen } from './list';
 import { ComicsListScreen } from './comicslist';
+import { TrendingScreen } from './trending';
 import { BlogScreen } from './blog';
 import { ReportsScreen } from './reports';
 import { EditProfileScreen } from './profile-edit/index';
@@ -47,6 +48,7 @@ import { WrappedTaggedScreen } from './wrapped-screens/wrappedtagged';
 import { WrappedProfileScreen } from './wrapped-screens/wrappedprofile';
 import { WrappedHostingProviderScreen } from './wrapped-screens/wrappedhostingprovider';
 import { WrappedApiHostingProviderScreen } from './wrapped-screens/wrappedapihostingprovider';
+import { WrappedTrendingLikedScreen, WrappedTrendingDiscussedScreen } from './wrapped-screens/wrappedtrending';
 import { NotificationProvider } from '../components/providers/NotificationProvider';
 import { AnalyticsProvider } from '../components/providers/AnalyticsProvider';
 
@@ -66,12 +68,15 @@ import {
   WRAPPED_PROFILE_SCREEN,
   WRAPPED_HOSTING_PROVIDER_SCREEN,
   WRAPPED_API_HOSTING_PROVIDER_SCREEN,
+  WRAPPED_TRENDING_LIKED_SCREEN,
+  WRAPPED_TRENDING_DISCUSSED_SCREEN,
   COMICISSUE_SCREEN, 
   CREATOR_SCREEN, 
   SETTINGS_SCREEN,
   LIST_SCREEN, 
-  COMICS_LIST_SCREEN, 
-  BLOG_SCREEN, 
+  COMICS_LIST_SCREEN,
+  TRENDING_SCREEN,
+  BLOG_SCREEN,
   REPORTS_SCREEN, 
   MAIN_SCREEN,
   SIGNUP_SCREEN,
@@ -144,6 +149,15 @@ const listScreenConfig = {
 const comicsListScreenConfig = {
   name: COMICS_LIST_SCREEN as keyof RootStackParamList,
   component: ComicsListScreen,
+  options: {
+    title: '',
+    headerShown: false,
+  }
+};
+
+const trendingScreenConfig = {
+  name: TRENDING_SCREEN as keyof RootStackParamList,
+  component: TrendingScreen,
   options: {
     title: '',
     headerShown: false,
@@ -257,6 +271,7 @@ function HomeStack() {
       <Stack.Screen {...creatorScreenConfig} />
       <Stack.Screen {...listScreenConfig} />
       <Stack.Screen {...comicsListScreenConfig} />
+      <Stack.Screen {...trendingScreenConfig} />
       <Stack.Screen {...profileScreenConfig} />
       <Stack.Screen {...editPatreonScreenConfig} />
     </Stack.Navigator>
@@ -279,6 +294,7 @@ function SearchStack() {
       <Stack.Screen {...creatorScreenConfig} />
       <Stack.Screen {...listScreenConfig} />
       <Stack.Screen {...comicsListScreenConfig} />
+      <Stack.Screen {...trendingScreenConfig} />
       <Stack.Screen {...profileScreenConfig} />
       <Stack.Screen {...editPatreonScreenConfig} />
     </Stack.Navigator>
@@ -447,6 +463,8 @@ function App() {
         [WRAPPED_CREATOR_SCREEN]: 'creators/:shortUrl',
         [WRAPPED_LIST_SCREEN]: 'lists/:idAndName',
         [WRAPPED_TAGGED_SCREEN]: 'tagged/:tag',
+        [WRAPPED_TRENDING_LIKED_SCREEN]: 'most-liked',
+        [WRAPPED_TRENDING_DISCUSSED_SCREEN]: 'most-discussed',
         [WRAPPED_PROFILE_SCREEN]: ':username',
         [WRAPPED_HOSTING_PROVIDER_SCREEN]: 'hosting-provider/:uuid',
         [WRAPPED_API_HOSTING_PROVIDER_SCREEN]: 'api/hosting-provider/:uuid',
@@ -621,9 +639,19 @@ function App() {
                       component={WrappedHostingProviderScreen}
                       options={modalScreenOptions}
                     />
-                    <Stack.Screen 
-                      name={WRAPPED_API_HOSTING_PROVIDER_SCREEN} 
+                    <Stack.Screen
+                      name={WRAPPED_API_HOSTING_PROVIDER_SCREEN}
                       component={WrappedApiHostingProviderScreen}
+                      options={modalScreenOptions}
+                    />
+                    <Stack.Screen
+                      name={WRAPPED_TRENDING_LIKED_SCREEN}
+                      component={WrappedTrendingLikedScreen}
+                      options={modalScreenOptions}
+                    />
+                    <Stack.Screen
+                      name={WRAPPED_TRENDING_DISCUSSED_SCREEN}
+                      component={WrappedTrendingDiscussedScreen}
                       options={modalScreenOptions}
                     />
                     <Stack.Screen 

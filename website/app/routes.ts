@@ -18,6 +18,8 @@ export default [
     route("download-app", "routes/download-app.tsx"),
     route("reset", "routes/reset.tsx"),
     route("logout", "routes/logout.tsx"),
+    route("most-liked", "routes/most-liked.tsx"),
+    route("most-discussed", "routes/most-discussed.tsx"),
     route("hosting-provider/:uuid", "routes/hosting-provider.tsx"),
     route("profile/setup", "routes/profile/setup.tsx"),
     route("profile/settings", "routes/profile/settings.tsx"),

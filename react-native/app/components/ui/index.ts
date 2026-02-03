@@ -11,12 +11,13 @@ import { ThemedIcon } from "./ThemedIcon"
 import { ScrollIndicator } from "./ScrollIndicator"
 import { ThemedActivityIndicator } from "./ThemedActivityIndicator"
 import { ThemedRefreshControl } from "./ThemedRefreshControl"
+import { DropdownMenu } from "./DropdownMenu"
 
-export { 
+export {
     Logo,
-    Screen, 
+    Screen,
     ScreenHeader,
-    ThemedText, 
+    ThemedText,
     ThemedTextFontFamilyMap,
     ThemedView,
     ThemedButton,
@@ -27,4 +28,5 @@ export {
     ScrollIndicator,
     ThemedActivityIndicator,
     ThemedRefreshControl,
+    DropdownMenu,
 }

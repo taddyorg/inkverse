@@ -1,8 +1,8 @@
-# 🚀 Inkverse Setup Instructions
+# Inkverse Setup Instructions
 
 **Inkverse** is a fun comic reading app built using Typescript, React, React Native, Node.js, and GraphQL.
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Monorepo Structure](#monorepo-structure)
 - [Architecture](#architecture)

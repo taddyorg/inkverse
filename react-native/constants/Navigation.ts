@@ -27,6 +27,7 @@ import { EditEmailScreenParams } from "@/app/screens/profile-edit/edit-email";
 import { EditPatreonScreenParams } from "@/app/screens/profile-edit/edit-patreon";
 import { EditBlueskyScreenParams } from "@/app/screens/profile-edit/edit-bluesky";
 import { SignupNotificationsScreenParams } from "@/app/screens/signup/signup-notifications";
+import { TrendingScreenParams } from "@/app/screens/trending";
 
 export const HOME_TAB = "HomeTab";
 export const SEARCH_TAB = "SearchTab";
@@ -67,6 +68,9 @@ export const EDIT_AGE_SCREEN = "EditAgeScreen";
 export const EDIT_EMAIL_SCREEN = "EditEmailScreen";
 export const EDIT_PATREON_SCREEN = "EditPatreonScreen";
 export const EDIT_BLUESKY_SCREEN = "EditBlueskyScreen";
+export const TRENDING_SCREEN = "TrendingScreen";
+export const WRAPPED_TRENDING_LIKED_SCREEN = "WrappedTrendingLikedScreen";
+export const WRAPPED_TRENDING_DISCUSSED_SCREEN = "WrappedTrendingDiscussedScreen";
 
 export type RootStackParamList = {
   [HOME_TAB]: undefined;
@@ -108,6 +112,9 @@ export type RootStackParamList = {
   [EDIT_EMAIL_SCREEN]: EditEmailScreenParams;
   [EDIT_PATREON_SCREEN]: EditPatreonScreenParams;
   [EDIT_BLUESKY_SCREEN]: EditBlueskyScreenParams;
+  [TRENDING_SCREEN]: TrendingScreenParams;
+  [WRAPPED_TRENDING_LIKED_SCREEN]: undefined;
+  [WRAPPED_TRENDING_DISCUSSED_SCREEN]: undefined;
 };
 
 interface ResetNavigationToContentScreenParams {
