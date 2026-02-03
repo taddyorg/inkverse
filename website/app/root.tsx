@@ -136,6 +136,21 @@ export function Layout({ children }: { children: React.ReactNode }) {
     }
   }, [zoomMode]);
 
+  // Dev-only keyboard shortcut to toggle light/dark theme (Ctrl+Shift+L / Cmd+Shift+L)
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'L') {
+        e.preventDefault();
+        handleThemeChange(theme === 'dark' ? 'light' : 'dark');
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [theme]);
+
   const handleThemeChange = async (newTheme: string) => {
     setTheme(newTheme);
 
