@@ -21,6 +21,7 @@
     "generate-creator-links": "tsx src/scripts/feeds/generate-creator-links.ts",
     "refresh-hosting-provider-access-tokens": "tsx src/scripts/hosting-provider/start.ts",
     "delete-user": "tsx src/scripts/user/delete.ts",
+    "disconnect-hosting-provider": "tsx src/scripts/user/disconnect-hosting-provider.ts",
     "mock-push-notification": "tsx src/scripts/push-notifications/mock-push-notification.ts",
     "test-push-direct": "tsx src/scripts/push-notifications/test-push-direct.ts"
   },
