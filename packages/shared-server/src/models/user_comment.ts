@@ -192,6 +192,21 @@ export class UserComment {
   }
 
   /**
+   * Get comment count for a parent entity (e.g., all comments across a series)
+   */
+  static async getCommentCountForParent(
+    parentUuid: string,
+    parentType: InkverseType
+  ): Promise<number> {
+    const result = await database('user_comments')
+      .where({ parentUuid, parentType, isVisible: true })
+      .count('id as count')
+      .first();
+
+    return Number(result?.count || 0);
+  }
+
+  /**
    * Get reply count for a specific comment
    */
   static async getReplyCount(commentUuid: string): Promise<number> {
@@ -228,6 +243,31 @@ export class UserComment {
     results.forEach(r => countMap.set(r.replyToCommentUuid as string, Number(r.count)));
 
     return countMap;
+  }
+
+  /**
+   * Get top comic series by comment count since a given epoch timestamp
+   */
+  static async getTopSeriesByCommentCount(
+    sinceEpoch: number,
+    limit: number = 6,
+    offset: number = 0
+  ): Promise<{ parentUuid: string; count: number }[]> {
+    const results = await database('user_comments')
+      .where('parentType', 'COMICSERIES')
+      .andWhere('isVisible', true)
+      .andWhere('createdAt', '>=', sinceEpoch)
+      .groupBy('parentUuid')
+      .select('parentUuid')
+      .count('id as count')
+      .orderByRaw('count(id) DESC')
+      .offset(offset)
+      .limit(limit);
+
+    return results.map(r => ({
+      parentUuid: r.parentUuid as string,
+      count: Number(r.count),
+    }));
   }
 
   /**

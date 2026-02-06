@@ -11,13 +11,12 @@ type ComicIssueDetailsProps = {
   comicissue: ComicIssue,
   position: number,
   isCurrentIssue?: boolean,
-  likeCount?: number,
   isLiked?: boolean,
   isLikeLoading?: boolean,
   onLikePress?: () => void,
 };
 
-export const ComicIssueDetails = ({ comicseries, comicissue, position, isCurrentIssue, likeCount, isLiked, isLikeLoading, onLikePress }: ComicIssueDetailsProps) => {
+export const ComicIssueDetails = ({ comicseries, comicissue, position, isCurrentIssue, isLiked, isLikeLoading, onLikePress }: ComicIssueDetailsProps) => {
   const freeInDaysText = prettyFormattedFreeInDays(comicissue.dateExclusiveContentAvailable || undefined);
   const isPatreonExclusive = comicissue.scopesForExclusiveContent && comicissue.scopesForExclusiveContent.includes('patreon');
 
@@ -89,7 +88,6 @@ export const ComicIssueDetails = ({ comicseries, comicissue, position, isCurrent
               ) : (
                 <MdFavoriteBorder className={isCurrentIssue ? "text-white font-bold" : ""} size={18} />
               )}
-              <span className={`text-sm ${isCurrentIssue ? "text-white font-bold" : ""}`}>{likeCount?.toLocaleString() || 0}</span>
             </button>
           )}
           <span className={`text-base ${isCurrentIssue ? 'text-white font-bold' : ''}`}>

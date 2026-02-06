@@ -91,12 +91,12 @@ export type ComicIssueForSeries = {
   seriesUuid: Scalars['ID']['output'];
 };
 
-/** Public stats for a comic issue (like count, future: comment count) */
+/** Public stats for a comic issue (like count, comment count) */
 export type ComicIssueStats = {
   __typename?: 'ComicIssueStats';
-  issueUuid: Scalars['ID']['output'];
+  commentCount?: Maybe<Scalars['Int']['output']>;
   likeCount?: Maybe<Scalars['Int']['output']>;
-  seriesUuid: Scalars['ID']['output'];
+  uuid: Scalars['ID']['output'];
 };
 
 /**  Comic Series Details  */
@@ -166,6 +166,14 @@ export type ComicSeries = {
 export enum ComicSeriesLayoutType {
   VERTICAL_SCROLL_TOP_TO_BOTTOM = 'VERTICAL_SCROLL_TOP_TO_BOTTOM'
 }
+
+/** Public stats for a comic series (total like count, total comment count) */
+export type ComicSeriesStats = {
+  __typename?: 'ComicSeriesStats';
+  commentCount?: Maybe<Scalars['Int']['output']>;
+  likeCount?: Maybe<Scalars['Int']['output']>;
+  uuid: Scalars['ID']['output'];
+};
 
 /**  Type of comic series  */
 export enum ComicSeriesType {
@@ -1186,10 +1194,10 @@ export type Query = {
   getRecentlyUpdatedComicSeries?: Maybe<HomeScreenComicSeries>;
   /** Get replies for a specific comment */
   getRepliesForComment: CommentsForTarget;
-  /** Get stats (like count) for a single episode */
+  /** Get stats (like count, comment count) for a single episode */
   getStatsForComicIssue?: Maybe<ComicIssueStats>;
-  /** Get stats (like counts) for all episodes in a series */
-  getStatsForComicSeries?: Maybe<Array<ComicIssueStats>>;
+  /** Get total stats (like count, comment count) for a series */
+  getStatsForComicSeries?: Maybe<ComicSeriesStats>;
   /**  Get trending comic series by metric and time period  */
   getTrendingComicSeries?: Maybe<HomeScreenComicSeries>;
   /** Get a user by their ID */
@@ -1322,7 +1330,6 @@ export type QueryGetRepliesForCommentArgs = {
 
 export type QueryGetStatsForComicIssueArgs = {
   issueUuid: Scalars['ID']['input'];
-  seriesUuid: Scalars['ID']['input'];
 };
 
 
@@ -1694,18 +1701,17 @@ export type GetBlueskyProfileQuery = { __typename?: 'Query', getBlueskyProfile?:
 
 export type GetComicIssueDynamicQueryVariables = Exact<{
   issueUuid: Scalars['ID']['input'];
-  seriesUuid: Scalars['ID']['input'];
 }>;
 
 
-export type GetComicIssueDynamicQuery = { __typename?: 'Query', getStatsForComicIssue?: { __typename?: 'ComicIssueStats', seriesUuid: string, issueUuid: string, likeCount?: number | null } | null, getComments: { __typename?: 'CommentsForTarget', targetUuid: string, targetType: InkverseType, comments: Array<{ __typename?: 'Comment', uuid: string, text: string, createdAt: number, targetUuid: string, targetType: InkverseType, replyToUuid?: string | null, user?: { __typename?: 'User', id: string, username?: string | null } | null, stats?: { __typename?: 'CommentStats', uuid: string, likeCount?: number | null, replyCount?: number | null } | null }> } };
+export type GetComicIssueDynamicQuery = { __typename?: 'Query', getStatsForComicIssue?: { __typename?: 'ComicIssueStats', uuid: string, likeCount?: number | null, commentCount?: number | null } | null, getComments: { __typename?: 'CommentsForTarget', targetUuid: string, targetType: InkverseType, comments: Array<{ __typename?: 'Comment', uuid: string, text: string, createdAt: number, targetUuid: string, targetType: InkverseType, replyToUuid?: string | null, user?: { __typename?: 'User', id: string, username?: string | null } | null, stats?: { __typename?: 'CommentStats', uuid: string, likeCount?: number | null, replyCount?: number | null } | null }> } };
 
 export type GetComicSeriesDynamicQueryVariables = Exact<{
   seriesUuid: Scalars['ID']['input'];
 }>;
 
 
-export type GetComicSeriesDynamicQuery = { __typename?: 'Query', getStatsForComicSeries?: Array<{ __typename?: 'ComicIssueStats', seriesUuid: string, issueUuid: string, likeCount?: number | null }> | null };
+export type GetComicSeriesDynamicQuery = { __typename?: 'Query', getStatsForComicSeries?: { __typename?: 'ComicSeriesStats', uuid: string, likeCount?: number | null, commentCount?: number | null } | null };
 
 export type GetComicIssueQueryVariables = Exact<{
   issueUuid: Scalars['ID']['input'];
@@ -2199,11 +2205,11 @@ export const GetBlueskyProfile = gql`
 }
     `;
 export const GetComicIssueDynamic = gql`
-    query GetComicIssueDynamic($issueUuid: ID!, $seriesUuid: ID!) {
-  getStatsForComicIssue(issueUuid: $issueUuid, seriesUuid: $seriesUuid) {
-    seriesUuid
-    issueUuid
+    query GetComicIssueDynamic($issueUuid: ID!) {
+  getStatsForComicIssue(issueUuid: $issueUuid) {
+    uuid
     likeCount
+    commentCount
   }
   getComments(
     targetUuid: $issueUuid
@@ -2223,9 +2229,9 @@ export const GetComicIssueDynamic = gql`
 export const GetComicSeriesDynamic = gql`
     query GetComicSeriesDynamic($seriesUuid: ID!) {
   getStatsForComicSeries(seriesUuid: $seriesUuid) {
-    seriesUuid
-    issueUuid
+    uuid
     likeCount
+    commentCount
   }
 }
     `;

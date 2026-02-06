@@ -16,7 +16,7 @@ interface ComicSeriesInfoProps {
 
 export function ComicSeriesInfo({ comicseries }: ComicSeriesInfoProps) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  
+
   const handleReportComic = () => {
     navigation.navigate(REPORTS_SCREEN, {
       uuid: comicseries.uuid,

@@ -1,6 +1,6 @@
 import { ApolloClient } from '@apollo/client';
 import type { Dispatch } from 'react';
-import { type GetComicSeriesQuery, type GetComicSeriesQueryVariables, SortOrder, GetComicSeries, type ComicIssue, type ComicSeries, GetMiniComicSeries, type GetMiniComicSeriesQuery, type GetMiniComicSeriesQueryVariables, type SubscribeToSeriesMutation, type SubscribeToSeriesMutationVariables, SubscribeToSeries, type UnsubscribeFromSeriesMutation, type UnsubscribeFromSeriesMutationVariables, UnsubscribeFromSeries, GetUserComicSeries, type GetUserComicSeriesQuery, type GetUserComicSeriesQueryVariables, type EnableNotificationsForSeriesMutation, type EnableNotificationsForSeriesMutationVariables, EnableNotificationsForSeries, type DisableNotificationsForSeriesMutation, type DisableNotificationsForSeriesMutationVariables, DisableNotificationsForSeries, GetProfileByUserId, type LikeComicIssueMutation, type LikeComicIssueMutationVariables, LikeComicIssue, type UnlikeComicIssueMutation, type UnlikeComicIssueMutationVariables, UnlikeComicIssue, GetComicSeriesStats, type GetComicSeriesStatsQuery, type GetComicSeriesStatsQueryVariables, GetComicIssueStats } from "../graphql/operations.js";
+import { type GetComicSeriesQuery, type GetComicSeriesQueryVariables, SortOrder, GetComicSeries, type ComicIssue, type ComicSeries, GetMiniComicSeries, type GetMiniComicSeriesQuery, type GetMiniComicSeriesQueryVariables, type SubscribeToSeriesMutation, type SubscribeToSeriesMutationVariables, SubscribeToSeries, type UnsubscribeFromSeriesMutation, type UnsubscribeFromSeriesMutationVariables, UnsubscribeFromSeries, GetUserComicSeries, type GetUserComicSeriesQuery, type GetUserComicSeriesQueryVariables, type EnableNotificationsForSeriesMutation, type EnableNotificationsForSeriesMutationVariables, EnableNotificationsForSeries, type DisableNotificationsForSeriesMutation, type DisableNotificationsForSeriesMutationVariables, DisableNotificationsForSeries, GetProfileByUserId, type LikeComicIssueMutation, type LikeComicIssueMutationVariables, LikeComicIssue, type UnlikeComicIssueMutation, type UnlikeComicIssueMutationVariables, UnlikeComicIssue, GetComicSeriesDynamic, type GetComicSeriesDynamicQuery, type GetComicSeriesDynamicQueryVariables, GetComicIssueDynamic } from "../graphql/operations.js";
 import { emit, EventNames } from '../pubsub';
 
 /* Action Type Enum */
@@ -51,12 +51,6 @@ export interface UserComicData {
   likedComicIssueUuids: string[];
 }
 
-export interface ComicIssueStats {
-  seriesUuid: string;
-  issueUuid: string;
-  likeCount: number;
-}
-
 export type ComicSeriesAction =
   // Comic Series Loading
   | { type: ComicSeriesActionType.GET_COMICSERIES_START }
@@ -88,11 +82,11 @@ export type ComicSeriesAction =
 
   // Like Management (for individual issues in series page)
   | { type: ComicSeriesActionType.LIKE_COMIC_ISSUE_START; payload: { issueUuid: string } }
-  | { type: ComicSeriesActionType.LIKE_COMIC_ISSUE_SUCCESS; payload: { issueUuid: string; seriesUuid: string; userComicData: UserComicData; likeCount: number } }
+  | { type: ComicSeriesActionType.LIKE_COMIC_ISSUE_SUCCESS; payload: { issueUuid: string; userComicData: UserComicData; likeCount: number; commentCount: number } }
   | { type: ComicSeriesActionType.LIKE_COMIC_ISSUE_ERROR; payload: { issueUuid: string; error: string } }
 
   | { type: ComicSeriesActionType.UNLIKE_COMIC_ISSUE_START; payload: { issueUuid: string } }
-  | { type: ComicSeriesActionType.UNLIKE_COMIC_ISSUE_SUCCESS; payload: { issueUuid: string; seriesUuid: string; userComicData: UserComicData; likeCount: number } }
+  | { type: ComicSeriesActionType.UNLIKE_COMIC_ISSUE_SUCCESS; payload: { issueUuid: string; userComicData: UserComicData; likeCount: number; commentCount: number } }
   | { type: ComicSeriesActionType.UNLIKE_COMIC_ISSUE_ERROR; payload: { issueUuid: string; error: string } };
 
 export type ComicSeriesLoaderData = {
@@ -106,7 +100,8 @@ export type ComicSeriesLoaderData = {
   subscriptionError: string | null;
   isNotificationLoading: boolean;
   notificationError: string | null;
-  comicIssueStats: ComicIssueStats[];
+  likeCount: number;
+  commentCount: number;
   issueLikeLoadingMap: Record<string, boolean>;
 };
 
@@ -121,7 +116,8 @@ export const comicSeriesInitialState: Partial<ComicSeriesLoaderData> = {
   subscriptionError: null,
   isNotificationLoading: false,
   notificationError: null,
-  comicIssueStats: [],
+  likeCount: 0,
+  commentCount: 0,
   issueLikeLoadingMap: {},
 }
 
@@ -509,8 +505,8 @@ export async function likeComicIssueInSeries(
       mutation: LikeComicIssue,
       variables: { issueUuid, seriesUuid },
       refetchQueries: [
-        { query: GetComicSeriesStats, variables: { seriesUuid } },
-        { query: GetComicIssueStats, variables: { issueUuid, seriesUuid } }
+        { query: GetComicSeriesDynamic, variables: { seriesUuid } },
+        { query: GetComicIssueDynamic, variables: { issueUuid } }
       ],
       awaitRefetchQueries: true
     });
@@ -520,8 +516,8 @@ export async function likeComicIssueInSeries(
     }
 
     // Read fresh stats from cache after refetch
-    const statsData = userClient.readQuery<GetComicSeriesStatsQuery, GetComicSeriesStatsQueryVariables>({
-      query: GetComicSeriesStats,
+    const statsData = userClient.readQuery<GetComicSeriesDynamicQuery, GetComicSeriesDynamicQueryVariables>({
+      query: GetComicSeriesDynamic,
       variables: { seriesUuid }
     });
 
@@ -532,13 +528,14 @@ export async function likeComicIssueInSeries(
       likedComicIssueUuids: result.data.likeComicIssue.likedComicIssueUuids?.filter((uuid): uuid is string => uuid !== null) || [],
     };
 
-    // Get the fresh like count for this specific issue from the refetched stats
-    const likeCount = statsData?.getStatsForComicSeries?.find(stat => stat.issueUuid === issueUuid)?.likeCount ?? 0;
+    // Get the fresh totals from the refetched series stats
+    const likeCount = statsData?.getStatsForComicSeries?.likeCount ?? 0;
+    const commentCount = statsData?.getStatsForComicSeries?.commentCount ?? 0;
 
     if (dispatch) {
       dispatch({
         type: ComicSeriesActionType.LIKE_COMIC_ISSUE_SUCCESS,
-        payload: { issueUuid, seriesUuid, userComicData, likeCount }
+        payload: { issueUuid, userComicData, likeCount, commentCount }
       });
     }
 
@@ -569,8 +566,8 @@ export async function unlikeComicIssueInSeries(
       mutation: UnlikeComicIssue,
       variables: { issueUuid, seriesUuid },
       refetchQueries: [
-        { query: GetComicSeriesStats, variables: { seriesUuid } },
-        { query: GetComicIssueStats, variables: { issueUuid, seriesUuid } }
+        { query: GetComicSeriesDynamic, variables: { seriesUuid } },
+        { query: GetComicIssueDynamic, variables: { issueUuid } }
       ],
       awaitRefetchQueries: true
     });
@@ -580,8 +577,8 @@ export async function unlikeComicIssueInSeries(
     }
 
     // Read fresh stats from cache after refetch
-    const statsData = userClient.readQuery<GetComicSeriesStatsQuery, GetComicSeriesStatsQueryVariables>({
-      query: GetComicSeriesStats,
+    const statsData = userClient.readQuery<GetComicSeriesDynamicQuery, GetComicSeriesDynamicQueryVariables>({
+      query: GetComicSeriesDynamic,
       variables: { seriesUuid }
     });
 
@@ -592,13 +589,14 @@ export async function unlikeComicIssueInSeries(
       likedComicIssueUuids: result.data.unlikeComicIssue.likedComicIssueUuids?.filter((uuid): uuid is string => uuid !== null) || [],
     };
 
-    // Get the fresh like count for this specific issue from the refetched stats
-    const likeCount = statsData?.getStatsForComicSeries?.find(stat => stat.issueUuid === issueUuid)?.likeCount ?? 0;
+    // Get the fresh totals from the refetched series stats
+    const likeCount = statsData?.getStatsForComicSeries?.likeCount ?? 0;
+    const commentCount = statsData?.getStatsForComicSeries?.commentCount ?? 0;
 
     if (dispatch) {
       dispatch({
         type: ComicSeriesActionType.UNLIKE_COMIC_ISSUE_SUCCESS,
-        payload: { issueUuid, seriesUuid, userComicData, likeCount }
+        payload: { issueUuid, userComicData, likeCount, commentCount }
       });
     }
 
@@ -625,12 +623,44 @@ export function parseLoaderComicSeries(data: GetComicSeriesQuery): Partial<Comic
     issues: data.getIssuesForComicSeries?.issues?.filter(
       (issue: ComicIssue | null): issue is ComicIssue => issue !== null
     ) || [],
-    comicIssueStats: data.getStatsForComicSeries?.map(stat => ({
-      seriesUuid: stat.seriesUuid,
-      issueUuid: stat.issueUuid,
-      likeCount: stat.likeCount || 0,
-    })) || [],
   };
+}
+
+/* Load Comic Series Dynamic Data (stats) */
+interface LoadComicSeriesDynamicProps {
+  publicClient: ApolloClient;
+  seriesUuid: string;
+  forceRefresh?: boolean;
+}
+
+export async function loadComicSeriesDynamic(
+  { publicClient, seriesUuid, forceRefresh = false }: LoadComicSeriesDynamicProps,
+  dispatch?: Dispatch<ComicSeriesAction>
+): Promise<Partial<ComicSeriesLoaderData> | null> {
+  try {
+    const result = await publicClient.query<GetComicSeriesDynamicQuery, GetComicSeriesDynamicQueryVariables>({
+      query: GetComicSeriesDynamic,
+      variables: { seriesUuid },
+      ...(!!forceRefresh && { fetchPolicy: 'network-only' })
+    });
+
+    const likeCount = result.data?.getStatsForComicSeries?.likeCount ?? 0;
+    const commentCount = result.data?.getStatsForComicSeries?.commentCount ?? 0;
+
+    const payload: Partial<ComicSeriesLoaderData> = { likeCount, commentCount };
+
+    if (dispatch) {
+      dispatch({
+        type: ComicSeriesActionType.GET_COMICSERIES_SUCCESS,
+        payload,
+      });
+    }
+
+    return payload;
+  } catch (error: any) {
+    console.error('Failed to load comic series dynamic data:', error?.message);
+    return null;
+  }
 }
 
 export function parseLoaderUserComicSeries(data: GetUserComicSeriesQuery | undefined): Partial<ComicSeriesLoaderData> {
@@ -783,21 +813,11 @@ export function comicSeriesReducer(
         },
       };
     case ComicSeriesActionType.LIKE_COMIC_ISSUE_SUCCESS: {
-      const existingStats = state.comicIssueStats || [];
-      const statExists = existingStats.some(stat => stat.issueUuid === action.payload.issueUuid);
-
-      const updatedStats = statExists
-        ? existingStats.map(stat =>
-            stat.issueUuid === action.payload.issueUuid
-              ? { ...stat, likeCount: action.payload.likeCount }
-              : stat
-          )
-        : [...existingStats, { seriesUuid: action.payload.seriesUuid, issueUuid: action.payload.issueUuid, likeCount: action.payload.likeCount }];
-
       return {
         ...state,
         userComicData: action.payload.userComicData,
-        comicIssueStats: updatedStats,
+        likeCount: action.payload.likeCount,
+        commentCount: action.payload.commentCount,
         issueLikeLoadingMap: {
           ...state.issueLikeLoadingMap,
           [action.payload.issueUuid]: false,
@@ -822,17 +842,11 @@ export function comicSeriesReducer(
         },
       };
     case ComicSeriesActionType.UNLIKE_COMIC_ISSUE_SUCCESS: {
-      const existingStats = state.comicIssueStats || [];
-      const updatedStats = existingStats.map(stat =>
-        stat.issueUuid === action.payload.issueUuid
-          ? { ...stat, likeCount: action.payload.likeCount }
-          : stat
-      );
-
       return {
         ...state,
         userComicData: action.payload.userComicData,
-        comicIssueStats: updatedStats,
+        likeCount: action.payload.likeCount,
+        commentCount: action.payload.commentCount,
         issueLikeLoadingMap: {
           ...state.issueLikeLoadingMap,
           [action.payload.issueUuid]: false,

@@ -35,7 +35,7 @@ export function EditProfileScreen() {
   const [userDetailsState, userDetailsDispatch] = useReducer(userDetailsReducer, userDetailsInitialState);
   const textColor = useThemeColor({}, 'text');
   const backgroundColor = useThemeColor({}, 'background');
-  const secondaryTextColor = useThemeColor({ light: Colors.light.icon, dark: Colors.dark.icon }, 'icon');
+  const secondaryTextColor = useThemeColor({}, 'icon');
   const borderColor = useThemeColor({ light: '#E5E5E5', dark: '#2C2C2C' }, 'icon');
   const cardBackgroundColor = useThemeColor({ light: '#FFFFFF', dark: '#1C1C1C' }, 'background');
   const [isPatreonConnected, setIsPatreonConnected] = useState(false);

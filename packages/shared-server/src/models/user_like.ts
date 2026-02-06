@@ -1,5 +1,6 @@
 import { database } from "../database/index.js";
-import type { UserLikeModel, LikeableType, ParentType } from "../database/types.js";
+import type { UserLikeModel } from "../database/types.js";
+import type { InkverseType } from "../graphql/types.js";
 import { currentDate } from "../utils/date.js";
 
 export class UserLike {
@@ -9,9 +10,9 @@ export class UserLike {
   static async likeItem(
     userId: number,
     likeableUuid: string,
-    likeableType: LikeableType,
+    likeableType: InkverseType,
     parentUuid: string,
-    parentType: ParentType
+    parentType: InkverseType
   ): Promise<UserLikeModel | null> {
     const [like] = await database('user_likes')
       .insert({
@@ -35,7 +36,7 @@ export class UserLike {
   static async unlikeItem(
     userId: number,
     likeableUuid: string,
-    likeableType: LikeableType
+    likeableType: InkverseType
   ): Promise<boolean> {
     const deleted = await database('user_likes')
       .where({ userId, likeableUuid, likeableType })
@@ -50,7 +51,7 @@ export class UserLike {
   static async hasUserLikedItem(
     userId: number,
     likeableUuid: string,
-    likeableType: LikeableType
+    likeableType: InkverseType
   ): Promise<boolean> {
     const like = await database('user_likes')
       .where({ userId, likeableUuid, likeableType })
@@ -66,7 +67,7 @@ export class UserLike {
   static async hasUserLikedItems(
     userId: number,
     likeableUuids: string[],
-    likeableType: LikeableType
+    likeableType: InkverseType
   ): Promise<Map<string, boolean>> {
     if (likeableUuids.length === 0) {
       return new Map();
@@ -90,9 +91,9 @@ export class UserLike {
   static async likeMultipleItems(
     userId: number,
     likeableUuids: string[],
-    likeableType: LikeableType,
+    likeableType: InkverseType,
     parentUuid: string,
-    parentType: ParentType
+    parentType: InkverseType
   ): Promise<boolean> {
     if (likeableUuids.length === 0) {
       return true;
@@ -122,7 +123,7 @@ export class UserLike {
   static async getUserLikesForParent(
     userId: number,
     parentUuid: string,
-    parentType: ParentType
+    parentType: InkverseType
   ): Promise<UserLikeModel[]> {
     const likes = await database('user_likes')
       .where({ userId, parentUuid, parentType })
@@ -136,7 +137,7 @@ export class UserLike {
    */
   static async getLikeCount(
     likeableUuid: string,
-    likeableType: LikeableType
+    likeableType: InkverseType
   ): Promise<number> {
     const result = await database('user_likes')
       .where({ likeableUuid, likeableType })
@@ -152,7 +153,7 @@ export class UserLike {
    */
   static async getLikeCounts(
     likeableUuids: string[],
-    likeableType: LikeableType
+    likeableType: InkverseType
   ): Promise<Map<string, number>> {
     if (likeableUuids.length === 0) {
       return new Map();
@@ -175,13 +176,53 @@ export class UserLike {
   }
 
   /**
+   * Get top comic series by like count since a given epoch timestamp
+   */
+  static async getTopSeriesByLikeCount(
+    sinceEpoch: number,
+    limit: number = 6,
+    offset: number = 0
+  ): Promise<{ parentUuid: string; count: number }[]> {
+    const results = await database('user_likes')
+      .where('likeableType', 'COMICISSUE')
+      .andWhere('createdAt', '>=', sinceEpoch)
+      .groupBy('parentUuid')
+      .select('parentUuid')
+      .count('id as count')
+      .orderByRaw('count(id) DESC')
+      .offset(offset)
+      .limit(limit);
+
+    return results.map(r => ({
+      parentUuid: r.parentUuid as string,
+      count: Number(r.count),
+    }));
+  }
+
+  /**
+   * Get total like count for all items under a parent (e.g., total likes across a series)
+   */
+  static async getLikeCountForParent(
+    parentUuid: string,
+    parentType: InkverseType,
+    likeableType: InkverseType
+  ): Promise<number> {
+    const result = await database('user_likes')
+      .where({ parentUuid, parentType, likeableType })
+      .count('id as count')
+      .first();
+
+    return Number(result?.count || 0);
+  }
+
+  /**
    * Get like counts for all items under a parent (e.g., all episodes in a series)
    * Returns a Map of likeableUuid -> count
    */
   static async getLikeCountsForParent(
     parentUuid: string,
-    parentType: ParentType,
-    likeableType: LikeableType
+    parentType: InkverseType,
+    likeableType: InkverseType
   ): Promise<Map<string, number>> {
     const results = await database('user_likes')
       .where({ parentUuid, parentType, likeableType })

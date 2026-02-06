@@ -10,6 +10,8 @@ import {
   LikeComment,
   UnlikeComment,
   ReportComment,
+  GetComicIssueDynamic,
+  GetComicSeriesDynamic,
   type GetCommentsQuery,
   type GetCommentsQueryVariables,
   type GetRepliesForCommentQuery,
@@ -350,6 +352,11 @@ export async function addComment(
     const result = await userClient.mutate<AddCommentMutation, AddCommentMutationVariables>({
       mutation: AddComment,
       variables: { issueUuid, seriesUuid, text, replyToCommentUuid },
+      refetchQueries: [
+        { query: GetComicIssueDynamic, variables: { issueUuid } },
+        { query: GetComicSeriesDynamic, variables: { seriesUuid } }
+      ],
+      awaitRefetchQueries: true
     });
 
     if (!result.data?.addComment) {
@@ -423,10 +430,11 @@ interface DeleteCommentProps {
   replyToUuid?: string | null;
   targetUuid: string;
   targetType: InkverseType;
+  seriesUuid: string;
 }
 
 export async function deleteComment(
-  { userClient, commentUuid, replyToUuid, targetUuid, targetType }: DeleteCommentProps,
+  { userClient, commentUuid, replyToUuid, targetUuid, targetType, seriesUuid }: DeleteCommentProps,
   dispatch?: Dispatch<CommentsAction>
 ): Promise<boolean> {
   if (dispatch) dispatch({ type: CommentsActionType.DELETE_COMMENT_START });
@@ -435,6 +443,11 @@ export async function deleteComment(
     const result = await userClient.mutate<DeleteCommentMutation, DeleteCommentMutationVariables>({
       mutation: DeleteComment,
       variables: { commentUuid, targetUuid, targetType },
+      refetchQueries: [
+        { query: GetComicIssueDynamic, variables: { issueUuid: targetUuid } },
+        { query: GetComicSeriesDynamic, variables: { seriesUuid } }
+      ],
+      awaitRefetchQueries: true
     });
 
     if (!result.data?.deleteComment) {

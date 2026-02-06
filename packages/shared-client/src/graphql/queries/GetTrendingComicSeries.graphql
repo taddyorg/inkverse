@@ -1,0 +1,10 @@
+# import miniComicSeriesDetails from '../fragments/MiniComicSeriesDetails.graphql'
+
+query GetTrendingComicSeries($metric: TrendingMetric, $period: TrendingPeriod, $limitPerPage: Int, $page: Int) {
+	getTrendingComicSeries(metric: $metric, period: $period, limitPerPage: $limitPerPage, page: $page) {
+		id
+		comicSeries {
+			...miniComicSeriesDetails
+		}
+	}
+}

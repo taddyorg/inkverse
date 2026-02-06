@@ -2,7 +2,6 @@ import axios from "axios";
 import { GraphQLClient, gql } from 'graphql-request';
 
 import { getInkverseUrl, inkverseWebsiteUrl } from "@inkverse/public/utils";
-import { ComicIssue, ComicSeries } from "../models/index.js";
 
 import path from 'path';
 import { fileURLToPath } from "url";
@@ -21,6 +20,7 @@ export type CacheType =
   'comicissue' |
   'comicissueforseries' |
   'comicissuestats' |
+  'comicseriesstats' |
   'comicstory' |
   'creator' |
   'creatorcontent' |
@@ -68,22 +68,12 @@ export async function purgeCacheOnCdn({ type, id, shortUrl, name, seriesUuid, is
       await purgeWebsiteCache({ type: 'profile', shortUrl })
       return
     case 'comicissuestats':
-      if (!id) { throw new Error('purgeCacheOnCdn - id (seriesUuid) is required for type: ' + type); }
-      
+      if (!id) { throw new Error('purgeCacheOnCdn - id (issueUuid) is required for type: ' + type); }
       await purgeApiCache(type, id)
-      // Fetch data needed for website cache purging
-      const [comicIssue, comicSeries] = await Promise.all([
-        issueUuid ? ComicIssue.getComicIssueByUuid(issueUuid) : null,
-        ComicSeries.getComicSeriesByUuid(id),
-      ]);
-      
-      // Purge website caches
-      if (comicIssue && comicSeries) {
-        await purgeWebsiteCache({ type: 'comicissue', id: issueUuid, shortUrl: comicSeries.shortUrl, name: comicIssue.name ?? undefined, seriesUuid: id });
-      }
-      if (comicSeries) {
-        await purgeWebsiteCache({ type: 'comicseries', id, shortUrl: comicSeries.shortUrl });
-      }
+      return
+    case 'comicseriesstats':
+      if (!id) { throw new Error('purgeCacheOnCdn - id (seriesUuid) is required for type: ' + type); }
+      await purgeApiCache(type, id)
       return
     case 'comments':
       if (!id) { throw new Error('purgeCacheOnCdn - id (targetUuid) is required for type: ' + type); }
@@ -118,6 +108,7 @@ export async function purgeMultipleCacheOnCdn({ type, ids }: PurgeCacheParams) {
     case 'comicissue':
     case 'comicstory':
     case 'creatorcontent':
+    case 'comicissuestats':
       if (!ids) { throw new Error('purgeMultipleCacheOnCdn - ids is required for type: ' + type); }
 
       await purgeMultipleOnCdn(type, ids)
@@ -192,8 +183,14 @@ function getGraphCDNQuery(type: CacheType) {
       `
     case 'comicissuestats':
       return `
-        mutation ComicIssueStatsPurge ($seriesUuid: [ID!]) {
-          purgeComicIssueStats(seriesUuid: $seriesUuid)
+        mutation ComicIssueStatsPurge ($issueUuid: [ID!]) {
+          purgeComicIssueStats(issueUuid: $issueUuid)
+        }
+      `
+    case 'comicseriesstats':
+      return `
+        mutation ComicSeriesStatsPurge ($seriesUuid: [ID!]) {
+          purgeComicSeriesStats(seriesUuid: $seriesUuid)
         }
       `
     case 'comments':
@@ -226,6 +223,8 @@ function getGraphCDNVariables(type: CacheType, id?:string, ids?:string[]) {
     case 'profilecomicseries':
       return { userId: ids || [id] }
     case 'comicissuestats':
+      return { issueUuid: ids || [id] }
+    case 'comicseriesstats':
       return { seriesUuid: ids || [id] }
     case 'comments':
       return { targetUuid: ids || [id] }

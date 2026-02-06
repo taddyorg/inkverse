@@ -15,6 +15,15 @@ type GetAvatarImageUrlProps = {
   variant?: CreatorImageVariant;
 }
 
+// Format creator names: "Alice", "Alice and Bob", "Alice, Bob, and Charlie"
+export function formatCreatorNames(creators?: ({ name?: string | null } | null)[]): string {
+  const names = creators?.map(c => c?.name).filter((name): name is string => !!name) ?? [];
+  if (names.length === 0) return 'the creators';
+  if (names.length === 1) return names[0];
+  if (names.length === 2) return `${names[0]} and ${names[1]}`;
+  return `${names.slice(0, -1).join(', ')}, and ${names[names.length - 1]}`;
+}
+
 export const getAvatarImageUrl = ({ avatarImageAsString, variant = 'medium' }: GetAvatarImageUrlProps): string | undefined => {
   try {
     if (!avatarImageAsString) { throw new Error('getAvatarImageUrl - avatarImageAsString is null'); }

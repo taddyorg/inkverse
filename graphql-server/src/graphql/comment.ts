@@ -1,5 +1,4 @@
 import { UserComment, UserLike, User } from '@inkverse/shared-server/models/index';
-import { LikeableType } from '@inkverse/shared-server/database/types';
 import { InkverseType, type QueryResolvers } from '@inkverse/shared-server/graphql/types';
 import type { UserCommentModel, UserModel } from '@inkverse/shared-server/database/types';
 
@@ -137,7 +136,7 @@ export const CommentQueries: QueryResolvers = {
     // Batch fetch: users, like counts, reply counts
     const [users, likeCounts, replyCounts] = await Promise.all([
       Promise.all(userIds.map(id => User.getUserById(String(id)))),
-      UserLike.getLikeCounts(commentUuids, LikeableType.COMMENT),
+      UserLike.getLikeCounts(commentUuids, InkverseType.COMMENT),
       UserComment.getReplyCounts(commentUuids),
     ]);
 
@@ -187,7 +186,7 @@ export const CommentQueries: QueryResolvers = {
     // Batch fetch: users, like counts (replies don't have reply counts)
     const [users, likeCounts] = await Promise.all([
       Promise.all(userIds.map(id => User.getUserById(String(id)))),
-      UserLike.getLikeCounts(replyUuids, LikeableType.COMMENT),
+      UserLike.getLikeCounts(replyUuids, InkverseType.COMMENT),
     ]);
 
     // Build user map

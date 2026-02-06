@@ -15,9 +15,4 @@ query GetComicSeries($uuid: ID!, $sortOrderForIssues: SortOrder, $limitPerPageFo
       		...miniComicIssueDetails
 		}
   }
-	getStatsForComicSeries(seriesUuid: $uuid) {
-		seriesUuid
-		issueUuid
-		likeCount
-	}
 }

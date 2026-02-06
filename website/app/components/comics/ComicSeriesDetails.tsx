@@ -1,7 +1,9 @@
 import { Link } from "react-router";
+import { MdFavorite } from 'react-icons/md';
+import { BsFillChatFill } from 'react-icons/bs';
 
 import type { ComicSeries } from '@inkverse/shared-client/graphql/operations';
-import { getInkverseUrl } from '@inkverse/public/utils';
+import { getInkverseUrl, formatCompactNumber } from '@inkverse/public/utils';
 import { getPrettyGenre } from '@inkverse/public/genres';
 import { getBannerImageUrl, getCoverImageUrl, getThumbnailImageUrl } from '@inkverse/public/comicseries';
 import { getAvatarImageUrl } from '@inkverse/public/creator';
@@ -31,10 +33,12 @@ type ComicSeriesDetailsProps = {
   isUserDataLoading?: boolean;
   onAddToProfile?: () => void;
   onGetNotifications?: () => void;
+  likeCount?: number;
+  commentCount?: number;
 }
 
 export function ComicSeriesDetails(props: ComicSeriesDetailsProps){
-  const { comicseries, pageType, onAddToProfile, onGetNotifications, userComicData, isSubscriptionLoading, isNotificationLoading, isUserDataLoading } = props;
+  const { comicseries, pageType, onAddToProfile, onGetNotifications, userComicData, isSubscriptionLoading, isNotificationLoading, isUserDataLoading, likeCount, commentCount } = props;
 
   if (!comicseries) { return <></>; }
 
@@ -142,7 +146,7 @@ export function ComicSeriesDetails(props: ComicSeriesDetailsProps){
           <Name comicseries={comicseries} pageType={pageType}/>
           <div className='flex flex-row justify-between'>
             <Genre comicseries={comicseries} pageType={pageType}/>
-            <Counts comicseries={comicseries} pageType={pageType}/>
+            <Counts comicseries={comicseries} pageType={pageType} likeCount={likeCount} commentCount={commentCount}/>
           </div>
           <Creators comicseries={comicseries} pageType={pageType}/>
           <p className='mt-2'>{comicseries?.description?.trim()}</p>
@@ -262,29 +266,24 @@ const Tags = ({ comicseries, pageType }: { comicseries: ComicSeries, pageType: C
   );
 }
 
-const Counts = ({ comicseries, pageType }: { comicseries: ComicSeries, pageType: ComicSeriesPageType }) => {
+const Counts = ({ comicseries, pageType, likeCount, commentCount }: { comicseries: ComicSeries, pageType: ComicSeriesPageType, likeCount?: number, commentCount?: number }) => {
+  if (pageType !== 'comicseries-screen') return null;
+  if (!likeCount && !commentCount) return null;
+
   return (
-    <div className='mt-2 flex flex-row gap-2'>
-      {/* <div className='flex items-center'>
-        <FaThumbsUp className='mr-2 text-brand-pink' />
-        <p className='text-brand-pink font-bold'>{comicseries.recommendationsCount} recommendations</p>
-      </div>
-      <div className='flex items-center'>
-        <FaBookmark className='mr-2 text-brand-pink' />
-        <p className='text-brand-pink font-bold'>{comicseries.issuesCount} issues</p>
-      </div>
-      {comicseries.recommendationsCount > 0 && (
-        <div className='flex items-center'>
-          <FaThumbsUp className='mr-2 text-brand-pink' />
-          <p className='text-brand-pink font-bold'>{comicseries.recommendationsCount}</p>
+    <div className='mt-2 sm:mr-0 mr-4 flex flex-row gap-3'>
+      {!!likeCount && likeCount > 0 && (
+        <div className='flex items-center gap-1'>
+          <MdFavorite className='text-rose-500' size={16} />
+          <span className='text-sm font-semibold'>{formatCompactNumber(likeCount)}</span>
         </div>
       )}
-      {comicseries.saveCount > 0 && (
-        <div className='flex items-center'>
-          <FaBookmark className='mr-2 text-brand-pink' />
-          <p className='text-brand-pink font-bold'>{comicseries.saveCount}</p>
+      {!!commentCount && commentCount > 0 && (
+        <div className='flex items-center gap-1'>
+          <BsFillChatFill className='text-inkverse-black dark:text-white' size={13} />
+          <span className='text-sm font-semibold'>{formatCompactNumber(commentCount)}</span>
         </div>
-      )} */}
+      )}
     </div>
   );
 }

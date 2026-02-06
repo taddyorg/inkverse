@@ -92,12 +92,12 @@ export type ComicIssueForSeries = {
   seriesUuid: Scalars['ID']['output'];
 };
 
-/** Public stats for a comic issue (like count, future: comment count) */
+/** Public stats for a comic issue (like count, comment count) */
 export type ComicIssueStats = {
   __typename?: 'ComicIssueStats';
-  issueUuid: Scalars['ID']['output'];
+  commentCount?: Maybe<Scalars['Int']['output']>;
   likeCount?: Maybe<Scalars['Int']['output']>;
-  seriesUuid: Scalars['ID']['output'];
+  uuid: Scalars['ID']['output'];
 };
 
 /**  Comic Series Details  */
@@ -167,6 +167,14 @@ export type ComicSeries = {
 export enum ComicSeriesLayoutType {
   VERTICAL_SCROLL_TOP_TO_BOTTOM = 'VERTICAL_SCROLL_TOP_TO_BOTTOM'
 }
+
+/** Public stats for a comic series (total like count, total comment count) */
+export type ComicSeriesStats = {
+  __typename?: 'ComicSeriesStats';
+  commentCount?: Maybe<Scalars['Int']['output']>;
+  likeCount?: Maybe<Scalars['Int']['output']>;
+  uuid: Scalars['ID']['output'];
+};
 
 /**  Type of comic series  */
 export enum ComicSeriesType {
@@ -1187,10 +1195,10 @@ export type Query = {
   getRecentlyUpdatedComicSeries?: Maybe<HomeScreenComicSeries>;
   /** Get replies for a specific comment */
   getRepliesForComment: CommentsForTarget;
-  /** Get stats (like count) for a single episode */
+  /** Get stats (like count, comment count) for a single episode */
   getStatsForComicIssue?: Maybe<ComicIssueStats>;
-  /** Get stats (like counts) for all episodes in a series */
-  getStatsForComicSeries?: Maybe<Array<ComicIssueStats>>;
+  /** Get total stats (like count, comment count) for a series */
+  getStatsForComicSeries?: Maybe<ComicSeriesStats>;
   /**  Get trending comic series by metric and time period  */
   getTrendingComicSeries?: Maybe<HomeScreenComicSeries>;
   /** Get a user by their ID */
@@ -1323,7 +1331,6 @@ export type QueryGetRepliesForCommentArgs = {
 
 export type QueryGetStatsForComicIssueArgs = {
   issueUuid: Scalars['ID']['input'];
-  seriesUuid: Scalars['ID']['input'];
 };
 
 
@@ -1568,6 +1575,7 @@ export type ResolversTypes = ResolversObject<{
   ComicIssueStats: ResolverTypeWrapper<ComicIssueStats>;
   ComicSeries: ResolverTypeWrapper<ComicSeries>;
   ComicSeriesLayoutType: ComicSeriesLayoutType;
+  ComicSeriesStats: ResolverTypeWrapper<ComicSeriesStats>;
   ComicSeriesType: ComicSeriesType;
   ComicStory: ResolverTypeWrapper<ComicStory>;
   Comment: ResolverTypeWrapper<Comment>;
@@ -1622,6 +1630,7 @@ export type ResolversParentTypes = ResolversObject<{
   ComicIssueForSeries: ComicIssueForSeries;
   ComicIssueStats: ComicIssueStats;
   ComicSeries: ComicSeries;
+  ComicSeriesStats: ComicSeriesStats;
   ComicStory: ComicStory;
   Comment: Comment;
   CommentStats: CommentStats;
@@ -1694,9 +1703,9 @@ export type ComicIssueForSeriesResolvers<ContextType = any, ParentType extends R
 }>;
 
 export type ComicIssueStatsResolvers<ContextType = any, ParentType extends ResolversParentTypes['ComicIssueStats'] = ResolversParentTypes['ComicIssueStats']> = ResolversObject<{
-  issueUuid?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  commentCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   likeCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  seriesUuid?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  uuid?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -1729,6 +1738,13 @@ export type ComicSeriesResolvers<ContextType = any, ParentType extends Resolvers
   status?: Resolver<Maybe<ResolversTypes['SeriesStatus']>, ParentType, ContextType>;
   tags?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   thumbnailImageAsString?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  uuid?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ComicSeriesStatsResolvers<ContextType = any, ParentType extends ResolversParentTypes['ComicSeriesStats'] = ResolversParentTypes['ComicSeriesStats']> = ResolversObject<{
+  commentCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  likeCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   uuid?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -1920,8 +1936,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getRecentlyAddedComicSeries?: Resolver<Maybe<ResolversTypes['HomeScreenComicSeries']>, ParentType, ContextType, Partial<QueryGetRecentlyAddedComicSeriesArgs>>;
   getRecentlyUpdatedComicSeries?: Resolver<Maybe<ResolversTypes['HomeScreenComicSeries']>, ParentType, ContextType, Partial<QueryGetRecentlyUpdatedComicSeriesArgs>>;
   getRepliesForComment?: Resolver<ResolversTypes['CommentsForTarget'], ParentType, ContextType, RequireFields<QueryGetRepliesForCommentArgs, 'commentUuid' | 'targetType' | 'targetUuid'>>;
-  getStatsForComicIssue?: Resolver<Maybe<ResolversTypes['ComicIssueStats']>, ParentType, ContextType, RequireFields<QueryGetStatsForComicIssueArgs, 'issueUuid' | 'seriesUuid'>>;
-  getStatsForComicSeries?: Resolver<Maybe<Array<ResolversTypes['ComicIssueStats']>>, ParentType, ContextType, RequireFields<QueryGetStatsForComicSeriesArgs, 'seriesUuid'>>;
+  getStatsForComicIssue?: Resolver<Maybe<ResolversTypes['ComicIssueStats']>, ParentType, ContextType, RequireFields<QueryGetStatsForComicIssueArgs, 'issueUuid'>>;
+  getStatsForComicSeries?: Resolver<Maybe<ResolversTypes['ComicSeriesStats']>, ParentType, ContextType, RequireFields<QueryGetStatsForComicSeriesArgs, 'seriesUuid'>>;
   getTrendingComicSeries?: Resolver<Maybe<ResolversTypes['HomeScreenComicSeries']>, ParentType, ContextType, Partial<QueryGetTrendingComicSeriesArgs>>;
   getUserById?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryGetUserByIdArgs, 'id'>>;
   getUserByUsername?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryGetUserByUsernameArgs, 'username'>>;
@@ -1976,6 +1992,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ComicIssueForSeries?: ComicIssueForSeriesResolvers<ContextType>;
   ComicIssueStats?: ComicIssueStatsResolvers<ContextType>;
   ComicSeries?: ComicSeriesResolvers<ContextType>;
+  ComicSeriesStats?: ComicSeriesStatsResolvers<ContextType>;
   ComicStory?: ComicStoryResolvers<ContextType>;
   Comment?: CommentResolvers<ContextType>;
   CommentStats?: CommentStatsResolvers<ContextType>;

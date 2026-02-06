@@ -52,9 +52,11 @@ export function BlogScreen() {
     <View style={[styles.container]}>
       <View style={styles.header}>
         {canGoBack && <HeaderBackButton onPress={handleBackPress} />}
-        <PressableOpacity style={styles.closeButton} onPress={handleClosePress}>
-          <Ionicons name="close" size={24} color="black" />
-        </PressableOpacity>
+        <View style={styles.closeButtonPosition}>
+          <PressableOpacity style={styles.closeButtonVisual} onPress={handleClosePress}>
+            <Ionicons name="close" size={24} color="black" />
+          </PressableOpacity>
+        </View>
       </View>
       <WebView
         ref={webViewRef}
@@ -121,11 +123,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  closeButton: {
+  closeButtonPosition: {
     position: 'absolute',
     top: 40,
     right: 16,
     zIndex: 1,
+  },
+  closeButtonVisual: {
     padding: 8,
     backgroundColor: 'rgba(255, 255, 255, 0.8)',
     borderRadius: 20,

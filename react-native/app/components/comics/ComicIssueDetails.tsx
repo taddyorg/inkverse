@@ -20,15 +20,13 @@ interface ComicIssueDetailsProps {
   position: number;
   isCurrentIssue: boolean;
   imagePriority?: 'high' | 'normal' | 'low';
-  likeCount?: number;
   isLiked?: boolean;
   isLikeLoading?: boolean;
   onLikePress?: () => void;
 }
 
 export const ComicIssueDetails = memo(({
-  comicissue, comicseries, position, isCurrentIssue, imagePriority,
-  likeCount, isLiked, isLikeLoading, onLikePress
+  comicissue, comicseries, position, isCurrentIssue, imagePriority,isLiked, isLikeLoading, onLikePress
 }: ComicIssueDetailsProps) => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
@@ -127,7 +125,7 @@ export const ComicIssueDetails = memo(({
             </View>
           </View>
         </View>
-        <View style={styles.rightSection}>
+        <View style={[styles.rightSection, isCurrentIssue && { gap: 5 }]}>
           {onLikePress && (
             <PressableOpacity
               onPress={handleLikeClick}
@@ -142,15 +140,12 @@ export const ComicIssueDetails = memo(({
                 ) : (
                   <MaterialIcons name="favorite-border" size={18} color={isCurrentIssue ? actionTextColor : tintColor} />
                 )}
-                <ThemedText style={[styles.likeCount, isCurrentIssue && { color: actionTextColor }]}>
-                  {(likeCount || 0).toLocaleString()}
-                </ThemedText>
               </View>
             </PressableOpacity>
           )}
           <ThemedText style={[
             styles.episodeNumber,
-            isCurrentIssue && { color: actionTextColor, fontFamily: ThemedTextFontFamilyMap.bold }
+            isCurrentIssue && { color: actionTextColor, fontFamily: ThemedTextFontFamilyMap.bold, paddingEnd: 4 }
           ]}>#{position + 1}</ThemedText>
         </View>
       </View>
@@ -201,6 +196,7 @@ const styles = StyleSheet.create({
   },
   episodeNumber: {
     fontSize: 16,
+    paddingEnd: 4,
   },
   episodeMetadata: {
     flexDirection: 'row',
@@ -262,9 +258,5 @@ const styles = StyleSheet.create({
   },
   likeButtonDisabled: {
     opacity: 0.5,
-  },
-  likeCount: {
-    marginLeft: 4,
-    fontSize: 14,
   },
 }); 

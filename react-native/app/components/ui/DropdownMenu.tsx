@@ -5,10 +5,12 @@ import { ThemedText, ThemedTextFontFamilyMap } from './ThemedText';
 import { PressableOpacity } from './PressableOpacity';
 import { Colors, useThemeColor } from '@/constants/Colors';
 
-export const DropdownMenu = <T extends string>({ options, selected, onSelect }: {
+export const DropdownMenu = <T extends string>({ options, selected, onSelect, icon, hideArrow }: {
   options: { value: T; label: string }[];
   selected: T;
   onSelect: (value: T) => void;
+  icon?: React.ReactNode;
+  hideArrow?: boolean;
 }) => {
   const [open, setOpen] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
@@ -30,8 +32,9 @@ export const DropdownMenu = <T extends string>({ options, selected, onSelect }: 
     <>
       <PressableOpacity onPress={handleOpen}>
         <View ref={triggerRef} style={[styles.dropdownTrigger, { backgroundColor: 'rgba(255, 255, 255, 0.80)' }]}>
+          {icon}
           <ThemedText style={[styles.dropdownTriggerText, { color: textColor }]}>
-            {selectedLabel} {'\u25BE'}
+            {selectedLabel} {hideArrow ? '' : '\u25BE'}
           </ThemedText>
         </View>
       </PressableOpacity>
@@ -69,13 +72,16 @@ export const DropdownMenu = <T extends string>({ options, selected, onSelect }: 
 
 const styles = StyleSheet.create({
   dropdownTrigger: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 999,
   },
   dropdownTriggerText: {
     fontSize: 16,
-    fontFamily: ThemedTextFontFamilyMap.bold,
+    fontFamily: ThemedTextFontFamilyMap.semiBold,
   },
   dropdownBackdrop: {
     flex: 1,

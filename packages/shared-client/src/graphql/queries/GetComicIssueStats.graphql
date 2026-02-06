@@ -1,7 +1,0 @@
-query GetComicIssueStats($issueUuid: ID!, $seriesUuid: ID!) {
-  getStatsForComicIssue(issueUuid: $issueUuid, seriesUuid: $seriesUuid) {
-    seriesUuid
-    issueUuid
-    likeCount
-  }
-}

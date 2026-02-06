@@ -2,7 +2,7 @@ import { useLoaderData } from "react-router";
 import type { LoaderFunctionArgs, MetaFunction } from "react-router";
 import { Link } from 'react-router-dom';
 import { MdChevronLeft } from 'react-icons/md';
-import { useEffect, useReducer } from 'react';
+import { useEffect, useReducer, useState } from 'react';
 import { jwtDecode } from "jwt-decode";
 
 import { ImageWithLoader } from "../components/ui";
@@ -11,7 +11,7 @@ import { ReadNextEpisode } from "../components/comics/ReadNextEpisode";
 import { getMetaTags } from "@/lib/seo";
 import { loadComicIssue } from "@/lib/loader/comicissue.server";
 import { inkverseWebsiteUrl, getInkverseUrl } from "@inkverse/public/utils";
-import type { Creator, CreatorLinkDetails } from '@inkverse/shared-client/graphql/operations';
+import type { Creator, CreatorLinkDetails, CommentDetailsFragment } from '@inkverse/shared-client/graphql/operations';
 import { getBannerImageUrl } from "@inkverse/public/comicissue";
 import { getStoryImageUrl } from "@inkverse/public/comicstory";
 import { CreatorsForIssue } from "../components/creator/CreatorsForIssue";
@@ -23,9 +23,11 @@ import {
   likeComicIssue,
   unlikeComicIssue,
   superLikeAllEpisodes,
+  loadComicIssueDynamic,
   ComicIssueActionType,
   type ComicIssueLoaderData,
 } from "@inkverse/shared-client/dispatch/comicissue";
+import { getPublicApolloClient } from "@/lib/apollo/client.client";
 import { GetUserComicSeries, type GetUserComicSeriesQuery, type GetUserComicSeriesQueryVariables } from "@inkverse/shared-client/graphql/operations";
 import { LikeButton } from "../components/comics/LikeButton";
 import { CommentsSection } from "../components/comics/CommentsSection";
@@ -56,6 +58,7 @@ export default function ComicIssue() {
 
 function ComicIssueContent({ initialData }: { initialData: Partial<ComicIssueLoaderData> }) {
   const [state, dispatch] = useReducer(comicIssueReducer, initialData);
+  const [initialComments, setInitialComments] = useState<CommentDetailsFragment[] | undefined>(undefined);
 
   const {
     comicissue,
@@ -64,10 +67,23 @@ function ComicIssueContent({ initialData }: { initialData: Partial<ComicIssueLoa
     contentToken,
     isCheckingAccess,
     likeCount,
+    commentCount,
     userComicData,
     isLikeLoading,
     isSuperLikeLoading,
   } = state;
+
+  // Load dynamic data (stats + comments) on mount
+  useEffect(() => {
+    if (comicissue?.uuid) {
+      const publicClient = getPublicApolloClient();
+      loadComicIssueDynamic({ publicClient, issueUuid: comicissue.uuid }, dispatch).then((result) => {
+        if (result?.comments && result.comments.length > 0) {
+          setInitialComments(result.comments as CommentDetailsFragment[]);
+        }
+      });
+    }
+  }, [comicissue?.uuid]);
 
   const comicSeriesLink = getInkverseUrl({ type: "comicseries", shortUrl: comicseries?.shortUrl });
   const isPatreonExclusive = comicissue?.scopesForExclusiveContent?.includes('patreon');
@@ -296,6 +312,9 @@ function ComicIssueContent({ initialData }: { initialData: Partial<ComicIssueLoa
             issueUuid={comicissue?.uuid || ''}
             seriesUuid={comicseries?.uuid || ''}
             isAuthenticated={isAuthenticated}
+            commentCount={commentCount ?? undefined}
+            initialComments={initialComments}
+            creators={comicseries?.creators ?? []}
           />
         </div>
         <div className="px-4 sm:px-0">

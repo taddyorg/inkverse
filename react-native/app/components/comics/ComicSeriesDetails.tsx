@@ -12,7 +12,9 @@ import { COMICS_LIST_SCREEN, COMICSERIES_SCREEN } from '@/constants/Navigation';
 import { ComicSeries, Genre } from '@inkverse/shared-client/graphql/operations';
 import { getBannerImageUrl, getCoverImageUrl, getThumbnailImageUrl } from '@inkverse/public/comicseries';
 import { getPrettyGenre } from '@inkverse/public/genres';
+import { formatCompactNumber } from '@inkverse/public/utils';
 import { useThemeColor } from '@/constants/Colors';
+import { Ionicons } from '@expo/vector-icons';
 
 type ComicSeriesPageType = 
   | 'comicseries-screen'
@@ -30,9 +32,11 @@ interface ComicSeriesDetailsProps {
   isHeaderVisible?: boolean;
   onHeaderVisibilityChange?: (isVisible: boolean) => void;
   imagePriority?: 'high' | 'normal' | 'low';
+  likeCount?: number;
+  commentCount?: number;
 }
 
-export function ComicSeriesDetails({ comicseries, pageType, isHeaderVisible, onHeaderVisibilityChange, imagePriority }: ComicSeriesDetailsProps) {
+export function ComicSeriesDetails({ comicseries, pageType, isHeaderVisible, onHeaderVisibilityChange, imagePriority, likeCount, commentCount }: ComicSeriesDetailsProps) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   if (!comicseries) return null;
@@ -154,7 +158,8 @@ export function ComicSeriesDetails({ comicseries, pageType, isHeaderVisible, onH
 
     case 'comicseries-screen':
       const tagColor = useThemeColor({}, 'tag');
-
+      const textColor = useThemeColor({}, 'text');
+      
       return (
         <ThemedView style={styles.container}>
           <Pressable onPress={handlePressForShowAndHideHeader}>
@@ -168,9 +173,27 @@ export function ComicSeriesDetails({ comicseries, pageType, isHeaderVisible, onH
           </Pressable>
           <View style={styles.infoContainer}>
             <ThemedText size="title" style={styles.title}>{comicseries.name} </ThemedText>
-            <ThemedText style={styles.genreText}>
-              {formatGenres(comicseries)}
-            </ThemedText>
+            <View style={styles.genreAndStatsContainer}>
+              <ThemedText style={styles.genreText}>
+                {formatGenres(comicseries)}
+              </ThemedText>
+              {((likeCount ?? 0) > 0 || (commentCount ?? 0) > 0) && (
+                <View style={styles.statsRow}>
+                  {(likeCount ?? 0) > 0 && (
+                    <View style={styles.statItem}>
+                      <Ionicons name="heart" size={18} color="#f43f5e" />
+                      <ThemedText style={styles.statText}>{formatCompactNumber(likeCount ?? 0)}</ThemedText>
+                    </View>
+                  )}
+                  {(commentCount ?? 0) > 0 && (
+                    <View style={styles.statItem}>
+                      <Ionicons name="chatbubble" size={16} color={textColor} />
+                      <ThemedText style={styles.statText}>{formatCompactNumber(commentCount ?? 0)}</ThemedText>
+                    </View>
+                  )}
+                </View>
+              )}
+            </View>
             <View style={styles.creatorContainer}>
               <View style={styles.creatorGrid}>
                 {comicseries.creators?.map((creator, index) => (
@@ -222,6 +245,11 @@ const styles = StyleSheet.create({
   },
   infoContainer: {
     marginHorizontal: 16,
+  },
+  genreAndStatsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   genreInfoContainer: {
     flexDirection: 'row',
@@ -358,5 +386,20 @@ const styles = StyleSheet.create({
     width: '100%',
     aspectRatio: 2/3,
     borderRadius: 12,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+    gap: 8,
+  },
+  statItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  statText: {
+    fontSize: 14,
+    fontWeight: '500',
   },
 }); 

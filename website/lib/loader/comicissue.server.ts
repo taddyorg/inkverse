@@ -52,7 +52,6 @@ export async function loadComicIssue({ params, request, context }: LoaderFunctio
       creatorLinks: comicIssueResult.data.getCreatorLinksForSeries?.filter(
         (link): link is CreatorLinkDetails => link !== null
       ) ?? [],
-      likeCount: comicIssueResult.data.getStatsForComicIssue?.likeCount ?? 0,
       isCheckingAccess: isPatreonExclusive,
     };
     

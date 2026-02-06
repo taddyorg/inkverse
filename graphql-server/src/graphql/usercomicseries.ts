@@ -1,8 +1,7 @@
 import { AuthenticationError } from './error.js';
 import { UserSeriesSubscription, NotificationPreference, UserLike, ComicIssue } from '@inkverse/shared-server/models/index';
-import { NotificationType, SortOrder, type MutationResolvers } from '@inkverse/shared-server/graphql/types';
-import { LikeableType, ParentType } from '@inkverse/shared-server/database/types';
-import { purgeCacheOnCdn } from '@inkverse/shared-server/cache/index';
+import { InkverseType, NotificationType, SortOrder, type MutationResolvers } from '@inkverse/shared-server/graphql/types';
+import { purgeCacheOnCdn, purgeMultipleCacheOnCdn } from '@inkverse/shared-server/cache/index';
 
 // GraphQL Type Definitions
 export const UserComicSeriesDefinitions = `
@@ -73,9 +72,9 @@ async function buildUserComicSeriesResponse(userId: number, seriesUuid: string) 
       NotificationType.NEW_EPISODE_RELEASED,
       seriesUuid
     ),
-    UserLike.getUserLikesForParent(userId, seriesUuid, ParentType.COMICSERIES),
+    UserLike.getUserLikesForParent(userId, seriesUuid, InkverseType.COMICSERIES),
   ]);
-
+  
   return {
     seriesUuid,
     isSubscribed: !!subscription,
@@ -176,12 +175,13 @@ export const UserComicSeriesMutations: MutationResolvers = {
     await UserLike.likeItem(
       context.user.id,
       issueUuid,
-      LikeableType.COMICISSUE,
+      InkverseType.COMICISSUE,
       seriesUuid,
-      ParentType.COMICSERIES
+      InkverseType.COMICSERIES
     );
 
-    await purgeCacheOnCdn({ type: 'comicissuestats', id: seriesUuid, issueUuid });
+    await purgeCacheOnCdn({ type: 'comicissuestats', id: issueUuid });
+    await purgeCacheOnCdn({ type: 'comicseriesstats', id: seriesUuid });
 
     return await buildUserComicSeriesResponse(context.user.id, seriesUuid);
   },
@@ -198,10 +198,11 @@ export const UserComicSeriesMutations: MutationResolvers = {
     await UserLike.unlikeItem(
       context.user.id,
       issueUuid,
-      LikeableType.COMICISSUE
+      InkverseType.COMICISSUE
     );
 
-    await purgeCacheOnCdn({ type: 'comicissuestats', id: seriesUuid, issueUuid });
+    await purgeCacheOnCdn({ type: 'comicissuestats', id: issueUuid });
+    await purgeCacheOnCdn({ type: 'comicseriesstats', id: seriesUuid });
 
     return await buildUserComicSeriesResponse(context.user.id, seriesUuid);
   },
@@ -223,13 +224,14 @@ export const UserComicSeriesMutations: MutationResolvers = {
       await UserLike.likeMultipleItems(
         context.user.id,
         issueUuids,
-        LikeableType.COMICISSUE,
+        InkverseType.COMICISSUE,
         seriesUuid,
-        ParentType.COMICSERIES
+        InkverseType.COMICSERIES
       );
     }
 
-    await purgeCacheOnCdn({ type: 'comicissuestats', id: seriesUuid });
+    await purgeMultipleCacheOnCdn({ type: 'comicissuestats', ids: issueUuids });
+    await purgeCacheOnCdn({ type: 'comicseriesstats', id: seriesUuid });
 
     return await buildUserComicSeriesResponse(context.user.id, seriesUuid);
   },

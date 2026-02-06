@@ -16,6 +16,7 @@ import { ComicFooter, FOOTER_HEIGHT } from '../components/comics/ComicFooter';
 import { CreatorForIssue } from '../components/creator/CreatorForIssue';
 import { ReadNextEpisode } from '../components/comics/ReadNextEpisode';
 import { LikeButton } from '../components/comics/LikeButton';
+import { CommentsSection } from '../components/comics/CommentsSection';
 import { Screen, ScrollIndicator, ThemedActivityIndicator, ThemedRefreshControl, ThemedView, ThemedText, ThemedButton, PressableOpacity, ThemedTextFontFamilyMap } from '@/app/components/ui';
 
 import { getPublicApolloClient, getUserApolloClient } from '@/lib/apollo';
@@ -23,6 +24,7 @@ import {
   comicIssueReducer,
   comicIssueInitialState,
   loadComicIssue,
+  loadComicIssueDynamic,
   checkPatreonAccess,
   likeComicIssue,
   unlikeComicIssue,
@@ -38,7 +40,7 @@ import { getConnectedHostingProviderUuids, getContentTokenForProviderAndSeries }
 import { useThemeColor } from '@/constants/Colors';
 import { useAnalytics } from '@/lib/analytics';
 
-type ListItemType = 'story' | 'like' | 'grid' | 'creator' | 'next-episode' | 'exclusive-signup' | 'exclusive-connect-patreon' | 'exclusive-checking-access' | 'exclusive-no-access' | 'patreon-exclusive';
+type ListItemType = 'story' | 'like' | 'grid' | 'creator' | 'comments' | 'next-episode' | 'exclusive-signup' | 'exclusive-connect-patreon' | 'exclusive-checking-access' | 'exclusive-no-access' | 'patreon-exclusive';
 
 interface ListItem {
   type: ListItemType;
@@ -136,6 +138,7 @@ export function ComicIssueScreen() {
     contentToken,
     creatorLinks,
     likeCount,
+    commentCount,
     userComicData,
     isLikeLoading,
     isSuperLikeLoading,
@@ -162,6 +165,7 @@ export function ComicIssueScreen() {
       seriesUuid,
       forceRefresh
     }, dispatch);
+    await loadComicIssueDynamic({ publicClient, issueUuid, forceRefresh }, dispatch);
   }, [issueUuid]);
 
   useEffect(() => {
@@ -342,6 +346,16 @@ export function ComicIssueScreen() {
             allIssues={item.data.allIssues}
           />
         );
+      case 'comments':
+        return (
+          <CommentsSection
+            issueUuid={item.data.issueUuid}
+            seriesUuid={item.data.seriesUuid}
+            isAuthenticated={item.data.isAuthenticated}
+            commentCount={item.data.commentCount}
+            creators={item.data.creators}
+          />
+        );
       case 'next-episode':
         return (
           <View style={styles.bottomSpacer}>
@@ -448,6 +462,18 @@ export function ComicIssueScreen() {
       data: {},
     };
 
+    const commentsItem: ListItem = {
+      type: 'comments' as const,
+      key: 'comments-section',
+      data: {
+        issueUuid,
+        seriesUuid,
+        isAuthenticated,
+        commentCount: commentCount ?? undefined,
+        creators: comicseries?.creators ?? [],
+      },
+    };
+
     const creatorItem: ListItem = {
       type: 'creator' as const,
       key: `creator-details`,
@@ -469,12 +495,13 @@ export function ComicIssueScreen() {
       ...patreonExclusiveItem,
       ...storyItems,
       likeItem,
+      commentsItem,
       creatorItem,
       nextEpisodeItem
     ];
 
     return items;
-  }, [comicissue, comicseries, contentToken, isPatreonExclusive, isAuthenticated, isConnectedToHostingProvider, isCheckingAccess, hasAccessToIssue, creatorLinks]);
+  }, [comicissue, comicseries, contentToken, isPatreonExclusive, isAuthenticated, isConnectedToHostingProvider, isCheckingAccess, hasAccessToIssue, creatorLinks, commentCount]);
 
   // Handle tap on content to toggle header and footer
   const handleTap = useCallback(() => {

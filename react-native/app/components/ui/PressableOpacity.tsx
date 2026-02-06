@@ -1,12 +1,22 @@
-import React, { useRef } from "react";
-import { Pressable, Animated, PressableProps } from "react-native";
+import React, { useRef, useEffect } from "react";
+import { Pressable, Animated, PressableProps, ViewStyle, StyleProp } from "react-native";
 
-type PressableOpacityProps = PressableProps & {
+type PressableOpacityProps = Omit<PressableProps, 'style'> & {
   fadeLevel?: number;
+  style?: StyleProp<ViewStyle>;
+  innerStyle?: StyleProp<ViewStyle>;
 };
 
-export const PressableOpacity = ({ children, fadeLevel = 0.5,  ...props }: PressableOpacityProps) => {
+export const PressableOpacity = ({ children, fadeLevel = 0.5, style, innerStyle, disabled, ...props }: PressableOpacityProps) => {
   const animated = useRef(new Animated.Value(1)).current;
+
+  // Reset animation when disabled changes to prevent stuck opacity
+  useEffect(() => {
+    if (disabled) {
+      animated.setValue(1);
+    }
+  }, [disabled]);
+
   const fadeIn = () => {
     Animated.timing(animated, {
       toValue: fadeLevel,
@@ -23,8 +33,8 @@ export const PressableOpacity = ({ children, fadeLevel = 0.5,  ...props }: Press
   };
 
   return (
-    <Pressable onPressIn={fadeIn} onPressOut={fadeOut} {...props}>
-      <Animated.View style={{ opacity: animated }}>
+    <Pressable onPressIn={fadeIn} onPressOut={fadeOut} disabled={disabled} style={style} {...props}>
+      <Animated.View style={[{ opacity: animated }, innerStyle]}>
         {typeof children === 'function' ? children({ pressed: false }) : children}
       </Animated.View>
     </Pressable>

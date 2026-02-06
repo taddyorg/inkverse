@@ -1,21 +1,13 @@
 import React from 'react';
 import { MdFavorite } from 'react-icons/md';
 import type { Creator } from '@inkverse/shared-client/graphql/operations';
+import { formatCreatorNames } from '@inkverse/public/creator';
 
 interface SuperLikeButtonProps {
   isLoading: boolean;
   onPress: () => void;
   hasLikedAll: boolean;
   creators?: (Creator | null)[];
-}
-
-// Format creator names: "Alice", "Alice and Bob", "Alice, Bob, and Charlie"
-function formatCreatorNames(creators?: (Creator | null)[]): string {
-  const names = creators?.map(c => c?.name).filter((name): name is string => !!name) ?? [];
-  if (names.length === 0) return 'the creators';
-  if (names.length === 1) return names[0];
-  if (names.length === 2) return `${names[0]} and ${names[1]}`;
-  return `${names.slice(0, -1).join(', ')}, and ${names[names.length - 1]}`;
 }
 
 export const SuperLikeButton = ({
@@ -33,7 +25,7 @@ export const SuperLikeButton = ({
             <MdFavorite size={20} className="text-red-500 dark:text-red-400" />
             <span className="font-medium">You liked all episodes!</span>
           </div>
-          <span className="font-medium">We'll let {creatorNames} know they're doing a great job!</span>
+          <span className="font-medium">We'll let {creatorNames} know they are doing a great job!</span>
         </div>
       </div>
     );

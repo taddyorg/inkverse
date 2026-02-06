@@ -11,20 +11,25 @@ import {
   loadUserComments,
   addComment,
   CommentsActionType,
+  type Comment,
 } from '@inkverse/shared-client/dispatch/comments';
-import type { CommentSortType } from '@inkverse/shared-client/graphql/operations';
+import type { CommentSortType, Creator } from '@inkverse/shared-client/graphql/operations';
 import { CommentItem } from './CommentItem';
 import { CommentForm } from './CommentForm';
 import { getUserDetails } from '@/lib/auth/user';
 import { InkverseType } from '@inkverse/public/graphql/types';
+import { formatCreatorNames } from '@inkverse/public/creator';
 
 interface CommentsSectionProps {
   issueUuid: string;
   seriesUuid: string;
   isAuthenticated: boolean;
+  commentCount?: number;
+  initialComments?: Comment[];
+  creators?: (Partial<Creator> | null)[];
 }
 
-export function CommentsSection({ issueUuid, seriesUuid, isAuthenticated }: CommentsSectionProps) {
+export function CommentsSection({ issueUuid, seriesUuid, isAuthenticated, commentCount, initialComments, creators }: CommentsSectionProps) {
   const [state, dispatch] = useReducer(commentsReducer, commentsInitialState);
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [isAddCommentExpanded, setIsAddCommentExpanded] = useState(true);
@@ -45,22 +50,36 @@ export function CommentsSection({ issueUuid, seriesUuid, isAuthenticated }: Comm
 
   const userDetails = getUserDetails();
 
+  // Track whether we've used initialComments to skip the first load
+  const usedInitialComments = useRef(false);
+
   // Load comments on mount
   useEffect(() => {
-    if (comments.length === 0) {
-      const publicClient = getPublicApolloClient();
-      if (publicClient) {
-        loadComments({
-          publicClient,
-          targetUuid: issueUuid,
-          targetType: InkverseType.COMICISSUE,
-          page: 1,
-          limitPerPage: 5,
-          sortBy,
-        }, dispatch);
-      }
+    // If initialComments are provided and this is the initial load (not a sortBy change), use them
+    if (initialComments && initialComments.length > 0 && !usedInitialComments.current) {
+      usedInitialComments.current = true;
+      dispatch({
+        type: CommentsActionType.LOAD_COMMENTS_SUCCESS,
+        payload: {
+          comments: initialComments,
+          hasMore: initialComments.length >= 5,
+        },
+      });
+      return;
     }
-  }, [issueUuid, sortBy]);
+
+    const publicClient = getPublicApolloClient();
+    if (publicClient) {
+      loadComments({
+        publicClient,
+        targetUuid: issueUuid,
+        targetType: InkverseType.COMICISSUE,
+        page: 1,
+        limitPerPage: 5,
+        sortBy,
+      }, dispatch);
+    }
+  }, [issueUuid, sortBy, initialComments]);
 
   // Load user's liked comments when authenticated
   useEffect(() => {
@@ -151,8 +170,8 @@ export function CommentsSection({ issueUuid, seriesUuid, isAuthenticated }: Comm
     <div className="my-6">
       {/* Header with sort */}
       <div className="flex items-center justify-between mb-4">
-        <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
-          Comments
+        <span className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+          Comments{commentCount ? ` (${commentCount.toLocaleString()})` : ''}
         </span>
 
         {/* Sort dropdown */}
@@ -201,7 +220,7 @@ export function CommentsSection({ issueUuid, seriesUuid, isAuthenticated }: Comm
           <div>
             {comments.length === 0
             ? (
-              <EmptyCommentsState />
+              <EmptyCommentsState creators={creators} />
             ) : (
               <div>
                 {comments.map((comment) => (
@@ -252,14 +271,16 @@ export function CommentsSection({ issueUuid, seriesUuid, isAuthenticated }: Comm
   );
 }
 
-function EmptyCommentsState() {
+function EmptyCommentsState({ creators }: { creators?: ({ name?: string | null } | null)[] }) {
+  const creatorNames = formatCreatorNames(creators);
+
   return (
     <div className="text-center px-4 py-4">
       <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-white dark:bg-transparent flex items-center justify-center">
         <HiOutlineChatBubbleLeftRight size={32} className="text-gray-400 dark:text-gray-500" />
       </div>
       <p className="text-gray-600 dark:text-gray-300 font-medium">Got any thoughts on this episode?</p>
-      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Add a comment, it could make this creator's day!</p>
+      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Add a comment, it could make {creatorNames}'s day!</p>
     </div>
   );
 }
@@ -275,8 +296,8 @@ interface AddCommentSectionProps {
 function AddCommentSection({ onSubmit, isSubmitting, isAuthenticated, isExpanded, setIsExpanded }: AddCommentSectionProps) {
   const headerContent = (
     <div className="flex items-center gap-2">
-      <HiOutlinePencilSquare size={20} className="text-gray-500 dark:text-gray-400" />
-      <span className="text-base font-bold text-gray-900 dark:text-gray-100">
+      <HiOutlinePencilSquare size={20} className="text-inkverse-black dark:text-gray-400" />
+      <span className="text-base font-semibold text-gray-900 dark:text-gray-100">
         Add a comment
       </span>
     </div>

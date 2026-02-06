@@ -17,9 +17,4 @@ query GetComicIssue($issueUuid: ID!, $seriesUuid: ID!) {
 		type
 		url
 	}
-	getStatsForComicIssue(issueUuid: $issueUuid, seriesUuid: $seriesUuid) {
-		seriesUuid
-		issueUuid
-		likeCount
-	}
 }

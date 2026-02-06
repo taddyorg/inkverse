@@ -108,9 +108,6 @@ export async function searchComics(
     });
   }
 
-  // add a small delay to test the loading state
-  // await new Promise(resolve => setTimeout(resolve, 3000));
-
   try {
     // Execute the search query
     const searchResult = await publicClient.query<SearchQuery, SearchQueryVariables>({

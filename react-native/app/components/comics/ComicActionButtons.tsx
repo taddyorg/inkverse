@@ -29,26 +29,28 @@ export const AddToProfileButton = ({
   const textColor = 'black'; 
 
   return (
-    <PressableOpacity
-      onPress={onPress}
-      disabled={isLoading}
-      style={[styles.button, isLoading && styles.disabledButton]}
-    >
-      <View style={styles.buttonContainer}>
-        {isLoading ? (
-          <ActivityIndicator size="small" color={iconColor} />
-        ) : (
-          <MaterialIcons
-            name={isSubscribed ? "bookmark" : "bookmark-outline"}
-            size={22}
-            color={iconColor}
-          />
-        )}
-        <ThemedText style={[styles.buttonText, { color: textColor, fontFamily: ThemedTextFontFamilyMap.semiBold }]}>
-          {isSubscribed ? selectedText : unselectedText}
-        </ThemedText>
-      </View>
-    </PressableOpacity>
+    <View style={styles.buttonMargin}>
+      <PressableOpacity
+        onPress={onPress}
+        disabled={isLoading}
+        style={[styles.button, isLoading && styles.disabledButton]}
+      >
+        <View style={styles.buttonContainer}>
+          {isLoading ? (
+            <ActivityIndicator size="small" color={iconColor} />
+          ) : (
+            <MaterialIcons
+              name={isSubscribed ? "bookmark" : "bookmark-outline"}
+              size={22}
+              color={iconColor}
+            />
+          )}
+          <ThemedText style={[styles.buttonText, { color: textColor, fontFamily: ThemedTextFontFamilyMap.semiBold }]}>
+            {isSubscribed ? selectedText : unselectedText}
+          </ThemedText>
+        </View>
+      </PressableOpacity>
+    </View>
   );
 };
 
@@ -60,31 +62,35 @@ export const NotificationButton = ({
   const iconColor = 'black'; 
 
   return (
-    <PressableOpacity
-      onPress={onPress}
-      disabled={isLoading}
-      style={[styles.button, isLoading && styles.disabledButton]}
-    >
-      <View style={styles.buttonContainer}>
-        {isLoading 
-        ? <ActivityIndicator size="small" color={iconColor} />
-        : <MaterialIcons
-              name={isReceivingNotifications ? "notifications-active" : "notifications-none"}
-              size={24}
-              color={iconColor}
-            />
-        }
-      </View>
-    </PressableOpacity> 
+    <View style={styles.buttonMargin}>
+      <PressableOpacity
+        onPress={onPress}
+        disabled={isLoading}
+        style={[styles.button, isLoading && styles.disabledButton]}
+      >
+        <View style={styles.buttonContainer}>
+          {isLoading
+          ? <ActivityIndicator size="small" color={iconColor} />
+          : <MaterialIcons
+                name={isReceivingNotifications ? "notifications-active" : "notifications-none"}
+                size={24}
+                color={iconColor}
+              />
+          }
+        </View>
+      </PressableOpacity>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  buttonMargin: {
+    marginRight: SPACING.sm,
+  },
   button: {
     borderRadius: 20,
     height: 40,
     paddingHorizontal: SPACING.md,
-    marginRight: SPACING.sm,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -97,7 +103,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    flex: 1,
   },
   buttonText: {
     fontSize: 16,

@@ -1,0 +1,7 @@
+query GetComicSeriesDynamic($seriesUuid: ID!) {
+  getStatsForComicSeries(seriesUuid: $seriesUuid) {
+    uuid
+    likeCount
+    commentCount
+  }
+}

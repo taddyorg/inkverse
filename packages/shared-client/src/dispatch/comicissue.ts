@@ -1,7 +1,7 @@
 import { ApolloClient } from '@apollo/client';
 import type { Dispatch } from 'react';
 import type { UserComicData } from './comicseries.js';
-import { type GetComicIssueQuery, type GetComicIssueQueryVariables, GetComicIssue, type ComicIssue, type ComicSeries, GetMiniComicSeries, type GetMiniComicSeriesQuery, type GetMiniComicSeriesQueryVariables, type CreatorLinkDetails, type LikeComicIssueMutation, type LikeComicIssueMutationVariables, LikeComicIssue, type UnlikeComicIssueMutation, type UnlikeComicIssueMutationVariables, UnlikeComicIssue, type SuperLikeAllEpisodesMutation, type SuperLikeAllEpisodesMutationVariables, SuperLikeAllEpisodes, GetComicIssueStats, type GetComicIssueStatsQuery, type GetComicIssueStatsQueryVariables, GetComicSeriesStats } from "../graphql/operations.js";
+import { type GetComicIssueQuery, type GetComicIssueQueryVariables, GetComicIssue, type ComicIssue, type ComicSeries, GetMiniComicSeries, type GetMiniComicSeriesQuery, type GetMiniComicSeriesQueryVariables, type CreatorLinkDetails, type LikeComicIssueMutation, type LikeComicIssueMutationVariables, LikeComicIssue, type UnlikeComicIssueMutation, type UnlikeComicIssueMutationVariables, UnlikeComicIssue, type SuperLikeAllEpisodesMutation, type SuperLikeAllEpisodesMutationVariables, SuperLikeAllEpisodes, GetComicIssueDynamic, type GetComicIssueDynamicQuery, type GetComicIssueDynamicQueryVariables, GetComicSeriesDynamic } from "../graphql/operations.js";
 
 /* Action Type Enum */
 export enum ComicIssueActionType {
@@ -66,6 +66,7 @@ export type ComicIssueLoaderData = {
   comicseries: ComicSeries | null;
   creatorLinks: CreatorLinkDetails[] | [];
   likeCount: number | null;
+  commentCount: number | null;
   // Patreon Access State
   contentToken: string | null;
   isCheckingAccess: boolean;
@@ -85,6 +86,7 @@ export const comicIssueInitialState: Partial<ComicIssueLoaderData> = {
   comicseries: null,
   creatorLinks: [],
   likeCount: null,
+  commentCount: null,
   userComicData: null,
   isLikeLoading: false,
   likeError: null,
@@ -221,8 +223,49 @@ export function parseLoaderComicIssue(data: GetComicIssueQuery): Partial<ComicIs
     creatorLinks: data.getCreatorLinksForSeries?.filter(
       (link: CreatorLinkDetails | null): link is CreatorLinkDetails => link !== null
     ) || [],
-    likeCount: data.getStatsForComicIssue?.likeCount ?? 0,
   };
+}
+
+/* Load Comic Issue Dynamic Data (stats + comments) */
+interface LoadComicIssueDynamicProps {
+  publicClient: ApolloClient;
+  issueUuid: string;
+  forceRefresh?: boolean;
+}
+
+export interface ComicIssueDynamicResult {
+  likeCount: number;
+  commentCount: number;
+  comments: any[];
+}
+
+export async function loadComicIssueDynamic(
+  { publicClient, issueUuid, forceRefresh = false }: LoadComicIssueDynamicProps,
+  dispatch?: Dispatch<ComicIssueAction>
+): Promise<ComicIssueDynamicResult | null> {
+  try {
+    const result = await publicClient.query<GetComicIssueDynamicQuery, GetComicIssueDynamicQueryVariables>({
+      query: GetComicIssueDynamic,
+      variables: { issueUuid },
+      ...(!!forceRefresh && { fetchPolicy: 'network-only' })
+    });
+
+    const likeCount = result.data?.getStatsForComicIssue?.likeCount ?? 0;
+    const commentCount = result.data?.getStatsForComicIssue?.commentCount ?? 0;
+    const comments = (result.data?.getComments?.comments || []) as any[];
+
+    if (dispatch) {
+      dispatch({
+        type: ComicIssueActionType.GET_COMICISSUE_SUCCESS,
+        payload: { likeCount, commentCount },
+      });
+    }
+
+    return { likeCount, commentCount, comments };
+  } catch (error: any) {
+    console.error('Failed to load comic issue dynamic data:', error?.message);
+    return null;
+  }
 }
 
 /* Patreon Access Action Creators */
@@ -301,8 +344,8 @@ export async function likeComicIssue(
       mutation: LikeComicIssue,
       variables: { issueUuid, seriesUuid },
       refetchQueries: [
-        { query: GetComicIssueStats, variables: { issueUuid, seriesUuid } },
-        { query: GetComicSeriesStats, variables: { seriesUuid } }
+        { query: GetComicIssueDynamic, variables: { issueUuid } },
+        { query: GetComicSeriesDynamic, variables: { seriesUuid } }
       ],
       awaitRefetchQueries: true
     });
@@ -312,9 +355,9 @@ export async function likeComicIssue(
     }
 
     // Read fresh stats from cache after refetch
-    const statsData = userClient.readQuery<GetComicIssueStatsQuery, GetComicIssueStatsQueryVariables>({
-      query: GetComicIssueStats,
-      variables: { issueUuid, seriesUuid }
+    const statsData = userClient.readQuery<GetComicIssueDynamicQuery, GetComicIssueDynamicQueryVariables>({
+      query: GetComicIssueDynamic,
+      variables: { issueUuid }
     });
 
     const userComicData: UserComicData = {
@@ -359,8 +402,8 @@ export async function unlikeComicIssue(
       mutation: UnlikeComicIssue,
       variables: { issueUuid, seriesUuid },
       refetchQueries: [
-        { query: GetComicIssueStats, variables: { issueUuid, seriesUuid } },
-        { query: GetComicSeriesStats, variables: { seriesUuid } }
+        { query: GetComicIssueDynamic, variables: { issueUuid } },
+        { query: GetComicSeriesDynamic, variables: { seriesUuid } }
       ],
       awaitRefetchQueries: true
     });
@@ -370,9 +413,9 @@ export async function unlikeComicIssue(
     }
 
     // Read fresh stats from cache after refetch
-    const statsData = userClient.readQuery<GetComicIssueStatsQuery, GetComicIssueStatsQueryVariables>({
-      query: GetComicIssueStats,
-      variables: { issueUuid, seriesUuid }
+    const statsData = userClient.readQuery<GetComicIssueDynamicQuery, GetComicIssueDynamicQueryVariables>({
+      query: GetComicIssueDynamic,
+      variables: { issueUuid }
     });
 
     const userComicData: UserComicData = {

@@ -1,9 +1,5 @@
 import { AuthenticationError, UserInputError } from './error.js';
 import { UserComment, UserReport, UserLike, ComicIssue, ComicSeries, User } from '@inkverse/shared-server/models/index';
-import {
-  LikeableType,
-  ParentType,
-} from '@inkverse/shared-server/database/types';
 import { InkverseType, ReportType } from '@inkverse/shared-server/graphql/types';
 import type { MutationResolvers } from '@inkverse/shared-server/graphql/types';
 import { sendSlackNotification } from '@inkverse/shared-server/messaging/slack';
@@ -104,11 +100,11 @@ async function buildUserCommentResponse(
   const userLikes = await UserLike.getUserLikesForParent(
     userId,
     targetUuid,
-    ParentType.COMICISSUE
+    InkverseType.COMICISSUE
   );
 
   // Filter to only comment likes
-  const commentLikes = userLikes.filter(like => like.likeableType === LikeableType.COMMENT);
+  const commentLikes = userLikes.filter(like => like.likeableType === InkverseType.COMMENT);
 
   return {
     targetUuid,
@@ -241,6 +237,9 @@ export const UserCommentMutations: MutationResolvers = {
 
     // Purge comments cache on CDN (fire-and-forget)
     purgeCacheOnCdn({ type: 'comments', id: issueUuid });
+    // Purge comicissuestats cache so total counts refresh
+    purgeCacheOnCdn({ type: 'comicissuestats', id: issueUuid });
+    purgeCacheOnCdn({ type: 'comicseriesstats', id: seriesUuid });
 
     // Return complete comment with all fields expected by commentDetails fragment
     return {
@@ -284,7 +283,7 @@ export const UserCommentMutations: MutationResolvers = {
 
     //fetch the comment stats
     const [likeCount, replyCount] = await Promise.all([
-      UserLike.getLikeCount(commentUuid, LikeableType.COMMENT),
+      UserLike.getLikeCount(commentUuid, InkverseType.COMMENT),
       UserComment.getReplyCount(commentUuid),
     ]);
 
@@ -323,12 +322,15 @@ export const UserCommentMutations: MutationResolvers = {
 
     //fetch the comment stats
     const [likeCount, replyCount] = await Promise.all([
-      UserLike.getLikeCount(commentUuid, LikeableType.COMMENT),
+      UserLike.getLikeCount(commentUuid, InkverseType.COMMENT),
       UserComment.getReplyCount(commentUuid),
     ]);
 
     // Purge comments cache on CDN (fire-and-forget)
     purgeCacheOnCdn({ type: 'comments', id: comment.targetUuid });
+    // Purge comicissuestats cache so total counts refresh
+    purgeCacheOnCdn({ type: 'comicissuestats', id: comment.targetUuid });
+    purgeCacheOnCdn({ type: 'comicseriesstats', id: comment.parentUuid });
 
     // Return complete comment with all fields expected by commentDetails fragment
     return {
@@ -356,6 +358,9 @@ export const UserCommentMutations: MutationResolvers = {
       throw new AuthenticationError('You must be logged in to delete a comment');
     }
 
+    // Fetch comment before deleting to get parentUuid for cache purging
+    const comment = await UserComment.getCommentByUuid(commentUuid);
+
     const deleted = await UserComment.deleteComment(commentUuid, context.user.id);
 
     if (!deleted) {
@@ -364,6 +369,11 @@ export const UserCommentMutations: MutationResolvers = {
 
     // Purge comments cache on CDN (fire-and-forget)
     purgeCacheOnCdn({ type: 'comments', id: targetUuid });
+    // Purge comicissuestats cache so total counts refresh
+    if (comment?.parentUuid) {
+      purgeCacheOnCdn({ type: 'comicissuestats', id: targetUuid });
+      purgeCacheOnCdn({ type: 'comicseriesstats', id: comment.parentUuid });
+    }
 
     return true;
   },
@@ -387,9 +397,9 @@ export const UserCommentMutations: MutationResolvers = {
     await UserLike.likeItem(
       context.user.id,
       commentUuid,
-      LikeableType.COMMENT,
+      InkverseType.COMMENT,
       issueUuid,
-      ParentType.COMICISSUE
+      InkverseType.COMICISSUE
     );
 
     return await buildUserCommentResponse(
@@ -418,7 +428,7 @@ export const UserCommentMutations: MutationResolvers = {
     await UserLike.unlikeItem(
       context.user.id,
       commentUuid,
-      LikeableType.COMMENT
+      InkverseType.COMMENT
     );
 
     return await buildUserCommentResponse(

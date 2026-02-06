@@ -15,6 +15,7 @@ import { getUserDetails } from '@/lib/auth/user';
 import { getUserApolloClient } from '@/lib/apollo/client.client';
 import {
   loadUserComicData,
+  loadComicSeriesDynamic,
   subscribeToSeries,
   unsubscribeFromSeries,
   enableNotificationsForSeries,
@@ -24,6 +25,7 @@ import {
   comicSeriesReducer,
   type ComicSeriesLoaderData,
 } from '@inkverse/shared-client/dispatch/comicseries';
+import { getPublicApolloClient } from '@/lib/apollo/client.client';
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   if (!data) { return []; }
@@ -58,19 +60,25 @@ function ComicSeriesContent({ initialData }: { initialData: Partial<ComicSeriesL
     isUserDataLoading,
     isSubscriptionLoading,
     isNotificationLoading,
-    comicIssueStats,
+    likeCount,
+    commentCount,
     issueLikeLoadingMap,
   } = comicSeriesState;
   
+  // Load dynamic data (stats) on mount
+  useEffect(() => {
+    if (comicseries?.uuid) {
+      const publicClient = getPublicApolloClient();
+      loadComicSeriesDynamic({ publicClient, seriesUuid: comicseries.uuid }, dispatch);
+    }
+  }, [comicseries?.uuid]);
+
   // Load user-specific data if authenticated
   useEffect(() => {
     const currentUser = getUserDetails();
     if (currentUser && comicseries?.uuid) {
       const userClient = getUserApolloClient();
-      loadUserComicData({
-        userClient,
-        seriesUuid: comicseries.uuid
-      }, dispatch);
+      loadUserComicData({ userClient, seriesUuid: comicseries.uuid }, dispatch);
     }
   }, [comicseries?.uuid]);
 
@@ -186,8 +194,8 @@ function ComicSeriesContent({ initialData }: { initialData: Partial<ComicSeriesL
   return (
     <>
       <div className="max-w-3xl mx-auto sm:p-6 lg:p-8">
-        <ComicSeriesDetails 
-          comicseries={comicseries} 
+        <ComicSeriesDetails
+          comicseries={comicseries}
           pageType={'comicseries-screen'}
           userComicData={userComicData}
           isSubscriptionLoading={isSubscriptionLoading}
@@ -195,12 +203,13 @@ function ComicSeriesContent({ initialData }: { initialData: Partial<ComicSeriesL
           isUserDataLoading={isUserDataLoading}
           onAddToProfile={handleAddToProfile}
           onGetNotifications={handleGetNotifications}
+          likeCount={likeCount}
+          commentCount={commentCount}
         />
         <ComicIssuesList
           comicseries={comicseries}
           issues={issues?.filter((issue) => issue !== null)}
           currentIssueUuid={issues?.[0]?.uuid}
-          comicIssueStats={comicIssueStats}
           likedIssueUuids={userComicData?.likedComicIssueUuids || []}
           issueLikeLoadingMap={issueLikeLoadingMap || {}}
           onLikeIssue={handleLikeIssue}

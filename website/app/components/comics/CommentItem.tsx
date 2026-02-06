@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, type Dispatch } from 'react';
-import { MdFavorite, MdFavoriteBorder, MdReply, MdMoreVert, MdEdit, MdDelete, MdFlag, MdKeyboardArrowDown, MdKeyboardArrowUp } from 'react-icons/md';
+import { MdFavorite, MdFavoriteBorder, MdReply, MdMoreVert, MdEdit, MdDelete, MdFlag } from 'react-icons/md';
 import { formatDistanceToNow } from 'date-fns';
 import { getPublicApolloClient, getUserApolloClient } from '@/lib/apollo/client.client';
 import {
@@ -155,6 +155,7 @@ export function CommentItem({
       replyToUuid: comment.replyToUuid,
       targetUuid: issueUuid,
       targetType: InkverseType.COMICISSUE,
+      seriesUuid,
     }, dispatch);
     setShowDeleteModal(false);
   };
@@ -199,7 +200,7 @@ export function CommentItem({
             ) : (
               <>
                 {/* Text with username inline */}
-                <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words leading-relaxed">
+                <p className="text-sm text-inkverse-black dark:text-gray-300 whitespace-pre-wrap break-words leading-relaxed">
                   {comment.text}
                   <span className="text-gray-400 dark:text-gray-400"> — </span>
                   {comment.user?.username && (
@@ -227,8 +228,8 @@ export function CommentItem({
                     onClick={handleLike}
                     className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm transition-colors ${
                       isLiked
-                        ? 'text-brand-pink'
-                        : 'text-gray-500 dark:text-gray-400 hover:text-brand-pink hover:bg-gray-100 dark:hover:bg-gray-700/50'
+                        ? 'text-brand-pink dark:text-white'
+                        : 'text-gray-500 dark:text-gray-400 hover:text-brand-pink dark:hover:text-white'
                     }`}
                   >
                     {isLiked ? (
@@ -248,8 +249,8 @@ export function CommentItem({
                       }}
                       className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm transition-colors ${
                         showRepliesSection
-                          ? 'text-brand-pink dark:text-taddy-blue bg-brand-pink/10 dark:bg-taddy-blue/10'
-                          : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50'
+                          ? 'text-brand-pink dark:text-white bg-brand-pink/10 dark:bg-white/10'
+                          : 'text-gray-500 dark:text-gray-400 hover:text-brand-pink dark:hover:text-white'
                       }`}
                     >
                       {replyCount > 0 ? (
@@ -270,12 +271,12 @@ export function CommentItem({
                   <div ref={menuRef} className="relative">
                     <button
                       onClick={() => setShowMenu(!showMenu)}
-                      className="p-1.5 rounded-lg text-gray-400 dark:text-gray-300 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors"
+                      className="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors"
                     >
                       <MdMoreVert size={18} />
                     </button>
                     {showMenu && (
-                      <div className="absolute left-0 top-full mt-1 bg-white dark:bg-transparent rounded-lg shadow-lg z-10 py-1 min-w-[140px] overflow-hidden">
+                      <div className="absolute left-0 top-full mt-1 bg-white dark:bg-gray-800 dark:border dark:border-gray-700 rounded-lg shadow-lg z-10 py-1 min-w-[140px] overflow-hidden">
                         {isOwner && (
                           <>
                             <button
@@ -283,7 +284,7 @@ export function CommentItem({
                                 setShowMenu(false);
                                 setShowEditForm(true);
                               }}
-                              className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                              className="flex items-center gap-2 w-full px-3 py-2 text-sm text-inkverse-black dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                             >
                               <MdEdit size={16} />
                               Edit
@@ -310,7 +311,7 @@ export function CommentItem({
                                 setShowReportModal(true);
                               }
                             }}
-                            className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                            className="flex items-center gap-2 w-full px-3 py-2 text-sm text-inkverse-black dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                           >
                             <MdFlag size={16} />
                             Report

@@ -4,21 +4,13 @@ import { MaterialIcons } from '@expo/vector-icons';
 
 import { ThemedText, ThemedTextFontFamilyMap, PressableOpacity } from '../ui';
 import type { Creator } from '@inkverse/shared-client/graphql/operations';
+import { formatCreatorNames } from '@inkverse/public/creator';
 
 interface SuperLikeButtonProps {
   isLoading: boolean;
   onPress: () => void;
   hasLikedAll: boolean;
-  creators?: (Creator | null)[];
-}
-
-// Format creator names: "Alice", "Alice and Bob", "Alice, Bob, and Charlie"
-function formatCreatorNames(creators?: (Creator | null)[]): string {
-  const names = creators?.map(c => c?.name).filter((name): name is string => !!name) ?? [];
-  if (names.length === 0) return 'the creators';
-  if (names.length === 1) return names[0];
-  if (names.length === 2) return `${names[0]} and ${names[1]}`;
-  return `${names.slice(0, -1).join(', ')}, and ${names[names.length - 1]}`;
+  creators?: (Partial<Creator> | null)[];
 }
 
 export const SuperLikeButton = ({
@@ -37,7 +29,7 @@ export const SuperLikeButton = ({
             <ThemedText style={styles.likedAllText}>You liked all episodes!</ThemedText>
           </View>
           <ThemedText style={styles.creatorMessageText}>
-            We'll let {creatorNames} know they're doing a great job!
+            We'll let {creatorNames} know they are doing a great job!
           </ThemedText>
         </View>
       </View>

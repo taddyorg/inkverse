@@ -1,4 +1,16 @@
-export const inkverseWebsiteUrl = process.env.NODE_ENV === 'production' 
+export function formatCompactNumber(num: number): string {
+  if (num >= 1_000_000) {
+    const formatted = (num / 1_000_000).toFixed(1).replace(/\.0$/, '');
+    return `${formatted}M`;
+  }
+  if (num >= 1_000) {
+    const formatted = (num / 1_000).toFixed(1).replace(/\.0$/, '');
+    return `${formatted}k`;
+  }
+  return num.toString();
+}
+
+export const inkverseWebsiteUrl = process.env.NODE_ENV === 'production'
 	? 'https://inkverse.co' 
 	: 'http://inkverse.test:8082';
 

@@ -26,7 +26,7 @@ export const AddToProfileButton = ({
     <button
       onClick={onPress}
       disabled={isLoading}
-      className="flex items-center justify-center bg-white/80 hover:bg-white rounded-full h-10 px-4 mr-2 transition-colors duration-200 disabled:opacity-50"
+      className="flex items-center justify-center bg-white/80 hover:bg-white rounded-full h-10 px-4 mr-2 transition-colors duration-200 disabled:opacity-50 disabled:dark:opacity-20"
     >
       <div className="flex items-center justify-center">
         {isLoading ? (
@@ -57,7 +57,7 @@ export const NotificationButton = ({
     <button
       onClick={onPress}
       disabled={isLoading}
-      className="flex items-center justify-center bg-white/80 hover:bg-white rounded-full h-10 w-10 transition-colors duration-200 disabled:opacity-50"
+      className="flex items-center justify-center bg-white/80 hover:bg-white rounded-full h-10 w-10 transition-colors duration-200 disabled:opacity-50 disabled:dark:opacity-20"
     >
       <div className="flex items-center justify-center">
         {isLoading ? (
