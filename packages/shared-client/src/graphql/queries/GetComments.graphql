@@ -14,6 +14,9 @@ query GetComments(
   ) {
     targetUuid
     targetType
+    sortBy
+    page
+    limitPerPage
     comments {
       ...commentDetails
     }

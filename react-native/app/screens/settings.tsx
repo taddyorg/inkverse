@@ -310,7 +310,7 @@ export function SettingsScreen() {
   const renderCombinedFooterSection = () => {
 
     const founderAvatar = 'https://ax0.taddy.org/general/danny-avatar-2.jpg';
-    const founderDescription = "👋 Hey! I'm Danny. I'm building Inkverse to help comic fans discover awesome indie comics. What would make Inkverse even better?";
+    const founderDescription = "👋 Hey! I'm Danny. I'm building Inkverse to help more people discover awesome indie comics. What would make Inkverse even better?";
     
     return (
       <ThemedView style={styles.combinedSectionContainer}>

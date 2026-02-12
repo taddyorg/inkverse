@@ -1,5 +1,5 @@
 import React from 'react';
-import { Animated, StyleSheet, View } from 'react-native';
+import { Animated, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { PressableOpacity } from '../ui';
@@ -19,6 +19,8 @@ interface ComicFooterProps {
   likeCount: number;
   isLikeLoading: boolean;
   onLikePress: () => void;
+  commentCount?: number;
+  onCommentPress?: () => void;
 }
 
 export function ComicFooter({
@@ -31,6 +33,8 @@ export function ComicFooter({
   likeCount,
   isLikeLoading,
   onLikePress,
+  commentCount,
+  onCommentPress,
 }: ComicFooterProps) {
   // Handle navigation to previous issue
   const handlePreviousIssue = () => {
@@ -56,6 +60,16 @@ export function ComicFooter({
           onPress={onLikePress}
           variant="footer"
         />
+        {onCommentPress && (
+          <PressableOpacity onPress={onCommentPress} style={styles.commentButton} innerStyle={styles.commentButtonInner}>
+            <Ionicons name={commentCount != null && commentCount > 0 ? "chatbubble" : "chatbubble-outline"} size={20} color="white" />
+            {commentCount != null && commentCount > 0 && (
+              <View style={styles.commentCountContainer}>
+                <Text style={styles.commentCountText}>{commentCount.toLocaleString()}</Text>
+              </View>
+            )}
+          </PressableOpacity>
+        )}
       </View>
       <View style={styles.right}>
         {previousIssue && (
@@ -63,11 +77,13 @@ export function ComicFooter({
             <Ionicons name="chevron-back" size={28} color="white" />
           </PressableOpacity>
         )}
-        {nextIssue && (
-          <PressableOpacity onPress={handleNextIssue} style={styles.navigationButton}>
-            <Ionicons name="chevron-forward" size={28} color="white" />
-          </PressableOpacity>
-        )}
+        <PressableOpacity
+          onPress={handleNextIssue}
+          disabled={!nextIssue}
+          style={[styles.navigationButton, !nextIssue && styles.navigationButtonDisabled]}
+        >
+          <Ionicons name="chevron-forward" size={28} color="white" />
+        </PressableOpacity>
       </View>
     </Animated.View>
   );
@@ -104,6 +120,27 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
+  },
+  navigationButtonDisabled: {
+    opacity: 0.4,
+  },
+  commentButton: {
+    marginLeft: 12,
+    paddingVertical: 4,
+    paddingHorizontal: 4,
+  },
+  commentButtonInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  commentCountContainer: {
+    marginLeft: 2,
+  },
+  commentCountText: {
+    fontSize: 14,
+    color: '#FFFFFF',
+    fontWeight: '600',
   },
   navigationText: {
     fontSize: 16,

@@ -1,9 +1,11 @@
-import React, { useState, type Dispatch } from 'react';
-import { StyleSheet, View, Modal, Pressable, Alert, useColorScheme } from 'react-native';
+import React, { useState, useMemo, useCallback, type Dispatch } from 'react';
+import { StyleSheet, View, Modal, Pressable, Alert, useColorScheme, useWindowDimensions, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { formatDistanceToNow } from 'date-fns';
+import sanitizeHtml from 'sanitize-html';
+import RenderHtml, { type CustomTextualRenderer, type MixedStyleDeclaration } from 'react-native-render-html';
 
 import { ThemedText, PressableOpacity, ThemedActivityIndicator } from '@/app/components/ui';
 import { Colors, useThemeColor } from '@/constants/Colors';
@@ -22,6 +24,51 @@ import {
 import { InkverseType } from '@inkverse/public/graphql/types';
 import { CommentForm } from './CommentForm';
 
+function SpoilerText({ data }: { data: string }) {
+  const [revealed, setRevealed] = useState(false);
+  const colorScheme = useColorScheme() ?? 'light';
+
+  const hiddenBg = colorScheme === 'light' ? 'rgba(0,0,0,0.2)' : 'rgba(156,163,175,0.4)';
+  const revealedBg = colorScheme === 'light' ? 'rgba(0,0,0,0.1)' : 'rgba(156,163,175,0.2)';
+
+  return (
+    <Text
+      onPress={() => setRevealed((v) => !v)}
+      style={{
+        backgroundColor: revealed ? revealedBg : hiddenBg,
+        color: revealed ? undefined : 'transparent',
+        borderRadius: 4,
+        paddingHorizontal: 2,
+      }}
+    >
+      {data}
+    </Text>
+  );
+}
+
+function processCommentHtml(text: string | undefined | null): { html: string; isHtml: boolean } {
+  if (!text) return { html: '', isHtml: false };
+
+  // Process spoiler tags: ||text|| → <span class="spoiler">text</span>
+  const processed = text.replace(/\|\|(.+?)\|\|/g, '<span class="spoiler">$1</span>');
+  const hasSpoilers = processed !== text;
+
+  // Check if the original text contains HTML tags
+  const hasHtmlTags = /<[a-z][\s\S]*>/i.test(text);
+
+  if (!hasHtmlTags && !hasSpoilers) {
+    return { html: text, isHtml: false };
+  }
+
+  const sanitized = sanitizeHtml(processed, {
+    allowedTags: ['b', 'i', 'strong', 'em', 'br', 'span', 'img'],
+    allowedAttributes: { span: ['class'], img: ['src', 'alt', 'width', 'height'] },
+    allowedSchemesByTag: { img: ['https'] },
+  });
+
+  return { html: sanitized, isHtml: true };
+}
+
 interface CommentItemProps {
   comment: Comment;
   issueUuid: string;
@@ -35,6 +82,9 @@ interface CommentItemProps {
   dispatch: Dispatch<CommentsAction>;
   isReply?: boolean;
   sortBy?: string;
+  onReplyPress?: (comment: Comment) => void;
+  onUsernamePress?: (userId: string) => void;
+  onCommentCountChange?: (count: number) => void;
 }
 
 export function CommentItem({
@@ -50,9 +100,13 @@ export function CommentItem({
   dispatch,
   isReply = false,
   sortBy,
+  onReplyPress,
+  onUsernamePress,
+  onCommentCountChange,
 }: CommentItemProps) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const colorScheme = useColorScheme() ?? 'light';
+  const { width } = useWindowDimensions();
 
   const [showEditForm, setShowEditForm] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
@@ -65,6 +119,7 @@ export function CommentItem({
   const highlightedTextColor = useThemeColor({}, 'tint');
   const backgroundColor = useThemeColor({ light: '#FFFFFF', dark: '#1F293740' }, 'background');
   const menuBackdropColor = 'rgba(0, 0, 0, 0.3)';
+  const menuBackgroundColor = useThemeColor({ light: '#FFFFFF', dark: '#403B51' }, 'background');
 
   const isOwner = currentUserId && comment.user?.id === currentUserId;
   const replyCount = comment.stats?.replyCount || 0;
@@ -74,6 +129,42 @@ export function CommentItem({
   const timeAgo = comment.createdAt
     ? formatDistanceToNow(new Date(comment.createdAt * 1000), { addSuffix: true })
     : '';
+
+  // Process comment HTML and spoiler tags
+  const { html: processedHtml, isHtml } = useMemo(
+    () => processCommentHtml(comment.text),
+    [comment.text]
+  );
+
+  const handleUsernamePress = useCallback(() => {
+    if (comment.user?.id) {
+      if (onUsernamePress) {
+        onUsernamePress(comment.user.id);
+      } else {
+        navigation.navigate(PROFILE_SCREEN, { userId: comment.user.id });
+      }
+    }
+  }, [comment.user?.id, onUsernamePress, navigation]);
+
+  const renderers = useMemo(
+    () => ({
+      span: (({ tnode, style, TDefaultRenderer, ...rest }) => {
+        const classes = tnode.attributes?.class ?? '';
+        if (classes.includes('spoiler') && 'data' in tnode) {
+          return <SpoilerText data={tnode.data} />;
+        }
+        if (classes.includes('username') && 'data' in tnode) {
+          return (
+            <Text style={style} onPress={handleUsernamePress}>
+              {tnode.data}
+            </Text>
+          );
+        }
+        return <TDefaultRenderer tnode={tnode} style={style} {...rest} />;
+      }) as CustomTextualRenderer,
+    }),
+    [handleUsernamePress]
+  );
 
   const handleLike = async () => {
     if (!isAuthenticated) {
@@ -109,7 +200,7 @@ export function CommentItem({
     if (!userClient) return;
 
     setIsSubmitting(true);
-    await addComment({
+    const result = await addComment({
       userClient,
       issueUuid,
       seriesUuid,
@@ -117,6 +208,10 @@ export function CommentItem({
       replyToCommentUuid: comment.uuid,
     }, dispatch);
     setIsSubmitting(false);
+
+    if (result?.commentCount != null && onCommentCountChange) {
+      onCommentCountChange(result.commentCount);
+    }
   };
 
   const handleEdit = async (text: string) => {
@@ -148,7 +243,7 @@ export function CommentItem({
             const userClient = getUserApolloClient();
             if (!userClient) return;
 
-            await deleteComment({
+            const result = await deleteComment({
               userClient,
               commentUuid: comment.uuid,
               replyToUuid: comment.replyToUuid,
@@ -156,6 +251,10 @@ export function CommentItem({
               targetType: InkverseType.COMICISSUE,
               seriesUuid,
             }, dispatch);
+
+            if (result.commentCount != null && onCommentCountChange) {
+              onCommentCountChange(result.commentCount);
+            }
           },
         },
       ]
@@ -172,26 +271,27 @@ export function CommentItem({
   };
 
   const handleToggleRepliesSection = () => {
-    if (!showRepliesSection) {
-      if (replyCount > 0 && replies.length === 0) {
-        const publicClient = getPublicApolloClient();
-        if (publicClient) {
-          loadReplies({
-            publicClient,
-            targetUuid: issueUuid,
-            targetType: InkverseType.COMICISSUE,
-            commentUuid: comment.uuid,
-          }, dispatch);
-        }
+    const shouldLoadReplies = !showRepliesSection && replyCount > 0 && replies.length === 0;
+
+    if (shouldLoadReplies) {
+      const publicClient = getPublicApolloClient();
+      if (publicClient) {
+        loadReplies({
+          publicClient,
+          targetUuid: issueUuid,
+          targetType: InkverseType.COMICISSUE,
+          commentUuid: comment.uuid,
+        }, dispatch);
       }
     }
-    setShowRepliesSection(!showRepliesSection);
-  };
 
-  const handleUsernamePress = () => {
-    if (comment.user?.id) {
-      navigation.navigate(PROFILE_SCREEN, { userId: comment.user?.id });
+    if (onReplyPress) {
+      if (replyCount > 0) setShowRepliesSection(!showRepliesSection);
+      onReplyPress(comment);
+      return;
     }
+
+    setShowRepliesSection(!showRepliesSection);
   };
 
   return (
@@ -210,21 +310,45 @@ export function CommentItem({
         <>
           {/* Comment text */}
           <View style={styles.commentContent}>
-            <ThemedText style={styles.commentText}>
-              {comment.text}
-              <ThemedText style={styles.separator}> — </ThemedText>
-              {comment.user?.username && (
-                <ThemedText style={styles.username} onPress={handleUsernamePress}>
-                  {comment.user.username}
-                </ThemedText>
-              )}
-              {sortBy === 'NEWEST' && timeAgo && (
-                <>
-                  <ThemedText style={styles.separator}> · </ThemedText>
-                  <ThemedText style={styles.timeAgo}>{timeAgo}</ThemedText>
-                </>
-              )}
-            </ThemedText>
+            {isHtml ? (
+              <RenderHtml
+                contentWidth={width - 32}
+                source={{ html:
+                  processedHtml +
+                  '<span class="separator"> — </span>' +
+                  (comment.user?.username
+                    ? `<span class="username">${comment.user.username}</span>`
+                    : '') +
+                  (sortBy === 'NEWEST' && timeAgo
+                    ? `<span class="separator"> · </span><span class="timeago">${timeAgo}</span>`
+                    : '')
+                }}
+                baseStyle={{ color: textColor, fontSize: 15, lineHeight: 22, fontFamily: 'SourceSans3-Regular' } as MixedStyleDeclaration}
+                classesStyles={{
+                  separator: { opacity: 0.4 },
+                  username: { opacity: 0.5, fontSize: 14 },
+                  timeago: { fontSize: 12, opacity: 0.4 },
+                }}
+                renderers={renderers}
+                enableCSSInlineProcessing={false}
+              />
+            ) : (
+              <ThemedText style={styles.commentText}>
+                {comment.text}
+                <ThemedText style={styles.separator}> — </ThemedText>
+                {comment.user?.username && (
+                  <ThemedText style={styles.username} onPress={handleUsernamePress}>
+                    {comment.user.username}
+                  </ThemedText>
+                )}
+                {sortBy === 'NEWEST' && timeAgo && (
+                  <>
+                    <ThemedText style={styles.separator}> · </ThemedText>
+                    <ThemedText style={styles.timeAgo}>{timeAgo}</ThemedText>
+                  </>
+                )}
+              </ThemedText>
+            )}
           </View>
 
           {/* Actions row */}
@@ -300,18 +424,22 @@ export function CommentItem({
                       dispatch={dispatch}
                       isReply
                       sortBy={sortBy}
+                      onUsernamePress={onUsernamePress}
+                      onCommentCountChange={onCommentCountChange}
                     />
                   ))}
 
-                  {/* Reply form */}
-                  <CommentForm
-                    isReply
-                    onSubmit={handleReply}
-                    isSubmitting={isSubmitting}
-                    isAuthenticated={isAuthenticated}
-                    placeholder={`Reply to ${comment.user?.username || 'Anonymous'}...`}
-                    onCancel={() => setShowRepliesSection(false)}
-                  />
+                  {/* Reply form (only when not using bottom input bar) */}
+                  {!onReplyPress && (
+                    <CommentForm
+                      isReply
+                      onSubmit={handleReply}
+                      isSubmitting={isSubmitting}
+                      isAuthenticated={isAuthenticated}
+                      placeholder={`Reply to ${comment.user?.username || 'Anonymous'}...`}
+                      onCancel={() => setShowRepliesSection(false)}
+                    />
+                  )}
                 </>
               )}
             </View>
@@ -327,7 +455,7 @@ export function CommentItem({
         onRequestClose={() => setShowMenu(false)}
       >
         <Pressable style={[styles.menuBackdrop, { backgroundColor: menuBackdropColor }]} onPress={() => setShowMenu(false)}>
-          <View style={[styles.menuContainer, { backgroundColor }]}>
+          <View style={[styles.menuContainer, { backgroundColor: menuBackgroundColor }]}>
             {isOwner ? (
               <>
                 <PressableOpacity
@@ -391,6 +519,10 @@ const styles = StyleSheet.create({
   commentText: {
     fontSize: 15,
     lineHeight: 22,
+  },
+  metaLine: {
+    fontSize: 14,
+    marginTop: 2,
   },
   separator: {
     opacity: 0.4,

@@ -236,6 +236,9 @@ export type CommentStats = {
 export type CommentsForTarget = {
   __typename?: 'CommentsForTarget';
   comments: Array<Comment>;
+  limitPerPage?: Maybe<Scalars['Int']['output']>;
+  page?: Maybe<Scalars['Int']['output']>;
+  sortBy?: Maybe<CommentSortType>;
   targetType: InkverseType;
   targetUuid: Scalars['ID']['output'];
 };
@@ -1704,7 +1707,7 @@ export type GetComicIssueDynamicQueryVariables = Exact<{
 }>;
 
 
-export type GetComicIssueDynamicQuery = { __typename?: 'Query', getStatsForComicIssue?: { __typename?: 'ComicIssueStats', uuid: string, likeCount?: number | null, commentCount?: number | null } | null, getComments: { __typename?: 'CommentsForTarget', targetUuid: string, targetType: InkverseType, comments: Array<{ __typename?: 'Comment', uuid: string, text: string, createdAt: number, targetUuid: string, targetType: InkverseType, replyToUuid?: string | null, user?: { __typename?: 'User', id: string, username?: string | null } | null, stats?: { __typename?: 'CommentStats', uuid: string, likeCount?: number | null, replyCount?: number | null } | null }> } };
+export type GetComicIssueDynamicQuery = { __typename?: 'Query', getStatsForComicIssue?: { __typename?: 'ComicIssueStats', uuid: string, likeCount?: number | null, commentCount?: number | null } | null, getComments: { __typename?: 'CommentsForTarget', targetUuid: string, targetType: InkverseType, sortBy?: CommentSortType | null, page?: number | null, limitPerPage?: number | null, comments: Array<{ __typename?: 'Comment', uuid: string, text: string, createdAt: number, targetUuid: string, targetType: InkverseType, replyToUuid?: string | null, user?: { __typename?: 'User', id: string, username?: string | null } | null, stats?: { __typename?: 'CommentStats', uuid: string, likeCount?: number | null, replyCount?: number | null } | null }> } };
 
 export type GetComicSeriesDynamicQueryVariables = Exact<{
   seriesUuid: Scalars['ID']['input'];
@@ -1750,7 +1753,7 @@ export type GetCommentsQueryVariables = Exact<{
 }>;
 
 
-export type GetCommentsQuery = { __typename?: 'Query', getComments: { __typename?: 'CommentsForTarget', targetUuid: string, targetType: InkverseType, comments: Array<{ __typename?: 'Comment', uuid: string, text: string, createdAt: number, targetUuid: string, targetType: InkverseType, replyToUuid?: string | null, user?: { __typename?: 'User', id: string, username?: string | null } | null, stats?: { __typename?: 'CommentStats', uuid: string, likeCount?: number | null, replyCount?: number | null } | null }> } };
+export type GetCommentsQuery = { __typename?: 'Query', getComments: { __typename?: 'CommentsForTarget', targetUuid: string, targetType: InkverseType, sortBy?: CommentSortType | null, page?: number | null, limitPerPage?: number | null, comments: Array<{ __typename?: 'Comment', uuid: string, text: string, createdAt: number, targetUuid: string, targetType: InkverseType, replyToUuid?: string | null, user?: { __typename?: 'User', id: string, username?: string | null } | null, stats?: { __typename?: 'CommentStats', uuid: string, likeCount?: number | null, replyCount?: number | null } | null }> } };
 
 export type GetCreatorQueryVariables = Exact<{
   uuid: Scalars['ID']['input'];
@@ -1810,7 +1813,7 @@ export type GetRepliesForCommentQueryVariables = Exact<{
 }>;
 
 
-export type GetRepliesForCommentQuery = { __typename?: 'Query', getRepliesForComment: { __typename?: 'CommentsForTarget', targetUuid: string, targetType: InkverseType, comments: Array<{ __typename?: 'Comment', uuid: string, text: string, createdAt: number, targetUuid: string, targetType: InkverseType, replyToUuid?: string | null, user?: { __typename?: 'User', id: string, username?: string | null } | null, stats?: { __typename?: 'CommentStats', uuid: string, likeCount?: number | null, replyCount?: number | null } | null }> } };
+export type GetRepliesForCommentQuery = { __typename?: 'Query', getRepliesForComment: { __typename?: 'CommentsForTarget', targetUuid: string, targetType: InkverseType, sortBy?: CommentSortType | null, page?: number | null, limitPerPage?: number | null, comments: Array<{ __typename?: 'Comment', uuid: string, text: string, createdAt: number, targetUuid: string, targetType: InkverseType, replyToUuid?: string | null, user?: { __typename?: 'User', id: string, username?: string | null } | null, stats?: { __typename?: 'CommentStats', uuid: string, likeCount?: number | null, replyCount?: number | null } | null }> } };
 
 export type GetTrendingComicSeriesQueryVariables = Exact<{
   metric?: InputMaybe<TrendingMetric>;
@@ -2220,6 +2223,9 @@ export const GetComicIssueDynamic = gql`
   ) {
     targetUuid
     targetType
+    sortBy
+    page
+    limitPerPage
     comments {
       ...commentDetails
     }
@@ -2303,6 +2309,9 @@ export const GetComments = gql`
   ) {
     targetUuid
     targetType
+    sortBy
+    page
+    limitPerPage
     comments {
       ...commentDetails
     }
@@ -2381,6 +2390,9 @@ export const GetRepliesForComment = gql`
   ) {
     targetUuid
     targetType
+    sortBy
+    page
+    limitPerPage
     comments {
       ...commentDetails
     }

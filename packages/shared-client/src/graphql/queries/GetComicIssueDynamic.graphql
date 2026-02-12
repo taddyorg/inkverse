@@ -4,9 +4,12 @@ query GetComicIssueDynamic($issueUuid: ID!) {
     likeCount
     commentCount
   }
-  getComments(targetUuid: $issueUuid, targetType: COMICISSUE, page: 1, limitPerPage: 5, sortBy: TOP) {
+  getComments(targetUuid: $issueUuid, targetType: COMICISSUE, page: 1, limitPerPage: 25, sortBy: TOP) {
     targetUuid
     targetType
+    sortBy
+    page
+    limitPerPage
     comments {
       ...commentDetails
     }

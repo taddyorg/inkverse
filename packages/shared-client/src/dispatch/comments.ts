@@ -34,6 +34,8 @@ import {
   type CommentSortType,
   type ReportType,
   type InkverseType,
+  type GetComicIssueDynamicQuery,
+  type GetComicIssueDynamicQueryVariables,
 } from '../graphql/operations.js';
 
 // Re-export for consumers - using flattened Comment type
@@ -90,6 +92,9 @@ export enum CommentsActionType {
 
   // Set sort type
   SET_SORT_TYPE = 'SET_SORT_TYPE',
+
+  // Reset
+  RESET = 'RESET',
 }
 
 export type CommentsAction =
@@ -142,7 +147,10 @@ export type CommentsAction =
   | { type: CommentsActionType.LOAD_USER_COMMENTS_SUCCESS; payload: { likedCommentUuids: string[] } }
 
   // Set sort type
-  | { type: CommentsActionType.SET_SORT_TYPE; payload: CommentSortType };
+  | { type: CommentsActionType.SET_SORT_TYPE; payload: CommentSortType }
+
+  // Reset
+  | { type: CommentsActionType.RESET };
 
 /* State Type */
 export type CommentsState = {
@@ -155,6 +163,7 @@ export type CommentsState = {
   currentPage: number;
   sortBy: CommentSortType;
   likedCommentUuids: string[];
+  newCommentUuids: string[];
   isSubmitting: boolean;
   error: string | null;
 };
@@ -169,6 +178,7 @@ export const commentsInitialState: CommentsState = {
   currentPage: 1,
   sortBy: 'TOP' as CommentSortType,
   likedCommentUuids: [],
+  newCommentUuids: [],
   isSubmitting: false,
   error: null,
 };
@@ -182,10 +192,11 @@ interface LoadCommentsProps {
   page?: number;
   limitPerPage?: number;
   sortBy?: CommentSortType;
+  forceRefresh?: boolean;
 }
 
 export async function loadComments(
-  { publicClient, targetUuid, targetType, page = 1, limitPerPage = 5, sortBy = 'TOP' as CommentSortType }: LoadCommentsProps,
+  { publicClient, targetUuid, targetType, page = 1, limitPerPage = 25, sortBy = 'TOP' as CommentSortType, forceRefresh = false }: LoadCommentsProps,
   dispatch?: Dispatch<CommentsAction>
 ): Promise<Comment[] | null> {
   if (dispatch) dispatch({ type: CommentsActionType.LOAD_COMMENTS_START });
@@ -194,6 +205,7 @@ export async function loadComments(
     const result = await publicClient.query<GetCommentsQuery, GetCommentsQueryVariables>({
       query: GetComments,
       variables: { targetUuid, targetType, page, limitPerPage, sortBy },
+      ...(!!forceRefresh && { fetchPolicy: 'network-only' }),
     });
 
     const comments = (result.data?.getComments?.comments || []) as Comment[];
@@ -345,7 +357,7 @@ interface AddCommentProps {
 export async function addComment(
   { userClient, issueUuid, seriesUuid, text, replyToCommentUuid }: AddCommentProps,
   dispatch?: Dispatch<CommentsAction>
-): Promise<Comment | null> {
+): Promise<{ comment: Comment; commentCount: number | null } | null> {
   if (dispatch) dispatch({ type: CommentsActionType.ADD_COMMENT_START });
 
   try {
@@ -366,6 +378,13 @@ export async function addComment(
     // Use server response directly - it contains all fields from the commentDetails fragment
     const newComment = result.data.addComment as Comment;
 
+    // Read updated comment count from Apollo cache after refetch
+    const statsData = userClient.readQuery<GetComicIssueDynamicQuery, GetComicIssueDynamicQueryVariables>({
+      query: GetComicIssueDynamic,
+      variables: { issueUuid }
+    });
+    const commentCount = statsData?.getStatsForComicIssue?.commentCount ?? null;
+
     if (dispatch) {
       dispatch({
         type: CommentsActionType.ADD_COMMENT_SUCCESS,
@@ -373,7 +392,7 @@ export async function addComment(
       });
     }
 
-    return newComment;
+    return { comment: newComment, commentCount };
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Failed to add comment';
     if (dispatch) {
@@ -436,7 +455,7 @@ interface DeleteCommentProps {
 export async function deleteComment(
   { userClient, commentUuid, replyToUuid, targetUuid, targetType, seriesUuid }: DeleteCommentProps,
   dispatch?: Dispatch<CommentsAction>
-): Promise<boolean> {
+): Promise<{ success: boolean; commentCount: number | null }> {
   if (dispatch) dispatch({ type: CommentsActionType.DELETE_COMMENT_START });
 
   try {
@@ -454,6 +473,13 @@ export async function deleteComment(
       throw new Error('Failed to delete comment');
     }
 
+    // Read updated comment count from Apollo cache after refetch
+    const statsData = userClient.readQuery<GetComicIssueDynamicQuery, GetComicIssueDynamicQueryVariables>({
+      query: GetComicIssueDynamic,
+      variables: { issueUuid: targetUuid }
+    });
+    const commentCount = statsData?.getStatsForComicIssue?.commentCount ?? null;
+
     if (dispatch) {
       dispatch({
         type: CommentsActionType.DELETE_COMMENT_SUCCESS,
@@ -461,13 +487,13 @@ export async function deleteComment(
       });
     }
 
-    return true;
+    return { success: true, commentCount };
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Failed to delete comment';
     if (dispatch) {
       dispatch({ type: CommentsActionType.DELETE_COMMENT_ERROR, payload: errorMessage });
     }
-    return false;
+    return { success: false, commentCount: null };
   }
 }
 
@@ -615,6 +641,7 @@ export function commentsReducer(
         hasMore: action.payload.hasMore,
         currentPage: 1,
         repliesMap: {},
+        newCommentUuids: [],
         error: null,
       };
     case CommentsActionType.LOAD_COMMENTS_ERROR:
@@ -722,6 +749,7 @@ export function commentsReducer(
           ...state,
           isSubmitting: false,
           comments: [...state.comments, comment],
+          newCommentUuids: [...state.newCommentUuids, comment.uuid],
         };
       }
     }
@@ -809,6 +837,7 @@ export function commentsReducer(
           ...state,
           isSubmitting: false,
           comments: state.comments.filter(c => c.uuid !== commentUuid),
+          newCommentUuids: state.newCommentUuids.filter(uuid => uuid !== commentUuid),
           // Also clean up any replies for this comment
           repliesMap: Object.fromEntries(
             Object.entries(state.repliesMap).filter(([key]) => key !== commentUuid)
@@ -925,6 +954,10 @@ export function commentsReducer(
         ...state,
         sortBy: action.payload,
       };
+
+    // Reset
+    case CommentsActionType.RESET:
+      return commentsInitialState;
 
     default:
       return state;

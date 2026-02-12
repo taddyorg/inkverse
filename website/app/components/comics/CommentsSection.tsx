@@ -25,15 +25,22 @@ interface CommentsSectionProps {
   seriesUuid: string;
   isAuthenticated: boolean;
   commentCount?: number;
-  initialComments?: Comment[];
+  initialComments: Comment[];
   creators?: (Partial<Creator> | null)[];
+  onCommentCountChange?: (count: number) => void;
 }
 
-export function CommentsSection({ issueUuid, seriesUuid, isAuthenticated, commentCount, initialComments, creators }: CommentsSectionProps) {
-  const [state, dispatch] = useReducer(commentsReducer, commentsInitialState);
+export function CommentsSection({ issueUuid, seriesUuid, isAuthenticated, commentCount, initialComments, creators, onCommentCountChange }: CommentsSectionProps) {
+  const [state, dispatch] = useReducer(commentsReducer, {
+    ...commentsInitialState,
+    comments: initialComments,
+    hasMore: initialComments.length >= 25,
+  });
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [isAddCommentExpanded, setIsAddCommentExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
   const sortMenuRef = useRef<HTMLDivElement>(null);
+  const isInitialMount = useRef(true);
 
   const {
     isLoading,
@@ -45,26 +52,20 @@ export function CommentsSection({ issueUuid, seriesUuid, isAuthenticated, commen
     currentPage,
     sortBy,
     likedCommentUuids,
+    newCommentUuids,
     isSubmitting,
   } = state;
 
+  const newCommentUuidsSet = new Set(newCommentUuids);
+  const regularComments = comments.filter(c => !newCommentUuidsSet.has(c.uuid));
+  const newComments = comments.filter(c => newCommentUuidsSet.has(c.uuid));
+
   const userDetails = getUserDetails();
 
-  // Track whether we've used initialComments to skip the first load
-  const usedInitialComments = useRef(false);
-
-  // Load comments on mount
+  // Fetch comments on sort change (skip initial mount — data already seeded from initialComments)
   useEffect(() => {
-    // If initialComments are provided and this is the initial load (not a sortBy change), use them
-    if (initialComments && initialComments.length > 0 && !usedInitialComments.current) {
-      usedInitialComments.current = true;
-      dispatch({
-        type: CommentsActionType.LOAD_COMMENTS_SUCCESS,
-        payload: {
-          comments: initialComments,
-          hasMore: initialComments.length >= 5,
-        },
-      });
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
       return;
     }
 
@@ -75,11 +76,11 @@ export function CommentsSection({ issueUuid, seriesUuid, isAuthenticated, commen
         targetUuid: issueUuid,
         targetType: InkverseType.COMICISSUE,
         page: 1,
-        limitPerPage: 5,
+        limitPerPage: 25,
         sortBy,
       }, dispatch);
     }
-  }, [issueUuid, sortBy, initialComments]);
+  }, [issueUuid, sortBy]);
 
   // Load user's liked comments when authenticated
   useEffect(() => {
@@ -112,33 +113,24 @@ export function CommentsSection({ issueUuid, seriesUuid, isAuthenticated, commen
   const handleSortChange = (newSortBy: CommentSortType) => {
     setShowSortMenu(false);
     if (newSortBy !== sortBy) {
+      setIsExpanded(false);
       dispatch({ type: CommentsActionType.SET_SORT_TYPE, payload: newSortBy });
-      const publicClient = getPublicApolloClient();
-      if (publicClient) {
-        loadComments({
-          publicClient,
-          targetUuid: issueUuid,
-          targetType: InkverseType.COMICISSUE,
-          page: 1,
-          limitPerPage: 5,
-          sortBy: newSortBy,
-        }, dispatch);
-      }
     }
   };
 
   const handleLoadMore = () => {
+    if (!isExpanded) {
+      setIsExpanded(true);
+      return;
+    }
+
     const publicClient = getPublicApolloClient();
     if (publicClient) {
-      // First load more: keep page 1, expand limit to 25
-      // Subsequent: increment page
-      const isFirstExpansion = currentPage === 1;
-
       loadMoreComments({
         publicClient,
         targetUuid: issueUuid,
         targetType: InkverseType.COMICISSUE,
-        page: isFirstExpansion ? 1 : currentPage + 1,
+        page: currentPage + 1,
         limitPerPage: 25,
         sortBy,
       }, dispatch);
@@ -156,22 +148,24 @@ export function CommentsSection({ issueUuid, seriesUuid, isAuthenticated, commen
     const userClient = getUserApolloClient();
     if (!userClient) return;
 
-    await addComment({
+    const result = await addComment({
       userClient,
       issueUuid,
       seriesUuid,
       text,
     }, dispatch);
-  };
 
-  const hasMoreComments = hasMore;
+    if (result?.commentCount != null && onCommentCountChange) {
+      onCommentCountChange(result.commentCount);
+    }
+  };
 
   return (
     <div className="my-6">
       {/* Header with sort */}
       <div className="flex items-center justify-between mb-4">
         <span className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-          Comments{commentCount ? ` (${commentCount.toLocaleString()})` : ''}
+          Comments
         </span>
 
         {/* Sort dropdown */}
@@ -207,7 +201,7 @@ export function CommentsSection({ issueUuid, seriesUuid, isAuthenticated, commen
       </div>
 
       {/* Loading state */}
-      {isLoading && (
+      {isLoading && comments.length === 0 && (
         <div className="flex justify-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-pink dark:border-taddy-blue" />
         </div>
@@ -216,14 +210,14 @@ export function CommentsSection({ issueUuid, seriesUuid, isAuthenticated, commen
       {/* Comments container with unified rounding */}
       <div className="bg-white dark:bg-gray-800/40 rounded-xl overflow-hidden">
         {/* Comments list */}
-        {!isLoading && (
+        {!(isLoading && comments.length === 0) && (
           <div>
             {comments.length === 0
             ? (
               <EmptyCommentsState creators={creators} />
             ) : (
               <div>
-                {comments.map((comment) => (
+                {(isExpanded ? regularComments : regularComments.slice(0, 5)).map((comment) => (
                 <CommentItem
                   key={comment.uuid}
                   comment={comment}
@@ -237,6 +231,24 @@ export function CommentsSection({ issueUuid, seriesUuid, isAuthenticated, commen
                   likedCommentUuids={likedCommentUuids}
                   dispatch={dispatch}
                   sortBy={sortBy}
+                  onCommentCountChange={onCommentCountChange}
+                  />
+                ))}
+                {newComments.map((comment) => (
+                <CommentItem
+                  key={comment.uuid}
+                  comment={comment}
+                  issueUuid={issueUuid}
+                  seriesUuid={seriesUuid}
+                  isAuthenticated={isAuthenticated}
+                  isLiked={likedCommentUuids.includes(comment.uuid)}
+                  currentUserId={userDetails?.id}
+                  replies={repliesMap[comment.uuid] || []}
+                  isLoadingReplies={loadingReplies[comment.uuid]}
+                  likedCommentUuids={likedCommentUuids}
+                  dispatch={dispatch}
+                  sortBy={sortBy}
+                  onCommentCountChange={onCommentCountChange}
                   />
                 ))}
               </div>
@@ -245,7 +257,7 @@ export function CommentsSection({ issueUuid, seriesUuid, isAuthenticated, commen
         )}
 
         {/* Load more link */}
-        {!isLoading && hasMoreComments && (
+        {!(isLoading && comments.length === 0) && ((!isExpanded && regularComments.length > 5) || (isExpanded && hasMore)) && (
           <div className="px-4 py-3 flex justify-center">
             <button
               onClick={handleLoadMore}

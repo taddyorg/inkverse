@@ -1,34 +1,35 @@
-import React, { useReducer, useEffect, useRef } from 'react';
-import { StyleSheet, View, useColorScheme } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { StyleSheet, View } from 'react-native';
 import { MaterialIcons, Ionicons, Feather } from '@expo/vector-icons';
+import { useNavigation, useIsFocused } from '@react-navigation/native';
 
-import { ThemedText, ThemedTextFontFamilyMap, ThemedActivityIndicator, PressableOpacity, DropdownMenu } from '@/app/components/ui';
+import { ThemedText, ThemedTextFontFamilyMap, ThemedActivityIndicator, DropdownMenu, PressableOpacity } from '@/app/components/ui';
 import { Colors, useThemeColor } from '@/constants/Colors';
+import { COMMENTS_SCREEN } from '@/constants/Navigation';
 import { getPublicApolloClient, getUserApolloClient } from '@/lib/apollo';
 import { getUserDetails } from '@/lib/auth/user';
 import {
-  commentsReducer,
-  commentsInitialState,
   loadComments,
-  loadMoreComments,
   loadUserComments,
   addComment,
   CommentsActionType,
-  type Comment,
 } from '@inkverse/shared-client/dispatch/comments';
+import type { Comment } from '@inkverse/shared-client/dispatch/comments';
 import type { CommentSortType, Creator } from '@inkverse/shared-client/graphql/operations';
 import { InkverseType } from '@inkverse/public/graphql/types';
 import { formatCreatorNames } from '@inkverse/public/creator';
 import { CommentItem } from './CommentItem';
 import { CommentForm } from './CommentForm';
+import { useComments } from '../providers/CommentsProvider';
 
 interface CommentsSectionProps {
   issueUuid: string;
   seriesUuid: string;
   isAuthenticated: boolean;
   commentCount?: number;
-  initialComments?: Comment[];
   creators?: (Partial<Creator> | null)[];
+  onCommentCountChange?: (count: number) => void;
+  initialComments?: Comment[] | null;
 }
 
 export function CommentsSection({
@@ -36,46 +37,60 @@ export function CommentsSection({
   seriesUuid,
   isAuthenticated,
   commentCount,
-  initialComments,
   creators,
+  onCommentCountChange,
+  initialComments,
 }: CommentsSectionProps) {
-  const [state, dispatch] = useReducer(commentsReducer, commentsInitialState);
-  const colorScheme = useColorScheme() ?? 'light';
+  const { state, dispatch } = useComments();
+  const navigation = useNavigation<any>();
+  const isFocused = useIsFocused();
 
   const {
     isLoading,
-    isLoadingMore,
     comments,
     repliesMap,
     loadingReplies,
-    hasMore,
-    currentPage,
     sortBy,
     likedCommentUuids,
+    newCommentUuids,
     isSubmitting,
   } = state;
 
+  const newCommentUuidsSet = new Set(newCommentUuids);
+  const regularComments = comments.filter(c => !newCommentUuidsSet.has(c.uuid));
+  const newComments = comments.filter(c => newCommentUuidsSet.has(c.uuid));
+
   const userDetails = getUserDetails();
   const textColor = useThemeColor({}, 'text');
-  const backgroundColor = useThemeColor({ light: '#FFFFFF', dark: '#1F293740' }, 'background');
   const secondaryTextColor = useThemeColor({ light: '#6a7282', dark: '#9ca3af' }, 'text');
-  // Track whether we've used initialComments to skip the first load
-  const usedInitialComments = useRef(false);
+  const backgroundColor = useThemeColor({ light: '#FFFFFF', dark: '#1F293740' }, 'background');
 
-  // Load comments on mount
+  // Reset provider on mount (clears stale sort/comments from previous issue)
   useEffect(() => {
-    // If initialComments are provided and this is the initial load, use them
-    if (initialComments && initialComments.length > 0 && !usedInitialComments.current) {
-      usedInitialComments.current = true;
+    dispatch({ type: CommentsActionType.RESET });
+  }, []);
+
+  // Seed shared provider when parent passes initial comments
+  useEffect(() => {
+    if (initialComments) {
       dispatch({
         type: CommentsActionType.LOAD_COMMENTS_SUCCESS,
-        payload: {
-          comments: initialComments,
-          hasMore: initialComments.length >= 5,
-        },
+        payload: { comments: initialComments, hasMore: initialComments.length >= 25 },
       });
+    }
+  }, [initialComments]);
+
+  // Skip initial mount (parent seeds comments via loadComicIssueDynamic).
+  // Re-fetch only when sortBy changes after mount.
+  // isFocused guard prevents fetch when CommentsScreen is on top.
+  const isInitialMount = useRef(true);
+
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
       return;
     }
+    if (!isFocused) return;
 
     const publicClient = getPublicApolloClient();
     if (publicClient) {
@@ -84,11 +99,12 @@ export function CommentsSection({
         targetUuid: issueUuid,
         targetType: InkverseType.COMICISSUE,
         page: 1,
-        limitPerPage: 5,
+        limitPerPage: 25,
         sortBy,
+        forceRefresh: true,
       }, dispatch);
     }
-  }, [issueUuid, sortBy, initialComments]);
+  }, [issueUuid, sortBy]);
 
   // Load user's liked comments when authenticated
   useEffect(() => {
@@ -104,36 +120,18 @@ export function CommentsSection({
     }
   }, [isAuthenticated, issueUuid]);
 
+  const handleLoadMore = () => {
+    navigation.navigate(COMMENTS_SCREEN, {
+      issueUuid,
+      seriesUuid,
+      commentCount,
+      creators,
+    });
+  };
+
   const handleSortChange = (newSortBy: CommentSortType) => {
     if (newSortBy !== sortBy) {
       dispatch({ type: CommentsActionType.SET_SORT_TYPE, payload: newSortBy });
-      const publicClient = getPublicApolloClient();
-      if (publicClient) {
-        loadComments({
-          publicClient,
-          targetUuid: issueUuid,
-          targetType: InkverseType.COMICISSUE,
-          page: 1,
-          limitPerPage: 5,
-          sortBy: newSortBy,
-        }, dispatch);
-      }
-    }
-  };
-
-  const handleLoadMore = () => {
-    const publicClient = getPublicApolloClient();
-    if (publicClient) {
-      const isFirstExpansion = currentPage === 1;
-
-      loadMoreComments({
-        publicClient,
-        targetUuid: issueUuid,
-        targetType: InkverseType.COMICISSUE,
-        page: isFirstExpansion ? 1 : currentPage + 1,
-        limitPerPage: 25,
-        sortBy,
-      }, dispatch);
     }
   };
 
@@ -141,12 +139,17 @@ export function CommentsSection({
     const userClient = getUserApolloClient();
     if (!userClient) return;
 
-    await addComment({
+    const result = await addComment({
       userClient,
       issueUuid,
       seriesUuid,
       text,
     }, dispatch);
+
+    if (result?.commentCount != null && onCommentCountChange) {
+      onCommentCountChange(result.commentCount);
+    }
+
   };
 
   const sortOptions: { value: CommentSortType; label: string }[] = [
@@ -159,7 +162,7 @@ export function CommentsSection({
       {/* Header */}
       <View style={styles.header}>
         <ThemedText style={styles.headerTitle}>
-          Comments{commentCount ? ` (${commentCount.toLocaleString()})` : ''}
+          Comments
         </ThemedText>
         <DropdownMenu
           options={sortOptions}
@@ -173,20 +176,20 @@ export function CommentsSection({
       {/* Content container */}
       <View style={[styles.contentContainer, { backgroundColor }]}>
         {/* Loading state */}
-        {isLoading && (
+        {isLoading && comments.length === 0 && (
           <View style={styles.loadingContainer}>
             <ThemedActivityIndicator />
           </View>
         )}
 
         {/* Comments list */}
-        {!isLoading && (
+        {(!isLoading || comments.length > 0) && (
           <>
             {comments.length === 0 ? (
               <EmptyCommentsState creators={creators} />
             ) : (
               <View>
-                {comments.map((comment) => (
+                {regularComments.slice(0, 5).map((comment) => (
                   <CommentItem
                     key={comment.uuid}
                     comment={comment}
@@ -200,6 +203,24 @@ export function CommentsSection({
                     likedCommentUuids={likedCommentUuids}
                     dispatch={dispatch}
                     sortBy={sortBy}
+                    onCommentCountChange={onCommentCountChange}
+                  />
+                ))}
+                {newComments.map((comment) => (
+                  <CommentItem
+                    key={comment.uuid}
+                    comment={comment}
+                    issueUuid={issueUuid}
+                    seriesUuid={seriesUuid}
+                    isAuthenticated={isAuthenticated}
+                    isLiked={likedCommentUuids.includes(comment.uuid)}
+                    currentUserId={userDetails?.id}
+                    replies={repliesMap[comment.uuid] || []}
+                    isLoadingReplies={loadingReplies[comment.uuid]}
+                    likedCommentUuids={likedCommentUuids}
+                    dispatch={dispatch}
+                    sortBy={sortBy}
+                    onCommentCountChange={onCommentCountChange}
                   />
                 ))}
               </View>
@@ -208,21 +229,14 @@ export function CommentsSection({
         )}
 
         {/* Load more button */}
-        {!isLoading && hasMore && (
+        {!isLoading && commentCount != null && commentCount > 5 && (
           <View style={styles.loadMoreContainer}>
-            <PressableOpacity
-              onPress={handleLoadMore}
-              disabled={isLoadingMore}
-              style={styles.loadMoreButton}
-            >
-              {isLoadingMore ? (
-                <ThemedText style={styles.loadMoreText}>Loading...</ThemedText>
-              ) : (
-                <View style={styles.loadMoreButtonInner}>
-                  <ThemedText style={styles.loadMoreText} passedInLightColor={secondaryTextColor} passedInDarkColor={secondaryTextColor}>Load more comments</ThemedText>
-                  <Ionicons name="chevron-down" size={16} color={secondaryTextColor} />
-                </View>
-              )}
+            <PressableOpacity onPress={handleLoadMore} style={styles.loadMoreButton}>
+              <View style={styles.loadMoreButtonInner}>
+                <ThemedText style={styles.loadMoreText} passedInLightColor={secondaryTextColor} passedInDarkColor={secondaryTextColor}>Load more comments</ThemedText>
+                {/* On react native, we push a new screen to the comments screen instead of loading more comments in the same screen. */}
+                {/* <Ionicons name="chevron-down" size={16} color={secondaryTextColor} /> */ }
+              </View>
             </PressableOpacity>
           </View>
         )}
@@ -311,23 +325,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 4,
   },
-  loadMoreContainer: {
-    alignItems: 'center',
-    paddingVertical: 12,
-  },
-  loadMoreButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  loadMoreButtonInner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  loadMoreText: {
-    fontSize: 14,
-  },
   addCommentSection: {
     paddingTop: 16,
   },
@@ -343,5 +340,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: ThemedTextFontFamilyMap.bold,
   },
-
+  loadMoreContainer: {
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  loadMoreButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+  },
+  loadMoreButtonInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  loadMoreText: {
+    fontSize: 14,
+    fontFamily: ThemedTextFontFamilyMap.semiBold,
+  },
 });

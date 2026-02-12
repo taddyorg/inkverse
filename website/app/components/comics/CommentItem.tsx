@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, type Dispatch } from 'react';
+import { useSanitizedHtml } from '@/app/components/ui/SanitizedHtml';
 import { MdFavorite, MdFavoriteBorder, MdReply, MdMoreVert, MdEdit, MdDelete, MdFlag } from 'react-icons/md';
 import { formatDistanceToNow } from 'date-fns';
 import { getPublicApolloClient, getUserApolloClient } from '@/lib/apollo/client.client';
@@ -31,7 +32,8 @@ interface CommentItemProps {
   likedCommentUuids?: string[];
   dispatch: Dispatch<CommentsAction>;
   isReply?: boolean;
-  sortBy?: string;  
+  sortBy?: string;
+  onCommentCountChange?: (count: number) => void;
 }
 
 export function CommentItem({
@@ -47,6 +49,7 @@ export function CommentItem({
   dispatch,
   isReply = false,
   sortBy,
+  onCommentCountChange,
 }: CommentItemProps) {
   const [showEditForm, setShowEditForm] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
@@ -55,10 +58,10 @@ export function CommentItem({
   const [showRepliesSection, setShowRepliesSection] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-
   const isOwner = currentUserId && comment.user?.id === currentUserId;
   const replyCount = comment.stats?.replyCount || 0;
   const likeCount = comment.stats?.likeCount || 0;
+  const sanitizedText = useSanitizedHtml(comment.text);
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -118,7 +121,7 @@ export function CommentItem({
     if (!userClient) return;
 
     setIsSubmitting(true);
-    await addComment({
+    const result = await addComment({
       userClient,
       issueUuid,
       seriesUuid,
@@ -126,6 +129,9 @@ export function CommentItem({
       replyToCommentUuid: comment.uuid,
     }, dispatch);
     setIsSubmitting(false);
+    if (result?.commentCount != null && onCommentCountChange) {
+      onCommentCountChange(result.commentCount);
+    }
     // Keep the replies section open after submitting
   };
 
@@ -149,7 +155,7 @@ export function CommentItem({
     const userClient = getUserApolloClient();
     if (!userClient) return;
 
-    await deleteComment({
+    const result = await deleteComment({
       userClient,
       commentUuid: comment.uuid,
       replyToUuid: comment.replyToUuid,
@@ -157,6 +163,9 @@ export function CommentItem({
       targetType: InkverseType.COMICISSUE,
       seriesUuid,
     }, dispatch);
+    if (result.commentCount != null && onCommentCountChange) {
+      onCommentCountChange(result.commentCount);
+    }
     setShowDeleteModal(false);
   };
 
@@ -200,13 +209,25 @@ export function CommentItem({
             ) : (
               <>
                 {/* Text with username inline */}
-                <p className="text-sm text-inkverse-black dark:text-gray-300 whitespace-pre-wrap break-words leading-relaxed">
-                  {comment.text}
+                <div
+                  onClick={(e) => {
+                    const spoiler = (e.target as HTMLElement).closest?.('.spoiler');
+                    if (spoiler) {
+                      spoiler.classList.toggle('revealed');
+                    }
+                  }}
+                  className="text-sm text-inkverse-black dark:text-gray-300 whitespace-pre-wrap break-words leading-relaxed [&_a]:text-inkverse-black [&_a]:underline [&_a:hover]:opacity-80 [&_.spoiler]:bg-inkverse-black/20 [&_.spoiler]:text-transparent [&_.spoiler]:rounded [&_.spoiler]:cursor-pointer [&_.spoiler]:px-0.5 [&_.spoiler]:dark:bg-gray-600 [&_.spoiler.revealed]:bg-inkverse-black/20 [&_.spoiler.revealed]:text-inherit [&_.spoiler]:select-none [&_.spoiler.revealed]:select-auto [&_.spoiler]:transition-colors"
+                >
+                  {sanitizedText ? (
+                    <span className="inline [&_*]:inline" dangerouslySetInnerHTML={{ __html: sanitizedText }} />
+                  ) : (
+                    <span>{comment.text}</span>
+                  )}
                   <span className="text-gray-400 dark:text-gray-400"> — </span>
                   {comment.user?.username && (
-                    <Link 
-                      to={getInkverseUrl({ type: 'profile', username: comment.user.username }) || '/'} 
-                      className="text-gray-400 dark:text-gray-400"
+                    <Link
+                      to={getInkverseUrl({ type: 'profile', username: comment.user.username }) || '/'}
+                      className="text-gray-400 dark:text-gray-400 inline"
                     >
                       {comment.user.username}
                     </Link>
@@ -219,7 +240,7 @@ export function CommentItem({
                       </span>
                     </>
                   )}
-                </p>
+                </div>
 
                 {/* Actions */}
                 <div className="flex items-center gap-1 mt-3 -ml-2">
@@ -347,6 +368,7 @@ export function CommentItem({
                         dispatch={dispatch}
                         isReply
                         sortBy={sortBy}
+                        onCommentCountChange={onCommentCountChange}
                       />
                     ))}
 

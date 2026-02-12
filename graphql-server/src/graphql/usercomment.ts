@@ -6,6 +6,14 @@ import { sendSlackNotification } from '@inkverse/shared-server/messaging/slack';
 import { purgeCacheOnCdn } from '@inkverse/shared-server/cache/index';
 import { inkverseWebsiteUrl } from '@inkverse/public/utils';
 
+// Sanitize comment text by stripping <script> and <iframe> tags and their contents
+function sanitizeCommentText(text: string): string {
+  return text
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(/<iframe\b[^>]*>[\s\S]*?<\/iframe>/gi, '')
+    .trim();
+}
+
 // GraphQL Type Definitions
 export const UserCommentDefinitions = `
   """
@@ -204,10 +212,11 @@ export const UserCommentMutations: MutationResolvers = {
       }
     }
 
-    // Create the comment
+    // Sanitize and create the comment
+    const sanitizedText = sanitizeCommentText(text);
     const comment = await UserComment.addComment(
       context.user.id,
-      text.trim(),
+      sanitizedText,
       issueUuid,
       InkverseType.COMICISSUE,
       seriesUuid,
@@ -270,11 +279,12 @@ export const UserCommentMutations: MutationResolvers = {
       throw new UserInputError('Comment text cannot exceed 2000 characters');
     }
 
-    // Edit the comment (model verifies ownership via userId)
+    // Sanitize and edit the comment (model verifies ownership via userId)
+    const sanitizedText = sanitizeCommentText(text);
     const comment = await UserComment.editComment(
       commentUuid,
       context.user.id,
-      text.trim()
+      sanitizedText
     );
 
     if (!comment) {

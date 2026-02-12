@@ -1,5 +1,5 @@
 import { UserComment, UserLike, User } from '@inkverse/shared-server/models/index';
-import { InkverseType, type QueryResolvers } from '@inkverse/shared-server/graphql/types';
+import { InkverseType, CommentSortType, type QueryResolvers } from '@inkverse/shared-server/graphql/types';
 import type { UserCommentModel, UserModel } from '@inkverse/shared-server/database/types';
 
 // GraphQL Type Definitions
@@ -41,6 +41,9 @@ export const CommentDefinitions = `
   type CommentsForTarget {
     targetUuid: ID!
     targetType: InkverseType!
+    sortBy: CommentSortType
+    page: Int
+    limitPerPage: Int
     comments: [Comment!]!
   }
 `;
@@ -98,18 +101,18 @@ function buildComment(
 export const CommentQueries: QueryResolvers = {
   getComments: async (
     _parent: any,
-    { targetUuid, targetType, page = 1, limitPerPage = 25, sortBy = 'TOP' }: {
+    { targetUuid, targetType, page = 1, limitPerPage = 25, sortBy = CommentSortType.TOP }: {
       targetUuid: string;
       targetType: InkverseType;
       page?: number | null;
       limitPerPage?: number | null;
-      sortBy?: 'NEWEST' | 'TOP' | null;
+      sortBy?: CommentSortType | null;
     },
     _context: any
   ) => {
     const actualPage = page ?? 1;
     const actualLimit = limitPerPage ?? 25;
-    const actualSortBy = sortBy ?? 'TOP';
+    const actualSortBy = sortBy ?? CommentSortType.TOP;
 
     // Validate target type
     if (!Object.values(InkverseType).includes(targetType)) {
@@ -126,7 +129,7 @@ export const CommentQueries: QueryResolvers = {
     );
 
     if (comments.length === 0) {
-      return { targetUuid, targetType, comments: [] };
+      return { targetUuid, targetType, sortBy: actualSortBy, page: actualPage, limitPerPage: actualLimit, comments: [] };
     }
 
     // Get comment UUIDs for batch queries
@@ -148,6 +151,9 @@ export const CommentQueries: QueryResolvers = {
     return {
       targetUuid,
       targetType,
+      sortBy: actualSortBy,
+      page: actualPage,
+      limitPerPage: actualLimit,
       comments: comments.map(comment =>
         buildComment(comment, userMap, likeCounts, replyCounts)
       ),
@@ -176,7 +182,7 @@ export const CommentQueries: QueryResolvers = {
     );
 
     if (replies.length === 0) {
-      return { targetUuid, targetType, comments: [] };
+      return { targetUuid, targetType, sortBy: null, page: actualPage, limitPerPage: actualLimit, comments: [] };
     }
 
     // Get reply UUIDs for batch queries
@@ -200,6 +206,9 @@ export const CommentQueries: QueryResolvers = {
     return {
       targetUuid,
       targetType,
+      sortBy: null,
+      page: actualPage,
+      limitPerPage: actualLimit,
       comments: replies.map(reply =>
         buildComment(reply, userMap, likeCounts, emptyReplyCounts)
       ),

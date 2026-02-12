@@ -12,6 +12,7 @@ import { AddToProfileButton, NotificationButton } from '@/app/components/comics/
 
 import { getPublicApolloClient, getUserApolloClient } from '@/lib/apollo';
 import { getUserDetails } from '@/lib/auth/user';
+import { on, off, EventNames } from '@inkverse/shared-client/pubsub';
 import { ComicIssue, ComicSeries } from '@inkverse/shared-client/graphql/operations';
 import { loadComicSeries, loadComicSeriesDynamic, loadUserComicData, subscribeToSeries, unsubscribeFromSeries, enableNotificationsForSeries, disableNotificationsForSeries, comicSeriesReducer, comicSeriesInitialState, likeComicIssueInSeries, unlikeComicIssueInSeries } from '@inkverse/shared-client/dispatch/comicseries';
 import { RootStackParamList, COMICSERIES_SCREEN, COMICISSUE_SCREEN, SIGNUP_SCREEN } from '@/constants/Navigation';
@@ -37,8 +38,25 @@ export function ComicSeriesScreen() {
   const analytics = useAnalytics();
   
   // Authentication and clients
-  const currentUser = getUserDetails();
+  const [currentUser, setCurrentUser] = useState(getUserDetails());
   const isLoggedIn = !!currentUser;
+
+  useEffect(() => {
+    const handleUserAuthenticated = () => {
+      setCurrentUser(getUserDetails());
+    };
+    const handleUserLoggedOut = () => {
+      setCurrentUser(null);
+    };
+
+    on(EventNames.USER_AUTHENTICATED, handleUserAuthenticated);
+    on(EventNames.USER_LOGGED_OUT, handleUserLoggedOut);
+
+    return () => {
+      off(EventNames.USER_AUTHENTICATED, handleUserAuthenticated);
+      off(EventNames.USER_LOGGED_OUT, handleUserLoggedOut);
+    };
+  }, []);
   const publicClient = getPublicApolloClient();
   const userClient = isLoggedIn ? getUserApolloClient() : undefined;
   

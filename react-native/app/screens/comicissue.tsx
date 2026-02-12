@@ -3,7 +3,7 @@ import { StyleSheet, useWindowDimensions, Animated, View, NativeSyntheticEvent, 
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { RootStackParamList, COMICISSUE_SCREEN, COMICSERIES_SCREEN, EDIT_PATREON_SCREEN, SIGNUP_SCREEN } from '@/constants/Navigation';
+import { RootStackParamList, COMICISSUE_SCREEN, COMICSERIES_SCREEN, COMMENTS_SCREEN, EDIT_PATREON_SCREEN, SIGNUP_SCREEN } from '@/constants/Navigation';
 import { FlashList, FlashListRef } from '@shopify/flash-list';
 import { Image } from 'expo-image';
 import { jwtDecode } from 'jwt-decode';
@@ -31,6 +31,7 @@ import {
   superLikeAllEpisodes,
   ComicIssueActionType,
 } from '@inkverse/shared-client/dispatch/comicissue';
+import type { Comment } from '@inkverse/shared-client/dispatch/comments';
 import { ComicIssue, Creator, GetUserComicSeries, type GetUserComicSeriesQuery, type GetUserComicSeriesQueryVariables } from '@inkverse/shared-client/graphql/operations';
 import { getStoryImageUrl } from '@inkverse/public/comicstory';
 import { getAvatarImageUrl } from '@inkverse/public/creator';
@@ -39,6 +40,8 @@ import { getUserDetails } from '@/lib/auth/user';
 import { getConnectedHostingProviderUuids, getContentTokenForProviderAndSeries } from '@/lib/auth/hosting-provider';
 import { useThemeColor } from '@/constants/Colors';
 import { useAnalytics } from '@/lib/analytics';
+import { useComments } from '@/app/components/providers/CommentsProvider';
+import { on, off, EventNames } from '@inkverse/shared-client/pubsub';
 
 type ListItemType = 'story' | 'like' | 'grid' | 'creator' | 'comments' | 'next-episode' | 'exclusive-signup' | 'exclusive-connect-patreon' | 'exclusive-checking-access' | 'exclusive-no-access' | 'patreon-exclusive';
 
@@ -95,7 +98,8 @@ export function ComicIssueScreen() {
   const isFooterOpen = useRef(true);
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  
+  const [initialComments, setInitialComments] = useState<Comment[] | null>(null);
+
   // Scroll indicator state
   const [scrollPosition, setScrollPosition] = useState(0);
   const [contentHeight, setContentHeight] = useState(0);
@@ -149,7 +153,24 @@ export function ComicIssueScreen() {
   const hasAccessToIssue = decodedToken?.scopes_for_exclusive_content?.includes('patreon');
   const connectedProviders = getConnectedHostingProviderUuids();
   const isConnectedToHostingProvider = comicseries?.hostingProviderUuid && connectedProviders.includes(comicseries.hostingProviderUuid);
-  const isAuthenticated = !!getUserDetails();
+  const [isAuthenticated, setIsAuthenticated] = useState(!!getUserDetails());
+
+  useEffect(() => {
+    const handleUserAuthenticated = () => {
+      setIsAuthenticated(true);
+    };
+    const handleUserLoggedOut = () => {
+      setIsAuthenticated(false);
+    };
+
+    on(EventNames.USER_AUTHENTICATED, handleUserAuthenticated);
+    on(EventNames.USER_LOGGED_OUT, handleUserLoggedOut);
+
+    return () => {
+      off(EventNames.USER_AUTHENTICATED, handleUserAuthenticated);
+      off(EventNames.USER_LOGGED_OUT, handleUserLoggedOut);
+    };
+  }, []);
 
   // Like state
   const isLiked = userComicData?.likedComicIssueUuids?.includes(comicissue?.uuid || '') ?? false;
@@ -159,13 +180,17 @@ export function ComicIssueScreen() {
   const hasLikedAllEpisodes = isAuthenticated && totalEpisodes > 0 && likedEpisodesCount >= totalEpisodes;
 
   const loadData = useCallback(async (forceRefresh = false) => {
+    setInitialComments(null);
     await loadComicIssue({
       publicClient,
       issueUuid,
       seriesUuid,
       forceRefresh
     }, dispatch);
-    await loadComicIssueDynamic({ publicClient, issueUuid, forceRefresh }, dispatch);
+    const dynamicResult = await loadComicIssueDynamic({ publicClient, issueUuid, forceRefresh }, dispatch);
+    if (dynamicResult) {
+      setInitialComments(dynamicResult.comments as Comment[]);
+    }
   }, [issueUuid]);
 
   useEffect(() => {
@@ -291,6 +316,28 @@ export function ComicIssueScreen() {
     }
   }, [isAuthenticated, isLiked, comicissue?.uuid, comicseries?.uuid, navigation]);
 
+  // Handle comment count change from add/delete
+  const handleCommentCountChange = useCallback((count: number) => {
+    dispatch({ type: ComicIssueActionType.GET_COMICISSUE_SUCCESS, payload: { commentCount: count } });
+  }, []);
+
+  // Share the callback with CommentsScreen via CommentsProvider context
+  const { commentCountCallbackRef } = useComments();
+  useEffect(() => {
+    commentCountCallbackRef.current = handleCommentCountChange;
+    return () => { commentCountCallbackRef.current = undefined; };
+  }, [handleCommentCountChange]);
+
+  // Handle comment press - navigate to CommentsScreen
+  const handleCommentPress = useCallback(() => {
+    navigation.navigate(COMMENTS_SCREEN, {
+      issueUuid,
+      seriesUuid,
+      commentCount: commentCount ?? undefined,
+      creators: comicseries?.creators ?? [],
+    });
+  }, [issueUuid, seriesUuid, commentCount, comicseries?.creators, navigation]);
+
   // Handle super-like all episodes
   const handleSuperLikePress = useCallback(async () => {
     if (!isAuthenticated) {
@@ -354,6 +401,8 @@ export function ComicIssueScreen() {
             isAuthenticated={item.data.isAuthenticated}
             commentCount={item.data.commentCount}
             creators={item.data.creators}
+            onCommentCountChange={item.data.onCommentCountChange}
+            initialComments={item.data.initialComments}
           />
         );
       case 'next-episode':
@@ -471,6 +520,8 @@ export function ComicIssueScreen() {
         isAuthenticated,
         commentCount: commentCount ?? undefined,
         creators: comicseries?.creators ?? [],
+        onCommentCountChange: handleCommentCountChange,
+        initialComments,
       },
     };
 
@@ -501,7 +552,7 @@ export function ComicIssueScreen() {
     ];
 
     return items;
-  }, [comicissue, comicseries, contentToken, isPatreonExclusive, isAuthenticated, isConnectedToHostingProvider, isCheckingAccess, hasAccessToIssue, creatorLinks, commentCount]);
+  }, [comicissue, comicseries, contentToken, isPatreonExclusive, isAuthenticated, isConnectedToHostingProvider, isCheckingAccess, hasAccessToIssue, creatorLinks, commentCount, handleCommentCountChange, initialComments]);
 
   // Handle tap on content to toggle header and footer
   const handleTap = useCallback(() => {
@@ -614,6 +665,8 @@ export function ComicIssueScreen() {
         likeCount={displayLikeCount}
         isLikeLoading={isLikeLoading ?? false}
         onLikePress={handleLikePress}
+        commentCount={commentCount ?? undefined}
+        onCommentPress={handleCommentPress}
       />
       <ScrollIndicator 
         scrollPosition={scrollPosition}

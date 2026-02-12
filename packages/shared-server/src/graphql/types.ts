@@ -239,6 +239,9 @@ export type CommentStats = {
 export type CommentsForTarget = {
   __typename?: 'CommentsForTarget';
   comments: Array<Comment>;
+  limitPerPage?: Maybe<Scalars['Int']['output']>;
+  page?: Maybe<Scalars['Int']['output']>;
+  sortBy?: Maybe<CommentSortType>;
   targetType: InkverseType;
   targetUuid: Scalars['ID']['output'];
 };
@@ -1786,6 +1789,9 @@ export type CommentStatsResolvers<ContextType = any, ParentType extends Resolver
 
 export type CommentsForTargetResolvers<ContextType = any, ParentType extends ResolversParentTypes['CommentsForTarget'] = ResolversParentTypes['CommentsForTarget']> = ResolversObject<{
   comments?: Resolver<Array<ResolversTypes['Comment']>, ParentType, ContextType>;
+  limitPerPage?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  page?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  sortBy?: Resolver<Maybe<ResolversTypes['CommentSortType']>, ParentType, ContextType>;
   targetType?: Resolver<ResolversTypes['InkverseType'], ParentType, ContextType>;
   targetUuid?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

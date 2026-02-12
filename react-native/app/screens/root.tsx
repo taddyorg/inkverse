@@ -22,6 +22,7 @@ import { ComicsListScreen } from './comicslist';
 import { TrendingScreen } from './trending';
 import { BlogScreen } from './blog';
 import { ReportsScreen } from './reports';
+import { CommentsScreen } from './comments';
 import { EditProfileScreen } from './profile-edit/index';
 import { EditUsernameScreen } from './profile-edit/edit-username';
 import { EditAgeScreen } from './profile-edit/edit-age';
@@ -50,6 +51,7 @@ import { WrappedHostingProviderScreen } from './wrapped-screens/wrappedhostingpr
 import { WrappedApiHostingProviderScreen } from './wrapped-screens/wrappedapihostingprovider';
 import { WrappedTrendingLikedScreen, WrappedTrendingDiscussedScreen } from './wrapped-screens/wrappedtrending';
 import { NotificationProvider } from '../components/providers/NotificationProvider';
+import { CommentsProvider } from '../components/providers/CommentsProvider';
 import { AnalyticsProvider } from '../components/providers/AnalyticsProvider';
 
 import { 
@@ -77,7 +79,8 @@ import {
   COMICS_LIST_SCREEN,
   TRENDING_SCREEN,
   BLOG_SCREEN,
-  REPORTS_SCREEN, 
+  REPORTS_SCREEN,
+  COMMENTS_SCREEN,
   MAIN_SCREEN,
   SIGNUP_SCREEN,
   SIGNUP_MAIN_SCREEN,
@@ -333,8 +336,9 @@ const tabBarStyleOptions = (colorScheme: ColorSchemeName) => {
   const tabBarActiveTintColor = Colors[colorScheme ?? 'light'].text;
 
   return ({ route }: { route: RouteProp<ParamListBase, string> }) => {
-    const isComicIssueScreen = getFocusedRouteNameFromRoute(route) === COMICISSUE_SCREEN;
-    const tabBarStyleDisplay = isComicIssueScreen 
+    const focusedRouteName = getFocusedRouteNameFromRoute(route);
+    const shouldHideTabBar = focusedRouteName === COMICISSUE_SCREEN || focusedRouteName === COMICSERIES_SCREEN;
+    const tabBarStyleDisplay = shouldHideTabBar
       ? { display: 'none' as const }
       : { display: 'flex' as const };
     
@@ -589,6 +593,7 @@ function App() {
                   }}
                 >
                   <NotificationProvider>
+                  <CommentsProvider>
                     <Stack.Navigator screenOptions={{ headerShown: false }}>
                       <Stack.Screen 
                         name={MAIN_SCREEN} 
@@ -599,9 +604,14 @@ function App() {
                       component={BlogScreen}
                       options={modalScreenOptions}
                     />            
-                    <Stack.Screen 
-                      name={REPORTS_SCREEN} 
+                    <Stack.Screen
+                      name={REPORTS_SCREEN}
                       component={ReportsScreen}
+                      options={modalScreenOptions}
+                    />
+                    <Stack.Screen
+                      name={COMMENTS_SCREEN}
+                      component={CommentsScreen}
                       options={modalScreenOptions}
                     />
                     <Stack.Screen 
@@ -660,6 +670,7 @@ function App() {
                       options={modalScreenOptionsCannotClose}
                     />
                   </Stack.Navigator>
+                  </CommentsProvider>
                 </NotificationProvider>
               </PostHogProvider>
             </AnalyticsProvider>

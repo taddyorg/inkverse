@@ -2,7 +2,7 @@ import { useLoaderData } from "react-router";
 import type { LoaderFunctionArgs, MetaFunction } from "react-router";
 import { Link } from 'react-router-dom';
 import { MdChevronLeft } from 'react-icons/md';
-import { useEffect, useReducer, useState } from 'react';
+import { useCallback, useEffect, useReducer, useState } from 'react';
 import { jwtDecode } from "jwt-decode";
 
 import { ImageWithLoader } from "../components/ui";
@@ -58,7 +58,7 @@ export default function ComicIssue() {
 
 function ComicIssueContent({ initialData }: { initialData: Partial<ComicIssueLoaderData> }) {
   const [state, dispatch] = useReducer(comicIssueReducer, initialData);
-  const [initialComments, setInitialComments] = useState<CommentDetailsFragment[] | undefined>(undefined);
+  const [initialComments, setInitialComments] = useState<CommentDetailsFragment[] | null>(null);
 
   const {
     comicissue,
@@ -78,9 +78,7 @@ function ComicIssueContent({ initialData }: { initialData: Partial<ComicIssueLoa
     if (comicissue?.uuid) {
       const publicClient = getPublicApolloClient();
       loadComicIssueDynamic({ publicClient, issueUuid: comicissue.uuid }, dispatch).then((result) => {
-        if (result?.comments && result.comments.length > 0) {
-          setInitialComments(result.comments as CommentDetailsFragment[]);
-        }
+        setInitialComments((result?.comments ?? []) as CommentDetailsFragment[]);
       });
     }
   }, [comicissue?.uuid]);
@@ -148,6 +146,10 @@ function ComicIssueContent({ initialData }: { initialData: Partial<ComicIssueLoa
   const totalEpisodes = comicseries?.issueCount ?? 0;
   const likedEpisodesCount = userComicData?.likedComicIssueUuids?.length ?? 0;
   const hasLikedAllEpisodes = isAuthenticated && totalEpisodes > 0 && likedEpisodesCount >= totalEpisodes;
+
+  const handleCommentCountChange = useCallback((count: number) => {
+    dispatch({ type: ComicIssueActionType.GET_COMICISSUE_SUCCESS, payload: { commentCount: count } });
+  }, []);
 
   useEffect(() => {
     if (isPatreonExclusive && comicseries?.hostingProviderUuid && comicseries?.uuid && isConnectedToHostingProvider) {
@@ -308,14 +310,17 @@ function ComicIssueContent({ initialData }: { initialData: Partial<ComicIssueLoa
           onPress={handleLikePress}
         />
         <div className="px-4 sm:px-0">
-          <CommentsSection
-            issueUuid={comicissue?.uuid || ''}
-            seriesUuid={comicseries?.uuid || ''}
-            isAuthenticated={isAuthenticated}
-            commentCount={commentCount ?? undefined}
-            initialComments={initialComments}
-            creators={comicseries?.creators ?? []}
-          />
+          {initialComments !== null && (
+            <CommentsSection
+              issueUuid={comicissue?.uuid || ''}
+              seriesUuid={comicseries?.uuid || ''}
+              isAuthenticated={isAuthenticated}
+              commentCount={commentCount ?? undefined}
+              initialComments={initialComments}
+              creators={comicseries?.creators ?? []}
+              onCommentCountChange={handleCommentCountChange}
+            />
+          )}
         </div>
         <div className="px-4 sm:px-0">
           <CreatorsForIssue

@@ -24,7 +24,13 @@ const cacheKeyForType: Record<string, string> = {
   "SearchResults": "searchId",
   "BlueskyProfile": "did",
   "UserComicSeries": "seriesUuid",
-  "CannySSO": "userId"
+  "CannySSO": "userId",
+  "ProfileComicSeries": "userId",
+  "ComicIssueStats": "uuid",
+  "ComicSeriesStats": "uuid",
+  "CommentStats": "uuid",
+  "Comment": "uuid",
+  "CommentsForTarget": "targetUuid",
 }
 
 const cacheTypesSet = new Set(Object.keys(cacheKeyForType));

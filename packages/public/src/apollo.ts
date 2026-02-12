@@ -44,10 +44,31 @@ export const typePolicies = {
   UserComicSeries: {
     keyFields: ["seriesUuid"]
   },
+  ProfileComicSeries: {
+    keyFields: ["userId"]
+  },
   CannySSO: {
     keyFields: ["userId"]
   },
   ComicIssueStats: {
-    keyFields: ["seriesUuid", "issueUuid"]
+    keyFields: ["uuid"]
+  },
+  ComicSeriesStats: {
+    keyFields: ["uuid"]
+  },
+  Comment: {
+    keyFields: ["uuid"]
+  },
+  CommentStats: {
+    keyFields: ["uuid"]
+  },
+  UserComment: {
+    keyFields: ["targetUuid"]
+  },
+  CommentsForTarget: {
+    keyFields: false,
+  },
+  NotificationPreference: {
+    keyFields: ["userId", "notificationType"]
   },
 }
