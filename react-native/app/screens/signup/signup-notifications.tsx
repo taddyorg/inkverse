@@ -1,5 +1,5 @@
-import React, { useState, useReducer, useEffect } from 'react';
-import { StyleSheet, View, Alert, Platform } from 'react-native';
+import React, { useReducer } from 'react';
+import { StyleSheet, View, Platform } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import * as Notifications from 'expo-notifications';
@@ -30,13 +30,6 @@ export function SignupNotificationsScreen() {
   const [userDetailsState, dispatch] = useReducer(userDetailsReducer, userDetailsInitialState);
   const userClient = getUserApolloClient();
 
-  // Watch for successful push token saving and navigate to next screen
-  useEffect(() => {
-    if (userDetailsState.pushNotificationSuccess) {
-      loadNextScreen();
-    }
-  }, [userDetailsState.pushNotificationSuccess]);
-  
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
   const primaryColor = useThemeColor({}, 'tint');
@@ -52,18 +45,15 @@ export function SignupNotificationsScreen() {
       if (status === Notifications.PermissionStatus.GRANTED) {
         const tokenData = await Notifications.getExpoPushTokenAsync();
         const platform = Platform.OS;
-        
-        // savePushToken will dispatch PUSH_NOTIFICATION_SUCCESS on success
-        // which will trigger useEffect to call loadNextScreen()
-        savePushToken({
+
+        await savePushToken({
           userClient,
           fcmToken: tokenData.data,
           platform: platform
         }, dispatch);
-      } else {
-        // If permission denied, go to next screen anyway
-        loadNextScreen();
       }
+
+      loadNextScreen();
     } catch (error) {
       console.error('Error requesting notification permissions:', error);
       dispatch({ 
@@ -101,7 +91,7 @@ export function SignupNotificationsScreen() {
               />
             </View>
 
-            {/* Title
+            {/* Title */}
             <ThemedText size="title" style={styles.title}>
               Enable Notifications
             </ThemedText>
@@ -150,7 +140,6 @@ export function SignupNotificationsScreen() {
 
               <PressableOpacity
                 onPress={handleSkip}
-                disabled={userDetailsState.isLoading}
                 style={styles.secondaryButton}
                 accessibilityLabel="Skip notifications setup"
                 accessibilityHint="Double tap to skip enabling notifications"
