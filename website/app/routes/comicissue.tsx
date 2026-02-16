@@ -368,7 +368,7 @@ const SignupButton = () => {
 const PatreonConnectButton = () => {
   return (
     <div className="flex flex-col items-center justify-center p-4">
-      <p className="text-lg text-center mb-6">Please connect your Patreon account to access this comic issue.</p>
+      <p className="text-lg text-center mb-6">Please connect your Patreon account to access this episode.</p>
       <div className="flex flex-row">
         <Link to="/profile/edit/patreon"
           className="bg-red-500 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-800 text-white font-semibold px-6 py-2 rounded-full flex items-center justify-center">

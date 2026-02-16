@@ -698,7 +698,7 @@ const SignupButton = ({ navigation }: { navigation: any }) => {
 const PatreonConnectButton = ({ navigation }: { navigation: any }) => {
   return (
     <View style={styles.authContainer}>
-      <ThemedText style={styles.authText}>Please connect your Patreon account to access this comic issue.</ThemedText>
+      <ThemedText style={styles.authText}>Please connect your Patreon account to access this episode.</ThemedText>
       <PressableOpacity
         onPress={() => navigation.navigate(EDIT_PATREON_SCREEN)}
         style={styles.authButton}
