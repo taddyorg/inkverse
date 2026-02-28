@@ -31,7 +31,7 @@
   "dependencies": {
     "@inkverse/shared-server": "*",
     "@inkverse/public": "*",
-    "axios": "^1.7.9",
+    "axios": "^1.13.6",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "graphql": "^16.13.0",
