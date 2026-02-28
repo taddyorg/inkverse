@@ -55,6 +55,7 @@ export async function loadComicsList({ params, request, context }: LoaderFunctio
     };
 
   } catch (error) {
-    return handleLoaderError(error, 'Comics List');
+    handleLoaderError(error, 'Comics List');
+    return { comicseries: [] };
   }
 }

@@ -3,7 +3,7 @@ import { StyleSheet, Image, View, Dimensions, SectionList, FlatList } from 'reac
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { Screen, ThemedView, ThemedText, ThemedButton, ThemedActivityIndicator, HeaderBackButton, ThemedRefreshControl } from '@/app/components/ui';
+import { Screen, ThemedView, ThemedText, ThemedButton, ThemedActivityIndicator, HeaderBackButton, ThemedRefreshControl, FadeInView } from '@/app/components/ui';
 import { HeaderSettingsButton } from '@/app/components/profile/HeaderSettingsButton';
 import { PROFILE_SCREEN, RootStackParamList, SETTINGS_SCREEN, SIGNUP_SCREEN } from '@/constants/Navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -357,11 +357,12 @@ export function ProfileScreen() {
 
   return (
     <Screen>
-      <SectionList
-        sections={sectionData}
-        renderItem={renderSectionItem}
-        renderSectionHeader={renderSectionHeader}
-        keyExtractor={(item, index) => {
+      <FadeInView>
+        <SectionList
+          sections={sectionData}
+          renderItem={renderSectionItem}
+          renderSectionHeader={renderSectionHeader}
+          keyExtractor={(item, index) => {
           // Each item type appears only once, so we can use a combination
           // of the item type and any unique property it has
           switch(item.type) {
@@ -381,15 +382,16 @@ export function ProfileScreen() {
               return `item-${index}`;
           }
         }}
-        contentContainerStyle={styles.screenPadding}
-        stickySectionHeadersEnabled={false}
-        refreshControl={
-          <ThemedRefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-          />
-        }
-      />
+          contentContainerStyle={styles.screenPadding}
+          stickySectionHeadersEnabled={false}
+          refreshControl={
+            <ThemedRefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+            />
+          }
+        />
+      </FadeInView>
     </Screen>
   );
 }

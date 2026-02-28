@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { StyleSheet, View, TextInput, KeyboardAvoidingView, Platform, ScrollView, useColorScheme } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
@@ -37,6 +38,7 @@ export function CommentsScreen() {
   const { issueUuid, seriesUuid, commentCount: initialCommentCount, creators } = route.params;
 
   const { state, dispatch, commentCountCallbackRef } = useComments();
+  const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme() ?? 'light';
   const scrollViewRef = useRef<ScrollView>(null);
   const inputRef = useRef<TextInput>(null);
@@ -312,7 +314,7 @@ export function CommentsScreen() {
         </ScrollView>
 
         {/* Bottom input bar */}
-        <View style={[styles.inputBarContainer]}>
+        <View style={[styles.inputBarContainer, { paddingBottom: Math.max(insets.bottom, 8) }]}>
           {/* Reply indicator */}
           {replyTo && (
             <View style={styles.replyIndicator}>
@@ -453,7 +455,7 @@ const styles = StyleSheet.create({
   inputBarContainer: {
     paddingHorizontal: 12,
     paddingVertical: 8,
-    paddingBottom: Platform.OS === 'ios' ? 24 : 8,
+    paddingBottom: 8,
   },
   replyIndicator: {
     flexDirection: 'row',

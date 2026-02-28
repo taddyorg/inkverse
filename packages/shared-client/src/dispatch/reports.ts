@@ -8,7 +8,7 @@ import {
   type ReportCommentMutation,
   type ReportCommentMutationVariables,
   type ReportType
-} from '../graphql/operations';
+} from '../graphql/operations.js';
 
 /* Action Type Enum */
 export enum ReportActionType {

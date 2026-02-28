@@ -38,5 +38,6 @@ export async function loadHomeScreen({ params, request, context }: LoaderFunctio
     };
   } catch (error) {
     handleLoaderError(error, 'Home Screen');
+    return { trendingComicSeries: null } as HomeLoaderData;
   }
 }

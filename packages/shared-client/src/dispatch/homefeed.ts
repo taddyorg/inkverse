@@ -50,7 +50,7 @@ export type HomeScreenLoaderData = {
 };
 
 export const homeScreenInitialState: HomeScreenLoaderData = {
-  isHomeScreenLoading: false,
+  isHomeScreenLoading: true,
   featuredComicSeries: [],
   curatedLists: [],
   recentlyAddedComicSeries: [],

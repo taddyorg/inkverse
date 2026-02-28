@@ -5,7 +5,7 @@ import { useRoute } from '@react-navigation/native';
 import { FlashList } from '@shopify/flash-list';
 
 import { RootStackParamList, LIST_SCREEN } from '@/constants/Navigation';
-import { Screen, ThemedText, HeaderShareButton, HeaderBackButton, ScreenHeader, ThemedActivityIndicator, ThemedRefreshControl } from '@/app/components/ui';
+import { Screen, ThemedText, HeaderShareButton, HeaderBackButton, ScreenHeader, ThemedActivityIndicator, ThemedRefreshControl, FadeInView } from '@/app/components/ui';
 import { ListDetails } from '@/app/components/list/ListDetails';
 
 import { getPublicApolloClient } from '@/lib/apollo';
@@ -87,17 +87,19 @@ export function ListScreen() {
 
   return (
     <ListScreenWrapper list={list}>
-      <FlashList
-        data={listData}
-        renderItem={renderItem}
-        contentContainerStyle={styles.contentContainer}
-        refreshControl={
-          <ThemedRefreshControl
-            refreshing={isListLoading}
-            onRefresh={handleRefresh}
-          />
-        }
-      />
+      <FadeInView>
+        <FlashList
+          data={listData}
+          renderItem={renderItem}
+          contentContainerStyle={styles.contentContainer}
+          refreshControl={
+            <ThemedRefreshControl
+              refreshing={isListLoading}
+              onRefresh={handleRefresh}
+            />
+          }
+        />
+      </FadeInView>
     </ListScreenWrapper>
   );
 }

@@ -39,5 +39,6 @@ export async function loadTrending(request: Request, metric: TrendingMetric): Pr
     };
   } catch (error) {
     handleLoaderError(error, 'Trending Comics');
+    return { comicSeries: [], metric, period: periodParam, page, limitPerPage };
   }
 }

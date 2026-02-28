@@ -24,7 +24,7 @@ export type ListLoaderData = {
 };
 
 export const listInitialState: ListLoaderData = {
-  isListLoading: false,
+  isListLoading: true,
   list: null,
   error: null,
 }

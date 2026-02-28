@@ -14,3 +14,4 @@ export { NotificationPreference } from './notification_preference.js';
 export { UserLike } from './user_like.js';
 export { UserComment } from './user_comment.js';
 export { UserReport } from './user_report.js';
+export { UserCreatorClaim } from './user_creator_claim.js';

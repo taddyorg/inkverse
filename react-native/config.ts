@@ -3,6 +3,7 @@ import { Platform } from 'react-native';
 const developmentConfig = {
   "SERVER_URL": getGraphQLURL(false),
   "AUTH_URL": getAuthURL(false),
+  "CLAIM_URL": getClaimURL(false),
   "POST_HOG_INFO": {
     API_KEY: 'phc_ADit78DdDgFCBzE0qksQOat2x8xn4NfISUdVtmkArWD',
     HOST_URL: 'https://us.i.posthog.com'
@@ -16,6 +17,7 @@ const developmentConfig = {
 const developmentConfigButProductionData = {
   "SERVER_URL": getGraphQLURL(true),
   "AUTH_URL": getAuthURL(true),
+  "CLAIM_URL": getClaimURL(true),
   "POST_HOG_INFO": {
     API_KEY: 'phc_ADit78DdDgFCBzE0qksQOat2x8xn4NfISUdVtmkArWD',
     HOST_URL: 'https://us.i.posthog.com'
@@ -29,6 +31,7 @@ const developmentConfigButProductionData = {
 const productionConfig = {
   "SERVER_URL": getGraphQLURL(true),
   "AUTH_URL": getAuthURL(true),
+  "CLAIM_URL": getClaimURL(true),
   "POST_HOG_INFO": {
     API_KEY: 'phc_ADit78DdDgFCBzE0qksQOat2x8xn4NfISUdVtmkArWD',
     HOST_URL: 'https://us.i.posthog.com'
@@ -51,11 +54,21 @@ function getGraphQLURL(isProduction: boolean) {
 
 function getAuthURL(isProduction: boolean) {
   if (!isProduction) {
-    return Platform.OS === 'android' 
+    return Platform.OS === 'android'
       ? `http://10.0.2.2:3010/api/auth`
       : `http://inkverse.test:3010/api/auth` 
   } else {
     return "https://inkverse.co/api/auth"
+  }
+}
+
+function getClaimURL(isProduction: boolean) {
+  if (!isProduction) {
+    return Platform.OS === 'android'
+      ? `http://10.0.2.2:3010/api/claim-creator`
+      : `http://inkverse.test:3010/api/claim-creator`
+  } else {
+    return "https://inkverse.co/api/claim-creator"
   }
 }
 

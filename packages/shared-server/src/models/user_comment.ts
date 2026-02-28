@@ -17,7 +17,8 @@ export class UserComment {
     targetType: InkverseType,
     parentUuid: string,
     parentType: InkverseType,
-    replyToCommentUuid?: string | null
+    replyToCommentUuid?: string | null,
+    isCreator: boolean = false
   ): Promise<UserCommentModel | null> {
     const uuid = uuidv4();
     const [comment] = await database('user_comments')
@@ -31,6 +32,7 @@ export class UserComment {
         parentType,
         replyToCommentUuid: replyToCommentUuid || null,
         isVisible: true,
+        isCreator,
       })
       .returning('*');
 
@@ -236,13 +238,8 @@ export class UserComment {
       .select('replyToCommentUuid')
       .count('id as count');
 
-    const countMap = new Map<string, number>();
-    // Initialize all with 0
-    commentUuids.forEach(uuid => countMap.set(uuid, 0));
-    // Set actual counts
-    results.forEach(r => countMap.set(r.replyToCommentUuid as string, Number(r.count)));
-
-    return countMap;
+    const resultMap = new Map(results.map(r => [r.replyToCommentUuid as string, Number(r.count)]));
+    return new Map(commentUuids.map(uuid => [uuid, resultMap.get(uuid) ?? 0]));
   }
 
   /**
@@ -268,6 +265,25 @@ export class UserComment {
       parentUuid: r.parentUuid as string,
       count: Number(r.count),
     }));
+  }
+
+  /**
+   * Bulk-update isCreator for all comments by a user on a set of parent series UUIDs.
+   * Returns distinct targetUuid values (issue UUIDs) of affected comments for cache invalidation.
+   */
+  static async markCommentsAsCreator(
+    userId: number,
+    parentUuids: string[]
+  ): Promise<string[]> {
+    if (parentUuids.length === 0) return [];
+
+    const updatedComments = await database('user_comments')
+      .where({ userId, isCreator: false })
+      .whereIn('parentUuid', parentUuids)
+      .update({ isCreator: true, updatedAt: currentDate() })
+      .returning(['targetUuid']);
+
+    return [...new Set(updatedComments.map(c => c.targetUuid as string))];
   }
 
   /**

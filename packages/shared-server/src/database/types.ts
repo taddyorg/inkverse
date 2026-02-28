@@ -1,10 +1,11 @@
-import type { 
-  ComicSeriesLayoutType, 
-  ComicSeriesType, 
-  ContentRating, 
-  Genre, 
-  Language, 
-  LinkType, 
+import type {
+  ComicSeriesLayoutType,
+  ComicSeriesType,
+  ContentRating,
+  CreatorClaimStatus,
+  Genre,
+  Language,
+  LinkType,
   SeriesStatus,
   TaddyType,
   InkverseType,
@@ -175,6 +176,18 @@ export type UserModel = {
   ageRange: UserAgeRange | null;
   birthYear: number | null;
   blueskyDid: string | null;
+  creatorUuid: string | null;
+}
+
+export type UserCreatorClaimModel = {
+  id: number;
+  createdAt: Date;
+  updatedAt: Date | null;
+  userId: number;
+  creatorUuid: string;
+  status: CreatorClaimStatus;
+  claimToken: string;
+  claimTokenExpiry: number;
 }
 
 export type UserSeriesSubscriptionModel = {
@@ -229,6 +242,7 @@ export type UserCommentModel = {
   replyToCommentUuid: string | null;
   isVisible: boolean;
   pinnedPosition: number | null;
+  isCreator: boolean;
 }
 
 export type UserReportModel = {

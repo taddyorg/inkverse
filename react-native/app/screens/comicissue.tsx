@@ -17,7 +17,7 @@ import { CreatorForIssue } from '../components/creator/CreatorForIssue';
 import { ReadNextEpisode } from '../components/comics/ReadNextEpisode';
 import { LikeButton } from '../components/comics/LikeButton';
 import { CommentsSection } from '../components/comics/CommentsSection';
-import { Screen, ScrollIndicator, ThemedActivityIndicator, ThemedRefreshControl, ThemedView, ThemedText, ThemedButton, PressableOpacity, ThemedTextFontFamilyMap } from '@/app/components/ui';
+import { Screen, ScrollIndicator, ThemedActivityIndicator, ThemedRefreshControl, ThemedText, ThemedButton, PressableOpacity, ThemedTextFontFamilyMap, FadeInView } from '@/app/components/ui';
 
 import { getPublicApolloClient, getUserApolloClient } from '@/lib/apollo';
 import {
@@ -346,11 +346,12 @@ export function ComicIssueScreen() {
     }
 
     const userClient = getUserApolloClient();
-    if (!userClient || !comicseries?.uuid) return;
+    if (!userClient || !comicseries?.uuid || !comicissue?.uuid) return;
 
     await superLikeAllEpisodes({
-      userClient,
+      userClient, 
       seriesUuid: comicseries.uuid,
+      issueUuid: comicissue.uuid,
     }, dispatch);
   }, [isAuthenticated, comicseries?.uuid, navigation]);
 
@@ -630,53 +631,55 @@ export function ComicIssueScreen() {
 
   return (
     <Screen style={styles.container}>
-      <ComicHeader 
-        headerPosition={headerTranslateY} 
-        comicseries={comicseries} 
-        comicissue={comicissue} 
-      />
-      <FlashList
-        ref={flatListRef}
-        data={listData}
-        renderItem={TappableItem}
-        keyExtractor={(item) => item.key}
-        showsVerticalScrollIndicator={false}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
-        // estimatedListSize={{
-        //   height: screenDetails.height,
-        //   width: screenDetails.width
-        // }}
-        refreshControl={
-          <ThemedRefreshControl 
-            refreshing={refreshing} 
-            onRefresh={handleRefresh}
-          />
-        }
-        contentContainerStyle={{ paddingBottom: FOOTER_HEIGHT }}
-      />
-      <ComicFooter
-        footerPosition={footerTranslateY}
-        comicissue={comicissue}
-        nextIssue={comicissue?.nextIssue}
-        previousIssue={comicissue?.previousIssue}
-        onNavigateToIssue={handleNavigateToIssue}
-        isLiked={isLiked}
-        likeCount={displayLikeCount}
-        isLikeLoading={isLikeLoading ?? false}
-        onLikePress={handleLikePress}
-        commentCount={commentCount ?? undefined}
-        onCommentPress={handleCommentPress}
-      />
-      <ScrollIndicator 
-        scrollPosition={scrollPosition}
-        contentHeight={contentHeight}
-        screenHeight={screenDetails.height}
-        headerHeight={HEADER_HEIGHT}
-        footerHeight={FOOTER_HEIGHT}
-        onScrollTo={handleScrollTo}
-        isVisible={isHeaderVisible}
-      />
+      <FadeInView>
+        <ComicHeader
+          headerPosition={headerTranslateY}
+          comicseries={comicseries}
+          comicissue={comicissue}
+        />
+        <FlashList
+          ref={flatListRef}
+          data={listData}
+          renderItem={TappableItem}
+          keyExtractor={(item) => item.key}
+          showsVerticalScrollIndicator={false}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
+          // estimatedListSize={{
+          //   height: screenDetails.height,
+          //   width: screenDetails.width
+          // }}
+          refreshControl={
+            <ThemedRefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+            />
+          }
+          contentContainerStyle={{ paddingBottom: FOOTER_HEIGHT }}
+        />
+        <ComicFooter
+          footerPosition={footerTranslateY}
+          comicissue={comicissue}
+          nextIssue={comicissue?.nextIssue}
+          previousIssue={comicissue?.previousIssue}
+          onNavigateToIssue={handleNavigateToIssue}
+          isLiked={isLiked}
+          likeCount={displayLikeCount}
+          isLikeLoading={isLikeLoading ?? false}
+          onLikePress={handleLikePress}
+          commentCount={commentCount ?? undefined}
+          onCommentPress={handleCommentPress}
+        />
+        <ScrollIndicator
+          scrollPosition={scrollPosition}
+          contentHeight={contentHeight}
+          screenHeight={screenDetails.height}
+          headerHeight={HEADER_HEIGHT}
+          footerHeight={FOOTER_HEIGHT}
+          onScrollTo={handleScrollTo}
+          isVisible={isHeaderVisible}
+        />
+      </FadeInView>
     </Screen>
   );
 }

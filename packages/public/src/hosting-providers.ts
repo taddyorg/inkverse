@@ -22,6 +22,8 @@ export interface OAuthEndpoints {
   newContentTokenUrl: string;
   publicKey: string;
   instructionsUrl?: string;
+  claimInitiateUrl?: string;
+  claimCreatorUrl?: string;
 }
 
 export interface ProviderDetails {
@@ -31,7 +33,7 @@ export interface ProviderDetails {
 
 export const providerDetails: Record<string, ProviderDetails> = {
   [TADDY_HOSTING_PROVIDER_UUID]: {
-    displayName: 'Taddy Ink',
+    displayName: 'Taddy',
     endpoints: {
       signupUrl: 'https://taddy.org/developers/signup',
       authorizeUrl: 'https://taddy.org/fans/authorize',
@@ -40,7 +42,9 @@ export const providerDetails: Record<string, ProviderDetails> = {
       newRefreshTokenUrl: 'https://taddy.org/auth/oauth2/new_refresh_token',
       newContentTokenUrl: 'https://taddy.org/auth/oauth2/new_content_token',
       instructionsUrl: 'https://taddy.org/developers/instructions',
-      publicKey: "-----BEGIN PUBLIC KEY-----\nMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAtnihy/rnKGH9jdqWVgot\noNqWcqY2ATJE5bHtvypEf7JVqisX7yfUKC1JY1uzlLVDoMFTJdzTnAUl4xf6EpTZ\n92RGIzWDdcEk4syPSdWms855CMArTcw9fY56/egG3kYMZlVsxRysZPT5F/ovfs0H\nCFGQRsBX5vtfoFikEelInlfS0zZjljIyIZMKxPrfV/PDw+bJUJCxut3GQVf4/UnO\n4uXBPh13WyaxvMNKf1qk4CbCW1e8n17Ec3tyz4/OqVrFmtzSO9WzIEijvrQIuJQu\nNzBsgXDhPH5FZ0giYqB+ImoeURd8TirXgncv5cxcsX4sVsTXN7VBMpczmpsKMlay\nRnKo2DrBYLHPLXlKmcRq6qNNJBSXYrtk4sxRg4pFz//D0TREWM4o2T1DLgKTWqFs\nsWzs6kWVfy8KQc0ID/k2s3iK4JbxjNj3wXzkXBJTqQEahjIGesxgZqN0OlCAbXvM\ncLCeymnlRxNm4I6fZPXs7QVXmG9aGdpkWK/xNiS10WXdJxcveoud4/QH9Trq2aKl\n3bb/g71FJFfsGheoYcd+8iS9aP5lu7f91LXC5QjfKIU7JSlY4czWA1Ji9DS4Rci5\nZTMluktVO50vhr3PQxDgrB8foxxfUq4fG/ru6jBBZPk4RfNyJv6tUjkcZF0evhnm\nBqlqHmg1hzvvuyC4WW5H7LcCAwEAAQ==\n-----END PUBLIC KEY-----"
+      publicKey: "-----BEGIN PUBLIC KEY-----\nMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAtnihy/rnKGH9jdqWVgot\noNqWcqY2ATJE5bHtvypEf7JVqisX7yfUKC1JY1uzlLVDoMFTJdzTnAUl4xf6EpTZ\n92RGIzWDdcEk4syPSdWms855CMArTcw9fY56/egG3kYMZlVsxRysZPT5F/ovfs0H\nCFGQRsBX5vtfoFikEelInlfS0zZjljIyIZMKxPrfV/PDw+bJUJCxut3GQVf4/UnO\n4uXBPh13WyaxvMNKf1qk4CbCW1e8n17Ec3tyz4/OqVrFmtzSO9WzIEijvrQIuJQu\nNzBsgXDhPH5FZ0giYqB+ImoeURd8TirXgncv5cxcsX4sVsTXN7VBMpczmpsKMlay\nRnKo2DrBYLHPLXlKmcRq6qNNJBSXYrtk4sxRg4pFz//D0TREWM4o2T1DLgKTWqFs\nsWzs6kWVfy8KQc0ID/k2s3iK4JbxjNj3wXzkXBJTqQEahjIGesxgZqN0OlCAbXvM\ncLCeymnlRxNm4I6fZPXs7QVXmG9aGdpkWK/xNiS10WXdJxcveoud4/QH9Trq2aKl\n3bb/g71FJFfsGheoYcd+8iS9aP5lu7f91LXC5QjfKIU7JSlY4czWA1Ji9DS4Rci5\nZTMluktVO50vhr3PQxDgrB8foxxfUq4fG/ru6jBBZPk4RfNyJv6tUjkcZF0evhnm\nBqlqHmg1hzvvuyC4WW5H7LcCAwEAAQ==\n-----END PUBLIC KEY-----",
+      claimInitiateUrl: 'https://taddy.org/auth/claim/initiate',
+      claimCreatorUrl: 'https://taddy.org/dashboard/claim-creator?creator_uuid=',
     }
   }
 }

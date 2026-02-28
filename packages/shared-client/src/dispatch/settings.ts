@@ -1,6 +1,6 @@
 import { ApolloClient } from '@apollo/client';
-import { CannySso } from '../graphql/operations';
-import type { CannySsoQuery } from '../graphql/operations';
+import { CannySso } from '../graphql/operations.js';
+import type { CannySsoQuery } from '../graphql/operations.js';
 
 // Action types enum - structured to support multiple settings operations
 export enum SettingsActionType {

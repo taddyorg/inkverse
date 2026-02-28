@@ -37,8 +37,8 @@ import { loadProfileEdit } from '@/lib/loader/profile-edit.server';
 type SetupStep = 'username' | 'age' | 'patreon' | 'patreon-connected' | 'bluesky' | 'bluesky-verify' | 'bluesky-connected' | 'complete';
 const TADDY_PROVIDER_UUID = 'e9957105-80e4-46e3-8e82-20472b9d7512'; // Needed just for this screen
 
-export const loader = async ({ params, request, context }: LoaderFunctionArgs) => {
-  return await loadProfileEdit({ params, request, context });
+export const loader = async (args: LoaderFunctionArgs) => {
+  return await loadProfileEdit(args);
 };
 
 export const headers = () => {

@@ -4,7 +4,7 @@ import { type GetComicSeriesQuery, type GetComicSeriesQueryVariables, GetComicSe
 import { handleLoaderError } from "./error-handler";
 import { parseLoaderComicSeries, type ComicSeriesLoaderData } from "@inkverse/shared-client/dispatch/comicseries";
 
-export async function loadComicSeries({ params, request, context }: LoaderFunctionArgs): Promise<Partial<ComicSeriesLoaderData>> {
+export async function loadComicSeries({ params, request, context }: LoaderFunctionArgs): Promise<Partial<ComicSeriesLoaderData> & { loaderError?: boolean }> {
   const { shortUrl } = params;
 
   const client = getPublicApolloClient(request);
@@ -49,5 +49,6 @@ export async function loadComicSeries({ params, request, context }: LoaderFuncti
     
   } catch (error) {
     handleLoaderError(error, 'Comic Series');
+    return { loaderError: true };
   }
 }

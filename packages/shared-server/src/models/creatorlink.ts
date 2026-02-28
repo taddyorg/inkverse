@@ -7,7 +7,6 @@ import type { Knex } from "knex";
 type CreatorLinkInput = Omit<CreatorLinkModel, 'id' | 'createdAt' | 'updatedAt'>;
 
 function getCreatorLinkDetails(data: Record<string, any>, creatorUuid: string): CreatorLinkInput {
-  console.log('getCreatorLinkDetails', data, creatorUuid);
   const type = safeLinkType(data.type);
   const baseUrl = safeStringValue(data.base_url);
   const value = safeStringValue(data.value);

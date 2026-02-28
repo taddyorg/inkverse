@@ -5,8 +5,8 @@ import { useNavigate, type LoaderFunctionArgs } from "react-router";
 import { getPublicApolloClient, getUserApolloClient } from "@/lib/apollo/client.client";
 import { loadLogout } from "@/lib/loader/logout.server";
 
-export const loader = async ({ params, request, context }: LoaderFunctionArgs) => {
-  return await loadLogout({ params, request, context });
+export const loader = async (args: LoaderFunctionArgs) => {
+  return await loadLogout(args);
 };
 
 export const headers = () => {

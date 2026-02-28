@@ -1,4 +1,4 @@
-import { ComicSeries, ComicIssue, Creator, CreatorContent } from '../models/index.js';
+import { ComicSeries, ComicIssue, Creator, CreatorContent, User } from '../models/index.js';
 import { purgeCacheOnCdn, purgeMultipleCacheOnCdn } from '../cache/index.js'
 import { getMultipleHeightAndWidths } from '../utils/sharp.js';
 import { sendMessage } from '../queues/utils.js';
@@ -234,6 +234,7 @@ async function processCreatorWebhook(body: TaddyWebhook): Promise<void> {
       await Promise.allSettled([
         purgeCacheOnCdn({ type: 'creator', id: uuid, shortUrl }),
         contentUuids ? purgeMultipleCacheOnCdn({ type: 'creatorcontent', ids: contentUuids }) : [],
+        User.clearCreatorUuid(uuid),
       ])
       return;
     }

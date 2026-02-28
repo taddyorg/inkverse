@@ -5,7 +5,7 @@ import { MdChevronLeft } from 'react-icons/md';
 import { useCallback, useEffect, useReducer, useState } from 'react';
 import { jwtDecode } from "jwt-decode";
 
-import { ImageWithLoader } from "../components/ui";
+import { ImageWithLoader, NotFound } from "../components/ui";
 import { ReadNextEpisode } from "../components/comics/ReadNextEpisode";
 
 import { getMetaTags } from "@/lib/seo";
@@ -46,8 +46,8 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   });
 };
 
-export const loader = async ({ params, request, context }: LoaderFunctionArgs) => {
-  return await loadComicIssue({ params, request, context });
+export const loader = async (args: LoaderFunctionArgs) => {
+  return await loadComicIssue(args);
 };
 
 export default function ComicIssue() {
@@ -56,7 +56,15 @@ export default function ComicIssue() {
   return <ComicIssueContent key={issueKey} initialData={comicIssueData} />;
 }
 
-function ComicIssueContent({ initialData }: { initialData: Partial<ComicIssueLoaderData> }) {
+function ComicIssueContent({ initialData }: { initialData: Partial<ComicIssueLoaderData> & { loaderError?: boolean } }) {
+  if (initialData.loaderError) {
+    return <NotFound message="Something went wrong" subtitle="Please try again later." />;
+  }
+
+  if (!initialData?.comicissue) {
+    return <NotFound message="Episode not found" />;
+  }
+
   const [state, dispatch] = useReducer(comicIssueReducer, initialData);
   const [initialComments, setInitialComments] = useState<CommentDetailsFragment[] | null>(null);
 
@@ -131,11 +139,12 @@ function ComicIssueContent({ initialData }: { initialData: Partial<ComicIssueLoa
     }
 
     const userClient = getUserApolloClient();
-    if (!userClient || !comicseries?.uuid) return;
+    if (!userClient || !comicseries?.uuid || !comicissue?.uuid) return;
 
     await superLikeAllEpisodes({
       userClient,
       seriesUuid: comicseries.uuid,
+      issueUuid: comicissue.uuid,
     }, dispatch);
   };
 

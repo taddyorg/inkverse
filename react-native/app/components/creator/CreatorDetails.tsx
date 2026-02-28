@@ -56,8 +56,8 @@ export function CreatorDetails({ creator, pageType }: CreatorDetailsProps) {
   return (
     <View>
       <View style={styles.container}>
-        <Image 
-          source={{ uri: avatarUrl }} 
+        <Image
+          source={{ uri: avatarUrl }}
           style={styles.avatar}
           contentFit="cover"
           recyclingKey={creator.uuid}
@@ -78,28 +78,27 @@ export function CreatorDetails({ creator, pageType }: CreatorDetailsProps) {
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 8,
   },
-  header: {
-    marginBottom: 16,
-  },
   avatar: {
-    width: width * 0.2,
-    height: width * 0.2,
-    borderRadius: (width * 0.2) / 2,
+    width: width * 0.3,
+    height: width * 0.3,
+    borderRadius: (width * 0.3) / 2,
+    marginBottom: 12,
   },
   infoContainer: {
-    flex: 1,
-    marginLeft: 16,
+    alignItems: 'center',
   },
   name: {
     marginBottom: 8,
+    textAlign: 'center',
   },
   bio: {
     fontSize: 16,
     lineHeight: 20,
     marginBottom: 12,
+    textAlign: 'center',
   },
   creatorWrapper: {
     width: '50%',

@@ -46,6 +46,7 @@ export async function loadSearch({ params, request, context }: LoaderFunctionArg
     };
     
   } catch (error) {
-    return handleLoaderError(error, 'Search');
+    handleLoaderError(error, 'Search');
+    return { search: null, comicseries: [] };
   }
 }

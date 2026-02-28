@@ -5,6 +5,7 @@ import { handleLoaderError } from "./error-handler";
 
 export type ListLoaderData = {
   list: GetListQuery['getList'];
+  loaderError?: boolean;
 };
 
 export async function loadList({ params, request, context }: LoaderFunctionArgs): Promise<ListLoaderData> {
@@ -34,6 +35,7 @@ export async function loadList({ params, request, context }: LoaderFunctionArgs)
     };
     
   } catch (error) {
-    return handleLoaderError(error, 'List');
+    handleLoaderError(error, 'List');
+    return { list: null, loaderError: true };
   }
 }

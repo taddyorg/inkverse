@@ -1,6 +1,15 @@
+# import creatorDetails from '../fragments/CreatorDetails.graphql'
+# import miniComicSeriesDetails from '../fragments/MiniComicSeriesDetails.graphql'
+
 query GetProfileByUserId($id: ID!) {
   getUserById(id: $id) {
     ...miniUserDetails
+    creator {
+      ...creatorDetails
+      comics {
+        ...miniComicSeriesDetails
+      }
+    }
   }
   getUserSubscribedComics(userId: $id, limitPerPage: 1000, page: 1) {
     userId

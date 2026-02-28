@@ -7,6 +7,7 @@ import { ListDetails } from '../components/list/ListDetails';
 import { loadList } from '@/lib/loader/list.server';
 import { getMetaTags } from '@/lib/seo';
 import { getInkverseUrl, inkverseWebsiteUrl } from '@inkverse/public/utils';
+import { NotFound } from '../components/ui';
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   if (!data) { return []; }
@@ -19,38 +20,24 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   });
 };
 
-export const loader = async ({ params, request, context }: LoaderFunctionArgs) => {
-  return await loadList({ params, request, context });
+export const loader = async (args: LoaderFunctionArgs) => {
+  return await loadList(args);
 };
 
 function ListScreen() {
   const listData = useLoaderData<typeof loader>();
-  // const { match = {}, location, comicseries:SSRComicseries } = props;
+  
+  if (listData.loaderError) {
+    return <NotFound message="Something went wrong" subtitle="Please try again later." />;
+  }
 
-  // const [ comicseriesQuery, comicseriesQueryDispatch] = useReducer(comicInfoReducer, {});
-  // const { isLoading, comicseries:CSRComicseries, issues, recommendations } = comicseriesQuery;
-
-  // const comicseries = CSRComicseries || SSRComicseries;
-
-  // useEffect(() => {
-  //   const uuid = location.state
-  //     ? location.state.passedInUuid
-  //     : comicseries?.uuid;
-
-  //   if (!uuid) { return; }
-
-  //   getComicInfoScreen({ uuid }, comicseriesQueryDispatch);
-  // }, [comicseries?.uuid, location.state?.passedInUuid]);
-
-  // if (!comicseries) {
-  //   return (
-  //     <SimpleLoadingComponent />
-  //   )
-  // }
+  if (!listData?.list) {
+    return <NotFound message="List not found" />;
+  }
   
   return (
     <div className="max-w-3xl mx-auto sm:p-6 lg:p-8">
-      <ListDetails list={listData?.list} pageType={'list-screen'} />
+      <ListDetails list={listData.list} pageType={'list-screen'} />
     </div>
   );
 }

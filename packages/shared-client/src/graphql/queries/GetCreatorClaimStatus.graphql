@@ -1,0 +1,3 @@
+query GetCreatorClaimStatus($creatorUuid: ID!) {
+	getCreatorClaimStatus(creatorUuid: $creatorUuid)
+}

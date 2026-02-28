@@ -15,6 +15,7 @@ export const CommentDefinitions = `
     targetUuid: ID!
     targetType: InkverseType!
     replyToUuid: ID
+    isCreator: Boolean
     stats: CommentStats
   }
 
@@ -89,6 +90,7 @@ function buildComment(
     targetUuid: comment.targetUuid,
     targetType: comment.targetType,
     replyToUuid: comment.replyToCommentUuid,
+    isCreator: comment.isCreator || false,
     stats: {
       uuid: comment.uuid,
       likeCount: likeCountMap.get(comment.uuid) || 0,
@@ -144,8 +146,7 @@ export const CommentQueries: QueryResolvers = {
     ]);
 
     // Build user map
-    const userMap = new Map<number, UserModel | null>();
-    userIds.forEach((id, index) => userMap.set(id, users[index] ?? null));
+    const userMap = new Map(userIds.map((id, index) => [id, users[index] ?? null] as const));
 
     // Build responses
     return {
@@ -196,11 +197,7 @@ export const CommentQueries: QueryResolvers = {
     ]);
 
     // Build user map
-    const userMap = new Map<number, UserModel | null>();
-    userIds.forEach((id, index) => userMap.set(id, users[index] ?? null));
-
-    // Empty reply counts for replies (no nested replies)
-    const emptyReplyCounts = new Map<string, number>();
+    const userMap = new Map(userIds.map((id, index) => [id, users[index] ?? null] as const));
 
     // Build responses
     return {
@@ -210,7 +207,7 @@ export const CommentQueries: QueryResolvers = {
       page: actualPage,
       limitPerPage: actualLimit,
       comments: replies.map(reply =>
-        buildComment(reply, userMap, likeCounts, emptyReplyCounts)
+        buildComment(reply, userMap, likeCounts, new Map())
       ),
     };
   },

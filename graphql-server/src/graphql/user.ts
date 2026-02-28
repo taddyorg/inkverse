@@ -1,9 +1,9 @@
 import axios from 'axios';
 
 import { AuthenticationError, UserInputError } from './error.js';
-import type { ComicSeriesModel, UserModel } from '@inkverse/shared-server/database/types';
-import { User, OAuthToken, CreatorLink, ComicSeries, UserSeriesSubscription, UserDevice } from '@inkverse/shared-server/models/index';
-import { UserAgeRange, type MutationResolvers, LinkType } from '@inkverse/shared-server/graphql/types';
+import { type ComicSeriesModel, type UserModel } from '@inkverse/shared-server/database/types';
+import { User, OAuthToken, CreatorLink, ComicSeries, UserSeriesSubscription, UserDevice, UserCreatorClaim, Creator } from '@inkverse/shared-server/models/index';
+import { UserAgeRange, type MutationResolvers, LinkType, type CreatorClaimStatus } from '@inkverse/shared-server/graphql/types';
 import { getAllFollows, getProfile, type BlueskyFollower, type BlueskyProfile } from '@inkverse/shared-server/bluesky/index';
 import { getNewAccessToken, TADDY_HOSTING_PROVIDER_UUID } from '@inkverse/public/hosting-providers';
 import { sanitizeUsername, validateUsername } from '@inkverse/public/user';
@@ -28,7 +28,7 @@ export const UserDefinitions = `
     ageRange: UserAgeRange
     birthYear: Int
     blueskyDid: String
-    subscriptions(limitPerPage: Int, page: Int): [ComicSeries]
+    creator: Creator
   }
 
   """
@@ -80,6 +80,15 @@ export const UserDefinitions = `
     ssoToken: String!
     redirectUrl: String!
   }
+
+  """
+  Status of a creator claim request
+  """
+  enum CreatorClaimStatus {
+    PENDING
+    APPROVED
+    REJECTED
+  }
 `;
 
 // Query and Mutation Definitions
@@ -127,6 +136,11 @@ export const UserQueriesDefinitions = `
   Generate Canny SSO redirect URL for the current user
   """
   cannySso(redirectPath: String): CannySSO
+
+  """
+  Get the claim status for a creator (requires auth)
+  """
+  getCreatorClaimStatus(creatorUuid: ID!): CreatorClaimStatus
 `;
 
 export const UserMutationsDefinitions = `
@@ -332,6 +346,15 @@ export const UserQueries = {
       console.error('Error getting user subscribed comics:', error);
       throw new Error('Failed to get subscribed comics');
     }
+  },
+
+  getCreatorClaimStatus: async (_parent: any, { creatorUuid }: { creatorUuid: string }, context: any): Promise<CreatorClaimStatus | null> => {
+    if (!context.user) {
+      throw new AuthenticationError('You must be logged in to check claim status');
+    }
+
+    const claim = await UserCreatorClaim.getClaimByUserAndCreator(context.user.id, creatorUuid);
+    return claim?.status || null;
   },
 
   cannySso: async (_parent: any, { redirectPath }: { redirectPath?: string | null }, context: any): Promise<{ userId: string; ssoToken: string; redirectUrl: string }> => {
@@ -570,6 +593,10 @@ export const UserFieldResolvers = {
     blueskyDid: (user: UserModel, _args: any, context: any) => {
       if (!context.user || context.user.id !== user.id) { return null; }
       return user.blueskyDid || null;
+    },
+    creator: async (user: UserModel) => {
+      if (!user.creatorUuid) return null;
+      return await Creator.getCreatorByUuid(user.creatorUuid);
     },
   },
 };

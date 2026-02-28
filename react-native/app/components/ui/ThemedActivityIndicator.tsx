@@ -1,5 +1,5 @@
-import React from 'react';
-import { ActivityIndicator, View, ViewStyle } from 'react-native';
+import React, { useRef, useEffect } from 'react';
+import { ActivityIndicator, Animated, View, ViewStyle } from 'react-native';
 import { useThemeColor } from '@/constants/Colors';
 
 type ThemedActivityIndicatorSize = 'small' | 'large';
@@ -26,10 +26,20 @@ export function ThemedActivityIndicator({
     'tint'
   );
 
+  const opacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(opacity, {
+      toValue: 1,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
   return (
-    <View style={[styles[size].container, style]}>
+    <Animated.View style={[styles[size].container, { opacity }, style]}>
       <ActivityIndicator size={size} color={color} />
-    </View>
+    </Animated.View>
   );
 }
 
@@ -46,4 +56,4 @@ const styles: Record<ThemedActivityIndicatorSize, ActivityIndicatorSizeStyle> = 
       justifyContent: 'center',
     },
   },
-}; 
+};

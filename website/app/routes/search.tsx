@@ -22,8 +22,8 @@ export const meta: MetaFunction<typeof loader> = ({ data, params }) => {
   });
 };
 
-export const loader = async ({ params, request, context }: LoaderFunctionArgs) => {
-  return await loadSearch({ params, request, context });
+export const loader = async (args: LoaderFunctionArgs) => {
+  return await loadSearch(args);
 };
 
 function SearchScreen() {

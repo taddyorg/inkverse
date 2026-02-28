@@ -209,6 +209,7 @@ export type ComicStory = {
 export type Comment = {
   __typename?: 'Comment';
   createdAt: Scalars['Int']['output'];
+  isCreator?: Maybe<Scalars['Boolean']['output']>;
   replyToUuid?: Maybe<Scalars['ID']['output']>;
   stats?: Maybe<CommentStats>;
   targetType: InkverseType;
@@ -556,6 +557,8 @@ export type Creator = {
   sssUrl?: Maybe<Scalars['String']['output']>;
   /**  Tags for the creator  */
   tags?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  /**  The Inkverse user who has claimed this creator profile  */
+  user?: Maybe<User>;
   /**  Unique identifier for this creator  */
   uuid: Scalars['ID']['output'];
 };
@@ -567,6 +570,13 @@ export type CreatorContentArgs = {
   page?: InputMaybe<Scalars['Int']['input']>;
   sortOrder?: InputMaybe<SortOrder>;
 };
+
+/** Status of a creator claim request */
+export enum CreatorClaimStatus {
+  APPROVED = 'APPROVED',
+  PENDING = 'PENDING',
+  REJECTED = 'REJECTED'
+}
 
 /**  CreatorContent Details  */
 export type CreatorContent = {
@@ -1175,6 +1185,8 @@ export type Query = {
   getComments: CommentsForTarget;
   /**  Get details on a Creator  */
   getCreator?: Maybe<Creator>;
+  /** Get the claim status for a creator (requires auth) */
+  getCreatorClaimStatus?: Maybe<CreatorClaimStatus>;
   /**  Get details on a Creator Content  */
   getCreatorContent?: Maybe<CreatorContent>;
   /**  Get efficient links for creators of content  */
@@ -1259,6 +1271,11 @@ export type QueryGetCommentsArgs = {
 export type QueryGetCreatorArgs = {
   shortUrl?: InputMaybe<Scalars['String']['input']>;
   uuid?: InputMaybe<Scalars['ID']['input']>;
+};
+
+
+export type QueryGetCreatorClaimStatusArgs = {
+  creatorUuid: Scalars['ID']['input'];
 };
 
 
@@ -1455,19 +1472,12 @@ export type User = {
   birthYear?: Maybe<Scalars['Int']['output']>;
   blueskyDid?: Maybe<Scalars['String']['output']>;
   createdAt?: Maybe<Scalars['Int']['output']>;
+  creator?: Maybe<Creator>;
   email?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   isEmailVerified?: Maybe<Scalars['Boolean']['output']>;
-  subscriptions?: Maybe<Array<Maybe<ComicSeries>>>;
   updatedAt?: Maybe<Scalars['Int']['output']>;
   username?: Maybe<Scalars['String']['output']>;
-};
-
-
-/** User Type */
-export type UserSubscriptionsArgs = {
-  limitPerPage?: InputMaybe<Scalars['Int']['input']>;
-  page?: InputMaybe<Scalars['Int']['input']>;
 };
 
 /** Age range buckets for users */
@@ -1500,7 +1510,7 @@ export type ComicIssueDetailsFragment = { __typename?: 'ComicIssue', bannerImage
 
 export type ComicSeriesDetailsFragment = { __typename?: 'ComicSeries', uuid: string, name?: string | null, description?: string | null, datePublished?: number | null, hash?: string | null, issuesHash?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, tags?: Array<string | null> | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null, language?: Language | null, status?: SeriesStatus | null, contentRating?: ContentRating | null, seriesType?: ComicSeriesType | null, isCompleted?: boolean | null, issueCount?: number | null, hostingProviderUuid?: string | null };
 
-export type CommentDetailsFragment = { __typename?: 'Comment', uuid: string, text: string, createdAt: number, targetUuid: string, targetType: InkverseType, replyToUuid?: string | null, user?: { __typename?: 'User', id: string, username?: string | null } | null, stats?: { __typename?: 'CommentStats', uuid: string, likeCount?: number | null, replyCount?: number | null } | null };
+export type CommentDetailsFragment = { __typename?: 'Comment', uuid: string, text: string, createdAt: number, targetUuid: string, targetType: InkverseType, replyToUuid?: string | null, isCreator?: boolean | null, user?: { __typename?: 'User', id: string, username?: string | null } | null, stats?: { __typename?: 'CommentStats', uuid: string, likeCount?: number | null, replyCount?: number | null } | null };
 
 export type CreatorDetailsFragment = { __typename?: 'Creator', uuid: string, name?: string | null, shortUrl?: string | null, bio?: string | null, avatarImageAsString?: string | null, links?: Array<{ __typename?: 'LinkDetails', url?: string | null, type?: LinkType | null } | null> | null };
 
@@ -1510,7 +1520,7 @@ export type MiniComicIssueDetailsFragment = { __typename?: 'ComicIssue', uuid: s
 
 export type MiniComicSeriesDetailsFragment = { __typename?: 'ComicSeries', uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null };
 
-export type MiniCreatorDetailsFragment = { __typename?: 'Creator', uuid: string, name?: string | null, shortUrl?: string | null, avatarImageAsString?: string | null, links?: Array<{ __typename?: 'LinkDetails', url?: string | null, type?: LinkType | null } | null> | null };
+export type MiniCreatorDetailsFragment = { __typename?: 'Creator', uuid: string, name?: string | null, shortUrl?: string | null, avatarImageAsString?: string | null, user?: { __typename?: 'User', id: string, username?: string | null } | null };
 
 export type MiniUserDetailsFragment = { __typename?: 'User', id: string, username?: string | null };
 
@@ -1528,7 +1538,7 @@ export type AddCommentMutationVariables = Exact<{
 }>;
 
 
-export type AddCommentMutation = { __typename?: 'Mutation', addComment?: { __typename?: 'Comment', uuid: string, text: string, createdAt: number, targetUuid: string, targetType: InkverseType, replyToUuid?: string | null, user?: { __typename?: 'User', id: string, username?: string | null } | null, stats?: { __typename?: 'CommentStats', uuid: string, likeCount?: number | null, replyCount?: number | null } | null } | null };
+export type AddCommentMutation = { __typename?: 'Mutation', addComment?: { __typename?: 'Comment', uuid: string, text: string, createdAt: number, targetUuid: string, targetType: InkverseType, replyToUuid?: string | null, isCreator?: boolean | null, user?: { __typename?: 'User', id: string, username?: string | null } | null, stats?: { __typename?: 'CommentStats', uuid: string, likeCount?: number | null, replyCount?: number | null } | null } | null };
 
 export type DeleteCommentMutationVariables = Exact<{
   commentUuid: Scalars['ID']['input'];
@@ -1554,7 +1564,7 @@ export type EditCommentMutationVariables = Exact<{
 }>;
 
 
-export type EditCommentMutation = { __typename?: 'Mutation', editComment?: { __typename?: 'Comment', uuid: string, text: string, createdAt: number, targetUuid: string, targetType: InkverseType, replyToUuid?: string | null, user?: { __typename?: 'User', id: string, username?: string | null } | null, stats?: { __typename?: 'CommentStats', uuid: string, likeCount?: number | null, replyCount?: number | null } | null } | null };
+export type EditCommentMutation = { __typename?: 'Mutation', editComment?: { __typename?: 'Comment', uuid: string, text: string, createdAt: number, targetUuid: string, targetType: InkverseType, replyToUuid?: string | null, isCreator?: boolean | null, user?: { __typename?: 'User', id: string, username?: string | null } | null, stats?: { __typename?: 'CommentStats', uuid: string, likeCount?: number | null, replyCount?: number | null } | null } | null };
 
 export type EnableNotificationsForSeriesMutationVariables = Exact<{
   seriesUuid: Scalars['ID']['input'];
@@ -1702,12 +1712,19 @@ export type GetBlueskyProfileQueryVariables = Exact<{
 
 export type GetBlueskyProfileQuery = { __typename?: 'Query', getBlueskyProfile?: { __typename?: 'BlueskyProfile', did: string, handle: string, displayName?: string | null, avatar?: string | null, description?: string | null } | null };
 
+export type GetClaimCreatorPageQueryVariables = Exact<{
+  creatorUuid: Scalars['ID']['input'];
+}>;
+
+
+export type GetClaimCreatorPageQuery = { __typename?: 'Query', getCreator?: { __typename?: 'Creator', uuid: string, name?: string | null, shortUrl?: string | null, bio?: string | null, avatarImageAsString?: string | null, comics?: Array<{ __typename?: 'ComicSeries', hostingProviderUuid?: string | null, uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null } | null> | null, links?: Array<{ __typename?: 'LinkDetails', url?: string | null, type?: LinkType | null } | null> | null } | null };
+
 export type GetComicIssueDynamicQueryVariables = Exact<{
   issueUuid: Scalars['ID']['input'];
 }>;
 
 
-export type GetComicIssueDynamicQuery = { __typename?: 'Query', getStatsForComicIssue?: { __typename?: 'ComicIssueStats', uuid: string, likeCount?: number | null, commentCount?: number | null } | null, getComments: { __typename?: 'CommentsForTarget', targetUuid: string, targetType: InkverseType, sortBy?: CommentSortType | null, page?: number | null, limitPerPage?: number | null, comments: Array<{ __typename?: 'Comment', uuid: string, text: string, createdAt: number, targetUuid: string, targetType: InkverseType, replyToUuid?: string | null, user?: { __typename?: 'User', id: string, username?: string | null } | null, stats?: { __typename?: 'CommentStats', uuid: string, likeCount?: number | null, replyCount?: number | null } | null }> } };
+export type GetComicIssueDynamicQuery = { __typename?: 'Query', getStatsForComicIssue?: { __typename?: 'ComicIssueStats', uuid: string, likeCount?: number | null, commentCount?: number | null } | null, getComments: { __typename?: 'CommentsForTarget', targetUuid: string, targetType: InkverseType, sortBy?: CommentSortType | null, page?: number | null, limitPerPage?: number | null, comments: Array<{ __typename?: 'Comment', uuid: string, text: string, createdAt: number, targetUuid: string, targetType: InkverseType, replyToUuid?: string | null, isCreator?: boolean | null, user?: { __typename?: 'User', id: string, username?: string | null } | null, stats?: { __typename?: 'CommentStats', uuid: string, likeCount?: number | null, replyCount?: number | null } | null }> } };
 
 export type GetComicSeriesDynamicQueryVariables = Exact<{
   seriesUuid: Scalars['ID']['input'];
@@ -1722,7 +1739,7 @@ export type GetComicIssueQueryVariables = Exact<{
 }>;
 
 
-export type GetComicIssueQuery = { __typename?: 'Query', getComicIssue?: { __typename?: 'ComicIssue', bannerImageAsString?: string | null, creatorNote?: string | null, uuid: string, seriesUuid: string, name?: string | null, position?: number | null, thumbnailImageAsString?: string | null, datePublished?: number | null, scopesForExclusiveContent?: Array<string | null> | null, dateExclusiveContentAvailable?: number | null, stories?: Array<{ __typename?: 'ComicStory', uuid: string, issueUuid: string, seriesUuid: string, storyImageAsString?: string | null, width?: number | null, height?: number | null } | null> | null, previousIssue?: { __typename?: 'ComicIssue', uuid: string, seriesUuid: string, name?: string | null, position?: number | null, thumbnailImageAsString?: string | null, datePublished?: number | null, scopesForExclusiveContent?: Array<string | null> | null, dateExclusiveContentAvailable?: number | null } | null, nextIssue?: { __typename?: 'ComicIssue', uuid: string, seriesUuid: string, name?: string | null, position?: number | null, thumbnailImageAsString?: string | null, datePublished?: number | null, scopesForExclusiveContent?: Array<string | null> | null, dateExclusiveContentAvailable?: number | null } | null } | null, getComicSeries?: { __typename?: 'ComicSeries', uuid: string, name?: string | null, description?: string | null, datePublished?: number | null, hash?: string | null, issuesHash?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, tags?: Array<string | null> | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null, language?: Language | null, status?: SeriesStatus | null, contentRating?: ContentRating | null, seriesType?: ComicSeriesType | null, isCompleted?: boolean | null, issueCount?: number | null, hostingProviderUuid?: string | null, creators?: Array<{ __typename?: 'Creator', uuid: string, name?: string | null, shortUrl?: string | null, avatarImageAsString?: string | null, links?: Array<{ __typename?: 'LinkDetails', url?: string | null, type?: LinkType | null } | null> | null } | null> | null } | null, getCreatorLinksForSeries?: Array<{ __typename?: 'CreatorLinkDetails', creatorUuid: string, type?: LinkType | null, url?: string | null } | null> | null };
+export type GetComicIssueQuery = { __typename?: 'Query', getComicIssue?: { __typename?: 'ComicIssue', bannerImageAsString?: string | null, creatorNote?: string | null, uuid: string, seriesUuid: string, name?: string | null, position?: number | null, thumbnailImageAsString?: string | null, datePublished?: number | null, scopesForExclusiveContent?: Array<string | null> | null, dateExclusiveContentAvailable?: number | null, stories?: Array<{ __typename?: 'ComicStory', uuid: string, issueUuid: string, seriesUuid: string, storyImageAsString?: string | null, width?: number | null, height?: number | null } | null> | null, previousIssue?: { __typename?: 'ComicIssue', uuid: string, seriesUuid: string, name?: string | null, position?: number | null, thumbnailImageAsString?: string | null, datePublished?: number | null, scopesForExclusiveContent?: Array<string | null> | null, dateExclusiveContentAvailable?: number | null } | null, nextIssue?: { __typename?: 'ComicIssue', uuid: string, seriesUuid: string, name?: string | null, position?: number | null, thumbnailImageAsString?: string | null, datePublished?: number | null, scopesForExclusiveContent?: Array<string | null> | null, dateExclusiveContentAvailable?: number | null } | null } | null, getComicSeries?: { __typename?: 'ComicSeries', uuid: string, name?: string | null, description?: string | null, datePublished?: number | null, hash?: string | null, issuesHash?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, tags?: Array<string | null> | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null, language?: Language | null, status?: SeriesStatus | null, contentRating?: ContentRating | null, seriesType?: ComicSeriesType | null, isCompleted?: boolean | null, issueCount?: number | null, hostingProviderUuid?: string | null, creators?: Array<{ __typename?: 'Creator', uuid: string, name?: string | null, shortUrl?: string | null, avatarImageAsString?: string | null, user?: { __typename?: 'User', id: string, username?: string | null } | null } | null> | null } | null, getCreatorLinksForSeries?: Array<{ __typename?: 'CreatorLinkDetails', creatorUuid: string, type?: LinkType | null, url?: string | null } | null> | null };
 
 export type GetComicsFromBlueskyCreatorsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1742,7 +1759,7 @@ export type GetComicSeriesQueryVariables = Exact<{
 }>;
 
 
-export type GetComicSeriesQuery = { __typename?: 'Query', getComicSeries?: { __typename?: 'ComicSeries', uuid: string, name?: string | null, description?: string | null, datePublished?: number | null, hash?: string | null, issuesHash?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, tags?: Array<string | null> | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null, language?: Language | null, status?: SeriesStatus | null, contentRating?: ContentRating | null, seriesType?: ComicSeriesType | null, isCompleted?: boolean | null, issueCount?: number | null, hostingProviderUuid?: string | null, creators?: Array<{ __typename?: 'Creator', uuid: string, name?: string | null, shortUrl?: string | null, avatarImageAsString?: string | null, links?: Array<{ __typename?: 'LinkDetails', url?: string | null, type?: LinkType | null } | null> | null } | null> | null } | null, getIssuesForComicSeries?: { __typename?: 'ComicIssueForSeries', seriesUuid: string, issues?: Array<{ __typename?: 'ComicIssue', uuid: string, seriesUuid: string, name?: string | null, position?: number | null, thumbnailImageAsString?: string | null, datePublished?: number | null, scopesForExclusiveContent?: Array<string | null> | null, dateExclusiveContentAvailable?: number | null } | null> | null } | null };
+export type GetComicSeriesQuery = { __typename?: 'Query', getComicSeries?: { __typename?: 'ComicSeries', uuid: string, name?: string | null, description?: string | null, datePublished?: number | null, hash?: string | null, issuesHash?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, tags?: Array<string | null> | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null, language?: Language | null, status?: SeriesStatus | null, contentRating?: ContentRating | null, seriesType?: ComicSeriesType | null, isCompleted?: boolean | null, issueCount?: number | null, hostingProviderUuid?: string | null, creators?: Array<{ __typename?: 'Creator', uuid: string, name?: string | null, shortUrl?: string | null, avatarImageAsString?: string | null, user?: { __typename?: 'User', id: string, username?: string | null } | null } | null> | null } | null, getIssuesForComicSeries?: { __typename?: 'ComicIssueForSeries', seriesUuid: string, issues?: Array<{ __typename?: 'ComicIssue', uuid: string, seriesUuid: string, name?: string | null, position?: number | null, thumbnailImageAsString?: string | null, datePublished?: number | null, scopesForExclusiveContent?: Array<string | null> | null, dateExclusiveContentAvailable?: number | null } | null> | null } | null };
 
 export type GetCommentsQueryVariables = Exact<{
   targetUuid: Scalars['ID']['input'];
@@ -1753,7 +1770,7 @@ export type GetCommentsQueryVariables = Exact<{
 }>;
 
 
-export type GetCommentsQuery = { __typename?: 'Query', getComments: { __typename?: 'CommentsForTarget', targetUuid: string, targetType: InkverseType, sortBy?: CommentSortType | null, page?: number | null, limitPerPage?: number | null, comments: Array<{ __typename?: 'Comment', uuid: string, text: string, createdAt: number, targetUuid: string, targetType: InkverseType, replyToUuid?: string | null, user?: { __typename?: 'User', id: string, username?: string | null } | null, stats?: { __typename?: 'CommentStats', uuid: string, likeCount?: number | null, replyCount?: number | null } | null }> } };
+export type GetCommentsQuery = { __typename?: 'Query', getComments: { __typename?: 'CommentsForTarget', targetUuid: string, targetType: InkverseType, sortBy?: CommentSortType | null, page?: number | null, limitPerPage?: number | null, comments: Array<{ __typename?: 'Comment', uuid: string, text: string, createdAt: number, targetUuid: string, targetType: InkverseType, replyToUuid?: string | null, isCreator?: boolean | null, user?: { __typename?: 'User', id: string, username?: string | null } | null, stats?: { __typename?: 'CommentStats', uuid: string, likeCount?: number | null, replyCount?: number | null } | null }> } };
 
 export type GetCreatorQueryVariables = Exact<{
   uuid: Scalars['ID']['input'];
@@ -1761,6 +1778,13 @@ export type GetCreatorQueryVariables = Exact<{
 
 
 export type GetCreatorQuery = { __typename?: 'Query', getCreator?: { __typename?: 'Creator', uuid: string, name?: string | null, shortUrl?: string | null, bio?: string | null, avatarImageAsString?: string | null, comics?: Array<{ __typename?: 'ComicSeries', uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null } | null> | null, links?: Array<{ __typename?: 'LinkDetails', url?: string | null, type?: LinkType | null } | null> | null } | null };
+
+export type GetCreatorClaimStatusQueryVariables = Exact<{
+  creatorUuid: Scalars['ID']['input'];
+}>;
+
+
+export type GetCreatorClaimStatusQuery = { __typename?: 'Query', getCreatorClaimStatus?: CreatorClaimStatus | null };
 
 export type GetDocumentationQueryVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -1795,14 +1819,14 @@ export type GetMiniCreatorQueryVariables = Exact<{
 }>;
 
 
-export type GetMiniCreatorQuery = { __typename?: 'Query', getCreator?: { __typename?: 'Creator', uuid: string, name?: string | null, shortUrl?: string | null, avatarImageAsString?: string | null, links?: Array<{ __typename?: 'LinkDetails', url?: string | null, type?: LinkType | null } | null> | null } | null };
+export type GetMiniCreatorQuery = { __typename?: 'Query', getCreator?: { __typename?: 'Creator', uuid: string, name?: string | null, shortUrl?: string | null, avatarImageAsString?: string | null, user?: { __typename?: 'User', id: string, username?: string | null } | null } | null };
 
 export type GetProfileByUserIdQueryVariables = Exact<{
   id: Scalars['ID']['input'];
 }>;
 
 
-export type GetProfileByUserIdQuery = { __typename?: 'Query', getUserById?: { __typename?: 'User', id: string, username?: string | null } | null, getUserSubscribedComics?: { __typename?: 'ProfileComicSeries', userId: string, comicSeries?: Array<{ __typename?: 'ComicSeries', uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null } | null> | null } | null };
+export type GetProfileByUserIdQuery = { __typename?: 'Query', getUserById?: { __typename?: 'User', id: string, username?: string | null, creator?: { __typename?: 'Creator', uuid: string, name?: string | null, shortUrl?: string | null, bio?: string | null, avatarImageAsString?: string | null, comics?: Array<{ __typename?: 'ComicSeries', uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null } | null> | null, links?: Array<{ __typename?: 'LinkDetails', url?: string | null, type?: LinkType | null } | null> | null } | null } | null, getUserSubscribedComics?: { __typename?: 'ProfileComicSeries', userId: string, comicSeries?: Array<{ __typename?: 'ComicSeries', uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null } | null> | null } | null };
 
 export type GetRepliesForCommentQueryVariables = Exact<{
   targetUuid: Scalars['ID']['input'];
@@ -1813,7 +1837,7 @@ export type GetRepliesForCommentQueryVariables = Exact<{
 }>;
 
 
-export type GetRepliesForCommentQuery = { __typename?: 'Query', getRepliesForComment: { __typename?: 'CommentsForTarget', targetUuid: string, targetType: InkverseType, sortBy?: CommentSortType | null, page?: number | null, limitPerPage?: number | null, comments: Array<{ __typename?: 'Comment', uuid: string, text: string, createdAt: number, targetUuid: string, targetType: InkverseType, replyToUuid?: string | null, user?: { __typename?: 'User', id: string, username?: string | null } | null, stats?: { __typename?: 'CommentStats', uuid: string, likeCount?: number | null, replyCount?: number | null } | null }> } };
+export type GetRepliesForCommentQuery = { __typename?: 'Query', getRepliesForComment: { __typename?: 'CommentsForTarget', targetUuid: string, targetType: InkverseType, sortBy?: CommentSortType | null, page?: number | null, limitPerPage?: number | null, comments: Array<{ __typename?: 'Comment', uuid: string, text: string, createdAt: number, targetUuid: string, targetType: InkverseType, replyToUuid?: string | null, isCreator?: boolean | null, user?: { __typename?: 'User', id: string, username?: string | null } | null, stats?: { __typename?: 'CommentStats', uuid: string, likeCount?: number | null, replyCount?: number | null } | null }> } };
 
 export type GetTrendingComicSeriesQueryVariables = Exact<{
   metric?: InputMaybe<TrendingMetric>;
@@ -1939,6 +1963,7 @@ export const CommentDetails = gql`
   targetUuid
   targetType
   replyToUuid
+  isCreator
   stats {
     uuid
     likeCount
@@ -1993,12 +2018,11 @@ export const MiniCreatorDetails = gql`
   name
   shortUrl
   avatarImageAsString
-  links {
-    url
-    type
+  user {
+    ...miniUserDetails
   }
 }
-    `;
+    ${MiniUserDetails}`;
 export const UserComicSeriesDetails = gql`
     fragment userComicSeriesDetails on UserComicSeries {
   seriesUuid
@@ -2207,6 +2231,18 @@ export const GetBlueskyProfile = gql`
   }
 }
     `;
+export const GetClaimCreatorPage = gql`
+    query GetClaimCreatorPage($creatorUuid: ID!) {
+  getCreator(uuid: $creatorUuid) {
+    ...creatorDetails
+    comics {
+      ...miniComicSeriesDetails
+      hostingProviderUuid
+    }
+  }
+}
+    ${CreatorDetails}
+${MiniComicSeriesDetails}`;
 export const GetComicIssueDynamic = gql`
     query GetComicIssueDynamic($issueUuid: ID!) {
   getStatsForComicIssue(issueUuid: $issueUuid) {
@@ -2218,7 +2254,7 @@ export const GetComicIssueDynamic = gql`
     targetUuid: $issueUuid
     targetType: COMICISSUE
     page: 1
-    limitPerPage: 5
+    limitPerPage: 25
     sortBy: TOP
   ) {
     targetUuid
@@ -2329,6 +2365,11 @@ export const GetCreator = gql`
 }
     ${CreatorDetails}
 ${MiniComicSeriesDetails}`;
+export const GetCreatorClaimStatus = gql`
+    query GetCreatorClaimStatus($creatorUuid: ID!) {
+  getCreatorClaimStatus(creatorUuid: $creatorUuid)
+}
+    `;
 export const GetDocumentation = gql`
     query GetDocumentation($id: ID!) {
   getDocumentation(id: $id) {
@@ -2369,6 +2410,12 @@ export const GetProfileByUserId = gql`
     query GetProfileByUserId($id: ID!) {
   getUserById(id: $id) {
     ...miniUserDetails
+    creator {
+      ...creatorDetails
+      comics {
+        ...miniComicSeriesDetails
+      }
+    }
   }
   getUserSubscribedComics(userId: $id, limitPerPage: 1000, page: 1) {
     userId
@@ -2378,6 +2425,7 @@ export const GetProfileByUserId = gql`
   }
 }
     ${MiniUserDetails}
+${CreatorDetails}
 ${MiniComicSeriesDetails}`;
 export const GetRepliesForComment = gql`
     query GetRepliesForComment($targetUuid: ID!, $targetType: InkverseType!, $commentUuid: ID!, $page: Int, $limitPerPage: Int) {

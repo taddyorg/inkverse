@@ -1,4 +1,4 @@
-import { type LoaderFunctionArgs } from "react-router";
+import { type LoaderFunctionArgs, redirect } from "react-router";
 import { getPublicApolloClient } from "@/lib/apollo/client.server";
 import { type GetCreatorQuery, GetCreator, type GetCreatorQueryVariables, GetMiniCreator, type GetMiniCreatorQuery, type GetMiniCreatorQueryVariables } from "@inkverse/shared-client/graphql/operations";
 import { handleLoaderError } from "./error-handler";
@@ -6,6 +6,7 @@ import { handleLoaderError } from "./error-handler";
 export type CreatorLoaderData = {
   creator: GetCreatorQuery['getCreator'];
   comicseries: NonNullable<GetCreatorQuery['getCreator']>['comics'] | null | undefined;
+  loaderError?: boolean;
 };
 
 export async function loadCreator({ params, request, context }: LoaderFunctionArgs): Promise<CreatorLoaderData> {
@@ -22,6 +23,12 @@ export async function loadCreator({ params, request, context }: LoaderFunctionAr
 
     if (!getCreatorUuid.data?.getCreator || !getCreatorUuid.data?.getCreator.uuid) {
       throw new Response("Not Found", { status: 404 });
+    }
+
+    // If this creator is claimed by a user, redirect to the user's profile
+    const claimedByUser = getCreatorUuid.data.getCreator.user;
+    if (claimedByUser?.username) {
+      throw redirect(`/${claimedByUser.username}`);
     }
 
     // Get comic series data first
@@ -41,6 +48,7 @@ export async function loadCreator({ params, request, context }: LoaderFunctionAr
     };
     
   } catch (error) {
-    return handleLoaderError(error, 'Creator');
+    handleLoaderError(error, 'Creator');
+    return { creator: null, comicseries: null, loaderError: true };
   }
 }

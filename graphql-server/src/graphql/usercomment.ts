@@ -1,5 +1,5 @@
 import { AuthenticationError, UserInputError } from './error.js';
-import { UserComment, UserReport, UserLike, ComicIssue, ComicSeries, User } from '@inkverse/shared-server/models/index';
+import { UserComment, UserReport, UserLike, ComicIssue, ComicSeries, User, CreatorContent } from '@inkverse/shared-server/models/index';
 import { InkverseType, ReportType } from '@inkverse/shared-server/graphql/types';
 import type { MutationResolvers } from '@inkverse/shared-server/graphql/types';
 import { sendSlackNotification } from '@inkverse/shared-server/messaging/slack';
@@ -211,6 +211,13 @@ export const UserCommentMutations: MutationResolvers = {
         throw new UserInputError('Cannot reply to a reply');
       }
     }
+    
+    // Get episode and series info for Slack notification
+    const [comicIssue, comicSeries, creatorContent] = await Promise.all([
+      ComicIssue.getComicIssueByUuid(issueUuid),
+      ComicSeries.getComicSeriesByUuid(seriesUuid),
+      context.user.creatorUuid ? CreatorContent.getCreatorContent(context.user.creatorUuid, seriesUuid) : Promise.resolve(null),
+    ]);
 
     // Sanitize and create the comment
     const sanitizedText = sanitizeCommentText(text);
@@ -221,18 +228,13 @@ export const UserCommentMutations: MutationResolvers = {
       InkverseType.COMICISSUE,
       seriesUuid,
       InkverseType.COMICSERIES,
-      replyToCommentUuid
+      replyToCommentUuid,
+      !!creatorContent || false
     );
 
     if (!comment) {
       throw new Error('Failed to create comment');
     }
-
-    // Get episode and series info for Slack notification
-    const [comicIssue, comicSeries] = await Promise.all([
-      ComicIssue.getComicIssueByUuid(issueUuid),
-      ComicSeries.getComicSeriesByUuid(seriesUuid),
-    ]);
 
     // Send Slack notification (async, don't await)
     sendNewCommentSlackNotification(
@@ -351,6 +353,7 @@ export const UserCommentMutations: MutationResolvers = {
       targetUuid: comment.targetUuid,
       targetType: comment.targetType,
       replyToUuid: comment.replyToCommentUuid || null,
+      isCreator: comment.isCreator || false,
       stats: {
         uuid: comment.uuid,
         likeCount: likeCount ?? 0,

@@ -1,13 +1,14 @@
 import { Link } from 'react-router-dom';
+import { FaCheckCircle } from 'react-icons/fa';
 
 import { getAvatarImageUrl } from '@inkverse/public/creator';
 import type { Creator, LinkDetails } from '@inkverse/shared-client/graphql/operations';
 import { CreatorLinks } from './CreatorLinks';
 import { getInkverseUrl } from '@inkverse/public/utils';
 
-
 export type CreatorPageType = 
   | 'creator-screen'
+  | 'profile-screen'
   | 'mini-creator';
 
 type CreatorDetailsProps = {
@@ -20,9 +21,9 @@ export function CreatorDetails({ creator, pageType }: CreatorDetailsProps) {
 
   if (pageType === 'mini-creator') {
     return (
-      <Link 
+      <Link
         className="flex"
-        to={getInkverseUrl({ type: "creator", shortUrl: creator.shortUrl }) || ''}>
+        to={getInkverseUrl({ type: "creator", shortUrl: creator.shortUrl, username: creator.user?.username }) || ''}>
         {creator.avatarImageAsString && (
           <img
             src={getAvatarImageUrl({ avatarImageAsString: creator.avatarImageAsString })}
@@ -41,7 +42,7 @@ export function CreatorDetails({ creator, pageType }: CreatorDetailsProps) {
         {creator.avatarImageAsString &&
           <Avatar creator={creator} pageType={pageType} />
         }
-        <div className="sm:w-2/3 sm:pl-4">
+        <div className="sm:w-2/3 sm:pl-4 text-center sm:text-left mb-4 sm:mb-4">
           <Name creator={creator} pageType={pageType}/>
           <p className='mt-2'>{creator.bio}</p>
         </div>
@@ -62,6 +63,13 @@ const Name = ({ creator, pageType }: CreatorComponentProps) => {
   switch (pageType) {
     case 'creator-screen':
       return <h1 className="mt-4 sm:mt-0 font-bold text-xl">{creator.name}</h1>;
+    case 'profile-screen':
+      return (
+        <h1 className="mt-4 sm:mt-0 font-bold text-xl flex items-center gap-1.5 justify-center sm:justify-start">
+          {creator.name}
+          <FaCheckCircle className="text-brand-pink dark:text-taddy-blue shrink-0" size={16} />
+        </h1>
+      );
     default:
       return <h2 className="mt-4 sm:mt-0 font-bold text-xl">{creator.name}</h2>;
   }

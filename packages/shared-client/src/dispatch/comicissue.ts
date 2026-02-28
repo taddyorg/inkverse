@@ -81,7 +81,7 @@ export type ComicIssueLoaderData = {
 };
 
 export const comicIssueInitialState: Partial<ComicIssueLoaderData> = {
-  isComicIssueLoading: false,
+  isComicIssueLoading: true,
   comicissue: null,
   comicseries: null,
   creatorLinks: [],
@@ -331,6 +331,7 @@ interface LikeComicIssueProps {
 interface SuperLikeAllEpisodesProps {
   userClient: ApolloClient;
   seriesUuid: string;
+  issueUuid: string;
 }
 
 export async function likeComicIssue(
@@ -450,7 +451,7 @@ export async function unlikeComicIssue(
 }
 
 export async function superLikeAllEpisodes(
-  { userClient, seriesUuid }: SuperLikeAllEpisodesProps,
+  { userClient, seriesUuid, issueUuid }: SuperLikeAllEpisodesProps,
   dispatch?: Dispatch<ComicIssueAction>
 ): Promise<UserComicData | null> {
   if (dispatch) dispatch({ type: ComicIssueActionType.SUPER_LIKE_ALL_EPISODES_START });
@@ -458,7 +459,12 @@ export async function superLikeAllEpisodes(
   try {
     const result = await userClient.mutate<SuperLikeAllEpisodesMutation, SuperLikeAllEpisodesMutationVariables>({
       mutation: SuperLikeAllEpisodes,
-      variables: { seriesUuid }
+      variables: { seriesUuid },
+      refetchQueries: [
+        { query: GetComicIssueDynamic, variables: { issueUuid } },
+        { query: GetComicSeriesDynamic, variables: { seriesUuid } }
+      ],
+      awaitRefetchQueries: true
     });
 
     if (!result.data?.superLikeAllEpisodes) {

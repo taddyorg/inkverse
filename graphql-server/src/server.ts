@@ -11,6 +11,7 @@ import { requiredFields } from './graphql/validators/required-fields.js';
 import { createComplexityLimitRule } from './graphql/validators/complexity-cost/index.js';
 import { ApolloServerPluginLandingPageDisabled } from "@apollo/server/plugin/disabled";
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
+import { inkverseWebsiteUrl } from '@inkverse/public/utils';
 
 import { typeDefs, resolvers } from './graphql/index.js';
 import { errorMessageToJsonError, graphqlFormatError } from './graphql/error.js';
@@ -18,7 +19,7 @@ import workerRouter from './routes/worker.js';
 import { createAuthContext } from './middleware/auth.js';
 import authRouter from './routes/auth.js';
 import hostingProviderRouter from './routes/hosting-provider.js';
-import { inkverseWebsiteUrl } from '@inkverse/public/utils';
+import claimCreatorRouter from './routes/claim-creator.js';
 
 const PORT = 3010;
 const QUERY_MAX_DEPTH = 4;
@@ -97,6 +98,7 @@ async function startServer() {
   app.use('/api/worker', workerRouter);
   app.use('/api/auth', cors(authCorsOptions), authRouter);
   app.use('/api/hosting-provider', hostingProviderRouter);
+  app.use('/api/claim-creator', cors(authCorsOptions), claimCreatorRouter);
 
   app.use((error: any, req: Request, res: Response, next: NextFunction) => {
     return errorMessageToJsonError(res, error)

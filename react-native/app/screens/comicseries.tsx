@@ -4,7 +4,7 @@ import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/nativ
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { FlashList } from '@shopify/flash-list';
 
-import { Screen, HeaderBackButton, HeaderShareButton, ThemedActivityIndicator, ThemedRefreshControl } from '@/app/components/ui';
+import { Screen, HeaderBackButton, HeaderShareButton, ThemedActivityIndicator, ThemedRefreshControl, FadeInView } from '@/app/components/ui';
 import { ComicSeriesDetails } from '@/app/components/comics/ComicSeriesDetails';
 import { ComicIssuesList, ComicIssuesListProps } from '@/app/components/comics/ComicIssuesList';
 import { ComicSeriesInfo } from '@/app/components/comics/ComicSeriesInfo';
@@ -240,7 +240,7 @@ export function ComicSeriesScreen() {
     ];
   }, [comicseries, issues, userComicData, isSubscriptionLoading, isNotificationLoading]);
 
-  if (isComicSeriesLoading) {
+  if (isComicSeriesLoading || !comicseries) {
     return (
       <ComicSeriesScreenWrapper isHeaderVisible={isHeaderVisible} comicseries={comicseries || null}>
         <View style={styles.loadingContainer}>
@@ -252,24 +252,26 @@ export function ComicSeriesScreen() {
 
   return (
     <ComicSeriesScreenWrapper isHeaderVisible={isHeaderVisible} comicseries={comicseries || null}>
-      <FlashList
-        data={getListData()}
-        renderItem={renderItem}
-        keyExtractor={keyExtractor}
-        showsVerticalScrollIndicator={false}
-        onScroll={(event) => {
-          const yOffset = event.nativeEvent.contentOffset.y;
-          if (yOffset <= 0) {
-            setIsHeaderVisible(true);
+      <FadeInView>
+        <FlashList
+          data={getListData()}
+          renderItem={renderItem}
+          keyExtractor={keyExtractor}
+          showsVerticalScrollIndicator={false}
+          onScroll={(event) => {
+            const yOffset = event.nativeEvent.contentOffset.y;
+            if (yOffset <= 0) {
+              setIsHeaderVisible(true);
+            }
+          }}
+          refreshControl={
+            <ThemedRefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+            />
           }
-        }}
-        refreshControl={
-          <ThemedRefreshControl 
-            refreshing={refreshing} 
-            onRefresh={onRefresh}
-          />
-        }
-      />
+        />
+      </FadeInView>
     </ComicSeriesScreenWrapper>
   );
 }

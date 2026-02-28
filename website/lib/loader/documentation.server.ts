@@ -30,5 +30,6 @@ export async function loadDocumentation({ params, request, context }: LoaderFunc
 
   } catch (error) {
     handleLoaderError(error, 'Documentation');
+    return { documentation: null };
   }
 }

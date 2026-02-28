@@ -27,8 +27,8 @@ export const meta: MetaFunction<typeof loader> = () => {
   });
 };
 
-export const loader = async ({ params, request, context }: LoaderFunctionArgs) => {
-  return await loadProfileEdit({ params, request, context });
+export const loader = async (args: LoaderFunctionArgs) => {
+  return await loadProfileEdit(args);
 };
 
 export const headers = () => {

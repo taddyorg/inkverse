@@ -18,6 +18,8 @@ import { WrappedTaggedScreenParams } from "@/app/screens/wrapped-screens/wrapped
 import { WrappedProfileScreenParams } from "@/app/screens/wrapped-screens/wrappedprofile";
 import { WrappedHostingProviderScreenParams } from "@/app/screens/wrapped-screens/wrappedhostingprovider";
 import { WrappedApiHostingProviderScreenParams } from "@/app/screens/wrapped-screens/wrappedapihostingprovider";
+import { ClaimCreatorScreenParams } from "@/app/screens/claim-creator";
+import { WrappedClaimCreatorScreenParams } from "@/app/screens/wrapped-screens/wrappedclaimcreator";
 import { SignupResetScreenParams } from "@/app/screens/signup/signup-reset";
 import { SignupPatreonScreenParams } from "@/app/screens/signup/signup-patreon";
 import { SignupBlueskyScreenParams } from "@/app/screens/signup/signup-bluesky";
@@ -71,6 +73,8 @@ export const EDIT_PATREON_SCREEN = "EditPatreonScreen";
 export const EDIT_BLUESKY_SCREEN = "EditBlueskyScreen";
 export const TRENDING_SCREEN = "TrendingScreen";
 export const COMMENTS_SCREEN = "CommentsScreen";
+export const CLAIM_CREATOR_SCREEN = "ClaimCreatorScreen";
+export const WRAPPED_CLAIM_CREATOR_SCREEN = "WrappedClaimCreatorScreen";
 export const WRAPPED_TRENDING_LIKED_SCREEN = "WrappedTrendingLikedScreen";
 export const WRAPPED_TRENDING_DISCUSSED_SCREEN = "WrappedTrendingDiscussedScreen";
 
@@ -116,6 +120,8 @@ export type RootStackParamList = {
   [EDIT_BLUESKY_SCREEN]: EditBlueskyScreenParams;
   [TRENDING_SCREEN]: TrendingScreenParams;
   [COMMENTS_SCREEN]: CommentsScreenParams;
+  [CLAIM_CREATOR_SCREEN]: ClaimCreatorScreenParams;
+  [WRAPPED_CLAIM_CREATOR_SCREEN]: WrappedClaimCreatorScreenParams;
   [WRAPPED_TRENDING_LIKED_SCREEN]: undefined;
   [WRAPPED_TRENDING_DISCUSSED_SCREEN]: undefined;
 };

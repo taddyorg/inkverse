@@ -8,7 +8,7 @@ import { getPublicApolloClient } from '@/lib/apollo';
 
 import { CreatorDetails } from '@/app/components/creator/CreatorDetails';
 import { CreatorComics } from '@/app/components/creator/CreatorComics';
-import { Screen, HeaderBackButton, HeaderShareButton, ThemedActivityIndicator, ThemedRefreshControl, ScreenHeader } from '@/app/components/ui';
+import { Screen, HeaderBackButton, HeaderShareButton, ThemedActivityIndicator, ThemedRefreshControl, ScreenHeader, FadeInView } from '@/app/components/ui';
 
 import { creatorReducer, getCreatorScreen, creatorInitialState } from '@inkverse/shared-client/dispatch/creator';
 import { ComicSeries, Creator } from '@inkverse/shared-client/graphql/operations';
@@ -83,17 +83,19 @@ export function CreatorScreen() {
 
   return (
     <CreatorScreenWrapper creator={creator}>
-      <FlashList
-        data={listData}
-        renderItem={renderItem}
-        contentContainerStyle={styles.contentContainer}
-        refreshControl={
-          <ThemedRefreshControl
-            refreshing={isLoading}
-            onRefresh={handleRefresh}
-          />
-        }
-      />
+      <FadeInView>
+        <FlashList
+          data={listData}
+          renderItem={renderItem}
+          contentContainerStyle={styles.contentContainer}
+          refreshControl={
+            <ThemedRefreshControl
+              refreshing={isLoading}
+              onRefresh={handleRefresh}
+            />
+          }
+        />
+      </FadeInView>
     </CreatorScreenWrapper>
   );
 }

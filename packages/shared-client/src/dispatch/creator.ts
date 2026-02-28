@@ -26,7 +26,7 @@ export type CreatorLoaderData = {
 };
 
 export const creatorInitialState: CreatorLoaderData = {
-  isLoading: false,
+  isLoading: true,
   creator: null,
   comicseries: null,
   error: null,

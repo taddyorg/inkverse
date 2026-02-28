@@ -5,7 +5,7 @@ import { handleLoaderError } from "./error-handler";
 import { parseProfileData } from "@inkverse/shared-client/dispatch/profile";
 import type { ProfileState } from "@inkverse/shared-client/dispatch/profile";
 
-export async function loadProfile({ params, request, context }: LoaderFunctionArgs): Promise<ProfileState> {
+export async function loadProfile({ params, request, context }: LoaderFunctionArgs): Promise<ProfileState & { loaderError?: boolean }> {
   const { username } = params;
   
   if (!username) {
@@ -26,6 +26,7 @@ export async function loadProfile({ params, request, context }: LoaderFunctionAr
       return {
         user: null,
         subscribedComics: null,
+        creator: null,
         isLoading: false,
         error: null,
       };
@@ -43,20 +44,23 @@ export async function loadProfile({ params, request, context }: LoaderFunctionAr
       return {
         user: null,
         subscribedComics: null,
+        creator: null,
         isLoading: false,
         error: null,
       };
     }
 
     return parseProfileData(data);
-    
+
   } catch (error) {
-    const errorResult = handleLoaderError(error, 'Profile');
+    handleLoaderError(error, 'Profile');
     return {
       user: null,
       subscribedComics: null,
+      creator: null,
       isLoading: false,
-      error: errorResult,
+      error: null,
+      loaderError: true,
     };
   }
 }

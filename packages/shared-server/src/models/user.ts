@@ -83,6 +83,15 @@ export class User {
   }
 
   /**
+   * Get user by creator UUID (for claimed creators)
+   */
+  static async getUserByCreatorUuid(creatorUuid: string): Promise<UserModel | null> {
+    return await database("users")
+      .where({ creatorUuid })
+      .first('*');
+  }
+
+  /**
    * Get user by OTP and mark their email as verified
    */
   static async getAndVerifyEmailByOTP(otp: string): Promise<UserModel | null> {
@@ -184,6 +193,15 @@ export class User {
       .returning('*');
 
       return returnedUser;
+  }
+
+  /**
+   * Clear creatorUuid for any user with the given creatorUuid
+   */
+  static async clearCreatorUuid(creatorUuid: string): Promise<void> {
+    await database("users")
+      .where({ creatorUuid })
+      .update({ updatedAt: currentDate(), creatorUuid: null });
   }
 
   /**

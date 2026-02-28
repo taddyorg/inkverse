@@ -17,8 +17,8 @@ export const meta: MetaFunction<typeof loader> = () => {
   });
 };
 
-export const loader = async ({ params, request, context }: LoaderFunctionArgs) => {
-  const data = await loadProfileEdit({ params, request, context });
+export const loader = async (args: LoaderFunctionArgs) => {
+  const data = await loadProfileEdit(args);
   
   // If user is not logged in, redirect to home
   if (!data.user) {

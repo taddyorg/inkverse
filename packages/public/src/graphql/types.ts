@@ -210,6 +210,7 @@ export type ComicStory = {
 export type Comment = {
   __typename?: 'Comment';
   createdAt: Scalars['Int']['output'];
+  isCreator?: Maybe<Scalars['Boolean']['output']>;
   replyToUuid?: Maybe<Scalars['ID']['output']>;
   stats?: Maybe<CommentStats>;
   targetType: InkverseType;
@@ -557,6 +558,8 @@ export type Creator = {
   sssUrl?: Maybe<Scalars['String']['output']>;
   /**  Tags for the creator  */
   tags?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  /**  The Inkverse user who has claimed this creator profile  */
+  user?: Maybe<User>;
   /**  Unique identifier for this creator  */
   uuid: Scalars['ID']['output'];
 };
@@ -568,6 +571,13 @@ export type CreatorContentArgs = {
   page?: InputMaybe<Scalars['Int']['input']>;
   sortOrder?: InputMaybe<SortOrder>;
 };
+
+/** Status of a creator claim request */
+export enum CreatorClaimStatus {
+  APPROVED = 'APPROVED',
+  PENDING = 'PENDING',
+  REJECTED = 'REJECTED'
+}
 
 /**  CreatorContent Details  */
 export type CreatorContent = {
@@ -1176,6 +1186,8 @@ export type Query = {
   getComments: CommentsForTarget;
   /**  Get details on a Creator  */
   getCreator?: Maybe<Creator>;
+  /** Get the claim status for a creator (requires auth) */
+  getCreatorClaimStatus?: Maybe<CreatorClaimStatus>;
   /**  Get details on a Creator Content  */
   getCreatorContent?: Maybe<CreatorContent>;
   /**  Get efficient links for creators of content  */
@@ -1260,6 +1272,11 @@ export type QueryGetCommentsArgs = {
 export type QueryGetCreatorArgs = {
   shortUrl?: InputMaybe<Scalars['String']['input']>;
   uuid?: InputMaybe<Scalars['ID']['input']>;
+};
+
+
+export type QueryGetCreatorClaimStatusArgs = {
+  creatorUuid: Scalars['ID']['input'];
 };
 
 
@@ -1456,19 +1473,12 @@ export type User = {
   birthYear?: Maybe<Scalars['Int']['output']>;
   blueskyDid?: Maybe<Scalars['String']['output']>;
   createdAt?: Maybe<Scalars['Int']['output']>;
+  creator?: Maybe<Creator>;
   email?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   isEmailVerified?: Maybe<Scalars['Boolean']['output']>;
-  subscriptions?: Maybe<Array<Maybe<ComicSeries>>>;
   updatedAt?: Maybe<Scalars['Int']['output']>;
   username?: Maybe<Scalars['String']['output']>;
-};
-
-
-/** User Type */
-export type UserSubscriptionsArgs = {
-  limitPerPage?: InputMaybe<Scalars['Int']['input']>;
-  page?: InputMaybe<Scalars['Int']['input']>;
 };
 
 /** Age range buckets for users */
@@ -1589,6 +1599,7 @@ export type ResolversTypes = ResolversObject<{
   ContentRole: ContentRole;
   Country: Country;
   Creator: ResolverTypeWrapper<Creator>;
+  CreatorClaimStatus: CreatorClaimStatus;
   CreatorContent: ResolverTypeWrapper<CreatorContent>;
   CreatorLinkDetails: ResolverTypeWrapper<CreatorLinkDetails>;
   Documentation: ResolverTypeWrapper<Documentation>;
@@ -1768,6 +1779,7 @@ export type ComicStoryResolvers<ContextType = any, ParentType extends ResolversP
 
 export type CommentResolvers<ContextType = any, ParentType extends ResolversParentTypes['Comment'] = ResolversParentTypes['Comment']> = ResolversObject<{
   createdAt?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  isCreator?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   replyToUuid?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   stats?: Resolver<Maybe<ResolversTypes['CommentStats']>, ParentType, ContextType>;
   targetType?: Resolver<ResolversTypes['InkverseType'], ParentType, ContextType>;
@@ -1813,6 +1825,7 @@ export type CreatorResolvers<ContextType = any, ParentType extends ResolversPare
   sssOwnerPublicEmail?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   sssUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   tags?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   uuid?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -1931,6 +1944,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getComicsFromPatreonCreators?: Resolver<Maybe<Array<Maybe<ResolversTypes['ComicSeries']>>>, ParentType, ContextType>;
   getComments?: Resolver<ResolversTypes['CommentsForTarget'], ParentType, ContextType, RequireFields<QueryGetCommentsArgs, 'targetType' | 'targetUuid'>>;
   getCreator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType, Partial<QueryGetCreatorArgs>>;
+  getCreatorClaimStatus?: Resolver<Maybe<ResolversTypes['CreatorClaimStatus']>, ParentType, ContextType, RequireFields<QueryGetCreatorClaimStatusArgs, 'creatorUuid'>>;
   getCreatorContent?: Resolver<Maybe<ResolversTypes['CreatorContent']>, ParentType, ContextType, Partial<QueryGetCreatorContentArgs>>;
   getCreatorLinksForSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['CreatorLinkDetails']>>>, ParentType, ContextType, RequireFields<QueryGetCreatorLinksForSeriesArgs, 'seriesUuid'>>;
   getCuratedLists?: Resolver<Maybe<ResolversTypes['HomeScreenCuratedList']>, ParentType, ContextType, Partial<QueryGetCuratedListsArgs>>;
@@ -1966,10 +1980,10 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   birthYear?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   blueskyDid?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   createdAt?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
   email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   isEmailVerified?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  subscriptions?: Resolver<Maybe<Array<Maybe<ResolversTypes['ComicSeries']>>>, ParentType, ContextType, Partial<UserSubscriptionsArgs>>;
   updatedAt?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   username?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

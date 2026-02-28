@@ -4,7 +4,7 @@ import { useNavigation, useScrollToTop } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { FlashList, FlashListRef } from '@shopify/flash-list';
 
-import { Screen, ThemedText, ThemedActivityIndicator, ThemedTextFontFamilyMap, PressableOpacity, ThemedRefreshControl, DropdownMenu } from '@/app/components/ui';
+import { Screen, ThemedText, ThemedActivityIndicator, ThemedTextFontFamilyMap, PressableOpacity, ThemedRefreshControl, DropdownMenu, FadeInView } from '@/app/components/ui';
 import { ComicSeriesDetails } from '@/app/components/comics/ComicSeriesDetails';
 import { ListDetails } from '@/app/components/list/ListDetails';
 import { Header } from '@/app/components/home/Header';
@@ -47,10 +47,6 @@ export function HomeScreen() {
 
   // Create data for FlashList
   const sections = useCallback((): SectionType[] => {
-    if (isHomeScreenLoading) {
-      return [];
-    }
-    
     return [
       { type: 'header' },
       { type: 'featured', data: featuredComicSeries },
@@ -61,7 +57,6 @@ export function HomeScreen() {
       { type: 'recentlyAdded', data: recentlyAddedComicSeries },
     ];
   }, [
-    isHomeScreenLoading,
     featuredComicSeries,
     curatedLists,
     recentlyUpdatedComicSeries,
@@ -93,7 +88,7 @@ export function HomeScreen() {
 
   const keyExtractor = useCallback((item: SectionType, index: number) => `${item.type}-${index}`, []);
 
-  if (isHomeScreenLoading) {
+  if (isHomeScreenLoading || !featuredComicSeries) {
     return (
       <Screen style={styles.container}>
         <View style={styles.loadingContainer}>
@@ -105,17 +100,19 @@ export function HomeScreen() {
 
   return (
     <Screen style={styles.container}>
-      <FlashList
-        ref={flashListRef}
-        data={sections()}
-        renderItem={renderItem}
-        keyExtractor={keyExtractor}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <ThemedRefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      />
+      <FadeInView>
+        <FlashList
+          ref={flashListRef}
+          data={sections()}
+          renderItem={renderItem}
+          keyExtractor={keyExtractor}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <ThemedRefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        />
+      </FadeInView>
     </Screen>
   );
 }

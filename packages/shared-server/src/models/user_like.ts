@@ -79,10 +79,7 @@ export class UserLike {
       .select('likeableUuid');
 
     const likedSet = new Set(likes.map(l => l.likeableUuid));
-    const result = new Map<string, boolean>();
-    likeableUuids.forEach(uuid => result.set(uuid, likedSet.has(uuid)));
-
-    return result;
+    return new Map(likeableUuids.map(uuid => [uuid, likedSet.has(uuid)]));
   }
 
   /**
@@ -166,13 +163,8 @@ export class UserLike {
       .select('likeableUuid')
       .count('id as count');
 
-    const countMap = new Map<string, number>();
-    // Initialize all with 0
-    likeableUuids.forEach(uuid => countMap.set(uuid, 0));
-    // Set actual counts
-    results.forEach(r => countMap.set(r.likeableUuid as string, Number(r.count)));
-
-    return countMap;
+    const resultMap = new Map(results.map(r => [r.likeableUuid as string, Number(r.count)]));
+    return new Map(likeableUuids.map(uuid => [uuid, resultMap.get(uuid) ?? 0]));
   }
 
   /**
@@ -230,9 +222,6 @@ export class UserLike {
       .select('likeableUuid')
       .count('id as count');
 
-    const countMap = new Map<string, number>();
-    results.forEach(r => countMap.set(r.likeableUuid as string, Number(r.count)));
-
-    return countMap;
+    return new Map(results.map(r => [r.likeableUuid as string, Number(r.count)]));
   }
 }

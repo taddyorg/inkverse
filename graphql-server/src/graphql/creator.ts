@@ -12,8 +12,8 @@ import type {
 } from '@inkverse/shared-server/graphql/types';
 import { LinkType, SortOrder, TaddyType } from '@inkverse/shared-server/graphql/types';
 
-import type { ComicSeriesModel, CreatorContentModel, CreatorModel } from '@inkverse/shared-server/database/types';
-import { ComicSeries, Creator, CreatorContent } from '@inkverse/shared-server/models/index';
+import type { ComicSeriesModel, CreatorContentModel, CreatorModel, UserModel } from '@inkverse/shared-server/database/types';
+import { ComicSeries, Creator, CreatorContent, User } from '@inkverse/shared-server/models/index';
 import { getBaseLinkForSchema } from '@inkverse/public/links';
 import { arrayToObject } from '@inkverse/public/utils';
 import { safeLinkType } from '@inkverse/public/links';
@@ -83,6 +83,9 @@ const CreatorDefinitions = `
 
   " If the content has violated Taddy's distribution policies for illegal or harmful content it will be blocked from getting any updates "
   isBlocked: Boolean
+
+  " The Inkverse user who has claimed this creator profile "
+  user: User
 }
 `
 
@@ -236,6 +239,10 @@ const CreatorFieldResolvers: CreatorResolvers = {
         offset,
         limitPerPage 
       )
+    },
+
+    async user({ uuid }: CreatorModel, _: any, context: GraphQLContext): Promise<UserModel | null> {
+      return await User.getUserByCreatorUuid(uuid);
     },
 
     async comics({ uuid }: CreatorModel, _: any, context: GraphQLContext): Promise<ComicSeriesModel[]> {

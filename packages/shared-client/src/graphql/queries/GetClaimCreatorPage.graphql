@@ -1,0 +1,12 @@
+# import creatorDetails from '../fragments/CreatorDetails.graphql'
+# import miniComicSeriesDetails from '../fragments/MiniComicSeriesDetails.graphql'
+
+query GetClaimCreatorPage($creatorUuid: ID!) {
+	getCreator(uuid: $creatorUuid) {
+		...creatorDetails
+		comics {
+			...miniComicSeriesDetails
+			hostingProviderUuid
+		}
+	}
+}

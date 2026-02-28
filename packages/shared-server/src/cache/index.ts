@@ -27,7 +27,7 @@ export type CacheType =
   'recentlyAdded' |
   'recentlyUpdated' |
   'profilecomicseries' |
-  'profile' |
+  'user' |
   'comments'
 
 interface PurgeCacheParams {
@@ -65,12 +65,12 @@ export async function purgeCacheOnCdn({ type, id, shortUrl, name, seriesUuid, is
     case 'profilecomicseries':
       if (!id) { throw new Error('purgeCacheOnCdn - id (userId) is required for type: ' + type); }
       await purgeApiCache(type, id)
-      await purgeWebsiteCache({ type: 'profile', shortUrl })
+      await purgeWebsiteCache({ type: 'user', id, username: shortUrl })
       return
     case 'comicissuestats':
       if (!id) { throw new Error('purgeCacheOnCdn - id (issueUuid) is required for type: ' + type); }
-      await purgeApiCache(type, id)
-      return
+      await purgeApiCache(type, id) 
+      return  
     case 'comicseriesstats':
       if (!id) { throw new Error('purgeCacheOnCdn - id (seriesUuid) is required for type: ' + type); }
       await purgeApiCache(type, id)
@@ -79,11 +79,16 @@ export async function purgeCacheOnCdn({ type, id, shortUrl, name, seriesUuid, is
       if (!id) { throw new Error('purgeCacheOnCdn - id (targetUuid) is required for type: ' + type); }
       await purgeApiCache(type, id)
       return
+    case 'user':
+      if (!id) { throw new Error('purgeCacheOnCdn - id is required for type: ' + type); }
+      await purgeApiCache(type, id)
+      await purgeWebsiteCache({ type, id, username: shortUrl })
+      return
     case 'everything':
       await purgeApiCache(type, "")
       await purgeWebsiteCache({ type })
       return
-    case 'recentlyAdded':
+    case 'recentlyAdded': 
       await purgeApiCache(type, 'recently-added')
       await purgeWebsiteCache({ type, id: 'recently-added' })
       return
@@ -173,6 +178,12 @@ function getGraphCDNQuery(type: CacheType) {
       return `
         mutation HomeScreenComicSeriesPurge ($id: [ID!]) {
           purgeHomeScreenComicSeries(id: $id)
+        }
+      `
+    case 'user':
+      return `
+        mutation UserPurge ($id: [ID!]) {
+          purgeUser(id: $id)
         }
       `
     case 'profilecomicseries':
@@ -314,7 +325,7 @@ function getCloudflareDataObject({ type, id, shortUrl, name, seriesUuid, usernam
     case 'sitemap':
     case 'recentlyAdded':
     case 'recentlyUpdated':
-    case 'profile':
+    case 'user':
       return { files: [urlToPurge({ type, id, shortUrl, name, seriesUuid, username })] }
     case 'comicstory':
     case 'creatorcontent':
@@ -339,8 +350,8 @@ function urlToPurge({ type, id, shortUrl, name, seriesUuid, username }: PurgeWeb
       return `${inkverseWebsiteUrl}`
     case 'sitemap':
       return `https://ink0.inkverse.co/sitemap/${id}`
-    case 'profile':
-      return `${inkverseWebsiteUrl}${getInkverseUrl({ type: 'profile', username })}`
+    case 'user':
+      return `${inkverseWebsiteUrl}/${username}`
     default:
       throw new Error(`inside getURLsToPurge() - Dont have logic for type: ${type}`)
   }

@@ -69,6 +69,7 @@ export function getInkverseUrl(
 
     case 'creator':
       if (!params.shortUrl) return undefined;
+      if (params.username) return `/${params.username}`;
       return `/creators/${params.shortUrl}`;
 
     case 'comicissue':

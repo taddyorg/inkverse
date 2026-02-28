@@ -50,6 +50,8 @@ import { WrappedProfileScreen } from './wrapped-screens/wrappedprofile';
 import { WrappedHostingProviderScreen } from './wrapped-screens/wrappedhostingprovider';
 import { WrappedApiHostingProviderScreen } from './wrapped-screens/wrappedapihostingprovider';
 import { WrappedTrendingLikedScreen, WrappedTrendingDiscussedScreen } from './wrapped-screens/wrappedtrending';
+import { ClaimCreatorScreen } from './claim-creator';
+import { WrappedClaimCreatorScreen } from './wrapped-screens/wrappedclaimcreator';
 import { NotificationProvider } from '../components/providers/NotificationProvider';
 import { CommentsProvider } from '../components/providers/CommentsProvider';
 import { AnalyticsProvider } from '../components/providers/AnalyticsProvider';
@@ -70,6 +72,8 @@ import {
   WRAPPED_PROFILE_SCREEN,
   WRAPPED_HOSTING_PROVIDER_SCREEN,
   WRAPPED_API_HOSTING_PROVIDER_SCREEN,
+  CLAIM_CREATOR_SCREEN,
+  WRAPPED_CLAIM_CREATOR_SCREEN,
   WRAPPED_TRENDING_LIKED_SCREEN,
   WRAPPED_TRENDING_DISCUSSED_SCREEN,
   COMICISSUE_SCREEN, 
@@ -230,6 +234,15 @@ const editBlueskyScreenConfig = {
   }
 };
 
+const claimCreatorScreenConfig = {
+  name: CLAIM_CREATOR_SCREEN as keyof RootStackParamList,
+  component: ClaimCreatorScreen,
+  options: {
+    title: '',
+    headerShown: false,
+  }
+};
+
 const stackScreenOptions = {
   ...Platform.select({
     android: {
@@ -327,6 +340,7 @@ function ProfileStack() {
       <Stack.Screen {...editEmailScreenConfig} />
       <Stack.Screen {...editPatreonScreenConfig} />
       <Stack.Screen {...editBlueskyScreenConfig} />
+      <Stack.Screen {...claimCreatorScreenConfig} />
     </Stack.Navigator>
   );
 }
@@ -469,6 +483,7 @@ function App() {
         [WRAPPED_TAGGED_SCREEN]: 'tagged/:tag',
         [WRAPPED_TRENDING_LIKED_SCREEN]: 'most-liked',
         [WRAPPED_TRENDING_DISCUSSED_SCREEN]: 'most-discussed',
+        [WRAPPED_CLAIM_CREATOR_SCREEN]: 'claim-creator/:uuid',
         [WRAPPED_PROFILE_SCREEN]: ':username',
         [WRAPPED_HOSTING_PROVIDER_SCREEN]: 'hosting-provider/:uuid',
         [WRAPPED_API_HOSTING_PROVIDER_SCREEN]: 'api/hosting-provider/:uuid',
@@ -664,7 +679,12 @@ function App() {
                       component={WrappedTrendingDiscussedScreen}
                       options={modalScreenOptions}
                     />
-                    <Stack.Screen 
+                    <Stack.Screen
+                      name={WRAPPED_CLAIM_CREATOR_SCREEN}
+                      component={WrappedClaimCreatorScreen}
+                      options={modalScreenOptions}
+                    />
+                    <Stack.Screen
                       name={SIGNUP_SCREEN} 
                       component={SignupNavigator}
                       options={modalScreenOptionsCannotClose}

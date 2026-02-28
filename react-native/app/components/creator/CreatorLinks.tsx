@@ -71,6 +71,7 @@ const styles = StyleSheet.create({
   linksContainer: {
     width: '100%',
     paddingBottom: 4,
+    marginBottom: 16,
   },
   linksContentContainer: {
     flexDirection: 'row',

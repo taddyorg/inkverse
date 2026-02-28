@@ -2,11 +2,11 @@ import type { Dispatch } from 'react';
 import { ApolloClient } from '@apollo/client';
 import { 
   ResendVerificationEmail,
-} from '../graphql/operations';
+} from '../graphql/operations.js';
 import type { 
   ResendVerificationEmailMutation,
   ResendVerificationEmailMutationVariables,
-} from '../graphql/operations';
+} from '../graphql/operations.js';
 
 export interface VerificationState {
   isLoading: boolean;

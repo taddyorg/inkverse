@@ -8,6 +8,7 @@ fragment commentDetails on Comment {
   targetUuid
   targetType
   replyToUuid
+  isCreator
   stats {
     uuid
     likeCount

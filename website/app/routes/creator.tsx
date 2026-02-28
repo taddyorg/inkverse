@@ -4,6 +4,7 @@ import { useLoaderData } from 'react-router';
 // import { SimpleLoadingComponent } from '@/components/ui';
 import { CreatorDetails } from '../components/creator/CreatorDetails';
 import { CreatorComics } from '../components/creator/CreatorComics';
+import { NotFound } from '../components/ui';
 
 import { loadCreator, type CreatorLoaderData } from '@/lib/loader/creator.server';
 import { getMetaTags } from '@/lib/seo';
@@ -22,8 +23,8 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   );
 };
 
-export const loader = async ({ params, request, context }: LoaderFunctionArgs) => {
-  return await loadCreator({ params, request, context });
+export const loader = async (args: LoaderFunctionArgs) => {
+  return await loadCreator(args);
 };
 
 export default function Creator() {
@@ -33,29 +34,14 @@ export default function Creator() {
 }
 
 function CreatorContent({ initialData }: { initialData: CreatorLoaderData }) {
-  // const { match = {}, location, comicseries:SSRComicseries } = props;
+  if (initialData.loaderError) {
+    return <NotFound message="Something went wrong" subtitle="Please try again later." />;
+  }
 
-  // const [ comicseriesQuery, comicseriesQueryDispatch] = useReducer(comicInfoReducer, {});
-  // const { isLoading, comicseries:CSRComicseries, issues, recommendations } = comicseriesQuery;
+  if (!initialData?.creator) {
+    return <NotFound message="Creator not found" />;
+  }
 
-  // const comicseries = CSRComicseries || SSRComicseries;
-
-  // useEffect(() => {
-  //   const uuid = location.state
-  //     ? location.state.passedInUuid
-  //     : comicseries?.uuid;
-
-  //   if (!uuid) { return; }
-
-  //   getComicInfoScreen({ uuid }, comicseriesQueryDispatch);
-  // }, [comicseries?.uuid, location.state?.passedInUuid]);
-
-  // if (!comicseries) {
-  //   return (
-  //     <SimpleLoadingComponent />
-  //   )
-  // }
-  
   return (
     <div className="max-w-3xl mx-auto sm:p-6 lg:p-8">
       <CreatorDetails 

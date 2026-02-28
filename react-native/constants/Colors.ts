@@ -8,7 +8,7 @@
 // #567CD6 : taddy-blue
 // #3E5FBC : taddy-blue-dark
 
-export const Colors = {
+const RawColors = {
   light: {
     text: '#403B51',      // inkverse-black
     background: '#FFE9E4', // paper-pink
@@ -41,11 +41,17 @@ export const Colors = {
   },
 } as const;
 
+export const Colors = {
+  light: RawColors.light,
+  dark: RawColors.dark,
+  unspecified: RawColors.light,
+} as const;
+
 import { useMemo } from 'react';
 import { useColorScheme } from 'react-native';
 
-type ColorName = keyof typeof Colors.light & keyof typeof Colors.dark;
-type ThemeProps = { light?: string; dark?: string };
+type ColorName = keyof typeof Colors.light & keyof typeof Colors.dark & keyof typeof Colors.unspecified;
+type ThemeProps = { light?: string; dark?: string; unspecified?: string };
 
 export function useThemeColor(props: ThemeProps, colorName: ColorName) {
   const theme = useColorScheme() ?? 'light';

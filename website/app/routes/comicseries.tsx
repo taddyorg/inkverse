@@ -6,6 +6,7 @@ import { ComicSeriesDetails } from '../components/comics/ComicSeriesDetails';
 import { ComicIssuesList } from '../components/comics/ComicIssuesList';
 import { ComicSeriesInfo } from '../components/comics/ComicSeriesInfo';
 import { ReadNextEpisode } from '../components/comics/ReadNextEpisode';
+import { NotFound } from '../components/ui/NotFound';
 
 import { loadComicSeries } from '@/lib/loader/comicseries.server';
 import { getMetaTags } from '@/lib/seo';
@@ -13,6 +14,7 @@ import { getInkverseUrl, inkverseWebsiteUrl } from '@inkverse/public/utils';
 import { getBannerImageUrl } from '@inkverse/public/comicseries';
 import { getUserDetails } from '@/lib/auth/user';
 import { getUserApolloClient } from '@/lib/apollo/client.client';
+
 import {
   loadUserComicData,
   loadComicSeriesDynamic,
@@ -39,8 +41,8 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   );
 };
 
-export const loader = async ({ params, request, context }: LoaderFunctionArgs) => {
-  return await loadComicSeries({ params, request, context });
+export const loader = async (args: LoaderFunctionArgs) => {
+  return await loadComicSeries(args);
 };
 
 export default function ComicSeries() {
@@ -49,7 +51,7 @@ export default function ComicSeries() {
   return <ComicSeriesContent key={seriesKey} initialData={comicSeriesData} />;
 }
 
-function ComicSeriesContent({ initialData }: { initialData: Partial<ComicSeriesLoaderData> }) {
+function ComicSeriesContent({ initialData }: { initialData: Partial<ComicSeriesLoaderData> & { loaderError?: boolean } }) {
   const [comicSeriesState, dispatch] = useReducer(comicSeriesReducer, initialData);
   
   const {
@@ -181,14 +183,12 @@ function ComicSeriesContent({ initialData }: { initialData: Partial<ComicSeriesL
     }
   };
 
+  if (initialData.loaderError) {
+    return <NotFound message="Something went wrong" subtitle="Please try again later." />;
+  }
+
   if (!isComicSeriesLoading && !comicseries) {
-    return (
-      <div className="max-w-3xl mx-auto sm:p-6 lg:p-8 h-96 flex items-center justify-center">
-        <p className="text-lg font-medium text-center">
-          Comic series not found
-        </p>
-      </div>
-    )
+    return <NotFound message="Comic series not found" />;
   }
 
   return (

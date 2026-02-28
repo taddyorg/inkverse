@@ -1,11 +1,11 @@
 import type { Dispatch } from 'react';
 import { ApolloClient } from '@apollo/client';
-import type { StorageFunctions } from './utils';
+import type { StorageFunctions } from './utils.js';
 
-import { 
-  GetMeDetails, 
-  type GetMeDetailsQuery, 
-  type GetMeDetailsQueryVariables, 
+import {
+  GetMeDetails,
+  type GetMeDetailsQuery,
+  type GetMeDetailsQueryVariables,
   type User,
   GetUserByUsername,
   type GetUserByUsernameQuery,
@@ -14,7 +14,8 @@ import {
   type GetProfileByUserIdQuery,
   type GetProfileByUserIdQueryVariables,
   type ComicSeries,
-} from '../graphql/operations';
+  type Creator,
+} from '../graphql/operations.js';
 
 
 /* Action Type Enum */
@@ -28,6 +29,7 @@ export enum ProfileActionType {
 export interface ProfileState {
   user: any | null;
   subscribedComics: ComicSeries[] | null;
+  creator: Creator | null;
   isLoading: boolean;
   error: string | null;
   apolloState?: Record<string, any>;
@@ -36,7 +38,8 @@ export interface ProfileState {
 export const profileInitialState: Partial<ProfileState> = {
   user: null,
   subscribedComics: null,
-  isLoading: false,
+  creator: null,
+  isLoading: true,
   error: null,
 };
 
@@ -206,9 +209,17 @@ export async function logoutUserProfile(
 }
 
 export function parseProfileData(data: GetProfileByUserIdQuery | undefined): ProfileState {
+  const user = data?.getUserById;
+  const creator = (user?.creator as Creator) || null;
+  const creatorComicUuids = new Set(
+    (creator?.comics || []).filter((c): c is ComicSeries => c !== null).map(c => c.uuid)
+  );
   return {
-    user: data?.getUserById,
-    subscribedComics: data?.getUserSubscribedComics?.comicSeries?.filter((comic): comic is ComicSeries => comic !== null) || null,
+    user,
+    subscribedComics: data?.getUserSubscribedComics?.comicSeries
+      ?.filter((comic): comic is ComicSeries => comic !== null)
+      .filter(comic => !creatorComicUuids.has(comic.uuid)) || null,
+    creator,
     isLoading: false,
     error: null,
   };

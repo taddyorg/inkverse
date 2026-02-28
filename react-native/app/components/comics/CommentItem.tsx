@@ -313,41 +313,39 @@ export function CommentItem({
             {isHtml ? (
               <RenderHtml
                 contentWidth={width - 32}
-                source={{ html:
-                  processedHtml +
-                  '<span class="separator"> — </span>' +
-                  (comment.user?.username
-                    ? `<span class="username">${comment.user.username}</span>`
-                    : '') +
-                  (sortBy === 'NEWEST' && timeAgo
-                    ? `<span class="separator"> · </span><span class="timeago">${timeAgo}</span>`
-                    : '')
-                }}
+                source={{ html: processedHtml }}
                 baseStyle={{ color: textColor, fontSize: 15, lineHeight: 22, fontFamily: 'SourceSans3-Regular' } as MixedStyleDeclaration}
                 classesStyles={{
                   separator: { opacity: 0.4 },
-                  username: { opacity: 0.5, fontSize: 14 },
+                  // username: { opacity: 0.5, fontSize: 14 },
                   timeago: { fontSize: 12, opacity: 0.4 },
                 }}
                 renderers={renderers}
                 enableCSSInlineProcessing={false}
               />
             ) : (
-              <ThemedText style={styles.commentText}>
-                {comment.text}
-                <ThemedText style={styles.separator}> — </ThemedText>
-                {comment.user?.username && (
-                  <ThemedText style={styles.username} onPress={handleUsernamePress}>
-                    {comment.user.username}
+              <View style={styles.commentInlineRow}>
+                <ThemedText style={styles.commentText}>
+                  {comment.text}
+                  <ThemedText style={styles.separator}> — </ThemedText>
+                </ThemedText>
+                <PressableOpacity innerStyle={styles.usernameContainer} onPress={handleUsernamePress}>
+                  {comment.user?.username && (
+                    <ThemedText style={styles.username}>
+                      {comment.user.username}
+                    </ThemedText>
+                  )}
+                  {comment.isCreator && (
+                    <Ionicons name="checkmark-circle" style={styles.creatorBadge} size={14} color={textColor} />
+                  )}
+                </PressableOpacity>
+                {sortBy === 'NEWEST' && timeAgo && (
+                  <ThemedText style={styles.timeAgo}>
+                    <ThemedText style={styles.separator}> — </ThemedText>
+                    {timeAgo}
                   </ThemedText>
                 )}
-                {sortBy === 'NEWEST' && timeAgo && (
-                  <>
-                    <ThemedText style={styles.separator}> · </ThemedText>
-                    <ThemedText style={styles.timeAgo}>{timeAgo}</ThemedText>
-                  </>
-                )}
-              </ThemedText>
+              </View>
             )}
           </View>
 
@@ -516,6 +514,11 @@ const styles = StyleSheet.create({
   commentContent: {
     marginBottom: 8,
   },
+  commentInlineRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'baseline',
+  },
   commentText: {
     fontSize: 15,
     lineHeight: 22,
@@ -530,6 +533,13 @@ const styles = StyleSheet.create({
   username: {
     opacity: 0.5,
     fontSize: 14,
+  },
+  usernameContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  creatorBadge: {
+    marginLeft: 4
   },
   timeAgo: {
     fontSize: 12,

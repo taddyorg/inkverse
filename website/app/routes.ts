@@ -29,5 +29,6 @@ export default [
     route("profile/edit/email", "routes/profile/edit/email.tsx"),
     route("profile/edit/patreon", "routes/profile/edit/patreon.tsx"),
     route("profile/edit/bluesky", "routes/profile/edit/bluesky.tsx"),
+    route("claim-creator/:uuid", "routes/claim-creator.tsx"),
     route(":username", "routes/profile.tsx"),
 ] satisfies RouteConfig;

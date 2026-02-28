@@ -1,7 +1,7 @@
 import { ApolloClient } from '@apollo/client';
 import type { Dispatch } from 'react';
 import { type GetComicSeriesQuery, type GetComicSeriesQueryVariables, SortOrder, GetComicSeries, type ComicIssue, type ComicSeries, GetMiniComicSeries, type GetMiniComicSeriesQuery, type GetMiniComicSeriesQueryVariables, type SubscribeToSeriesMutation, type SubscribeToSeriesMutationVariables, SubscribeToSeries, type UnsubscribeFromSeriesMutation, type UnsubscribeFromSeriesMutationVariables, UnsubscribeFromSeries, GetUserComicSeries, type GetUserComicSeriesQuery, type GetUserComicSeriesQueryVariables, type EnableNotificationsForSeriesMutation, type EnableNotificationsForSeriesMutationVariables, EnableNotificationsForSeries, type DisableNotificationsForSeriesMutation, type DisableNotificationsForSeriesMutationVariables, DisableNotificationsForSeries, GetProfileByUserId, type LikeComicIssueMutation, type LikeComicIssueMutationVariables, LikeComicIssue, type UnlikeComicIssueMutation, type UnlikeComicIssueMutationVariables, UnlikeComicIssue, GetComicSeriesDynamic, type GetComicSeriesDynamicQuery, type GetComicSeriesDynamicQueryVariables, GetComicIssueDynamic } from "../graphql/operations.js";
-import { emit, EventNames } from '../pubsub';
+import { emit, EventNames } from '../pubsub/index.js';
 
 /* Action Type Enum */
 export enum ComicSeriesActionType {
@@ -106,7 +106,7 @@ export type ComicSeriesLoaderData = {
 };
 
 export const comicSeriesInitialState: Partial<ComicSeriesLoaderData> = {
-  isComicSeriesLoading: false,
+  isComicSeriesLoading: true,
   comicseries: null,
   issues: [],
   userComicData: null,

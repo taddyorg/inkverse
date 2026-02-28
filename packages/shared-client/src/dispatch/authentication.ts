@@ -1,8 +1,8 @@
 import axios from 'axios';
-import type { StorageFunctions } from './utils';
+import type { StorageFunctions } from './utils.js';
 import type { User } from '@inkverse/shared-client/graphql/operations';
 import { AuthProvider } from '@inkverse/public/graphql/types';
-import { emit, EventNames } from '../pubsub';
+import { emit, EventNames } from '../pubsub/index.js';
 
 export interface AuthState {
   user: any | null;

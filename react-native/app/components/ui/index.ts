@@ -12,6 +12,7 @@ import { ScrollIndicator } from "./ScrollIndicator"
 import { ThemedActivityIndicator } from "./ThemedActivityIndicator"
 import { ThemedRefreshControl } from "./ThemedRefreshControl"
 import { DropdownMenu } from "./DropdownMenu"
+import { FadeInView } from "./FadeInView"
 
 export {
     Logo,
@@ -29,4 +30,5 @@ export {
     ThemedActivityIndicator,
     ThemedRefreshControl,
     DropdownMenu,
+    FadeInView,
 }

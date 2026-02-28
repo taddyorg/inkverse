@@ -12,7 +12,7 @@ import {
   UserAgeRange,
   GetProfileByUserId,
   GetMeDetails,
-} from '../graphql/operations';
+} from '../graphql/operations.js';
 import type { 
   UpdateUserProfileMutation, 
   UpdateUserProfileMutationVariables,
@@ -35,9 +35,9 @@ import type {
   GetProfileByUserIdQuery,
   GetMeDetailsQuery,
   GetMeDetailsQueryVariables,
-} from '../graphql/operations';
-import type { StorageFunctions } from './utils';
-import { emit, EventNames } from '../pubsub';
+} from '../graphql/operations.js';
+import type { StorageFunctions } from './utils.js';
+import { emit, EventNames } from '../pubsub/index.js';
 
 export interface UserDetailsState {
   userData: any | null;

@@ -24,8 +24,8 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   });
 };
 
-export const loader = async ({ params, request, context }: LoaderFunctionArgs) => {
-  return await loadComicsList({ params: { pageType: 'tag', value: params.tag }, request, context });
+export const loader = async (args: LoaderFunctionArgs) => {
+  return await loadComicsList({ ...args, params: { pageType: 'tag', value: args.params.tag } });
 };
 
 export default function ComicsListScreen() {

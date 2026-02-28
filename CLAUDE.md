@@ -25,6 +25,9 @@ yarn run migrate
 
 # Generate GraphQL types
 yarn run graphql-codegen
+
+# Typecheck all packages
+yarn typecheck
 ```
 
 ## Architecture

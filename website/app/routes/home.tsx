@@ -102,8 +102,8 @@ const footerNavigation = {
   ],
 }
 
-export const loader = async ({ params, request, context }: LoaderFunctionArgs) => {
-  return await loadHomeScreen({ params, request, context });
+export const loader = async (args: LoaderFunctionArgs) => {
+  return await loadHomeScreen(args);
 };
 
 export default function Home() {

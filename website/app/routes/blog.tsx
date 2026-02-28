@@ -5,8 +5,8 @@ import { getDocumentMeta } from "@/lib/meta/documentation";
 
 import { NotionWrapper } from "../components/ui/NotionWrapper";
 
-export const loader = async ({ params, request, context }: LoaderFunctionArgs) => {
-  return await loadDocumentation({ params, request, context }, "/blog");
+export const loader = async (args: LoaderFunctionArgs) => {
+  return await loadDocumentation(args, "/blog");
 };
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {

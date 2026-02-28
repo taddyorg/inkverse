@@ -14,8 +14,8 @@ export const meta: MetaFunction = () => {
   });
 };
 
-export const loader = async ({ request }: LoaderFunctionArgs) => {
-  return await loadTrending(request, TrendingMetric.LIKED);
+export const loader = async (args: LoaderFunctionArgs) => {
+  return await loadTrending(args.request, TrendingMetric.LIKED);
 };
 
 export default function MostLikedPage() {
