@@ -12,6 +12,7 @@ import { User, ComicSeries } from '@inkverse/shared-client/graphql/operations';
 import { loadPublicProfileById, loadUserProfileById, profileReducer, profileInitialState, ProfileActionType, ProfileState, logoutUserProfile } from '@inkverse/shared-client/dispatch/profile';
 import { getPublicApolloClient, getUserApolloClient } from '@/lib/apollo';
 import { ComicSeriesDetails } from '../components/comics/ComicSeriesDetails';
+import { CreatorDetails } from '../components/creator/CreatorDetails';
 import { on, off, EventNames } from '@inkverse/shared-client/pubsub';
 
 type SectionData = {
@@ -26,8 +27,9 @@ type EmptyStateItem = { type: 'logged-out-state' };
 type LoadingItem = { type: 'loading' };
 type ErrorItem = { type: 'error'; message: string };
 type ComicsGridItem = { type: 'comics-grid'; comics: ComicSeries[]; isOwnProfile: boolean; user: Partial<User> | null };
+type CreatorComicsGridItem = { type: 'creator-comics-grid'; comics: ComicSeries[] };
 
-type ProfileSectionItem = HeaderItem | ProfileItem | EmptyStateItem | LoadingItem | ErrorItem | ComicsGridItem;
+type ProfileSectionItem = HeaderItem | ProfileItem | EmptyStateItem | LoadingItem | ErrorItem | ComicsGridItem | CreatorComicsGridItem;
 
 export type ProfileScreenParams = {
   userId?: string;
@@ -36,8 +38,8 @@ export type ProfileScreenParams = {
 // Calculate number of columns based on screen width
 const getNumColumns = () => {
   const screenWidth = Dimensions.get('window').width;
-  // Account for padding: 12px container + 8px view + 16px between items
-  const availableWidth = screenWidth - 32;
+  // Account for padding: 20px on each side
+  const availableWidth = screenWidth - 40;
   // Each item needs at least 150px width
   const minItemWidth = 150;
   const numColumns = Math.floor(availableWidth / minItemWidth);
@@ -50,10 +52,10 @@ export function ProfileScreen() {
   const currentUser = getUserDetails();
   const isLoggedIn = !!currentUser;
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  
+
   // Set up reducer for profile data
   const [state, dispatch] = useReducer(profileReducer, profileInitialState);
-  const { user, subscribedComics, isLoading, error } = state;
+  const { user, subscribedComics, creator, isLoading, error } = state;
   
   // Pull to refresh state
   const [refreshing, setRefreshing] = useState(false);
@@ -214,20 +216,31 @@ export function ProfileScreen() {
       data: [{ type: 'profile', user } as ProfileItem],
     });
 
-    // Comics section
+    // Creator comics section (if user is a creator with comics)
+    const creatorComics = (creator?.comics || []).filter((c): c is ComicSeries => c !== null);
+    if (creatorComics.length > 0) {
+      sections.push({
+        title: 'My Comics',
+        type: 'creator-comics-grid',
+        data: [{ type: 'creator-comics-grid', comics: creatorComics } as CreatorComicsGridItem],
+      });
+    }
+
+    // Subscribed comics section
+    const hasCreatorComics = creatorComics.length > 0;
     sections.push({
-      title: (subscribedComics && subscribedComics.length > 0) ? (isOwnProfile ? 'Your Comics' : `Comics I've saved`) : '',
+      title: hasCreatorComics && subscribedComics && subscribedComics.length > 0 ? `Comics I'm Reading` : '',
       type: 'comics-grid',
-      data: [{ 
-        type: 'comics-grid', 
+      data: [{
+        type: 'comics-grid',
         comics: subscribedComics,
         isOwnProfile: !!isOwnProfile,
-        user 
+        user
       } as ComicsGridItem],
     });
 
     return sections;
-  }, [isLoggedIn, userId, user, subscribedComics, isLoading, error, isOwnProfile]);
+  }, [isLoggedIn, userId, user, subscribedComics, creator, isLoading, error, isOwnProfile]);
 
   const handleSettingsPress = useCallback(() => {
     navigation.navigate(SETTINGS_SCREEN);
@@ -237,8 +250,8 @@ export function ProfileScreen() {
     switch (item.type) {
       case 'header':
         return (
-          <ThemedView style={styles.headerContainer}>
-            {item.includeBackButton && <HeaderBackButton />}
+          <ThemedView style={[styles.headerContainer, { marginTop: item.includeBackButton ? 24 : 0 }]}>
+            {item.includeBackButton && <HeaderBackButton style={{ top: 20 }} />}
             <HeaderSettingsButton onPress={handleSettingsPress} />
           </ThemedView>
         );
@@ -282,14 +295,33 @@ export function ProfileScreen() {
       case 'profile':
         return (
           <ThemedView style={styles.profileContainer}>
-            <ThemedView style={[styles.profileHeader, { paddingHorizontal: 16 }]}>
-              <ThemedText size='title' style={styles.username}>
-                {item.user?.username}
-              </ThemedText>
-            </ThemedView>
+            {creator ? (
+              <CreatorDetails creator={creator} pageType="profile-screen" />
+            ) : (
+              <ThemedView style={[styles.profileHeader, { paddingHorizontal: 16, paddingBottom: 4 }]}>
+                <ThemedText size='title' style={styles.username}>
+                  {item.user?.username}
+                </ThemedText>
+              </ThemedView>
+            )}
           </ThemedView>
         );
-      
+
+      case 'creator-comics-grid':
+        return (
+          <View style={styles.sectionContainer}>
+            <FlatList
+              data={item.comics}
+              renderItem={renderComicItem}
+              numColumns={getNumColumns()}
+              keyExtractor={(comic) => comic.uuid.toString()}
+              showsVerticalScrollIndicator={false}
+              scrollEnabled={false}
+              contentContainerStyle={styles.comicsGrid}
+            />
+          </View>
+        );
+
       case 'comics-grid':
         const { comics, isOwnProfile, user } = item;
         
@@ -325,12 +357,12 @@ export function ProfileScreen() {
       default:
         return null;
     }
-  }, [handleSettingsPress, navigation]);
+  }, [handleSettingsPress, navigation, creator]);
 
   const renderComicItem = useCallback(({ item }: { item: ComicSeries }) => {
     const numColumns = getNumColumns();
     const screenWidth = Dimensions.get('window').width;
-    const availableWidth = screenWidth - 32; // Account for padding
+    const availableWidth = screenWidth - 40; // Account for 20px padding on each side
     const itemWidth = (availableWidth - (numColumns - 1)) / numColumns; // 16px gap between items
         
     return (
@@ -347,7 +379,7 @@ export function ProfileScreen() {
     if (!section.title) return null;
     
     return (
-      <View style={{ paddingHorizontal: 20 }}>
+      <View style={{ paddingHorizontal: 28 }}>
         <ThemedText size='subtitle' style={styles.sectionTitle}>
           {section.title}
         </ThemedText>
@@ -370,6 +402,8 @@ export function ProfileScreen() {
               return `header-${item.includeBackButton ? 'back' : 'no-back'}`;
             case 'profile':
               return `profile-${item.user?.id || 'no-user'}`;
+            case 'creator-comics-grid':
+              return 'creator-comics-grid';
             case 'comics-grid':
               return `comics-grid-${item.user?.id || 'section'}`;
             case 'logged-out-state':
@@ -443,7 +477,7 @@ const styles = StyleSheet.create({
   profileContainer: {
     marginTop: 0,
     paddingTop: 8,
-    paddingHorizontal: 12,
+    paddingHorizontal: 20,
     paddingBottom: 8,
     borderRadius: 12,
   },
@@ -469,16 +503,16 @@ const styles = StyleSheet.create({
     color: 'red',
   },
   sectionContainer: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
   },
   sectionTitle: {
     fontSize: 20,
     fontWeight: '600',
-    paddingHorizontal: 8,
-    marginBottom: 20,
+    marginBottom: 12,
   },
   emptyComicsContainer: {
     alignItems: 'center',
+    marginTop: 8,
     paddingVertical: 16,
   },
   emptyComicsText: {
@@ -490,10 +524,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     position: 'relative',
     height: 64,
-    marginTop: 16,
-    marginBottom: 8,
+    marginBottom: 4,
   },
   comicsGrid: {
-    paddingHorizontal: 4,
   },
 }); 

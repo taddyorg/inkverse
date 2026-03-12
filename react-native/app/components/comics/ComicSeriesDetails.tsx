@@ -24,7 +24,8 @@ type ComicSeriesPageType =
   | 'search'
   | 'list-item'
   | 'list-item-no-link'
-  | 'grid-item';
+  | 'grid-item'
+  | 'grid-item-with-genres';
 
 interface ComicSeriesDetailsProps {
   comicseries: ComicSeries | null | undefined;
@@ -153,6 +154,22 @@ export function ComicSeriesDetails({ comicseries, pageType, isHeaderVisible, onH
             recyclingKey={comicseries.uuid}
             priority={imagePriority || 'normal'}
           />
+        </PressableOpacity>
+      );
+
+    case 'grid-item-with-genres':
+      return (
+        <PressableOpacity style={styles.gridItemContainer} onPress={handlePressForNavigation}>
+          <Image
+            source={getCoverImageUrl({ coverImageAsString: comicseries.coverImageAsString })}
+            style={styles.gridItemImage}
+            contentFit="cover"
+            recyclingKey={comicseries.uuid}
+            priority={imagePriority || 'normal'}
+          />
+          <ThemedText size="subtitle" style={styles.gridItemGenreText} numberOfLines={2}>
+            {formatGenres(comicseries)}
+          </ThemedText>
         </PressableOpacity>
       );
 
@@ -380,12 +397,17 @@ const styles = StyleSheet.create({
   },
   gridItemContainer: {
     marginHorizontal: 8,
-    marginBottom: 16,
+    marginBottom: 20,
   },
   gridItemImage: {
     width: '100%',
     aspectRatio: 2/3,
     borderRadius: 12,
+  },
+  gridItemGenreText: {
+    fontSize: 15,
+    marginTop: 8,
+    textAlign: 'center',
   },
   statsRow: {
     flexDirection: 'row',

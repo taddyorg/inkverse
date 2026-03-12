@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLoaderData, type LoaderFunctionArgs, type MetaFunction } from "react-router";
+import { MdKeyboardArrowRight } from "react-icons/md";
 
 import { ComicSeriesDetails } from "../components/comics/ComicSeriesDetails";
 import { GetAppButton } from "../components/ui/GetAppButton";
@@ -11,7 +12,6 @@ import type { ComicSeries, List } from "@inkverse/shared-client/graphql/operatio
 import { loadTrendingComicSeries, trendingMetricOptions, trendingPeriodOptions } from "@inkverse/shared-client/dispatch/homefeed";
 import { TrendingMetric, TrendingPeriod } from "@inkverse/shared-client/graphql/operations";
 import { getInkverseUrl } from "@inkverse/public/utils";
-import { MdKeyboardArrowDown } from "react-icons/md";
 import type { NewsItem } from "@inkverse/public/news-items";
 import { inkverseNewsItems } from "@inkverse/public/news-items";
 
@@ -260,7 +260,7 @@ const MostTrendingComics = ({ initialComicSeries }: { initialComicSeries: ComicS
           to={metric === TrendingMetric.DISCUSSED ? '/most-discussed' : '/most-liked'}
           className="text-base font-medium text-inkverse-black dark:text-white hover:text-gray-700 dark:hover:text-gray-200"
         >
-          See All <MdKeyboardArrowDown className="inline text-inkverse-black dark:text-white ml-1 h-4 w-4" />
+          See All <MdKeyboardArrowRight className="inline text-inkverse-black dark:text-white ml-1 h-4 w-4" />
         </Link>
       </div>
     </div>

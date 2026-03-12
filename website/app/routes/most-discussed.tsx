@@ -68,7 +68,7 @@ export function TrendingComicsPage({ title, basePath }: { title: string; basePat
         <div className="relative" ref={periodRef}>
           <button
             onClick={() => setIsPeriodOpen(!isPeriodOpen)}
-            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-full bg-white/80 hover:bg-white transition-colors dark:bg-gray-800 dark:hover:bg-gray-700"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-black bg-white/80 hover:bg-white rounded-full transition-colors"
           >
             <MdSort className="w-4 h-4" />
             <span>{currentPeriodLabel}</span>
@@ -106,7 +106,7 @@ export function TrendingComicsPage({ title, basePath }: { title: string; basePat
             <div key={series.uuid} className="flex flex-col">
               <ComicSeriesDetails
                 comicseries={series}
-                pageType={'cover'}
+                pageType={'grid-item-with-genres'}
               />
             </div>
           ))}

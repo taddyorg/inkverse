@@ -9,11 +9,12 @@ import { getBannerImageUrl, getCoverImageUrl, getThumbnailImageUrl } from '@inkv
 import { getAvatarImageUrl } from '@inkverse/public/creator';
 import { AddToProfileButton, NotificationButton } from './ComicActionButtons';
 
-export type ComicSeriesPageType = 
+export type ComicSeriesPageType =
   | 'comicseries-screen'
   | 'featured-banner'
   | 'most-popular'
   | 'cover'
+  | 'grid-item-with-genres'
   | 'search'
   | 'list-item'
   | 'list-item-no-link';
@@ -77,6 +78,18 @@ export function ComicSeriesDetails(props: ComicSeriesDetailsProps){
           <CoverArt comicseries={comicseries} pageType={pageType} />
         </Link>
       );
+  }
+
+  else if (pageType === 'grid-item-with-genres') {
+    const link = getInkverseUrl({ type: "comicseries", shortUrl: comicseries.shortUrl });
+    if (!link) { return <></>; }
+
+    return (
+      <Link to={link} className="flex flex-col">
+        <CoverArt comicseries={comicseries} pageType={pageType} />
+        <p className="mt-2 text-base text-center opacity-80 font-semibold">{formatGenresString({ comicseries })}</p>
+      </Link>
+    );
   }
 
   else if (pageType === 'search') {
@@ -206,6 +219,14 @@ const CoverArt = ({ comicseries, pageType }: { comicseries: ComicSeries, pageTyp
           className="h-60 aspect-4/6 rounded-md object-contain object-center mr-2"
         />
     );
+    case 'grid-item-with-genres':
+      return (
+        <img
+          src={getCoverImageUrl({ coverImageAsString: comicseries.coverImageAsString }) || undefined}
+          alt={`${comicseries.name} comic cover art`}
+          className="w-full aspect-2/3 rounded-xl object-cover"
+        />
+      );
     case 'search':
     case 'list-item':
     case 'list-item-no-link':

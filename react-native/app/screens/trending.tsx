@@ -47,7 +47,7 @@ function TrendingScreenContent({ metric, period, title, setPeriod }: { metric: s
   }, [isLoading, state]);
 
   const renderGridItem = useCallback(({ item }: { item: ComicSeries }) => {
-    const numColumns = 3;
+    const numColumns = 2;
     const screenWidth = Dimensions.get('window').width;
     const availableWidth = screenWidth - 32;
     const itemWidth = (availableWidth - (numColumns - 1)) / numColumns;
@@ -56,7 +56,7 @@ function TrendingScreenContent({ metric, period, title, setPeriod }: { metric: s
       <View style={{ width: itemWidth }}>
         <ComicSeriesDetails
           comicseries={item}
-          pageType='grid-item'
+          pageType='grid-item-with-genres'
         />
       </View>
     );
@@ -115,7 +115,7 @@ function TrendingScreenContent({ metric, period, title, setPeriod }: { metric: s
       <FlatList
         data={state.comicSeries}
         renderItem={renderGridItem}
-        numColumns={3}
+        numColumns={2}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
         ListHeaderComponent={renderHeader}
