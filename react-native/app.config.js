@@ -107,6 +107,9 @@ export default {
         {
           configureAndroidBackup: true
         }
+      ],
+      [
+        "expo-image"
       ]
     ],
     extra: {
