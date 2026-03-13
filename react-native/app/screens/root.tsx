@@ -358,13 +358,21 @@ const tabBarStyleOptions = (colorScheme: ColorSchemeName) => {
     
     return {
       headerShown: false,
+      sceneStyle: {
+        backgroundColor: navBackground,
+      },
       tabBarStyle: {
         backgroundColor: navBackground,
         borderTopWidth: 0,
         ...tabBarStyleDisplay,
-        tabBarVisibilityAnimationConfig: {
-          animation: 'slide_from_bottom'
-        }
+      },
+      tabBarVisibilityAnimationConfig: {
+        show: {
+          animation: 'timing' as const,
+        },
+        hide: {
+          animation: 'timing' as const,
+        },
       },
       tabBarActiveTintColor,
       ...Platform.select({
@@ -401,7 +409,7 @@ function RootStack() {
   const colorScheme = useColorScheme();
 
   return (
-    <Tab.Navigator 
+    <Tab.Navigator
       initialRouteName={HOME_TAB}
       screenOptions={tabBarStyleOptions(colorScheme)}
     >
