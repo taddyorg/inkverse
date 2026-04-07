@@ -1,5 +1,6 @@
 import { sendMessage, type INKVERSE_HIGH_PRIORITY_TYPE } from '@inkverse/shared-server/queues/utils';
-import { type SendPushNotificationQueueMessage, type PushNotificationType } from '@inkverse/shared-server/messaging/push-notifications/index';
+import { type SendPushNotificationQueueMessage } from '@inkverse/shared-server/messaging/push-notifications/index';
+import { NotificationEventType } from '@inkverse/shared-server/graphql/types';
 
 async function run() {
   const inputs = process.argv.slice(2);
@@ -11,7 +12,7 @@ async function run() {
     console.error('Example:');
     console.error('npm run send-push-notification \'{"pushNotificationType": "NEW_EPISODE_RELEASED", "seriesUuid": "abc123", "issueUuid": "def456"}\'');
     console.error('');
-    console.error('Available push types: NEW_EPISODE_RELEASED, APP_UPDATE');
+    console.error('Available push types: NEW_EPISODE_RELEASED');
     process.exit(1);
   }
 
@@ -28,13 +29,13 @@ async function run() {
 
   // Validate required fields
   if (!pushNotificationData.pushNotificationType) {
-    console.error('Missing required field: pushNotificationType');
+    console.error('Missing required field: type');
     process.exit(1);
   }
 
   // Validate push notification type
-  const validPushTypes: PushNotificationType[] = ['NEW_EPISODE_RELEASED', 'APP_UPDATE'];
-  if (!validPushTypes.includes(pushNotificationData.pushNotificationType)) {
+  const validPushTypes: NotificationEventType[] = [NotificationEventType.NEW_EPISODE_RELEASED];
+  if (!validPushTypes.includes(pushNotificationData.pushNotificationType as NotificationEventType)) {
     console.error(`Invalid push type: ${pushNotificationData.pushNotificationType}`);
     console.error('Available push types:', validPushTypes.join(', '));
     process.exit(1);
@@ -42,7 +43,7 @@ async function run() {
 
   // Add the queue type
   const queueMessage = {
-    type: 'SEND_PUSH_NOTIFICATION' as INKVERSE_HIGH_PRIORITY_TYPE,
+    type: 'SEND_PUSH_NOTIFICATION' as const,
     ...pushNotificationData,
   };
   

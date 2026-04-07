@@ -100,6 +100,13 @@ export class CreatorContent {
     return creatorcontent; 
   }
 
+  static async getCreatorUuidForContent(contentUuid: string): Promise<string | null> {
+    const row = await database('creatorcontent')
+      .where({ contentUuid })
+      .first('creatorUuid');
+    return row?.creatorUuid || null;
+  }
+
   static async deleteCreatorContent(data: Record<string, any>): Promise<CreatorContentModel | null> {
     const { uuid } = data;
 

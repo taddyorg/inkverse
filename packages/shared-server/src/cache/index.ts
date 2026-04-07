@@ -28,7 +28,9 @@ export type CacheType =
   'recentlyUpdated' |
   'profilecomicseries' |
   'user' |
-  'comments'
+  'comments' |
+  'notificationfeed' |
+  'notificationsettings'
 
 interface PurgeCacheParams {
   type: CacheType;
@@ -79,6 +81,14 @@ export async function purgeCacheOnCdn({ type, id, shortUrl, name, seriesUuid, is
       if (!id) { throw new Error('purgeCacheOnCdn - id (targetUuid) is required for type: ' + type); }
       await purgeApiCache(type, id)
       return
+    case 'notificationfeed':
+      if (!id) { throw new Error('purgeCacheOnCdn - id (userId) is required for type: ' + type); }
+      await purgeApiCache(type, id)
+      return
+    case 'notificationsettings':
+      if (!id) { throw new Error('purgeCacheOnCdn - id (userId) is required for type: ' + type); }
+      await purgeApiCache(type, id)
+      return
     case 'user':
       if (!id) { throw new Error('purgeCacheOnCdn - id is required for type: ' + type); }
       await purgeApiCache(type, id)
@@ -114,6 +124,7 @@ export async function purgeMultipleCacheOnCdn({ type, ids }: PurgeCacheParams) {
     case 'comicstory':
     case 'creatorcontent':
     case 'comicissuestats':
+    case 'notificationfeed':
       if (!ids) { throw new Error('purgeMultipleCacheOnCdn - ids is required for type: ' + type); }
 
       await purgeMultipleOnCdn(type, ids)
@@ -210,6 +221,18 @@ function getGraphCDNQuery(type: CacheType) {
           purgeCommentsForTarget(targetUuid: $targetUuid)
         }
       `
+    case 'notificationfeed':
+      return `
+        mutation NotificationFeedPurge ($userId: [ID!]) {
+          purgeNotificationFeed(userId: $userId)
+        }
+      `
+    case 'notificationsettings':
+      return `
+        mutation NotificationSettingStatusPurge ($userId: [ID!]) {
+          purgeNotificationSettingStatus(userId: $userId)
+        }
+      `
     default:
       throw new Error(`inside getGraphCDNQuery() - Dont have logic for type: ${type}`)
   }
@@ -239,6 +262,9 @@ function getGraphCDNVariables(type: CacheType, id?:string, ids?:string[]) {
       return { seriesUuid: ids || [id] }
     case 'comments':
       return { targetUuid: ids || [id] }
+    case 'notificationfeed':
+    case 'notificationsettings':
+      return { userId: ids || [id] }
     default:
       throw new Error(`inside getGraphCDNVariables() - Dont have logic for type: ${type}`)
   }

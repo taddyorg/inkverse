@@ -11,28 +11,6 @@ export function prettyEncodeTitle(title: string): string {
   return title.toLowerCase().split(" ").join("-").replace(/\`|\~|\!|\@|\#|\$|\%|\^|\&|\*|\(|\)|\+|\=|\–|\[|\{|\]|\}|\||\\|\'|\<|\,|\>|\?|\/|\”|\“|\"|\’|\;|\:|\.|\_|\s/g, '').replace(/-{2,}/g, '-')
 }
 
-const arrayToArrayObject = (array: any[], keyField: string): Record<string, any[]> =>
-  array.reduce((obj, item) => {
-    const valueAtKey = obj[item[keyField]]
-    if (!valueAtKey){
-      obj[item[keyField]] = [item];
-    }else{
-      obj[item[keyField]] = [ ...valueAtKey, item]
-    }
-    return obj;
-  }, {});
-
-const arrayToArrayObjectAtProperty = (array: any[], keyField: string, value: string): Record<string, any[]> =>
-  array.reduce((obj, item) => {
-    const valueAtKey = obj[item[keyField]]
-    if (!valueAtKey){
-      obj[item[keyField]] = [item[value]];
-    }else{
-      obj[item[keyField]] = [ ...valueAtKey, item[value]]
-    }
-    return obj;
-  }, {});
-
 export function convertToCamelCase(object: Record<string, any>): Record<string, any> {
   return mapKeys(object, (_, key) => camelCase(key));
 }

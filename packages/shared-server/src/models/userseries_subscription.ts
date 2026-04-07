@@ -44,6 +44,20 @@ export class UserSeriesSubscription {
     return subscriptions;
   }
 
+  static async getSubscribedUserIdsInRange(
+    seriesUuid: string,
+    minId: number,
+    maxId: number
+  ): Promise<number[]> {
+    const rows = await database('userseries_subscriptions')
+      .where({ seriesUuid })
+      .andWhere('userId', '>=', minId)
+      .andWhere('userId', '<', maxId)
+      .select('userId');
+
+    return rows.map(r => r.userId);
+  }
+
   static async subscribeToMultipleComicSeries(userId: number, seriesUuids: string[]): Promise<boolean> {
     const updatedAt = currentDate();
     const subscriptions = await database('userseries_subscriptions')

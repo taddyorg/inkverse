@@ -68,7 +68,19 @@ export const typePolicies = {
   CommentsForTarget: {
     keyFields: false,
   },
-  NotificationPreference: {
-    keyFields: ["userId", "notificationType"]
+  Notification: {
+    keyFields: ["id"]
+  },
+  NotificationItem: {
+    keyFields: ["uuid"]
+  },
+  NotificationFeed: {
+    keyFields: false,
+  },
+  NotificationSettingStatus: {
+    keyFields: ["userId"]
+  },
+  NotificationSettingItem: {
+    keyFields: ["id"]
   },
 }

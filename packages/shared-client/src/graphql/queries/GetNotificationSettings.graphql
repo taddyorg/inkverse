@@ -1,0 +1,11 @@
+query GetNotificationSettings {
+  getNotificationSettings {
+    userId
+    settings {
+      id
+      eventType
+      channel
+      isEnabled
+    }
+  }
+}

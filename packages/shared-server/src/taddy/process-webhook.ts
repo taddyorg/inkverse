@@ -1,7 +1,7 @@
 import { ComicSeries, ComicIssue, Creator, CreatorContent, User } from '../models/index.js';
 import { purgeCacheOnCdn, purgeMultipleCacheOnCdn } from '../cache/index.js'
 import { getMultipleHeightAndWidths } from '../utils/sharp.js';
-import { sendMessage } from '../queues/utils.js';
+import { sendMessage, type INKVERSE_HIGH_PRIORITY_TYPE } from '../queues/utils.js';
 
 export type TaddyWebhook = {
   uuid: string;
@@ -136,7 +136,7 @@ async function processComicIssueWebhook(body: TaddyWebhook) {
 
       // add push notification to queue
       await sendMessage('INKVERSE_HIGH_PRIORITY', {
-        type: 'SEND_PUSH_NOTIFICATION',
+        type: 'SEND_PUSH_NOTIFICATION' as INKVERSE_HIGH_PRIORITY_TYPE,
         pushNotificationType: 'NEW_EPISODE_RELEASED',
         issueUuid: comicissue.uuid,
         seriesUuid: comicissue.seriesUuid,

@@ -30,7 +30,13 @@ const cacheKeyForType: Record<string, string> = {
   "ComicSeriesStats": "uuid",
   "CommentStats": "uuid",
   "Comment": "uuid",
+  "UserComment": "targetUuid",
   "CommentsForTarget": "targetUuid",
+  "Notification": "id",
+  "NotificationItem": "uuid",
+  "NotificationFeed": "userId",
+  "NotificationSettingStatus": "userId",
+  "NotificationSettingItem": "id",
 }
 
 const cacheTypesSet = new Set(Object.keys(cacheKeyForType));

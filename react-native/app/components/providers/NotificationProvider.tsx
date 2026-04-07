@@ -3,12 +3,16 @@ import * as Notifications from 'expo-notifications';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { navigateToDeepLinkAndResetNavigation } from '@/constants/Navigation';
-import { RootStackParamList, HOME_TAB, HOME_SCREEN, COMICISSUE_SCREEN, COMICSERIES_SCREEN } from '@/constants/Navigation';
+import { RootStackParamList, HOME_TAB, HOME_SCREEN, PROFILE_TAB, PROFILE_SCREEN, COMICISSUE_SCREEN, COMICSERIES_SCREEN, NOTIFICATIONS_SCREEN } from '@/constants/Navigation';
 
 interface NotificationData {
   type?: string;
   seriesUuid?: string;
   issueUuid?: string;
+  targetUuid?: string;
+  targetType?: string;
+  parentUuid?: string;
+  parentType?: string;
   [key: string]: any;
 }
 
@@ -81,6 +85,26 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
             isNavigating.current = false;
           }, 500);
         }
+        break;
+      case 'COMMENT_REPLY':
+      case 'COMMENT_LIKED':
+      case 'CREATOR_EPISODE_LIKED':
+      case 'CREATOR_EPISODE_COMMENTED':
+      case 'DIGEST':
+        // Navigate to notifications screen for these types
+        isNavigating.current = true;
+
+        navigateToDeepLinkAndResetNavigation({
+          navigation,
+          rootTab: PROFILE_TAB,
+          rootScreen: PROFILE_SCREEN,
+          screenName: NOTIFICATIONS_SCREEN,
+          screenParams: {},
+        });
+
+        setTimeout(() => {
+          isNavigating.current = false;
+        }, 500);
         break;
       default:
         console.log('Unknown notification type:', data.type);

@@ -1,6 +1,7 @@
 import { AuthenticationError } from './error.js';
 import { UserSeriesSubscription, NotificationPreference, UserLike, ComicIssue } from '@inkverse/shared-server/models/index';
-import { InkverseType, NotificationType, SortOrder, type MutationResolvers } from '@inkverse/shared-server/graphql/types';
+import { InkverseType, NotificationType, NotificationEventType, SortOrder, type MutationResolvers } from '@inkverse/shared-server/graphql/types';
+import { notifySeriesCreator } from '@inkverse/shared-server/messaging/notifications/index';
 import { purgeCacheOnCdn, purgeMultipleCacheOnCdn } from '@inkverse/shared-server/cache/index';
 
 // GraphQL Type Definitions
@@ -72,7 +73,7 @@ async function buildUserComicSeriesResponse(userId: number, seriesUuid: string) 
       NotificationType.NEW_EPISODE_RELEASED,
       seriesUuid
     ),
-    UserLike.getUserLikesForParent(userId, seriesUuid, InkverseType.COMICSERIES),
+    UserLike.getUserLikesForParentForLikeableType(userId, seriesUuid, InkverseType.COMICSERIES, InkverseType.COMICISSUE),
   ]);
   
   return {
@@ -180,6 +181,13 @@ export const UserComicSeriesMutations: MutationResolvers = {
       InkverseType.COMICSERIES
     );
 
+    await notifySeriesCreator({
+      seriesUuid,
+      issueUuid,
+      senderId: context.user.id,
+      eventType: NotificationEventType.CREATOR_EPISODE_LIKED,
+    });
+    
     await purgeCacheOnCdn({ type: 'comicissuestats', id: issueUuid });
     await purgeCacheOnCdn({ type: 'comicseriesstats', id: seriesUuid });
 

@@ -1,9 +1,11 @@
 import { AuthenticationError, UserInputError } from './error.js';
-import { UserComment, UserReport, UserLike, ComicIssue, ComicSeries, User, CreatorContent } from '@inkverse/shared-server/models/index';
+import { UserComment, UserReport, UserLike, ComicIssue, ComicSeries, CreatorContent } from '@inkverse/shared-server/models/index';
 import { InkverseType, ReportType } from '@inkverse/shared-server/graphql/types';
 import type { MutationResolvers } from '@inkverse/shared-server/graphql/types';
 import { sendSlackNotification } from '@inkverse/shared-server/messaging/slack';
 import { purgeCacheOnCdn } from '@inkverse/shared-server/cache/index';
+import { createNotification, notifySeriesCreator } from '@inkverse/shared-server/messaging/notifications/index';
+import { NotificationEventType } from '@inkverse/shared-server/graphql/types';
 import { inkverseWebsiteUrl } from '@inkverse/public/utils';
 
 // Sanitize comment text by stripping <script> and <iframe> tags and their contents
@@ -105,19 +107,17 @@ async function buildUserCommentResponse(
   targetType: InkverseType
 ) {
   // Get user's liked comments for this target
-  const userLikes = await UserLike.getUserLikesForParent(
+  const userLikes = await UserLike.getUserLikesForParentForLikeableType(
     userId,
     targetUuid,
-    InkverseType.COMICISSUE
+    InkverseType.COMICISSUE,
+    InkverseType.COMMENT
   );
-
-  // Filter to only comment likes
-  const commentLikes = userLikes.filter(like => like.likeableType === InkverseType.COMMENT);
 
   return {
     targetUuid,
     targetType,
-    likedCommentUuids: commentLikes.map(like => like.likeableUuid),
+    likedCommentUuids: userLikes.map(like => like.likeableUuid),
   };
 }
 
@@ -167,12 +167,7 @@ export const UserCommentQueries = {
       throw new AuthenticationError('You must be logged in to get user comment data');
     }
 
-    try {
-      return await buildUserCommentResponse(context.user.id, targetUuid, targetType);
-    } catch (error) {
-      console.error('Error getting user comment data:', error);
-      throw new Error('Failed to get user comment data');
-    }
+    return await buildUserCommentResponse(context.user.id, targetUuid, targetType);
   },
 };
 
@@ -200,16 +195,16 @@ export const UserCommentMutations: MutationResolvers = {
       throw new UserInputError('Comment text cannot exceed 2000 characters');
     }
 
-    // If replying, verify parent comment exists
-    if (replyToCommentUuid) {
-      const parentComment = await UserComment.getCommentByUuid(replyToCommentUuid);
-      if (!parentComment) {
-        throw new UserInputError('Parent comment not found');
-      }
-      // Don't allow replies to replies (single-level threading)
-      if (parentComment.replyToCommentUuid) {
-        throw new UserInputError('Cannot reply to a reply');
-      }
+    const replyToComment = replyToCommentUuid
+      ? await UserComment.getCommentByUuid(replyToCommentUuid)
+      : null;
+
+    if (replyToCommentUuid && !replyToComment) {
+      throw new UserInputError('Parent comment not found');
+    }
+
+    if (replyToComment?.replyToCommentUuid) {
+      throw new UserInputError('Cannot reply to a reply');
     }
     
     // Get episode and series info for Slack notification
@@ -245,6 +240,28 @@ export const UserCommentMutations: MutationResolvers = {
       comicSeries?.shortUrl || seriesUuid,
       comicIssue?.position || null
     );
+
+    let commentReplyRecipientId: number | null = null;
+    if (replyToComment && replyToComment.userId !== context.user.id) {
+      commentReplyRecipientId = replyToComment.userId;
+      await createNotification({
+        recipientId: replyToComment.userId,
+        senderId: context.user.id,
+        eventType: NotificationEventType.COMMENT_REPLY,
+        targetUuid: comment.uuid,
+        targetType: 'COMMENT',
+        parentUuid: issueUuid,
+        parentType: 'COMICISSUE',
+      })
+    }
+
+    await notifySeriesCreator({
+      seriesUuid,
+      issueUuid,
+      senderId: context.user.id,
+      eventType: NotificationEventType.CREATOR_EPISODE_COMMENTED,
+      skipForUserId: commentReplyRecipientId,
+    });
 
     // Purge comments cache on CDN (fire-and-forget)
     purgeCacheOnCdn({ type: 'comments', id: issueUuid });
@@ -414,6 +431,19 @@ export const UserCommentMutations: MutationResolvers = {
       issueUuid,
       InkverseType.COMICISSUE
     );
+
+    // Notification: COMMENT_LIKED (notify comment author)
+    if (comment.userId !== context.user.id) {
+      createNotification({
+        recipientId: comment.userId,
+        senderId: context.user.id,
+        eventType: NotificationEventType.COMMENT_LIKED,
+        targetUuid: commentUuid,
+        targetType: 'COMMENT',
+        parentUuid: issueUuid,
+        parentType: 'COMICISSUE',
+      })
+    }
 
     return await buildUserCommentResponse(
       context.user.id,

@@ -77,6 +77,8 @@ export const CLAIM_CREATOR_SCREEN = "ClaimCreatorScreen";
 export const WRAPPED_CLAIM_CREATOR_SCREEN = "WrappedClaimCreatorScreen";
 export const WRAPPED_TRENDING_LIKED_SCREEN = "WrappedTrendingLikedScreen";
 export const WRAPPED_TRENDING_DISCUSSED_SCREEN = "WrappedTrendingDiscussedScreen";
+export const NOTIFICATIONS_SCREEN = "NotificationsScreen";
+export const NOTIFICATION_SETTINGS_SCREEN = "NotificationSettingsScreen";
 
 export type RootStackParamList = {
   [HOME_TAB]: undefined;
@@ -124,6 +126,8 @@ export type RootStackParamList = {
   [WRAPPED_CLAIM_CREATOR_SCREEN]: WrappedClaimCreatorScreenParams;
   [WRAPPED_TRENDING_LIKED_SCREEN]: undefined;
   [WRAPPED_TRENDING_DISCUSSED_SCREEN]: undefined;
+  [NOTIFICATIONS_SCREEN]: undefined;
+  [NOTIFICATION_SETTINGS_SCREEN]: undefined;
 };
 
 interface ResetNavigationToContentScreenParams {

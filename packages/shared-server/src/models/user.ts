@@ -91,6 +91,18 @@ export class User {
       .first('*');
   }
 
+  static async getEmailsForUserIds(userIds: number[]): Promise<UserModel[]> {
+    return await database('users')
+      .whereIn('id', userIds)
+      .whereNotNull('email')
+      .select('id', 'email');
+  }
+
+  static async getMaxId(): Promise<number> {
+    const result = await database("users").max('id as maxId').first();
+    return Number(result?.maxId || 0);
+  }
+
   /**
    * Get user by OTP and mark their email as verified
    */

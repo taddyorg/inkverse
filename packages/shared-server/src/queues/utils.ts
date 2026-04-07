@@ -2,7 +2,8 @@ import { ListQueuesCommand, CreateQueueCommand, ReceiveMessageCommand, DeleteMes
 import { sqsClient } from "./sqs-client.js";
 import { uniqBy } from "lodash-es";
 import { processWebhook, type TaddyWebhook } from "../taddy/process-webhook.js";
-import { sendPushNotification, type SendPushNotificationQueueMessage } from "../messaging/push-notifications/index.js";
+import { type SendPushNotificationQueueMessage } from "../messaging/push-notifications/index.js";
+import { createNotificationBatch } from "../messaging/notifications/index.js";
 
 import path from 'path';
 import { fileURLToPath } from "url";
@@ -66,7 +67,7 @@ async function doWork(queueName: QUEUE_NAMES, doc: any, inputArgs?: any, isDebug
           await processWebhook(doc as TaddyWebhook);
           return;
         case 'SEND_PUSH_NOTIFICATION':
-          await sendPushNotification(doc as SendPushNotificationQueueMessage);
+          await createNotificationBatch(doc as SendPushNotificationQueueMessage);
           return;
         default:
           throw new Error(`INKVERSE_HIGH_PRIORITY ERROR - Unhandled QUEUE_ACTION_TYPES case: ${doc.type}`);

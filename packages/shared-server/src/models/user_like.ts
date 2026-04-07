@@ -117,13 +117,14 @@ export class UserLike {
   /**
    * Get all likes for a parent (e.g., all episode likes for a series)
    */
-  static async getUserLikesForParent(
+  static async getUserLikesForParentForLikeableType(
     userId: number,
     parentUuid: string,
-    parentType: InkverseType
+    parentType: InkverseType,
+    likeableType: InkverseType
   ): Promise<UserLikeModel[]> {
     const likes = await database('user_likes')
-      .where({ userId, parentUuid, parentType })
+      .where({ userId, parentUuid, parentType, likeableType })
       .select('*');
 
     return likes;

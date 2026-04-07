@@ -96,7 +96,7 @@ yarn run pre-download-comic-stories-height-and-width
 
 ### Send push notification
 ```bash
-yarn run mock-push-notification '{"pushNotificationType": "NEW_EPISODE_RELEASED", "seriesUuid": "abc123", "issueUuid": "def456"}'
+yarn run mock-push-notification '{"pushNotificationType": "NEW_EPISODE_RELEASED", "seriesUuid": "96cc49d7-a95d-4266-b408-b57c7d26a62e", "issueUuid": "a542ad55-4ebf-456d-b6c8-a4e8e3fd81ae"}'
 ```
 
 ### Test push notification directly
@@ -107,4 +107,20 @@ yarn run test-push-direct 123
 ### Disconnect hosting provider (worker/src/scripts/user/disconnect-hosting-provider.ts)
 ```bash
 yarn run disconnect-hosting-provider 123
+```
+
+### Mock Notification
+
+#### Create reader notification + send push + email (immediate)
+```bash
+yarn run mock-create-notification --eventType=COMMENT_REPLY --senderId=14 --recipientId=20 --targetUuid=9803bca5-dbde-4ca4-a0e5-df2b932ead82 --targetType=COMMENT --parentUuid=a542ad55-4ebf-456d-b6c8-a4e8e3fd81ae --parentType=COMICISSUE
+
+yarn run mock-send-notification --eventType=COMMENT_REPLY --senderId=14 --recipientId=20 --targetUuid=9803bca5-dbde-4ca4-a0e5-df2b932ead82 --targetType=COMMENT --parentUuid=a542ad55-4ebf-456d-b6c8-a4e8e3fd81ae --parentType=COMICISSUE                                                           
+```
+
+#### Seed creator notification + send push + email (digest)
+```bash
+yarn run mock-create-creator-notification --eventType=CREATOR_EPISODE_LIKED --seriesUuid=96cc49d7-a95d-4266-b408-b57c7d26a62e --issueUuid=a542ad55-4ebf-456d-b6c8-a4e8e3fd81ae --senderId=20
+
+yarn run mock-send-digest --userId=14
 ```

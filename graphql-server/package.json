@@ -30,7 +30,7 @@
     "graphql-tag": "^2.12.6",
     "jsonwebtoken": "^9.0.2",
     "lodash-es": "^4.17.21",
-    "notion-client": "^7.4.3",
+    "notion-client": "^7.10.0",
     "uuid": "^11.0.3"
   },
   "devDependencies": {

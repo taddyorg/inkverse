@@ -541,4 +541,10 @@ enum ComicSeriesType {
 enum ComicSeriesLayoutType {
   VERTICAL_SCROLL_TOP_TO_BOTTOM
 }
+
+" Directive to override the default cost of a field "
+directive @cost(value: Float!) on FIELD_DEFINITION
+
+" Directive to override the default cost factor (list multiplier) of a field "
+directive @costFactor(value: Float!) on FIELD_DEFINITION
 `

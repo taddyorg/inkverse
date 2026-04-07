@@ -1,0 +1,16 @@
+mutation AddOrUpdateNotificationSetting(
+  $eventType: NotificationEventType!
+  $channel: NotificationChannel!
+  $isEnabled: Boolean!
+) {
+  addOrUpdateNotificationSetting(
+    eventType: $eventType
+    channel: $channel
+    isEnabled: $isEnabled
+  ) {
+    id
+    eventType
+    channel
+    isEnabled
+  }
+}

@@ -23,7 +23,11 @@
     "delete-user": "tsx src/scripts/user/delete.ts",
     "disconnect-hosting-provider": "tsx src/scripts/user/disconnect-hosting-provider.ts",
     "mock-push-notification": "tsx src/scripts/push-notifications/mock-push-notification.ts",
-    "test-push-direct": "tsx src/scripts/push-notifications/test-push-direct.ts"
+    "test-push-direct": "tsx src/scripts/push-notifications/test-push-direct.ts",
+    "mock-create-notification": "tsx src/scripts/notifications/mock/mock-create-notification.ts",
+    "mock-create-creator-notification": "tsx src/scripts/notifications/mock/mock-create-creator-notification.ts",
+    "mock-send-notification": "tsx src/scripts/notifications/mock/mock-send-notification.ts",
+    "mock-send-digest": "tsx src/scripts/notifications/mock/mock-send-digest.ts"
   },
   "author": "Inkverse",
   "license": "AGPL-3.0",

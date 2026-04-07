@@ -1,0 +1,90 @@
+query GetNotificationFeed($buckets: [NotificationTimeBucket!]!, $limit: Int, $offset: Int) {
+  getNotificationsForUser(buckets: $buckets, limit: $limit, offset: $offset) {
+    userId
+    sections {
+      bucket
+      items {
+        ... on Notification {
+          id
+          createdAt
+          eventType
+          actor {
+            ...miniUserDetails
+          }
+          targetItem {
+            uuid
+            type
+            comicIssue {
+              uuid
+              name
+              seriesUuid
+              bannerImageAsString
+            }
+            comment {
+              uuid
+              text
+            }
+            comicSeries {
+              uuid
+              name
+              shortUrl
+              coverImageAsString
+            }
+          }
+          parentItem {
+            uuid
+            type
+            comicIssue {
+              uuid
+              seriesUuid
+            }
+            comicSeries {
+              uuid
+              name
+              shortUrl
+            }
+          }
+        }
+        ... on AggregatedNotification {
+          id
+          eventType
+          latestCreatedAt
+          count
+          targetItem {
+            uuid
+            type
+            comicIssue {
+              uuid
+              name
+              seriesUuid
+              bannerImageAsString
+            }
+            comment {
+              uuid
+              text
+            }
+            comicSeries {
+              uuid
+              name
+              shortUrl
+              coverImageAsString
+            }
+          }
+          parentItem {
+            uuid
+            type
+            comicIssue {
+              uuid
+              seriesUuid
+            }
+            comicSeries {
+              uuid
+              name
+              shortUrl
+            }
+          }
+        }
+      }
+    }
+  }
+}

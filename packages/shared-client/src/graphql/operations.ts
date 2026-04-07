@@ -15,6 +15,17 @@ export type Scalars = {
   Float: { input: number; output: number; }
 };
 
+/** An aggregated notification (multiple events collapsed into one) */
+export type AggregatedNotification = {
+  __typename?: 'AggregatedNotification';
+  count: Scalars['Int']['output'];
+  eventType: NotificationEventType;
+  id: Scalars['ID']['output'];
+  latestCreatedAt: Scalars['Int']['output'];
+  parentItem?: Maybe<NotificationItem>;
+  targetItem?: Maybe<NotificationItem>;
+};
+
 /** Authentication provider types */
 export enum AuthProvider {
   APPLE = 'APPLE',
@@ -957,6 +968,8 @@ export type Mutation = {
   __typename?: 'Mutation';
   /** Add a new comment or reply to a comic issue */
   addComment?: Maybe<Comment>;
+  /** Add or update a notification setting override */
+  addOrUpdateNotificationSetting: NotificationSettingItem;
   /** Delete a comment permanently */
   deleteComment: Scalars['Boolean']['output'];
   /** Disable notifications for a comic series */
@@ -1009,6 +1022,13 @@ export type MutationAddCommentArgs = {
   replyToCommentUuid?: InputMaybe<Scalars['ID']['input']>;
   seriesUuid: Scalars['ID']['input'];
   text: Scalars['String']['input'];
+};
+
+
+export type MutationAddOrUpdateNotificationSettingArgs = {
+  channel: NotificationChannel;
+  eventType: NotificationEventType;
+  isEnabled: Scalars['Boolean']['input'];
 };
 
 
@@ -1127,6 +1147,52 @@ export type MutationUpdateUserProfileArgs = {
   username?: InputMaybe<Scalars['String']['input']>;
 };
 
+/** A notification for a user */
+export type Notification = {
+  __typename?: 'Notification';
+  actor?: Maybe<User>;
+  createdAt: Scalars['Int']['output'];
+  eventType: NotificationEventType;
+  id: Scalars['ID']['output'];
+  parentItem?: Maybe<NotificationItem>;
+  targetItem?: Maybe<NotificationItem>;
+};
+
+/** Notification delivery channels */
+export enum NotificationChannel {
+  EMAIL = 'EMAIL',
+  PUSH = 'PUSH'
+}
+
+/** Notification event types */
+export enum NotificationEventType {
+  COMMENT_LIKED = 'COMMENT_LIKED',
+  COMMENT_REPLY = 'COMMENT_REPLY',
+  CREATOR_EPISODE_COMMENTED = 'CREATOR_EPISODE_COMMENTED',
+  CREATOR_EPISODE_LIKED = 'CREATOR_EPISODE_LIKED',
+  NEW_EPISODE_RELEASED = 'NEW_EPISODE_RELEASED'
+}
+
+/** Notification feed with time-bucketed sections */
+export type NotificationFeed = {
+  __typename?: 'NotificationFeed';
+  sections: Array<NotificationSection>;
+  userId: Scalars['ID']['output'];
+};
+
+/** A notification feed item (individual or aggregated) */
+export type NotificationFeedItem = AggregatedNotification | Notification;
+
+/** An item referenced by a notification */
+export type NotificationItem = {
+  __typename?: 'NotificationItem';
+  comicIssue?: Maybe<ComicIssue>;
+  comicSeries?: Maybe<ComicSeries>;
+  comment?: Maybe<Comment>;
+  type: InkverseType;
+  uuid: Scalars['ID']['output'];
+};
+
 /** User's preference for a specific notification type */
 export type NotificationPreference = {
   __typename?: 'NotificationPreference';
@@ -1142,6 +1208,37 @@ export type NotificationPreference = {
 export type NotificationPreferenceInput = {
   notificationType: NotificationType;
 };
+
+/** A section of notifications grouped by time bucket */
+export type NotificationSection = {
+  __typename?: 'NotificationSection';
+  bucket: NotificationTimeBucket;
+  items: Array<NotificationFeedItem>;
+};
+
+/** A single notification setting item */
+export type NotificationSettingItem = {
+  __typename?: 'NotificationSettingItem';
+  channel: NotificationChannel;
+  eventType: NotificationEventType;
+  id: Scalars['ID']['output'];
+  isEnabled: Scalars['Boolean']['output'];
+};
+
+/** Notification settings for a user */
+export type NotificationSettingStatus = {
+  __typename?: 'NotificationSettingStatus';
+  settings: Array<NotificationSettingItem>;
+  userId: Scalars['ID']['output'];
+};
+
+/** Time buckets for grouping notifications */
+export enum NotificationTimeBucket {
+  EARLIER = 'EARLIER',
+  THIS_MONTH = 'THIS_MONTH',
+  THIS_WEEK = 'THIS_WEEK',
+  TODAY = 'TODAY'
+}
 
 /** Types of notifications users can receive */
 export enum NotificationType {
@@ -1203,6 +1300,10 @@ export type Query = {
   getList?: Maybe<List>;
   /**  Get a list of most popular comics  */
   getMostPopularComicSeries?: Maybe<HomeScreenComicSeries>;
+  /** Get notification settings for the authenticated user */
+  getNotificationSettings: NotificationSettingStatus;
+  /** Get notification feed for the authenticated user */
+  getNotificationsForUser?: Maybe<NotificationFeed>;
   /**  Get a list of recently added comics  */
   getRecentlyAddedComicSeries?: Maybe<HomeScreenComicSeries>;
   /**  Get a list of recently updated comics  */
@@ -1324,6 +1425,13 @@ export type QueryGetListArgs = {
 export type QueryGetMostPopularComicSeriesArgs = {
   limitPerPage?: InputMaybe<Scalars['Int']['input']>;
   page?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type QueryGetNotificationsForUserArgs = {
+  buckets: Array<NotificationTimeBucket>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
 };
 
 
@@ -1528,7 +1636,7 @@ export type UserComicSeriesDetailsFragment = { __typename?: 'UserComicSeries', s
 
 export type UserCommentDetailsFragment = { __typename?: 'UserComment', targetUuid: string, targetType: InkverseType, likedCommentUuids: Array<string | null> };
 
-export type UserDetailsFragment = { __typename?: 'User', id: string, username?: string | null, email?: string | null, isEmailVerified?: boolean | null, ageRange?: UserAgeRange | null, birthYear?: number | null, blueskyDid?: string | null };
+export type UserDetailsFragment = { __typename?: 'User', id: string, username?: string | null, email?: string | null, isEmailVerified?: boolean | null, ageRange?: UserAgeRange | null, birthYear?: number | null, blueskyDid?: string | null, creator?: { __typename?: 'Creator', uuid: string } | null };
 
 export type AddCommentMutationVariables = Exact<{
   issueUuid: Scalars['ID']['input'];
@@ -1539,6 +1647,15 @@ export type AddCommentMutationVariables = Exact<{
 
 
 export type AddCommentMutation = { __typename?: 'Mutation', addComment?: { __typename?: 'Comment', uuid: string, text: string, createdAt: number, targetUuid: string, targetType: InkverseType, replyToUuid?: string | null, isCreator?: boolean | null, user?: { __typename?: 'User', id: string, username?: string | null } | null, stats?: { __typename?: 'CommentStats', uuid: string, likeCount?: number | null, replyCount?: number | null } | null } | null };
+
+export type AddOrUpdateNotificationSettingMutationVariables = Exact<{
+  eventType: NotificationEventType;
+  channel: NotificationChannel;
+  isEnabled: Scalars['Boolean']['input'];
+}>;
+
+
+export type AddOrUpdateNotificationSettingMutation = { __typename?: 'Mutation', addOrUpdateNotificationSetting: { __typename?: 'NotificationSettingItem', id: string, eventType: NotificationEventType, channel: NotificationChannel, isEnabled: boolean } };
 
 export type DeleteCommentMutationVariables = Exact<{
   commentUuid: Scalars['ID']['input'];
@@ -1687,7 +1804,7 @@ export type UpdateUserEmailMutationVariables = Exact<{
 }>;
 
 
-export type UpdateUserEmailMutation = { __typename?: 'Mutation', updateUserEmail?: { __typename?: 'User', id: string, username?: string | null, email?: string | null, isEmailVerified?: boolean | null, ageRange?: UserAgeRange | null, birthYear?: number | null, blueskyDid?: string | null } | null };
+export type UpdateUserEmailMutation = { __typename?: 'Mutation', updateUserEmail?: { __typename?: 'User', id: string, username?: string | null, email?: string | null, isEmailVerified?: boolean | null, ageRange?: UserAgeRange | null, birthYear?: number | null, blueskyDid?: string | null, creator?: { __typename?: 'Creator', uuid: string } | null } | null };
 
 export type UpdateUserProfileMutationVariables = Exact<{
   username?: InputMaybe<Scalars['String']['input']>;
@@ -1696,7 +1813,7 @@ export type UpdateUserProfileMutationVariables = Exact<{
 }>;
 
 
-export type UpdateUserProfileMutation = { __typename?: 'Mutation', updateUserProfile?: { __typename?: 'User', id: string, username?: string | null, email?: string | null, isEmailVerified?: boolean | null, ageRange?: UserAgeRange | null, birthYear?: number | null, blueskyDid?: string | null } | null };
+export type UpdateUserProfileMutation = { __typename?: 'Mutation', updateUserProfile?: { __typename?: 'User', id: string, username?: string | null, email?: string | null, isEmailVerified?: boolean | null, ageRange?: UserAgeRange | null, birthYear?: number | null, blueskyDid?: string | null, creator?: { __typename?: 'Creator', uuid: string } | null } | null };
 
 export type CannySsoQueryVariables = Exact<{
   redirectPath?: InputMaybe<Scalars['String']['input']>;
@@ -1803,7 +1920,7 @@ export type GetListQuery = { __typename?: 'Query', getList?: { __typename?: 'Lis
 export type GetMeDetailsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetMeDetailsQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, username?: string | null, email?: string | null, isEmailVerified?: boolean | null, ageRange?: UserAgeRange | null, birthYear?: number | null, blueskyDid?: string | null } | null };
+export type GetMeDetailsQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, username?: string | null, email?: string | null, isEmailVerified?: boolean | null, ageRange?: UserAgeRange | null, birthYear?: number | null, blueskyDid?: string | null, creator?: { __typename?: 'Creator', uuid: string } | null } | null };
 
 export type GetMiniComicSeriesQueryVariables = Exact<{
   uuid?: InputMaybe<Scalars['ID']['input']>;
@@ -1820,6 +1937,20 @@ export type GetMiniCreatorQueryVariables = Exact<{
 
 
 export type GetMiniCreatorQuery = { __typename?: 'Query', getCreator?: { __typename?: 'Creator', uuid: string, name?: string | null, shortUrl?: string | null, avatarImageAsString?: string | null, user?: { __typename?: 'User', id: string, username?: string | null } | null } | null };
+
+export type GetNotificationFeedQueryVariables = Exact<{
+  buckets: Array<NotificationTimeBucket> | NotificationTimeBucket;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type GetNotificationFeedQuery = { __typename?: 'Query', getNotificationsForUser?: { __typename?: 'NotificationFeed', userId: string, sections: Array<{ __typename?: 'NotificationSection', bucket: NotificationTimeBucket, items: Array<{ __typename?: 'AggregatedNotification', id: string, eventType: NotificationEventType, latestCreatedAt: number, count: number, targetItem?: { __typename?: 'NotificationItem', uuid: string, type: InkverseType, comicIssue?: { __typename?: 'ComicIssue', uuid: string, name?: string | null, seriesUuid: string, bannerImageAsString?: string | null } | null, comment?: { __typename?: 'Comment', uuid: string, text: string } | null, comicSeries?: { __typename?: 'ComicSeries', uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null } | null } | null, parentItem?: { __typename?: 'NotificationItem', uuid: string, type: InkverseType, comicIssue?: { __typename?: 'ComicIssue', uuid: string, seriesUuid: string } | null, comicSeries?: { __typename?: 'ComicSeries', uuid: string, name?: string | null, shortUrl?: string | null } | null } | null } | { __typename?: 'Notification', id: string, createdAt: number, eventType: NotificationEventType, actor?: { __typename?: 'User', id: string, username?: string | null } | null, targetItem?: { __typename?: 'NotificationItem', uuid: string, type: InkverseType, comicIssue?: { __typename?: 'ComicIssue', uuid: string, name?: string | null, seriesUuid: string, bannerImageAsString?: string | null } | null, comment?: { __typename?: 'Comment', uuid: string, text: string } | null, comicSeries?: { __typename?: 'ComicSeries', uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null } | null } | null, parentItem?: { __typename?: 'NotificationItem', uuid: string, type: InkverseType, comicIssue?: { __typename?: 'ComicIssue', uuid: string, seriesUuid: string } | null, comicSeries?: { __typename?: 'ComicSeries', uuid: string, name?: string | null, shortUrl?: string | null } | null } | null }> }> } | null };
+
+export type GetNotificationSettingsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetNotificationSettingsQuery = { __typename?: 'Query', getNotificationSettings: { __typename?: 'NotificationSettingStatus', userId: string, settings: Array<{ __typename?: 'NotificationSettingItem', id: string, eventType: NotificationEventType, channel: NotificationChannel, isEnabled: boolean }> } };
 
 export type GetProfileByUserIdQueryVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -2048,6 +2179,9 @@ export const UserDetails = gql`
   ageRange
   birthYear
   blueskyDid
+  creator {
+    uuid
+  }
 }
     `;
 export const AddComment = gql`
@@ -2062,6 +2196,20 @@ export const AddComment = gql`
   }
 }
     ${CommentDetails}`;
+export const AddOrUpdateNotificationSetting = gql`
+    mutation AddOrUpdateNotificationSetting($eventType: NotificationEventType!, $channel: NotificationChannel!, $isEnabled: Boolean!) {
+  addOrUpdateNotificationSetting(
+    eventType: $eventType
+    channel: $channel
+    isEnabled: $isEnabled
+  ) {
+    id
+    eventType
+    channel
+    isEnabled
+  }
+}
+    `;
 export const DeleteComment = gql`
     mutation DeleteComment($commentUuid: ID!, $targetUuid: ID!, $targetType: InkverseType!) {
   deleteComment(
@@ -2406,6 +2554,111 @@ export const GetMiniCreator = gql`
   }
 }
     ${MiniCreatorDetails}`;
+export const GetNotificationFeed = gql`
+    query GetNotificationFeed($buckets: [NotificationTimeBucket!]!, $limit: Int, $offset: Int) {
+  getNotificationsForUser(buckets: $buckets, limit: $limit, offset: $offset) {
+    userId
+    sections {
+      bucket
+      items {
+        ... on Notification {
+          id
+          createdAt
+          eventType
+          actor {
+            ...miniUserDetails
+          }
+          targetItem {
+            uuid
+            type
+            comicIssue {
+              uuid
+              name
+              seriesUuid
+              bannerImageAsString
+            }
+            comment {
+              uuid
+              text
+            }
+            comicSeries {
+              uuid
+              name
+              shortUrl
+              coverImageAsString
+            }
+          }
+          parentItem {
+            uuid
+            type
+            comicIssue {
+              uuid
+              seriesUuid
+            }
+            comicSeries {
+              uuid
+              name
+              shortUrl
+            }
+          }
+        }
+        ... on AggregatedNotification {
+          id
+          eventType
+          latestCreatedAt
+          count
+          targetItem {
+            uuid
+            type
+            comicIssue {
+              uuid
+              name
+              seriesUuid
+              bannerImageAsString
+            }
+            comment {
+              uuid
+              text
+            }
+            comicSeries {
+              uuid
+              name
+              shortUrl
+              coverImageAsString
+            }
+          }
+          parentItem {
+            uuid
+            type
+            comicIssue {
+              uuid
+              seriesUuid
+            }
+            comicSeries {
+              uuid
+              name
+              shortUrl
+            }
+          }
+        }
+      }
+    }
+  }
+}
+    ${MiniUserDetails}`;
+export const GetNotificationSettings = gql`
+    query GetNotificationSettings {
+  getNotificationSettings {
+    userId
+    settings {
+      id
+      eventType
+      channel
+      isEnabled
+    }
+  }
+}
+    `;
 export const GetProfileByUserId = gql`
     query GetProfileByUserId($id: ID!) {
   getUserById(id: $id) {

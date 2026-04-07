@@ -19,7 +19,7 @@ import { getPublicApolloClient } from '@/lib/apollo';
 import { asyncClear } from '@/lib/storage/async';
 import { syncStorageClear } from '@/lib/storage/sync';
 import { inkverseAuthClear } from '@/lib/storage/secure';
-import { SIGNUP_SCREEN, EDIT_PROFILE_SCREEN, RootStackParamList } from '@/constants/Navigation';
+import { SIGNUP_SCREEN, EDIT_PROFILE_SCREEN, NOTIFICATION_SETTINGS_SCREEN, RootStackParamList } from '@/constants/Navigation';
 import { emit, EventNames } from '@inkverse/shared-client/pubsub';
 import { getCannySso, settingsReducer, settingsInitialState } from '@inkverse/shared-client/dispatch/settings';
 import { useAnalytics, AnalyticsEvent } from '@/lib/analytics';
@@ -226,8 +226,11 @@ export function SettingsScreen() {
       Appearance.setColorScheme(newColorScheme);
       AsyncStorage.setItem('userThemePreference', newColorScheme);
     }},
-    ...(user 
-      ? [{ id: 'update-profile', type: 'button' as const, name: '📸 Edit Your Profile', onPress: updateProfilePressed }] 
+    ...(user
+      ? [
+          { id: 'update-profile', type: 'button' as const, name: '📸 Edit Your Profile', onPress: updateProfilePressed },
+          { id: 'notification-preferences', type: 'button' as const, name: '🔔 Manage Your Notifications', onPress: () => navigation.navigate(NOTIFICATION_SETTINGS_SCREEN) },
+        ]
       : [{ id: 'signup', type: 'button' as const, name: '✨ Sign Up / Log In', onPress: signupButtonPressed }]),
     { id: 'rate-app', type: 'button', name: `🏅 Rate App (5 stars 🙏)`, onPress: rateAppButtonPressed },
     // { id: 'share-inkverse', type: 'button' as const, name: '🤩 Share Inkverse with your friends', onPress: shareInkverseButtonPressed },

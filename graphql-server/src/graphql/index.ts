@@ -108,6 +108,15 @@ import {
   UserCommentMutations,
 } from './usercomment.js';
 
+import {
+  NotificationDefinitions,
+  NotificationQueriesDefinitions,
+  NotificationQueries,
+  NotificationMutationsDefinitions,
+  NotificationMutations,
+  NotificationFieldResolvers,
+} from './notification.js';
+
 export const typeDefs = gql`#graphql
   ${CommonDefinitions}
   ${ComicSeriesDefinitions}
@@ -127,6 +136,7 @@ export const typeDefs = gql`#graphql
   ${ComicStatsDefinitions}
   ${CommentDefinitions}
   ${UserCommentDefinitions}
+  ${NotificationDefinitions}
 
   type Query {
     ${ComicSeriesQueriesDefinitions}
@@ -143,6 +153,7 @@ export const typeDefs = gql`#graphql
     ${ComicStatsQueriesDefinitions}
     ${CommentQueriesDefinitions}
     ${UserCommentQueriesDefinitions}
+    ${NotificationQueriesDefinitions}
   }
 
   type Mutation {
@@ -150,6 +161,7 @@ export const typeDefs = gql`#graphql
     ${UserMutationsDefinitions}
     ${UserComicSeriesMutationsDefinitions}
     ${UserCommentMutationsDefinitions}
+    ${NotificationMutationsDefinitions}
   }
 `;
 
@@ -170,12 +182,14 @@ export const resolvers: Resolvers = {
     ...ComicStatsQueries,
     ...CommentQueries,
     ...UserCommentQueries,
+    ...NotificationQueries,
   },
   Mutation: {
     ...UserMutations,
     ...ComicSeriesMutations,
     ...UserComicSeriesMutations,
     ...UserCommentMutations,
+    ...NotificationMutations,
   },
   ...ComicSeriesFieldResolvers,
   ...ComicIssueFieldResolvers,
@@ -185,4 +199,5 @@ export const resolvers: Resolvers = {
   ...SearchResolvers,
   ...UserFieldResolvers,
   ...CommentFieldResolvers,
+  ...NotificationFieldResolvers,
 };

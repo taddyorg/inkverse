@@ -18,6 +18,17 @@ export type Scalars = {
   Float: { input: number; output: number; }
 };
 
+/** An aggregated notification (multiple events collapsed into one) */
+export type AggregatedNotification = {
+  __typename?: 'AggregatedNotification';
+  count: Scalars['Int']['output'];
+  eventType: NotificationEventType;
+  id: Scalars['ID']['output'];
+  latestCreatedAt: Scalars['Int']['output'];
+  parentItem?: Maybe<NotificationItem>;
+  targetItem?: Maybe<NotificationItem>;
+};
+
 /** Authentication provider types */
 export enum AuthProvider {
   APPLE = 'APPLE',
@@ -960,6 +971,8 @@ export type Mutation = {
   __typename?: 'Mutation';
   /** Add a new comment or reply to a comic issue */
   addComment?: Maybe<Comment>;
+  /** Add or update a notification setting override */
+  addOrUpdateNotificationSetting: NotificationSettingItem;
   /** Delete a comment permanently */
   deleteComment: Scalars['Boolean']['output'];
   /** Disable notifications for a comic series */
@@ -1012,6 +1025,13 @@ export type MutationAddCommentArgs = {
   replyToCommentUuid?: InputMaybe<Scalars['ID']['input']>;
   seriesUuid: Scalars['ID']['input'];
   text: Scalars['String']['input'];
+};
+
+
+export type MutationAddOrUpdateNotificationSettingArgs = {
+  channel: NotificationChannel;
+  eventType: NotificationEventType;
+  isEnabled: Scalars['Boolean']['input'];
 };
 
 
@@ -1130,6 +1150,52 @@ export type MutationUpdateUserProfileArgs = {
   username?: InputMaybe<Scalars['String']['input']>;
 };
 
+/** A notification for a user */
+export type Notification = {
+  __typename?: 'Notification';
+  actor?: Maybe<User>;
+  createdAt: Scalars['Int']['output'];
+  eventType: NotificationEventType;
+  id: Scalars['ID']['output'];
+  parentItem?: Maybe<NotificationItem>;
+  targetItem?: Maybe<NotificationItem>;
+};
+
+/** Notification delivery channels */
+export enum NotificationChannel {
+  EMAIL = 'EMAIL',
+  PUSH = 'PUSH'
+}
+
+/** Notification event types */
+export enum NotificationEventType {
+  COMMENT_LIKED = 'COMMENT_LIKED',
+  COMMENT_REPLY = 'COMMENT_REPLY',
+  CREATOR_EPISODE_COMMENTED = 'CREATOR_EPISODE_COMMENTED',
+  CREATOR_EPISODE_LIKED = 'CREATOR_EPISODE_LIKED',
+  NEW_EPISODE_RELEASED = 'NEW_EPISODE_RELEASED'
+}
+
+/** Notification feed with time-bucketed sections */
+export type NotificationFeed = {
+  __typename?: 'NotificationFeed';
+  sections: Array<NotificationSection>;
+  userId: Scalars['ID']['output'];
+};
+
+/** A notification feed item (individual or aggregated) */
+export type NotificationFeedItem = AggregatedNotification | Notification;
+
+/** An item referenced by a notification */
+export type NotificationItem = {
+  __typename?: 'NotificationItem';
+  comicIssue?: Maybe<ComicIssue>;
+  comicSeries?: Maybe<ComicSeries>;
+  comment?: Maybe<Comment>;
+  type: InkverseType;
+  uuid: Scalars['ID']['output'];
+};
+
 /** User's preference for a specific notification type */
 export type NotificationPreference = {
   __typename?: 'NotificationPreference';
@@ -1145,6 +1211,37 @@ export type NotificationPreference = {
 export type NotificationPreferenceInput = {
   notificationType: NotificationType;
 };
+
+/** A section of notifications grouped by time bucket */
+export type NotificationSection = {
+  __typename?: 'NotificationSection';
+  bucket: NotificationTimeBucket;
+  items: Array<NotificationFeedItem>;
+};
+
+/** A single notification setting item */
+export type NotificationSettingItem = {
+  __typename?: 'NotificationSettingItem';
+  channel: NotificationChannel;
+  eventType: NotificationEventType;
+  id: Scalars['ID']['output'];
+  isEnabled: Scalars['Boolean']['output'];
+};
+
+/** Notification settings for a user */
+export type NotificationSettingStatus = {
+  __typename?: 'NotificationSettingStatus';
+  settings: Array<NotificationSettingItem>;
+  userId: Scalars['ID']['output'];
+};
+
+/** Time buckets for grouping notifications */
+export enum NotificationTimeBucket {
+  EARLIER = 'EARLIER',
+  THIS_MONTH = 'THIS_MONTH',
+  THIS_WEEK = 'THIS_WEEK',
+  TODAY = 'TODAY'
+}
 
 /** Types of notifications users can receive */
 export enum NotificationType {
@@ -1206,6 +1303,10 @@ export type Query = {
   getList?: Maybe<List>;
   /**  Get a list of most popular comics  */
   getMostPopularComicSeries?: Maybe<HomeScreenComicSeries>;
+  /** Get notification settings for the authenticated user */
+  getNotificationSettings: NotificationSettingStatus;
+  /** Get notification feed for the authenticated user */
+  getNotificationsForUser?: Maybe<NotificationFeed>;
   /**  Get a list of recently added comics  */
   getRecentlyAddedComicSeries?: Maybe<HomeScreenComicSeries>;
   /**  Get a list of recently updated comics  */
@@ -1327,6 +1428,13 @@ export type QueryGetListArgs = {
 export type QueryGetMostPopularComicSeriesArgs = {
   limitPerPage?: InputMaybe<Scalars['Int']['input']>;
   page?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type QueryGetNotificationsForUserArgs = {
+  buckets: Array<NotificationTimeBucket>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
 };
 
 
@@ -1577,10 +1685,15 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
   info: GraphQLResolveInfo
 ) => TResult | Promise<TResult>;
 
+/** Mapping of union types */
+export type ResolversUnionTypes<_RefType extends Record<string, unknown>> = ResolversObject<{
+  NotificationFeedItem: ( Omit<AggregatedNotification, 'parentItem' | 'targetItem'> & { parentItem?: Maybe<_RefType['NotificationItem']>, targetItem?: Maybe<_RefType['NotificationItem']> } ) | ( Omit<Notification, 'actor' | 'parentItem' | 'targetItem'> & { actor?: Maybe<_RefType['User']>, parentItem?: Maybe<_RefType['NotificationItem']>, targetItem?: Maybe<_RefType['NotificationItem']> } );
+}>;
 
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = ResolversObject<{
+  AggregatedNotification: ResolverTypeWrapper<Omit<AggregatedNotification, 'parentItem' | 'targetItem'> & { parentItem?: Maybe<ResolversTypes['NotificationItem']>, targetItem?: Maybe<ResolversTypes['NotificationItem']> }>;
   AuthProvider: AuthProvider;
   BlueskyProfile: ResolverTypeWrapper<BlueskyProfile>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
@@ -1605,6 +1718,7 @@ export type ResolversTypes = ResolversObject<{
   CreatorContent: ResolverTypeWrapper<CreatorContentModel>;
   CreatorLinkDetails: ResolverTypeWrapper<CreatorLinkDetails>;
   Documentation: ResolverTypeWrapper<Documentation>;
+  Float: ResolverTypeWrapper<Scalars['Float']['output']>;
   Genre: Genre;
   HomeScreenComicSeries: ResolverTypeWrapper<Omit<HomeScreenComicSeries, 'comicSeries'> & { comicSeries?: Maybe<Array<Maybe<ResolversTypes['ComicSeries']>>> }>;
   HomeScreenCuratedList: ResolverTypeWrapper<Omit<HomeScreenCuratedList, 'lists'> & { lists?: Maybe<Array<Maybe<ResolversTypes['List']>>> }>;
@@ -1617,8 +1731,18 @@ export type ResolversTypes = ResolversObject<{
   List: ResolverTypeWrapper<ListModel>;
   ListType: ListType;
   Mutation: ResolverTypeWrapper<{}>;
+  Notification: ResolverTypeWrapper<Omit<Notification, 'actor' | 'parentItem' | 'targetItem'> & { actor?: Maybe<ResolversTypes['User']>, parentItem?: Maybe<ResolversTypes['NotificationItem']>, targetItem?: Maybe<ResolversTypes['NotificationItem']> }>;
+  NotificationChannel: NotificationChannel;
+  NotificationEventType: NotificationEventType;
+  NotificationFeed: ResolverTypeWrapper<Omit<NotificationFeed, 'sections'> & { sections: Array<ResolversTypes['NotificationSection']> }>;
+  NotificationFeedItem: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['NotificationFeedItem']>;
+  NotificationItem: ResolverTypeWrapper<Omit<NotificationItem, 'comicIssue' | 'comicSeries' | 'comment'> & { comicIssue?: Maybe<ResolversTypes['ComicIssue']>, comicSeries?: Maybe<ResolversTypes['ComicSeries']>, comment?: Maybe<ResolversTypes['Comment']> }>;
   NotificationPreference: ResolverTypeWrapper<NotificationPreference>;
   NotificationPreferenceInput: NotificationPreferenceInput;
+  NotificationSection: ResolverTypeWrapper<Omit<NotificationSection, 'items'> & { items: Array<ResolversTypes['NotificationFeedItem']> }>;
+  NotificationSettingItem: ResolverTypeWrapper<NotificationSettingItem>;
+  NotificationSettingStatus: ResolverTypeWrapper<NotificationSettingStatus>;
+  NotificationTimeBucket: NotificationTimeBucket;
   NotificationType: NotificationType;
   PrivacyType: PrivacyType;
   ProfileComicSeries: ResolverTypeWrapper<Omit<ProfileComicSeries, 'comicSeries'> & { comicSeries?: Maybe<Array<Maybe<ResolversTypes['ComicSeries']>>> }>;
@@ -1639,6 +1763,7 @@ export type ResolversTypes = ResolversObject<{
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = ResolversObject<{
+  AggregatedNotification: Omit<AggregatedNotification, 'parentItem' | 'targetItem'> & { parentItem?: Maybe<ResolversParentTypes['NotificationItem']>, targetItem?: Maybe<ResolversParentTypes['NotificationItem']> };
   BlueskyProfile: BlueskyProfile;
   Boolean: Scalars['Boolean']['output'];
   CannySSO: CannySso;
@@ -1655,6 +1780,7 @@ export type ResolversParentTypes = ResolversObject<{
   CreatorContent: CreatorContentModel;
   CreatorLinkDetails: CreatorLinkDetails;
   Documentation: Documentation;
+  Float: Scalars['Float']['output'];
   HomeScreenComicSeries: Omit<HomeScreenComicSeries, 'comicSeries'> & { comicSeries?: Maybe<Array<Maybe<ResolversParentTypes['ComicSeries']>>> };
   HomeScreenCuratedList: Omit<HomeScreenCuratedList, 'lists'> & { lists?: Maybe<Array<Maybe<ResolversParentTypes['List']>>> };
   ID: Scalars['ID']['output'];
@@ -1662,8 +1788,15 @@ export type ResolversParentTypes = ResolversObject<{
   LinkDetails: LinkDetails;
   List: ListModel;
   Mutation: {};
+  Notification: Omit<Notification, 'actor' | 'parentItem' | 'targetItem'> & { actor?: Maybe<ResolversParentTypes['User']>, parentItem?: Maybe<ResolversParentTypes['NotificationItem']>, targetItem?: Maybe<ResolversParentTypes['NotificationItem']> };
+  NotificationFeed: Omit<NotificationFeed, 'sections'> & { sections: Array<ResolversParentTypes['NotificationSection']> };
+  NotificationFeedItem: ResolversUnionTypes<ResolversParentTypes>['NotificationFeedItem'];
+  NotificationItem: Omit<NotificationItem, 'comicIssue' | 'comicSeries' | 'comment'> & { comicIssue?: Maybe<ResolversParentTypes['ComicIssue']>, comicSeries?: Maybe<ResolversParentTypes['ComicSeries']>, comment?: Maybe<ResolversParentTypes['Comment']> };
   NotificationPreference: NotificationPreference;
   NotificationPreferenceInput: NotificationPreferenceInput;
+  NotificationSection: Omit<NotificationSection, 'items'> & { items: Array<ResolversParentTypes['NotificationFeedItem']> };
+  NotificationSettingItem: NotificationSettingItem;
+  NotificationSettingStatus: NotificationSettingStatus;
   ProfileComicSeries: Omit<ProfileComicSeries, 'comicSeries'> & { comicSeries?: Maybe<Array<Maybe<ResolversParentTypes['ComicSeries']>>> };
   Query: {};
   SearchResults: Omit<SearchResults, 'comicSeries' | 'creators'> & { comicSeries?: Maybe<Array<Maybe<ResolversParentTypes['ComicSeries']>>>, creators?: Maybe<Array<Maybe<ResolversParentTypes['Creator']>>> };
@@ -1671,6 +1804,28 @@ export type ResolversParentTypes = ResolversObject<{
   User: UserModel;
   UserComicSeries: UserComicSeries;
   UserComment: UserComment;
+}>;
+
+export type CostDirectiveArgs = {
+  value: Scalars['Float']['input'];
+};
+
+export type CostDirectiveResolver<Result, Parent, ContextType = any, Args = CostDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
+
+export type CostFactorDirectiveArgs = {
+  value: Scalars['Float']['input'];
+};
+
+export type CostFactorDirectiveResolver<Result, Parent, ContextType = any, Args = CostFactorDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
+
+export type AggregatedNotificationResolvers<ContextType = any, ParentType extends ResolversParentTypes['AggregatedNotification'] = ResolversParentTypes['AggregatedNotification']> = ResolversObject<{
+  count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  eventType?: Resolver<ResolversTypes['NotificationEventType'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  latestCreatedAt?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  parentItem?: Resolver<Maybe<ResolversTypes['NotificationItem']>, ParentType, ContextType>;
+  targetItem?: Resolver<Maybe<ResolversTypes['NotificationItem']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type BlueskyProfileResolvers<ContextType = any, ParentType extends ResolversParentTypes['BlueskyProfile'] = ResolversParentTypes['BlueskyProfile']> = ResolversObject<{
@@ -1896,6 +2051,7 @@ export type ListResolvers<ContextType = any, ParentType extends ResolversParentT
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
   addComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationAddCommentArgs, 'issueUuid' | 'seriesUuid' | 'text'>>;
+  addOrUpdateNotificationSetting?: Resolver<ResolversTypes['NotificationSettingItem'], ParentType, ContextType, RequireFields<MutationAddOrUpdateNotificationSettingArgs, 'channel' | 'eventType' | 'isEnabled'>>;
   deleteComment?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteCommentArgs, 'commentUuid' | 'targetType' | 'targetUuid'>>;
   disableNotificationsForSeries?: Resolver<ResolversTypes['UserComicSeries'], ParentType, ContextType, RequireFields<MutationDisableNotificationsForSeriesArgs, 'seriesUuid'>>;
   editComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationEditCommentArgs, 'commentUuid' | 'targetType' | 'targetUuid' | 'text'>>;
@@ -1920,6 +2076,35 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateUserProfile?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, Partial<MutationUpdateUserProfileArgs>>;
 }>;
 
+export type NotificationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Notification'] = ResolversParentTypes['Notification']> = ResolversObject<{
+  actor?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  createdAt?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  eventType?: Resolver<ResolversTypes['NotificationEventType'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  parentItem?: Resolver<Maybe<ResolversTypes['NotificationItem']>, ParentType, ContextType>;
+  targetItem?: Resolver<Maybe<ResolversTypes['NotificationItem']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type NotificationFeedResolvers<ContextType = any, ParentType extends ResolversParentTypes['NotificationFeed'] = ResolversParentTypes['NotificationFeed']> = ResolversObject<{
+  sections?: Resolver<Array<ResolversTypes['NotificationSection']>, ParentType, ContextType>;
+  userId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type NotificationFeedItemResolvers<ContextType = any, ParentType extends ResolversParentTypes['NotificationFeedItem'] = ResolversParentTypes['NotificationFeedItem']> = ResolversObject<{
+  __resolveType: TypeResolveFn<'AggregatedNotification' | 'Notification', ParentType, ContextType>;
+}>;
+
+export type NotificationItemResolvers<ContextType = any, ParentType extends ResolversParentTypes['NotificationItem'] = ResolversParentTypes['NotificationItem']> = ResolversObject<{
+  comicIssue?: Resolver<Maybe<ResolversTypes['ComicIssue']>, ParentType, ContextType>;
+  comicSeries?: Resolver<Maybe<ResolversTypes['ComicSeries']>, ParentType, ContextType>;
+  comment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['InkverseType'], ParentType, ContextType>;
+  uuid?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type NotificationPreferenceResolvers<ContextType = any, ParentType extends ResolversParentTypes['NotificationPreference'] = ResolversParentTypes['NotificationPreference']> = ResolversObject<{
   createdAt?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -1927,6 +2112,26 @@ export type NotificationPreferenceResolvers<ContextType = any, ParentType extend
   updatedAt?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   userId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type NotificationSectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['NotificationSection'] = ResolversParentTypes['NotificationSection']> = ResolversObject<{
+  bucket?: Resolver<ResolversTypes['NotificationTimeBucket'], ParentType, ContextType>;
+  items?: Resolver<Array<ResolversTypes['NotificationFeedItem']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type NotificationSettingItemResolvers<ContextType = any, ParentType extends ResolversParentTypes['NotificationSettingItem'] = ResolversParentTypes['NotificationSettingItem']> = ResolversObject<{
+  channel?: Resolver<ResolversTypes['NotificationChannel'], ParentType, ContextType>;
+  eventType?: Resolver<ResolversTypes['NotificationEventType'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  isEnabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type NotificationSettingStatusResolvers<ContextType = any, ParentType extends ResolversParentTypes['NotificationSettingStatus'] = ResolversParentTypes['NotificationSettingStatus']> = ResolversObject<{
+  settings?: Resolver<Array<ResolversTypes['NotificationSettingItem']>, ParentType, ContextType>;
+  userId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -1955,6 +2160,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getIssuesForComicSeries?: Resolver<Maybe<ResolversTypes['ComicIssueForSeries']>, ParentType, ContextType, RequireFields<QueryGetIssuesForComicSeriesArgs, 'seriesUuid'>>;
   getList?: Resolver<Maybe<ResolversTypes['List']>, ParentType, ContextType, RequireFields<QueryGetListArgs, 'id'>>;
   getMostPopularComicSeries?: Resolver<Maybe<ResolversTypes['HomeScreenComicSeries']>, ParentType, ContextType, Partial<QueryGetMostPopularComicSeriesArgs>>;
+  getNotificationSettings?: Resolver<ResolversTypes['NotificationSettingStatus'], ParentType, ContextType>;
+  getNotificationsForUser?: Resolver<Maybe<ResolversTypes['NotificationFeed']>, ParentType, ContextType, RequireFields<QueryGetNotificationsForUserArgs, 'buckets'>>;
   getRecentlyAddedComicSeries?: Resolver<Maybe<ResolversTypes['HomeScreenComicSeries']>, ParentType, ContextType, Partial<QueryGetRecentlyAddedComicSeriesArgs>>;
   getRecentlyUpdatedComicSeries?: Resolver<Maybe<ResolversTypes['HomeScreenComicSeries']>, ParentType, ContextType, Partial<QueryGetRecentlyUpdatedComicSeriesArgs>>;
   getRepliesForComment?: Resolver<ResolversTypes['CommentsForTarget'], ParentType, ContextType, RequireFields<QueryGetRepliesForCommentArgs, 'commentUuid' | 'targetType' | 'targetUuid'>>;
@@ -2008,6 +2215,7 @@ export type UserCommentResolvers<ContextType = any, ParentType extends Resolvers
 }>;
 
 export type Resolvers<ContextType = any> = ResolversObject<{
+  AggregatedNotification?: AggregatedNotificationResolvers<ContextType>;
   BlueskyProfile?: BlueskyProfileResolvers<ContextType>;
   CannySSO?: CannySsoResolvers<ContextType>;
   ComicIssue?: ComicIssueResolvers<ContextType>;
@@ -2028,7 +2236,14 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   LinkDetails?: LinkDetailsResolvers<ContextType>;
   List?: ListResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
+  Notification?: NotificationResolvers<ContextType>;
+  NotificationFeed?: NotificationFeedResolvers<ContextType>;
+  NotificationFeedItem?: NotificationFeedItemResolvers<ContextType>;
+  NotificationItem?: NotificationItemResolvers<ContextType>;
   NotificationPreference?: NotificationPreferenceResolvers<ContextType>;
+  NotificationSection?: NotificationSectionResolvers<ContextType>;
+  NotificationSettingItem?: NotificationSettingItemResolvers<ContextType>;
+  NotificationSettingStatus?: NotificationSettingStatusResolvers<ContextType>;
   ProfileComicSeries?: ProfileComicSeriesResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   SearchResults?: SearchResultsResolvers<ContextType>;
@@ -2037,3 +2252,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   UserComment?: UserCommentResolvers<ContextType>;
 }>;
 
+export type DirectiveResolvers<ContextType = any> = ResolversObject<{
+  cost?: CostDirectiveResolver<any, any, ContextType>;
+  costFactor?: CostFactorDirectiveResolver<any, any, ContextType>;
+}>;

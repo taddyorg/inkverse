@@ -11,6 +11,8 @@ import type {
   InkverseType,
   UserAgeRange,
   NotificationType,
+  NotificationEventType,
+  NotificationChannel,
   ReportType,
 } from "../graphql/types.js";
 
@@ -253,4 +255,26 @@ export type UserReportModel = {
   targetType: InkverseType;
   reportType: ReportType;
   additionalInfo: string | null;
+}
+
+export type UserNotificationModel = {
+  id: number;
+  createdAt: number;
+  recipientId: number;
+  senderId: number | null;
+  eventType: NotificationEventType;
+  targetUuid: string;
+  targetType: string;
+  parentUuid: string | null;
+  parentType: string | null;
+}
+
+export type NotificationSettingModel = {
+  id: number;
+  createdAt: number;
+  updatedAt: number | null;
+  userId: number;
+  eventType: NotificationEventType;
+  channel: NotificationChannel;
+  isEnabled: boolean;
 }

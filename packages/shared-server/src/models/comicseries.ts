@@ -90,6 +90,15 @@ export class ComicSeries {
       .returning('*');
   }
 
+  static async getComicSeriesByIssueUuid(issueUuid: string): Promise<ComicSeriesModel | null> {
+    return await database
+      .select('comicseries.*')
+      .from('comicissue')
+      .join('comicseries', 'comicseries.uuid', 'comicissue.series_uuid')
+      .where('comicissue.uuid', issueUuid)
+      .first();
+  }
+
   static async getComicSeriesByShortUrl(shortUrl: string): Promise<ComicSeriesModel | null> {
     return await database('comicseries')
       .where({ shortUrl })

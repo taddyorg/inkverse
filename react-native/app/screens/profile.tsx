@@ -5,7 +5,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { Screen, ThemedView, ThemedText, ThemedButton, ThemedActivityIndicator, HeaderBackButton, ThemedRefreshControl, FadeInView } from '@/app/components/ui';
 import { HeaderSettingsButton } from '@/app/components/profile/HeaderSettingsButton';
-import { PROFILE_SCREEN, RootStackParamList, SETTINGS_SCREEN, SIGNUP_SCREEN } from '@/constants/Navigation';
+import { PROFILE_SCREEN, RootStackParamList, SETTINGS_SCREEN, SIGNUP_SCREEN, NOTIFICATIONS_SCREEN } from '@/constants/Navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { getUserDetails } from '@/lib/auth/user';
 import { User, ComicSeries } from '@inkverse/shared-client/graphql/operations';
@@ -246,13 +246,17 @@ export function ProfileScreen() {
     navigation.navigate(SETTINGS_SCREEN);
   }, [navigation]);
 
+  const handleNotificationsPress = useCallback(() => {
+    navigation.navigate(NOTIFICATIONS_SCREEN);
+  }, [navigation]);
+
   const renderSectionItem = useCallback(({ item }: { item: ProfileSectionItem }) => {
     switch (item.type) {
       case 'header':
         return (
           <ThemedView style={[styles.headerContainer, { marginTop: item.includeBackButton ? 24 : 0 }]}>
             {item.includeBackButton && <HeaderBackButton style={{ top: 20 }} />}
-            <HeaderSettingsButton onPress={handleSettingsPress} />
+            <HeaderSettingsButton onSettingsPress={handleSettingsPress} onNotificationsPress={handleNotificationsPress}/>
           </ThemedView>
         );
       
@@ -357,7 +361,7 @@ export function ProfileScreen() {
       default:
         return null;
     }
-  }, [handleSettingsPress, navigation, creator]);
+  }, [handleSettingsPress, handleNotificationsPress, navigation, creator]);
 
   const renderComicItem = useCallback(({ item }: { item: ComicSeries }) => {
     const numColumns = getNumColumns();

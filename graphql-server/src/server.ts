@@ -22,7 +22,7 @@ import hostingProviderRouter from './routes/hosting-provider.js';
 import claimCreatorRouter from './routes/claim-creator.js';
 
 const PORT = 3010;
-const QUERY_MAX_DEPTH = 4;
+const QUERY_MAX_DEPTH = 5;
 
 const corsOptions = {
   origin: "*",

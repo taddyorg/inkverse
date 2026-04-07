@@ -52,6 +52,8 @@ import { WrappedApiHostingProviderScreen } from './wrapped-screens/wrappedapihos
 import { WrappedTrendingLikedScreen, WrappedTrendingDiscussedScreen } from './wrapped-screens/wrappedtrending';
 import { ClaimCreatorScreen } from './claim-creator';
 import { WrappedClaimCreatorScreen } from './wrapped-screens/wrappedclaimcreator';
+import { NotificationsScreen } from './notifications';
+import { NotificationSettingsScreen } from './notification-settings';
 import { NotificationProvider } from '../components/providers/NotificationProvider';
 import { CommentsProvider } from '../components/providers/CommentsProvider';
 import { AnalyticsProvider } from '../components/providers/AnalyticsProvider';
@@ -102,6 +104,8 @@ import {
   EDIT_EMAIL_SCREEN,
   EDIT_PATREON_SCREEN,
   EDIT_BLUESKY_SCREEN,
+  NOTIFICATIONS_SCREEN,
+  NOTIFICATION_SETTINGS_SCREEN,
   RootStackParamList,
 } from '../../constants/Navigation';
 
@@ -243,6 +247,24 @@ const claimCreatorScreenConfig = {
   }
 };
 
+const notificationsScreenConfig = {
+  name: NOTIFICATIONS_SCREEN as keyof RootStackParamList,
+  component: NotificationsScreen,
+  options: {
+    title: '',
+    headerShown: false,
+  }
+};
+
+const notificationSettingsScreenConfig = {
+  name: NOTIFICATION_SETTINGS_SCREEN as keyof RootStackParamList,
+  component: NotificationSettingsScreen,
+  options: {
+    title: '',
+    headerShown: false,
+  }
+};
+
 const stackScreenOptions = {
   ...Platform.select({
     android: {
@@ -341,6 +363,8 @@ function ProfileStack() {
       <Stack.Screen {...editPatreonScreenConfig} />
       <Stack.Screen {...editBlueskyScreenConfig} />
       <Stack.Screen {...claimCreatorScreenConfig} />
+      <Stack.Screen {...notificationsScreenConfig} />
+      <Stack.Screen {...notificationSettingsScreenConfig} />
     </Stack.Navigator>
   );
 }
@@ -491,6 +515,7 @@ function App() {
         [WRAPPED_TAGGED_SCREEN]: 'tagged/:tag',
         [WRAPPED_TRENDING_LIKED_SCREEN]: 'most-liked',
         [WRAPPED_TRENDING_DISCUSSED_SCREEN]: 'most-discussed',
+        [NOTIFICATIONS_SCREEN]: 'notifications',
         [WRAPPED_CLAIM_CREATOR_SCREEN]: 'claim-creator/:uuid',
         [WRAPPED_PROFILE_SCREEN]: ':username',
         [WRAPPED_HOSTING_PROVIDER_SCREEN]: 'hosting-provider/:uuid',
