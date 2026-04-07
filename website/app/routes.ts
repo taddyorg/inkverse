@@ -23,6 +23,8 @@ export default [
     route("hosting-provider/:uuid", "routes/hosting-provider.tsx"),
     route("profile/setup", "routes/profile/setup.tsx"),
     route("profile/settings", "routes/profile/settings.tsx"),
+    route("profile/notifications", "routes/profile/notifications.tsx"),
+    route("profile/notification-settings", "routes/profile/notification-settings.tsx"),
     route("profile/edit", "routes/profile/edit.tsx"),
     route("profile/edit/username", "routes/profile/edit/username.tsx"),
     route("profile/edit/age", "routes/profile/edit/age.tsx"),

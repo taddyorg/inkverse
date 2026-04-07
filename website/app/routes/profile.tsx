@@ -1,7 +1,7 @@
 import type { LoaderFunctionArgs, MetaFunction } from 'react-router-dom';
 import { useLoaderData, Link } from 'react-router';
 import { useEffect, useReducer } from 'react';
-import { IoSettingsOutline } from 'react-icons/io5';
+import { IoSettingsOutline, IoNotificationsOutline } from 'react-icons/io5';
 
 import { loadProfile } from '@/lib/loader/profile.server';
 import { getUserApolloClient } from '@/lib/apollo/client.client';
@@ -87,6 +87,13 @@ function ProfileContent({ initialData }: { initialData: Partial<ProfileState> & 
               className="bg-brand-pink dark:bg-taddy-blue text-white font-medium px-4 py-2 rounded-3xl transition-colors"
             >
               Edit your profile
+            </Link>
+            <Link
+              to="/profile/notifications"
+              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-center"
+              title="Notifications"
+            >
+              <IoNotificationsOutline className="h-6 w-6 text-gray-800 dark:text-white" />
             </Link>
             <Link
               to="/profile/settings"

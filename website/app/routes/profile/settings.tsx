@@ -182,6 +182,19 @@ export default function ProfileSettings() {
             </svg>
           </Link>
 
+          {/* Manage Notifications Link */}
+          <Link
+            to="/profile/notification-settings"
+            className="flex items-center justify-between py-4 px-0 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors rounded-lg"
+          >
+            <p className="text-lg font-medium text-inkverse-black dark:text-white px-4">
+              Manage Notifications
+            </p>
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400 mr-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </Link>
+
           {/* Log Out Button */}
           <button
             onClick={handleLogoutClick}
