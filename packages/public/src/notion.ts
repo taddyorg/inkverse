@@ -13,6 +13,7 @@ export const NotionPage = {
   BEST_ACTION_WEBTOONS: { id: "aff56802b1ae493c89aea0eb95ca433d", path: "/blog/best-action-webtoons-we-recommend" },
   BEST_WEBTOONS_OF_ALL_TIME: { id: "12e332bebe3f8074bc37c038e10909b6", path: "/blog/best-webtoons-of-all-time" },
   APP_UPDATES: { id: "5c29ee8546e142b1b72de04eae36960d", path: "/updates" },
+  APP_UPDATES_LIKES_AND_COMMENTS: { id: "33a332bebe3f80cb9ad0d39966aa9672", path: "/updates/likes-and-comments-now-available" },
   APP_UPDATES_NEW_APP_LAUNCHED: { id: "1b9332bebe3f80cd8437e457f71ebbf0", path: "/updates/new-app-launched" },
   APP_UPDATES_ROADMAP: { id: "1bc332bebe3f80ec8bc2d14b3ff5ceec", path: "/updates/our-roadmap" },
   APP_UPDATES_INKVERSE2DOT0: { id: "230332bebe3f8055bd1ac78b311867f5", path: "/updates/inkverse-2dot0" },
