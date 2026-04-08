@@ -445,6 +445,9 @@ export const UserCommentMutations: MutationResolvers = {
       })
     }
 
+    // Purge comments cache so likeCount refreshes
+    purgeCacheOnCdn({ type: 'comments', id: comment.targetUuid });
+
     return await buildUserCommentResponse(
       context.user.id,
       comment.targetUuid,
@@ -473,6 +476,9 @@ export const UserCommentMutations: MutationResolvers = {
       commentUuid,
       InkverseType.COMMENT
     );
+
+    // Purge comments cache so likeCount refreshes
+    purgeCacheOnCdn({ type: 'comments', id: comment.targetUuid });
 
     return await buildUserCommentResponse(
       context.user.id,

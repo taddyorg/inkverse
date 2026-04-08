@@ -33,6 +33,7 @@ const cacheKeyForType: Record<string, string> = {
   "UserComment": "targetUuid",
   "CommentsForTarget": "targetUuid",
   "Notification": "id",
+  "AggregatedNotification": "id",
   "NotificationItem": "uuid",
   "NotificationFeed": "userId",
   "NotificationSettingStatus": "userId",

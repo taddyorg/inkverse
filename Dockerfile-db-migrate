@@ -39,8 +39,7 @@ WORKDIR /app/packages/shared-server
 RUN yarn build
 
 # Build graphql-server
-WORKDIR /app/worker
-RUN yarn build
+WORKDIR /app
 
 # Run the server
 CMD [ "npm", "run", "migrate"]
