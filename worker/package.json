@@ -27,7 +27,9 @@
     "mock-create-notification": "tsx src/scripts/notifications/mock/mock-create-notification.ts",
     "mock-create-creator-notification": "tsx src/scripts/notifications/mock/mock-create-creator-notification.ts",
     "mock-send-notification": "tsx src/scripts/notifications/mock/mock-send-notification.ts",
-    "mock-send-digest": "tsx src/scripts/notifications/mock/mock-send-digest.ts"
+    "mock-send-digest": "tsx src/scripts/notifications/mock/mock-send-digest.ts",
+    "send-notification-digests": "tsx src/scripts/notifications/start.ts",
+    "delete-old-notifications": "tsx src/scripts/notifications/cleanup-old-notifications.ts"
   },
   "author": "Inkverse",
   "license": "AGPL-3.0",

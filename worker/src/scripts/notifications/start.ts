@@ -5,17 +5,17 @@ import { buildAndSendDigests } from './build-and-send-digests.js';
 
 async function main() {
   try {
-    // Time window: 9am PST yesterday → 9am PST today
+    // Time window: 7am PST yesterday → 7am PST today
     const now = new Date();
-    const today9amPST = new Date(now.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
-    today9amPST.setHours(9, 0, 0, 0);
+    const today7amPST = new Date(now.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
+    today7amPST.setHours(7, 0, 0, 0);
 
-    const yesterday9amPST = new Date(today9amPST);
-    yesterday9amPST.setDate(yesterday9amPST.getDate() - 1);
+    const yesterday7amPST = new Date(today7amPST);
+    yesterday7amPST.setDate(yesterday7amPST.getDate() - 1);
 
     const timeWindow = {
-      start: Math.floor(yesterday9amPST.getTime() / 1000),
-      end: Math.floor(today9amPST.getTime() / 1000),
+      start: Math.floor(yesterday7amPST.getTime() / 1000),
+      end: Math.floor(today7amPST.getTime() / 1000),
     };
 
     const outputDir = path.join(process.cwd(), 'output', 'digests');

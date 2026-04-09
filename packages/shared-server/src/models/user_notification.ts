@@ -122,28 +122,39 @@ export class UserNotification {
       .select('*');
   }
 
-  static async deleteOldNotifications(olderThanEpoch: number, batchSize: number = 10000): Promise<number> {
+  static async deleteOldNotifications(olderThanEpoch: number, batchSize: number = 10000): Promise<number> {    
+    const minIdRow = await database('user_notifications')
+      .where('createdAt', '<', olderThanEpoch)
+      .andWhere('eventType', NotificationEventType.NEW_EPISODE_RELEASED)
+      .min('id as minId')
+      .first();
+
     const maxIdRow = await database('user_notifications')
       .where('createdAt', '<', olderThanEpoch)
       .andWhere('eventType', NotificationEventType.NEW_EPISODE_RELEASED)
       .max('id as maxId')
       .first();
 
-    const maxId = maxIdRow?.maxId;
-    if (!maxId) return 0;
+    const minId = Number(minIdRow?.minId);
+    const maxId = Number(maxIdRow?.maxId);
+    if (!minId || !maxId || isNaN(minId) || isNaN(maxId)) return 0;
 
-    const deleteBatch = async (total: number): Promise<number> => {
+    let total = 0;
+    let rangeStart = minId;
+
+    while (rangeStart <= maxId) {
       const deleted = await database('user_notifications')
-        .where('id', '<=', maxId)
+        .where('id', '>=', rangeStart)
+        .andWhere('id', '<', rangeStart + batchSize)
         .andWhere('createdAt', '<', olderThanEpoch)
-        .limit(batchSize)
+        .andWhere('eventType', NotificationEventType.NEW_EPISODE_RELEASED)
         .delete();
 
-      if (deleted === 0) return total;
-      return deleteBatch(total + deleted);
-    };
+      total += deleted;
+      rangeStart += batchSize;
+    }
 
-    return deleteBatch(0);
+    return total;
   }
 
   static async getAggregatedNotificationsForBucket(
