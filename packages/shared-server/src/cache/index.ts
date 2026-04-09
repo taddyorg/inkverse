@@ -205,14 +205,14 @@ function getGraphCDNQuery(type: CacheType) {
       `
     case 'comicissuestats':
       return `
-        mutation ComicIssueStatsPurge ($issueUuid: [ID!]) {
-          purgeComicIssueStats(issueUuid: $issueUuid)
+        mutation ComicIssueStatsPurge ($uuid: [ID!]) {
+          purgeComicIssueStats(uuid: $uuid)
         }
       `
     case 'comicseriesstats':
       return `
-        mutation ComicSeriesStatsPurge ($seriesUuid: [ID!]) {
-          purgeComicSeriesStats(seriesUuid: $seriesUuid)
+        mutation ComicSeriesStatsPurge ($uuid: [ID!]) {
+          purgeComicSeriesStats(uuid: $uuid)
         }
       `
     case 'comments':
@@ -257,9 +257,8 @@ function getGraphCDNVariables(type: CacheType, id?:string, ids?:string[]) {
     case 'profilecomicseries':
       return { userId: ids || [id] }
     case 'comicissuestats':
-      return { issueUuid: ids || [id] }
     case 'comicseriesstats':
-      return { seriesUuid: ids || [id] }
+      return { uuid: ids || [id] }
     case 'comments':
       return { targetUuid: ids || [id] }
     case 'notificationfeed':

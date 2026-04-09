@@ -47,8 +47,10 @@
     "pg": "^8.13.1",
     "qs": "^6.15.0",
     "redis": "^4.7.0",
-    "sharp": "^0.34.5",
     "uuid": "^11.0.3"
+  },
+  "optionalDependencies": {
+    "sharp": "^0.34.5"
   },
   "devDependencies": {
     "@types/lodash-es": "^4.17.12",
