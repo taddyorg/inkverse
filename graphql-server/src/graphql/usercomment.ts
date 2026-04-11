@@ -1,12 +1,12 @@
 import { AuthenticationError, UserInputError } from './error.js';
-import { UserComment, UserReport, UserLike, ComicIssue, ComicSeries, CreatorContent } from '@inkverse/shared-server/models/index';
+import { UserComment, UserReport, UserLike, ComicIssue, ComicSeries, CreatorContent, UserNotification } from '@inkverse/shared-server/models/index';
 import { InkverseType, ReportType } from '@inkverse/shared-server/graphql/types';
 import type { MutationResolvers } from '@inkverse/shared-server/graphql/types';
 import { sendSlackNotification } from '@inkverse/shared-server/messaging/slack';
 import { purgeCacheOnCdn } from '@inkverse/shared-server/cache/index';
 import { createNotification, notifySeriesCreator } from '@inkverse/shared-server/messaging/notifications/index';
 import { NotificationEventType } from '@inkverse/shared-server/graphql/types';
-import { inkverseWebsiteUrl } from '@inkverse/public/utils';
+import { getInkverseUrl, inkverseWebsiteUrl } from '@inkverse/public/utils';
 
 // Sanitize comment text by stripping <script> and <iframe> tags and their contents
 function sanitizeCommentText(text: string): string {
@@ -128,13 +128,19 @@ async function sendNewCommentSlackNotification(
   seriesName: string | null,
   commentText: string,
   seriesShortUrl: string,
-  issuePosition: number | null
+  issueUuid: string
 ) {
   const truncatedText = commentText.length > 200
     ? commentText.substring(0, 200) + '...'
     : commentText;
 
-  const episodeUrl = `${inkverseWebsiteUrl}/series/${seriesShortUrl}/episode/${issuePosition || 1}`;
+  const episodePath = getInkverseUrl({
+    type: 'comicissue',
+    shortUrl: seriesShortUrl,
+    name: episodeName,
+    uuid: issueUuid,
+  });
+  const episodeUrl = episodePath ? `${inkverseWebsiteUrl}${episodePath}` : inkverseWebsiteUrl;
 
   const payload = {
     blocks: [
@@ -232,14 +238,16 @@ export const UserCommentMutations: MutationResolvers = {
     }
 
     // Send Slack notification (async, don't await)
-    sendNewCommentSlackNotification(
-      context.user.username,
-      comicIssue?.name || null,
-      comicSeries?.name || null,
-      text,
-      comicSeries?.shortUrl || seriesUuid,
-      comicIssue?.position || null
-    );
+    if (comicSeries && comicIssue) {
+      sendNewCommentSlackNotification(
+        context.user.username,
+        comicIssue.name,
+        comicSeries.name,
+        text,
+        comicSeries.shortUrl,
+        issueUuid
+      );
+    }
 
     let commentReplyRecipientId: number | null = null;
     if (replyToComment && replyToComment.userId !== context.user.id) {
@@ -261,6 +269,7 @@ export const UserCommentMutations: MutationResolvers = {
       senderId: context.user.id,
       eventType: NotificationEventType.CREATOR_EPISODE_COMMENTED,
       skipForUserId: commentReplyRecipientId,
+      commentUuid: comment.uuid,
     });
 
     // Purge comments cache on CDN (fire-and-forget)
@@ -397,6 +406,9 @@ export const UserCommentMutations: MutationResolvers = {
       throw new UserInputError('Comment not found or you do not have permission to delete it');
     }
 
+    // Remove COMMENT_REPLY and COMMENT_LIKED notifications that referenced this comment
+    await UserNotification.deleteByCommentUuid(commentUuid);
+
     // Purge comments cache on CDN (fire-and-forget)
     purgeCacheOnCdn({ type: 'comments', id: targetUuid });
     // Purge comicissuestats cache so total counts refresh
@@ -476,6 +488,13 @@ export const UserCommentMutations: MutationResolvers = {
       commentUuid,
       InkverseType.COMMENT
     );
+
+    // Remove the COMMENT_LIKED notification this user generated for this comment
+    await UserNotification.deleteBySender({
+      eventType: NotificationEventType.COMMENT_LIKED,
+      targetUuid: commentUuid,
+      senderId: context.user.id,
+    });
 
     // Purge comments cache so likeCount refreshes
     purgeCacheOnCdn({ type: 'comments', id: comment.targetUuid });

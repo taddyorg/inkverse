@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { StyleSheet, View, TextInput, KeyboardAvoidingView, Platform, ScrollView, useColorScheme } from 'react-native';
+import { StyleSheet, View, TextInput, ScrollView, useColorScheme } from 'react-native';
+import { KeyboardStickyView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -204,11 +205,7 @@ export function CommentsScreen() {
 
   return (
     <Screen>
-      <KeyboardAvoidingView
-        style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={0}
-      >
+      <View style={styles.flex}>
         {/* Header */}
         <View>
           <HeaderBackButton onPress={() => navigation.goBack()} />
@@ -314,7 +311,7 @@ export function CommentsScreen() {
         </ScrollView>
 
         {/* Bottom input bar */}
-        <View style={[styles.inputBarContainer, { paddingBottom: Math.max(insets.bottom, 8) }]}>
+        <KeyboardStickyView offset={{ closed: 0, opened: insets.bottom }} style={[styles.inputBarContainer, { paddingBottom: Math.max(insets.bottom, 8) }]}>
           {/* Reply indicator */}
           {replyTo && (
             <View style={styles.replyIndicator}>
@@ -375,8 +372,8 @@ export function CommentsScreen() {
               <Ionicons name="send" size={18} color="white" />
             </PressableOpacity>
           </View>
-        </View>
-      </KeyboardAvoidingView>
+        </KeyboardStickyView>
+      </View>
     </Screen>
   );
 }

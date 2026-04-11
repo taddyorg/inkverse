@@ -193,7 +193,7 @@ router.post('/callback', async (req, res) => {
       const user = await User.getUserById(approvedClaim.userId);
 
       sendSlackNotification('general', {
-        text: `*🔔* *CLAIM APPROVED*\n: *Creator:* ${approvedClaim?.creatorUuid}\n*User:* ${user?.username}: https://inkverse.co/profile/${user?.username}`,
+        text: `*🔔* *CLAIM APPROVED*\n*Creator:* ${approvedClaim?.creatorUuid}\n*User:* ${user?.username}: https://inkverse.co/${user?.username}`,
       });
 
       // Purge CDN cache for the creator and user profile

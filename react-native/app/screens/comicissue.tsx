@@ -5,6 +5,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList, COMICISSUE_SCREEN, COMICSERIES_SCREEN, COMMENTS_SCREEN, EDIT_PATREON_SCREEN, SIGNUP_SCREEN } from '@/constants/Navigation';
 import { FlashList, FlashListRef } from '@shopify/flash-list';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { Image } from 'expo-image';
 import { jwtDecode } from 'jwt-decode';
 import * as Linking from 'expo-linking';
@@ -645,6 +646,7 @@ export function ComicIssueScreen() {
           showsVerticalScrollIndicator={false}
           onScroll={handleScroll}
           scrollEventThrottle={16}
+          renderScrollComponent={KeyboardAwareScrollView as any}
           // estimatedListSize={{
           //   height: screenDetails.height,
           //   width: screenDetails.width

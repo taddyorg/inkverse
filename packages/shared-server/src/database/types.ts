@@ -267,6 +267,8 @@ export type UserNotificationModel = {
   targetType: string;
   parentUuid: string | null;
   parentType: string | null;
+  contextUuid: string | null;
+  contextType: string | null;
 }
 
 export type NotificationSettingModel = {

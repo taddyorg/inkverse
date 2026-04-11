@@ -122,12 +122,13 @@ export function parseLoaderHomeScreen(data: HomeScreenQuery | undefined): HomeSc
 }
 
 export async function loadTrendingComicSeries(
-  { publicClient, metric, period, page = 1, limitPerPage = 6 }: { publicClient: ApolloClient; metric: string; period: string; page?: number; limitPerPage?: number }
+  { publicClient, metric, period, page = 1, limitPerPage = 6, forceRefresh = false }: { publicClient: ApolloClient; metric: string; period: string; page?: number; limitPerPage?: number; forceRefresh?: boolean }
 ): Promise<ComicSeries[] | null> {
   try {
     const result = await publicClient.query<GetTrendingComicSeriesQuery, GetTrendingComicSeriesQueryVariables>({
       query: GetTrendingComicSeries,
       variables: { metric: metric as GetTrendingComicSeriesQueryVariables['metric'], period: period as GetTrendingComicSeriesQueryVariables['period'], limitPerPage, page },
+      ...(!!forceRefresh && { fetchPolicy: 'network-only' })
     });
 
     const series = result?.data?.getTrendingComicSeries?.comicSeries?.filter(
@@ -145,6 +146,7 @@ export enum TrendingActionType {
   LOAD_MORE_START = 'TRENDING_LOAD_MORE_START',
   LOAD_MORE_SUCCESS = 'TRENDING_LOAD_MORE_SUCCESS',
   LOAD_MORE_ERROR = 'TRENDING_LOAD_MORE_ERROR',
+  REFRESH_SUCCESS = 'TRENDING_REFRESH_SUCCESS',
 }
 
 /* Trending Action Types */
@@ -152,6 +154,7 @@ export type TrendingAction =
   | { type: TrendingActionType.LOAD_MORE_START }
   | { type: TrendingActionType.LOAD_MORE_SUCCESS; payload: { comicSeries: ComicSeries[]; limitPerPage: number } }
   | { type: TrendingActionType.LOAD_MORE_ERROR }
+  | { type: TrendingActionType.REFRESH_SUCCESS; payload: { comicSeries: ComicSeries[]; limitPerPage: number } }
 
 /* Trending Page State */
 export type TrendingPageState = {
@@ -203,6 +206,16 @@ export function trendingReducer(
     }
     case TrendingActionType.LOAD_MORE_ERROR:
       return { ...state, isLoadingMore: false, hasMore: false };
+    case TrendingActionType.REFRESH_SUCCESS: {
+      const { comicSeries: newSeries, limitPerPage } = action.payload;
+      return {
+        ...state,
+        comicSeries: newSeries,
+        page: 1,
+        isLoadingMore: false,
+        hasMore: newSeries.length >= limitPerPage,
+      };
+    }
     default:
       return state;
   }

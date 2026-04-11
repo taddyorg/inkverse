@@ -1,5 +1,5 @@
 import { AuthenticationError } from './error.js';
-import { UserSeriesSubscription, NotificationPreference, UserLike, ComicIssue } from '@inkverse/shared-server/models/index';
+import { UserSeriesSubscription, NotificationPreference, UserLike, ComicIssue, UserNotification } from '@inkverse/shared-server/models/index';
 import { InkverseType, NotificationType, NotificationEventType, SortOrder, type MutationResolvers } from '@inkverse/shared-server/graphql/types';
 import { notifySeriesCreator } from '@inkverse/shared-server/messaging/notifications/index';
 import { purgeCacheOnCdn, purgeMultipleCacheOnCdn } from '@inkverse/shared-server/cache/index';
@@ -208,6 +208,13 @@ export const UserComicSeriesMutations: MutationResolvers = {
       issueUuid,
       InkverseType.COMICISSUE
     );
+
+    // Remove the CREATOR_EPISODE_LIKED notification this user generated for this episode
+    await UserNotification.deleteBySender({
+      eventType: NotificationEventType.CREATOR_EPISODE_LIKED,
+      targetUuid: issueUuid,
+      senderId: context.user.id,
+    });
 
     await purgeCacheOnCdn({ type: 'comicissuestats', id: issueUuid });
     await purgeCacheOnCdn({ type: 'comicseriesstats', id: seriesUuid });

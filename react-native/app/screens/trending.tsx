@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useReducer } from 'react';
 import { View, StyleSheet, Dimensions, FlatList } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 
-import { Screen, ThemedText, ThemedTextFontFamilyMap, PressableOpacity, ScreenHeader, HeaderBackButton, ThemedActivityIndicator, DropdownMenu } from '@/app/components/ui';
+import { Screen, ThemedText, ThemedTextFontFamilyMap, PressableOpacity, ScreenHeader, HeaderBackButton, ThemedActivityIndicator, DropdownMenu, ThemedRefreshControl } from '@/app/components/ui';
 import { ComicSeriesDetails } from '@/app/components/comics/ComicSeriesDetails';
 import { getPublicApolloClient } from '@/lib/apollo';
 import { Colors } from '@/constants/Colors';
@@ -16,6 +16,7 @@ export interface TrendingScreenParams {
 function TrendingScreenContent({ metric, period, title, setPeriod }: { metric: string; period: TrendingPeriod; title: string; setPeriod: (period: TrendingPeriod) => void }) {
   const publicClient = getPublicApolloClient();
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [state, dispatch] = useReducer(trendingReducer, makeTrendingInitialState({ metric, period }));
 
   useEffect(() => {
@@ -36,6 +37,25 @@ function TrendingScreenContent({ metric, period, title, setPeriod }: { metric: s
 
     return () => { cancelled = true; };
   }, []);
+
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    const result = await loadTrendingComicSeries({
+      publicClient,
+      metric,
+      period,
+      page: 1,
+      limitPerPage: TRENDING_LIMIT_PER_PAGE,
+      forceRefresh: true,
+    });
+    if (result) {
+      dispatch({
+        type: TrendingActionType.REFRESH_SUCCESS,
+        payload: { comicSeries: result, limitPerPage: TRENDING_LIMIT_PER_PAGE },
+      });
+    }
+    setIsRefreshing(false);
+  }, [publicClient, metric, period]);
 
   const handleLoadMore = useCallback(() => {
     if (isLoading || state.isLoadingMore || !state.hasMore) return;
@@ -130,6 +150,12 @@ function TrendingScreenContent({ metric, period, title, setPeriod }: { metric: s
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.5}
         keyExtractor={(item) => item.uuid}
+        refreshControl={
+          <ThemedRefreshControl
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
+          />
+        }
       />
     </View>
   );

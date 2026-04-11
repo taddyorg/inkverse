@@ -26,6 +26,8 @@ export type NotificationParams = {
   targetType: string;
   parentUuid?: string;
   parentType?: string;
+  contextUuid?: string;
+  contextType?: string;
 };
 
 export type NotificationData = {
@@ -75,7 +77,7 @@ export async function getNotificationData({ eventType, recipientId, senderId, ta
   }
 }
 
-export async function createNotification({ recipientId, senderId, eventType, targetUuid, targetType, parentUuid, parentType }: NotificationParams): Promise<void> {
+export async function createNotification({ recipientId, senderId, eventType, targetUuid, targetType, parentUuid, parentType, contextUuid, contextType }: NotificationParams): Promise<void> {
   try {
     // Skip self-notifications
     if (senderId && recipientId === senderId) return;
@@ -90,7 +92,7 @@ export async function createNotification({ recipientId, senderId, eventType, tar
     if (!pushEnabled && !emailEnabled) return;
 
     // Create in-app notification row
-    await UserNotification.createNotification({ recipientId, senderId, eventType, targetUuid, targetType, parentUuid, parentType });
+    await UserNotification.createNotification({ recipientId, senderId, eventType, targetUuid, targetType, parentUuid, parentType, contextUuid, contextType });
 
     // Purge the recipient's notification feed cache (fire-and-forget)
     purgeCacheOnCdn({ type: 'notificationfeed', id: String(recipientId) });
@@ -216,9 +218,10 @@ type NotifySeriesCreatorInput = {
   senderId: number;
   eventType: NotificationEventType;
   skipForUserId?: number | null;
+  commentUuid?: string;
 };
 
-export async function notifySeriesCreator({ seriesUuid, issueUuid, senderId, eventType, skipForUserId }: NotifySeriesCreatorInput) {
+export async function notifySeriesCreator({ seriesUuid, issueUuid, senderId, eventType, skipForUserId, commentUuid }: NotifySeriesCreatorInput) {
   try {
     const creatorUuid = await CreatorContent.getCreatorUuidForContent(seriesUuid);
     if (!creatorUuid) return;
@@ -237,6 +240,8 @@ export async function notifySeriesCreator({ seriesUuid, issueUuid, senderId, eve
       targetType: 'COMICISSUE',
       parentUuid: seriesUuid,
       parentType: 'COMICSERIES',
+      contextUuid: commentUuid,
+      contextType: commentUuid ? 'COMMENT' : undefined,
     });
   } catch (err) {
     console.error(err as Error, `Error in notifySeriesCreator for series ${seriesUuid}, issue ${issueUuid}, sender ${senderId}, event ${eventType}`, err);

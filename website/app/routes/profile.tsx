@@ -1,15 +1,14 @@
 import type { LoaderFunctionArgs, MetaFunction } from 'react-router-dom';
 import { useLoaderData, Link } from 'react-router';
-import { useEffect, useReducer } from 'react';
+import { useReducer } from 'react';
 import { IoSettingsOutline, IoNotificationsOutline } from 'react-icons/io5';
 
 import { loadProfile } from '@/lib/loader/profile.server';
-import { getUserApolloClient } from '@/lib/apollo/client.client';
 import { getMetaTags } from '@/lib/seo';
 import { inkverseWebsiteUrl } from '@inkverse/public/utils';
 import { getUserDetails } from '@/lib/auth/user';
 import type { ComicSeries } from '@inkverse/shared-client/graphql/operations';
-import { loadUserProfileById, profileReducer, type ProfileState } from '@inkverse/shared-client/dispatch/profile';
+import { profileReducer, type ProfileState } from '@inkverse/shared-client/dispatch/profile';
 
 import { ComicSeriesDetails } from '../components/comics/ComicSeriesDetails';
 import { CreatorDetails } from '../components/creator/CreatorDetails';
@@ -51,18 +50,6 @@ function ProfileContent({ initialData }: { initialData: Partial<ProfileState> & 
     isLoading,
     error,
   } = profileState;
-
-
-  useEffect(() => {
-    const currentUser = getUserDetails();
-    if (currentUser && user?.id) {
-      const userClient = getUserApolloClient();
-      loadUserProfileById({
-        userClient,
-        userId: user.id,
-      }, dispatch);
-    }
-  }, [user?.id, dispatch]);
 
   const isOwnProfile = getUserDetails() && user && getUserDetails()?.username === user.username;
 

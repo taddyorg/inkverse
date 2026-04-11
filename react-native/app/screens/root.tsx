@@ -7,6 +7,7 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import { PostHogProvider } from 'posthog-react-native'
 import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { Colors } from '../../constants/Colors';
 
 import config from '@/config';
@@ -619,6 +620,7 @@ function App() {
 
   return (
       <SafeAreaProvider>
+        <KeyboardProvider>
         <AppLoaderProvider>
           <AuthRefreshProvider>
             <NavigationContainer 
@@ -730,6 +732,7 @@ function App() {
           </NavigationContainer>
         </AuthRefreshProvider>
       </AppLoaderProvider>
+      </KeyboardProvider>
     </SafeAreaProvider>
   );
 }

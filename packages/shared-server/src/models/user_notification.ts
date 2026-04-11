@@ -49,6 +49,8 @@ export class UserNotification {
     targetType: string;
     parentUuid?: string | null;
     parentType?: string | null;
+    contextUuid?: string | null;
+    contextType?: string | null;
   }): Promise<UserNotificationModel> {
     const [notification] = await database('user_notifications')
       .insert({
@@ -60,6 +62,8 @@ export class UserNotification {
         targetType: params.targetType,
         parentUuid: params.parentUuid || null,
         parentType: params.parentType || null,
+        contextUuid: params.contextUuid || null,
+        contextType: params.contextType || null,
       })
       .returning('*');
 
@@ -74,6 +78,8 @@ export class UserNotification {
     targetType: string;
     parentUuid?: string | null;
     parentType?: string | null;
+    contextUuid?: string | null;
+    contextType?: string | null;
   }[]): Promise<void> {
     if (params.length === 0) return;
 
@@ -87,6 +93,8 @@ export class UserNotification {
       targetType: p.targetType,
       parentUuid: p.parentUuid || null,
       parentType: p.parentType || null,
+      contextUuid: p.contextUuid || null,
+      contextType: p.contextType || null,
     }));
 
     await database('user_notifications').insert(rows);
@@ -122,7 +130,31 @@ export class UserNotification {
       .select('*');
   }
 
-  static async deleteOldNotifications(olderThanEpoch: number, batchSize: number = 10000): Promise<number> {    
+  static async deleteByCommentUuid(commentUuid: string): Promise<number> {
+    return await database('user_notifications')
+      .where((builder) => {
+        builder
+          .where({ targetType: 'COMMENT', targetUuid: commentUuid })
+          .orWhere({ contextType: 'COMMENT', contextUuid: commentUuid });
+      })
+      .delete();
+  }
+
+  static async deleteBySender(params: {
+    eventType: string;
+    targetUuid: string;
+    senderId: number;
+  }): Promise<number> {
+    return await database('user_notifications')
+      .where({
+        eventType: params.eventType,
+        targetUuid: params.targetUuid,
+        senderId: params.senderId,
+      })
+      .delete();
+  }
+
+  static async deleteOldNotifications(olderThanEpoch: number, batchSize: number = 10000): Promise<number> {
     const minIdRow = await database('user_notifications')
       .where('createdAt', '<', olderThanEpoch)
       .andWhere('eventType', NotificationEventType.NEW_EPISODE_RELEASED)

@@ -238,6 +238,8 @@ export const profileReducer = (
       return {
         ...state,
         ...action.payload,
+        user: action.payload.user ?? state.user,
+        creator: action.payload.creator ?? state.creator,
         isLoading: false,
         error: null,
       };
