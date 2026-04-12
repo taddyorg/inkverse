@@ -1,6 +1,6 @@
-import { NotificationEventType } from '../../graphql/types.js';
+import { NotificationEventType, NotificationType } from '../../graphql/types.js';
 import { type UserModel, type ComicSeriesModel, type ComicIssueModel, type UserCommentModel } from '../../database/types.js';
-import { UserNotification, NotificationSetting, User, UserSeriesSubscription, ComicIssue, ComicSeries, UserComment, CreatorContent } from '../../models/index.js';
+import { UserNotification, NotificationSetting, User, NotificationPreference, ComicIssue, ComicSeries, UserComment, CreatorContent } from '../../models/index.js';
 import { DIGEST_EVENT_TYPES } from '../../models/notification_setting.js';
 import { type PushNotificationPayload, type SendPushNotificationQueueMessage } from '../push-notifications/index.js';
 import { sendPushToUser, sendBatchPushToUsers, buildPushNotificationPayload } from '../push-notifications/index.js';
@@ -149,8 +149,11 @@ export async function createNotificationBatch(message: SendPushNotificationQueue
       while (currentMinId < maxId) {
         const currentMaxId = currentMinId + batchSize;
 
-        const userIds = await UserSeriesSubscription.getSubscribedUserIdsInRange(
-          seriesUuid, currentMinId, currentMaxId
+        const userIds = await NotificationPreference.getEnabledUserIdsInRange(
+          NotificationType.NEW_EPISODE_RELEASED,
+          seriesUuid,
+          currentMinId,
+          currentMaxId
         );
 
         if (userIds.length > 0) {
@@ -207,6 +210,46 @@ export async function createNotificationBatch(message: SendPushNotificationQueue
       }
       return;
     }
+    case NotificationEventType.CREATOR_EPISODE_LIKED: {
+      const { issueUuids, seriesUuid, senderId } = message;
+      if (!issueUuids || !seriesUuid || !senderId) throw new Error('issueUuids, seriesUuid, and senderId required');
+      if (issueUuids.length === 0) return;
+
+      const creatorUuid = await CreatorContent.getCreatorUuidForContent(seriesUuid);
+      if (!creatorUuid) return;
+
+      const creatorUser = await User.getUserByCreatorUuid(creatorUuid);
+      if (!creatorUser || Number(creatorUser.id) === senderId) return;
+
+      const recipientId = Number(creatorUser.id);
+
+      // Check notification settings once for the creator
+      const overrides = await NotificationSetting.getOverridesForUser(recipientId);
+      const defaults = NOTIFICATION_DEFAULTS[NotificationEventType.CREATOR_EPISODE_LIKED];
+      const pushEnabled = overrides[NotificationEventType.CREATOR_EPISODE_LIKED]?.PUSH ?? defaults?.PUSH ?? false;
+      const emailEnabled = overrides[NotificationEventType.CREATOR_EPISODE_LIKED]?.EMAIL ?? defaults?.EMAIL ?? false;
+
+      if (!pushEnabled && !emailEnabled) return;
+
+      // Batch-insert one notification row per episode
+      await UserNotification.createBatchNotifications(
+        issueUuids.map(issueUuid => ({
+          recipientId,
+          senderId,
+          eventType: NotificationEventType.CREATOR_EPISODE_LIKED,
+          targetUuid: issueUuid,
+          targetType: 'COMICISSUE',
+          parentUuid: seriesUuid,
+          parentType: 'COMICSERIES',
+        }))
+      );
+
+      // Purge the creator's notification feed cache once
+      purgeCacheOnCdn({ type: 'notificationfeed', id: String(recipientId) });
+
+      // Digest event type — no immediate push/email needed
+      return;
+    }
     default:
       throw new Error(`Unknown pushNotificationType: ${message.pushNotificationType}`);
   }
@@ -219,6 +262,13 @@ type NotifySeriesCreatorInput = {
   eventType: NotificationEventType;
   skipForUserId?: number | null;
   commentUuid?: string;
+};
+
+type NotifySeriesCreatorBatchInput = {
+  seriesUuid: string;
+  issueUuids: string[];
+  senderId: number;
+  eventType: NotificationEventType;
 };
 
 export async function notifySeriesCreator({ seriesUuid, issueUuid, senderId, eventType, skipForUserId, commentUuid }: NotifySeriesCreatorInput) {
@@ -245,5 +295,19 @@ export async function notifySeriesCreator({ seriesUuid, issueUuid, senderId, eve
     });
   } catch (err) {
     console.error(err as Error, `Error in notifySeriesCreator for series ${seriesUuid}, issue ${issueUuid}, sender ${senderId}, event ${eventType}`, err);
+  }
+}
+
+export async function notifySeriesCreatorBatch({ seriesUuid, issueUuids, senderId, eventType }: NotifySeriesCreatorBatchInput) {
+  try {
+    await createNotificationBatch({
+      type: 'SEND_PUSH_NOTIFICATION',
+      pushNotificationType: eventType,
+      issueUuids,
+      seriesUuid,
+      senderId,
+    });
+  } catch (err) {
+    console.error(err as Error, `Error in notifySeriesCreatorBatch for series ${seriesUuid}, sender ${senderId}, event ${eventType}`, err);
   }
 }

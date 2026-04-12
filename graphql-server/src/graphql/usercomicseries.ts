@@ -1,7 +1,7 @@
 import { AuthenticationError } from './error.js';
 import { UserSeriesSubscription, NotificationPreference, UserLike, ComicIssue, UserNotification } from '@inkverse/shared-server/models/index';
 import { InkverseType, NotificationType, NotificationEventType, SortOrder, type MutationResolvers } from '@inkverse/shared-server/graphql/types';
-import { notifySeriesCreator } from '@inkverse/shared-server/messaging/notifications/index';
+import { notifySeriesCreator, notifySeriesCreatorBatch } from '@inkverse/shared-server/messaging/notifications/index';
 import { purgeCacheOnCdn, purgeMultipleCacheOnCdn } from '@inkverse/shared-server/cache/index';
 
 // GraphQL Type Definitions
@@ -243,6 +243,13 @@ export const UserComicSeriesMutations: MutationResolvers = {
         seriesUuid,
         InkverseType.COMICSERIES
       );
+
+      await notifySeriesCreatorBatch({
+        seriesUuid,
+        issueUuids,
+        senderId: context.user.id,
+        eventType: NotificationEventType.CREATOR_EPISODE_LIKED,
+      });
     }
 
     await purgeMultipleCacheOnCdn({ type: 'comicissuestats', ids: issueUuids });

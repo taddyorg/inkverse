@@ -125,7 +125,9 @@ export interface SendPushNotificationQueueMessage {
   type: INKVERSE_HIGH_PRIORITY_TYPE;
   pushNotificationType: NotificationEventType;
   issueUuid?: string;
+  issueUuids?: string[];
   seriesUuid?: string;
+  senderId?: number;
 }
 
 export async function sendPushToUser(

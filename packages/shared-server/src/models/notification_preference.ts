@@ -61,6 +61,24 @@ export class NotificationPreference {
   }
 
   /**
+   * Get user IDs who have a notification preference enabled, paginated by userId range
+   */
+  static async getEnabledUserIdsInRange(
+    notificationType: NotificationType,
+    value: string,
+    minId: number,
+    maxId: number
+  ): Promise<number[]> {
+    const rows = await database('notification_preferences')
+      .where({ notificationType, value })
+      .andWhere('userId', '>=', minId)
+      .andWhere('userId', '<', maxId)
+      .select('userId');
+
+    return rows.map(r => r.userId);
+  }
+
+  /**
    * Get devices for users who have notifications enabled for a series
    */
   static async getDevicesForSeriesNotifications(
