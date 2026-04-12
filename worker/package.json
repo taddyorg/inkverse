@@ -29,7 +29,8 @@
     "mock-send-notification": "tsx src/scripts/notifications/mock/mock-send-notification.ts",
     "mock-send-digest": "tsx src/scripts/notifications/mock/mock-send-digest.ts",
     "send-notification-digests": "tsx src/scripts/notifications/start.ts",
-    "delete-old-notifications": "tsx src/scripts/notifications/cleanup-old-notifications.ts"
+    "delete-old-notifications": "tsx src/scripts/notifications/cleanup-old-notifications.ts",
+    "backfill-superlike-notifications": "tsx src/scripts/notifications/backfill-superlike-notifications.ts"
   },
   "author": "Inkverse",
   "license": "AGPL-3.0",
