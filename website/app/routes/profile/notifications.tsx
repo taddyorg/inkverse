@@ -138,12 +138,24 @@ export default function ProfileNotifications() {
     const targetItem = item.targetItem;
     const parentItem = item.parentItem;
 
-    if (targetItem?.type === 'COMICISSUE' && parentItem?.comicSeries?.shortUrl) {
-      navigate(`/comics/${parentItem.comicSeries.shortUrl}/${targetItem.uuid}`);
-    } else if (targetItem?.type === 'COMICSERIES' && targetItem?.comicSeries?.shortUrl) {
-      navigate(`/comics/${targetItem.comicSeries.shortUrl}`);
-    } else if (parentItem?.type === 'COMICISSUE' && parentItem?.comicSeries?.shortUrl) {
-      navigate(`/comics/${parentItem.comicSeries.shortUrl}/${parentItem.uuid}`);
+    switch (item.eventType) {
+      case 'NEW_EPISODE_RELEASED':
+      case 'CREATOR_EPISODE_LIKED':
+      case 'CREATOR_EPISODE_COMMENTED': {
+        const shortUrl = parentItem?.comicSeries?.shortUrl;
+        if (!targetItem?.uuid || !shortUrl) return;
+        navigate(`/comics/${shortUrl}/${targetItem.uuid}`);
+        return;
+      }
+      case 'COMMENT_REPLY':
+      case 'COMMENT_LIKED': {
+        const shortUrl = parentItem?.comicSeries?.shortUrl;
+        if (!parentItem?.uuid || !shortUrl) return;
+        navigate(`/comics/${shortUrl}/${parentItem.uuid}`);
+        return;
+      }
+      default:
+        return;
     }
   }, [navigate]);
 
@@ -168,7 +180,7 @@ export default function ProfileNotifications() {
       )}
 
       {/* Empty state */}
-      {!state.isLoading && state.sections.length === 0 && (
+      {!state.isLoading && state.sections.length === 0 && !state.hasMore && (
         <div className="flex flex-col items-center justify-center pt-20">
           <IoNotificationsOffOutline className="w-12 h-12 text-gray-400" />
           <p className="text-gray-500 dark:text-gray-400 mt-3">No notifications yet</p>
@@ -215,7 +227,7 @@ export default function ProfileNotifications() {
           <FaSpinner className="w-5 h-5 animate-spin text-gray-400" />
         </div>
       )}
-      {state.hasMore && !state.isLoadingMore && state.sections.length > 0 && (
+      {state.hasMore && !state.isLoadingMore && !state.isLoading && (
         <button
           onClick={handleLoadMore}
           className="w-full py-4 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"

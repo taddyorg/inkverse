@@ -3,7 +3,9 @@ import type { UserNotificationModel } from '../database/types.js';
 import { NotificationEventType } from '../graphql/types.js';
 import { AGGREGATED_EVENT_TYPES } from './notification_setting.js';
 import { currentDate } from '../utils/date.js';
-import moment from 'moment';
+import moment from 'moment-timezone';
+
+const BUCKET_TIMEZONE = 'America/Vancouver';
 
 export type AggregatedNotificationRow = {
   eventType: NotificationEventType;
@@ -24,19 +26,19 @@ export enum NotificationTimeBucket {
 
 export function getBucketBoundaries(bucket: NotificationTimeBucket): { start: number; end: number } {
   const now = currentDate();
-  const startOfToday = moment.utc().startOf('day').unix();
-  const startOfWeek = moment.utc().startOf('isoWeek').unix();
-  const startOfMonth = moment.utc().startOf('month').unix();
+  const startOfToday = moment.tz(BUCKET_TIMEZONE).startOf('day').unix();
+  const sevenDaysAgo = moment.tz(BUCKET_TIMEZONE).startOf('day').subtract(7, 'days').unix();
+  const thirtyDaysAgo = moment.tz(BUCKET_TIMEZONE).startOf('day').subtract(30, 'days').unix();
 
   switch (bucket) {
     case NotificationTimeBucket.TODAY:
       return { start: startOfToday, end: now };
     case NotificationTimeBucket.THIS_WEEK:
-      return { start: startOfWeek, end: startOfToday };
+      return { start: sevenDaysAgo, end: startOfToday };
     case NotificationTimeBucket.THIS_MONTH:
-      return { start: startOfMonth, end: startOfWeek };
+      return { start: thirtyDaysAgo, end: sevenDaysAgo };
     case NotificationTimeBucket.EARLIER:
-      return { start: 0, end: startOfMonth };
+      return { start: 0, end: thirtyDaysAgo };
   }
 }
 

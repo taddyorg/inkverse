@@ -44,6 +44,7 @@
     "knex-stringcase": "^1.5.5",
     "lodash-es": "^4.17.21",
     "moment": "^2.30.1",
+    "moment-timezone": "^0.5.45",
     "pg": "^8.13.1",
     "qs": "^6.15.0",
     "redis": "^4.7.0",

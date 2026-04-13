@@ -7,7 +7,7 @@ async function main() {
   try {
     // Time window: 7am PST yesterday → 7am PST today
     const now = new Date();
-    const today7amPST = new Date(now.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
+    const today7amPST = new Date(now.toLocaleString('en-US', { timeZone: 'America/Vancouver' }));
     today7amPST.setHours(7, 0, 0, 0);
 
     const yesterday7amPST = new Date(today7amPST);

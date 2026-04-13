@@ -288,8 +288,13 @@ async function resolveNotificationItem(uuid: string, type: InkverseType) {
   const simpleItem = { uuid, type };
 
   switch (type) {
-    case 'COMICISSUE':
-      return { ...simpleItem, comicIssue: await ComicIssue.getComicIssueByUuid(uuid) };
+    case 'COMICISSUE': {
+      const [comicIssue, comicSeries] = await Promise.all([
+        ComicIssue.getComicIssueByUuid(uuid),
+        ComicSeries.getComicSeriesByIssueUuid(uuid),
+      ]);
+      return { ...simpleItem, comicIssue, comicSeries };
+    }
     case 'COMICSERIES':
       return { ...simpleItem, comicSeries: await ComicSeries.getComicSeriesByUuid(uuid) };
     case 'COMMENT':

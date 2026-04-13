@@ -9,7 +9,7 @@ import { Screen, ThemedView, ThemedText, HeaderBackButton, ThemedRefreshControl,
 import { PressableOpacity } from '../components/ui/PressableOpacity';
 import { Colors } from '@/constants/Colors';
 import { getUserApolloClient } from '@/lib/apollo';
-import { COMICISSUE_SCREEN, COMICSERIES_SCREEN, RootStackParamList } from '@/constants/Navigation';
+import { COMICISSUE_SCREEN, COMMENTS_SCREEN, RootStackParamList } from '@/constants/Navigation';
 import {
   loadNotifications,
   loadMoreNotifications,
@@ -77,20 +77,34 @@ export function NotificationsScreen() {
     const targetItem = item.targetItem;
     const parentItem = item.parentItem;
 
-    if (targetItem?.type === 'COMICISSUE' && parentItem?.uuid) {
-      navigation.navigate(COMICISSUE_SCREEN, {
-        issueUuid: targetItem.uuid,
-        seriesUuid: parentItem.uuid,
-      });
-    } else if (targetItem?.type === 'COMICSERIES') {
-      navigation.navigate(COMICSERIES_SCREEN, {
-        uuid: targetItem.uuid,
-      });
-    } else if (parentItem?.type === 'COMICISSUE' && parentItem?.uuid) {
-      navigation.navigate(COMICISSUE_SCREEN, {
-        issueUuid: parentItem.uuid,
-        seriesUuid: parentItem.comicIssue?.seriesUuid || parentItem.uuid,
-      });
+    switch (item.eventType) {
+      case 'NEW_EPISODE_RELEASED':
+      case 'CREATOR_EPISODE_LIKED': {
+        if (!targetItem?.uuid || !parentItem?.uuid) return;
+        navigation.navigate(COMICISSUE_SCREEN, {
+          issueUuid: targetItem.uuid,
+          seriesUuid: parentItem.uuid,
+        });
+        return;
+      }
+      case 'COMMENT_REPLY':
+      case 'COMMENT_LIKED': {
+        const issueUuid = parentItem?.uuid;
+        const seriesUuid = parentItem?.comicIssue?.seriesUuid;
+        if (!issueUuid || !seriesUuid) return;
+        navigation.navigate(COMMENTS_SCREEN, { issueUuid, seriesUuid });
+        return;
+      }
+      case 'CREATOR_EPISODE_COMMENTED': {
+        if (!targetItem?.uuid || !parentItem?.uuid) return;
+        navigation.navigate(COMMENTS_SCREEN, {
+          issueUuid: targetItem.uuid,
+          seriesUuid: parentItem.uuid,
+        });
+        return;
+      }
+      default:
+        return;
     }
   }, [navigation]);
 
@@ -196,20 +210,20 @@ export function NotificationsScreen() {
   }, [colorScheme, handleItemPress]);
 
   const renderEmptyState = useCallback(() => {
-    if (state.isLoading) return null;
+    if (state.isLoading || state.hasMore) return null;
     return (
       <ThemedView style={styles.emptyState}>
         <Ionicons name="notifications-off-outline" size={48} color={Colors[colorScheme].icon} />
         <ThemedText style={styles.emptyStateText}>No notifications yet</ThemedText>
       </ThemedView>
     );
-  }, [state.isLoading, colorScheme]);
+  }, [state.isLoading, state.hasMore, colorScheme]);
 
   const renderFooter = useCallback(() => {
     if (state.isLoadingMore) {
       return <ThemedActivityIndicator style={styles.footerLoading} />;
     }
-    if (state.hasMore && state.sections.length > 0) {
+    if (state.hasMore && !state.isLoading) {
       return (
         <PressableOpacity onPress={handleLoadMore} style={styles.loadMoreButton}>
           <ThemedText style={styles.loadMoreText}>Load more notifications</ThemedText>
@@ -217,7 +231,7 @@ export function NotificationsScreen() {
       );
     }
     return null;
-  }, [state.isLoadingMore, state.hasMore, state.sections.length, handleLoadMore]);
+  }, [state.isLoadingMore, state.hasMore, state.isLoading, handleLoadMore]);
 
   return (
     <Screen>
