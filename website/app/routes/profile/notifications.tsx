@@ -16,7 +16,12 @@ import {
   notificationsInitialState,
   type NotificationFeedItem,
 } from '@inkverse/shared-client/dispatch/notifications';
-import { prettyFormattedDate } from '@inkverse/shared-client/utils/date';
+import {
+  relativeTimeFromEpoch,
+  bucketLabel,
+  getCreatedAt,
+  getNotificationText,
+} from '@inkverse/shared-client/utils/notifications';
 
 export const meta: MetaFunction<typeof loader> = () => {
   return getMetaTags({
@@ -40,26 +45,6 @@ export const headers = () => ({
   'Expires': '0',
 });
 
-function relativeTimeFromEpoch(epoch: number): string {
-  const now = Math.floor(Date.now() / 1000);
-  const diff = now - epoch;
-  if (diff < 60) return 'Just now';
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-  if (diff < 172800) return 'Yesterday';
-  return prettyFormattedDate(new Date(epoch * 1000));
-}
-
-function bucketLabel(bucket: string): string {
-  switch (bucket) {
-    case 'TODAY': return 'Today';
-    case 'THIS_WEEK': return 'This Week';
-    case 'THIS_MONTH': return 'This Month';
-    case 'EARLIER': return 'Earlier';
-    default: return bucket;
-  }
-}
-
 function getNotificationIcon(eventType: string) {
   switch (eventType) {
     case 'NEW_EPISODE_RELEASED':
@@ -74,43 +59,6 @@ function getNotificationIcon(eventType: string) {
     default:
       return { Icon: IoNotificationsOutline, color: '#6366F1', bg: 'rgba(99, 102, 241, 0.1)' };
   }
-}
-
-function getNotificationText(item: NotificationFeedItem): string {
-  if (item.__typename === 'AggregatedNotification') {
-    const name = item.parentItem?.comicSeries?.name || item.targetItem?.comicIssue?.name || '';
-    switch (item.eventType) {
-      case 'CREATOR_EPISODE_LIKED':
-        return `${item.count} ${item.count === 1 ? 'person' : 'people'} liked your episode${name ? ` of ${name}` : ''}`;
-      case 'CREATOR_EPISODE_COMMENTED':
-        return `${item.count} new ${item.count === 1 ? 'comment' : 'comments'} on your episode${name ? ` of ${name}` : ''}`;
-      case 'COMMENT_LIKED':
-        return `${item.count} ${item.count === 1 ? 'person' : 'people'} liked your comment`;
-      default:
-        return `${item.count} new notifications`;
-    }
-  }
-
-  if (item.__typename !== 'Notification') return 'New notification';
-
-  const actorName = item.actor?.username || 'Someone';
-  const seriesName = item.parentItem?.comicSeries?.name || item.targetItem?.comicSeries?.name || '';
-
-  switch (item.eventType) {
-    case 'NEW_EPISODE_RELEASED':
-      return `New episode of ${seriesName || 'a series you follow'} is now available`;
-    case 'COMMENT_REPLY':
-      return `${actorName} replied to your comment`;
-    default:
-      return 'New notification';
-  }
-}
-
-function getCreatedAt(item: NotificationFeedItem): number {
-  if (item.__typename === 'AggregatedNotification') {
-    return item.latestCreatedAt;
-  }
-  return (item as Extract<NotificationFeedItem, { __typename?: 'Notification' }>).createdAt;
 }
 
 export default function ProfileNotifications() {
