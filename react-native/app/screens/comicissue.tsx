@@ -483,7 +483,7 @@ export function ComicIssueScreen() {
           key: 'exclusive-checking-access',
           data: {},
         }];
-      } else if (!hasAccessToIssue && contentToken) {
+      } else if (!hasAccessToIssue) {
         return [{
           type: 'exclusive-no-access' as const,
           key: 'exclusive-no-access',

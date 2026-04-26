@@ -261,7 +261,7 @@ function ComicIssueContent({ initialData }: { initialData: Partial<ComicIssueLoa
   }
 
 
-  if (isPatreonExclusive && !isCheckingAccess && contentToken && !hasAccessToIssue) {
+  if (isPatreonExclusive && !isCheckingAccess && !hasAccessToIssue) {
     return (
       <div className={`mx-auto sm:p-6 lg:p-8 zoomed-in:max-w-3xl max-w-xl`}>      
         <div className='flex flex-col py-4 sm:py-0'>
