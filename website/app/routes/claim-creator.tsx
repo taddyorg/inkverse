@@ -53,7 +53,11 @@ export default function ClaimCreator() {
     // Already authenticated — fetch claim status immediately
     if (isAuthenticated()) {
       const client = getUserApolloClient();
-      fetchClaimStatus({ userClient: client, creatorUuid: creator.uuid }, dispatch);
+      const currentUser = getUserDetails();
+      fetchClaimStatus(
+        { userClient: client, creatorUuid: creator.uuid, userId: currentUser?.id ? String(currentUser.id) : undefined },
+        dispatch,
+      );
       return;
     }
 
@@ -68,7 +72,11 @@ export default function ClaimCreator() {
       if (isAuthenticated()) {
         clearInterval(interval);
         const client = getUserApolloClient();
-        fetchClaimStatus({ userClient: client, creatorUuid: creator.uuid }, dispatch);
+        const currentUser = getUserDetails();
+        fetchClaimStatus(
+          { userClient: client, creatorUuid: creator.uuid, userId: currentUser?.id ? String(currentUser.id) : undefined },
+          dispatch,
+        );
       }
     }, 100);
 

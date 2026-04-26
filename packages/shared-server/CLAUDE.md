@@ -266,3 +266,12 @@ The shared-server package connects to several external services:
 
 6. **Importing from the shared server package**:
    - When importing from the shared server package, the `src` directory is ignored and not needed. ex) Use '@inkverse/shared-server/database' instead of '@inkverse/shared-server/src/database'
+
+7. **BIGINT columns return as strings. Cast or compare accordingly**
+
+When querying with pg driver, BIGINT columns return as strings. Cast or compare accordingly.
+```typescript
+const result = await database('users').where('age', '>', '18');
+const age = result[0].age; // This is a string
+const ageNumber = parseInt(age); // This is a number
+```

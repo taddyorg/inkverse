@@ -200,6 +200,7 @@ router.post('/callback', async (req, res) => {
       try {
         await purgeCacheOnCdn({ type: 'creator', id: approvedClaim.creatorUuid });
         await purgeCacheOnCdn({ type: 'user', id: String(approvedClaim.userId), shortUrl: user?.username || '' });
+        await purgeCacheOnCdn({ type: 'profilecomicseries', id: String(approvedClaim.userId), shortUrl: user?.username || '' });
 
         const creatorSeriesContent = await CreatorContent.getContentForCreatorAndType(
           approvedClaim.creatorUuid,

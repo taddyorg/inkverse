@@ -142,11 +142,19 @@ export function ProfileScreen() {
       }
     };
 
+    // Handle profile updates (e.g. creator claim approved, bluesky/patreon edited)
+    const handleUserProfileUpdated = (data: { userId: string }) => {
+      if (data.userId === profileUserId) {
+        loadProfile(true);
+      }
+    };
+
     // Subscribe to events
     on(EventNames.USER_AUTHENTICATED, handleUserAuthenticated);
     on(EventNames.USER_LOGGED_OUT, handleUserLoggedOut);
     on(EventNames.COMIC_SUBSCRIBED, handleComicSubscribed);
     on(EventNames.COMIC_UNSUBSCRIBED, handleComicUnsubscribed);
+    on(EventNames.USER_PROFILE_UPDATED, handleUserProfileUpdated);
 
     // Cleanup subscriptions on unmount
     return () => {
@@ -154,6 +162,7 @@ export function ProfileScreen() {
       off(EventNames.USER_LOGGED_OUT, handleUserLoggedOut);
       off(EventNames.COMIC_SUBSCRIBED, handleComicSubscribed);
       off(EventNames.COMIC_UNSUBSCRIBED, handleComicUnsubscribed);
+      off(EventNames.USER_PROFILE_UPDATED, handleUserProfileUpdated);
     };
   }, [loadProfile, dispatch, userId, profileUserId]);
 
@@ -226,18 +235,23 @@ export function ProfileScreen() {
       });
     }
 
-    // Subscribed comics section
+    // Subscribed comics section — only render when there are subscriptions,
+    // or when the profile has nothing at all (so the empty state shows).
     const hasCreatorComics = creatorComics.length > 0;
-    sections.push({
-      title: hasCreatorComics && subscribedComics && subscribedComics.length > 0 ? `Comics I'm Reading` : '',
-      type: 'comics-grid',
-      data: [{
+    const hasSubscribedComics = !!subscribedComics && subscribedComics.length > 0;
+
+    if (hasSubscribedComics || !hasCreatorComics) {
+      sections.push({
+        title: hasCreatorComics && hasSubscribedComics ? `Comics I'm Reading` : '',
         type: 'comics-grid',
-        comics: subscribedComics,
-        isOwnProfile: !!isOwnProfile,
-        user
-      } as ComicsGridItem],
-    });
+        data: [{
+          type: 'comics-grid',
+          comics: subscribedComics ?? [],
+          isOwnProfile: !!isOwnProfile,
+          user,
+        } as ComicsGridItem],
+      });
+    }
 
     return sections;
   }, [isLoggedIn, userId, user, subscribedComics, creator, isLoading, error, isOwnProfile]);

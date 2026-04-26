@@ -95,7 +95,11 @@ export function ClaimCreatorScreen() {
 
     if (isAuthenticated()) {
       const userClient = getUserApolloClient();
-      fetchClaimStatus({ userClient, creatorUuid: creator.uuid }, dispatch);
+      const currentUser = getUserDetails();
+      fetchClaimStatus(
+        { userClient, creatorUuid: creator.uuid, userId: currentUser?.id ? String(currentUser.id) : undefined },
+        dispatch,
+      );
     } else {
       dispatch({ type: ClaimCreatorActionType.FETCH_STATUS_SUCCESS, payload: null });
     }

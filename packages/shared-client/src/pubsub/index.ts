@@ -61,6 +61,11 @@ export function setupUserClientEventListeners(apolloClient: ApolloClient): void 
   on(EventNames.COMIC_UNSUBSCRIBED, (event: PubSubEvents['COMIC_UNSUBSCRIBED']) => {
     evictUserComicSeries(apolloClient, event.seriesUuid);
   });
+
+  // Handle profile updates (e.g. creator claim approval, edits to bluesky/patreon links)
+  on(EventNames.USER_PROFILE_UPDATED, (event: PubSubEvents['USER_PROFILE_UPDATED']) => {
+    evictUserAndProfileEntities(apolloClient, event.userId);
+  });
 }
 
 /**
@@ -69,6 +74,20 @@ export function setupUserClientEventListeners(apolloClient: ApolloClient): void 
  * @param apolloClient - The Apollo client instance
  * @param seriesUuid - The UUID of the comic series to evict
  */
+function evictUserAndProfileEntities(apolloClient: ApolloClient, userId: string): void {
+  try {
+    apolloClient.cache.evict({
+      id: apolloClient.cache.identify({ __typename: 'User', id: userId }),
+    });
+    apolloClient.cache.evict({
+      id: apolloClient.cache.identify({ __typename: 'ProfileComicSeries', userId }),
+    });
+    apolloClient.cache.gc();
+  } catch (error) {
+    console.error('[Cache] Error evicting User/ProfileComicSeries:', error);
+  }
+}
+
 function evictUserComicSeries(userClient: ApolloClient, seriesUuid: string): void {
   try {
     // Evict the UserComicSeries entry for this series

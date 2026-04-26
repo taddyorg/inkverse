@@ -3,11 +3,13 @@ import { ApolloClient } from '@apollo/client';
 import axios from 'axios';
 import {
   GetCreatorClaimStatus,
+  CreatorClaimStatus,
 } from '../graphql/operations.js';
 import type {
   GetCreatorClaimStatusQuery,
   GetCreatorClaimStatusQueryVariables,
 } from '../graphql/operations.js';
+import { emit, EventNames } from '../pubsub/index.js';
 
 export interface ClaimCreatorState {
   isLoading: boolean;
@@ -63,10 +65,11 @@ export const claimCreatorReducer = (
 interface FetchClaimStatusParams {
   userClient: ApolloClient;
   creatorUuid: string;
+  userId?: string;
 }
 
 export async function fetchClaimStatus(
-  { userClient, creatorUuid }: FetchClaimStatusParams,
+  { userClient, creatorUuid, userId }: FetchClaimStatusParams,
   dispatch?: Dispatch<ClaimCreatorAction>
 ): Promise<string | null> {
   if (dispatch) dispatch({ type: ClaimCreatorActionType.FETCH_STATUS_START });
@@ -87,6 +90,11 @@ export async function fetchClaimStatus(
       dispatch({ type: ClaimCreatorActionType.FETCH_STATUS_SUCCESS, payload: status });
     }
 
+    // The user just (or recently) had their creator claim approved — signal that
+    // their profile changed so any cached User entity is evicted before they navigate.
+    if (status === CreatorClaimStatus.APPROVED && userId) {
+      emit(EventNames.USER_PROFILE_UPDATED, { userId });
+    }
 
     return status;
   } catch (error: any) {
