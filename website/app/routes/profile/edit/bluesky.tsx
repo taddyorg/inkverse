@@ -93,7 +93,6 @@ export default function EditBlueskyPage() {
     if (!userClientRef.current) return;
 
     try {
-      console.log('Saving Bluesky DID:', did);
       // Save Bluesky DID
       await saveBlueskyDid(
         { 
