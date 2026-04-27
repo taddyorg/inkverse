@@ -68,19 +68,19 @@ export const additionalInfoForNotionId: { [key: string]: BlogPost } = {
     url: 'https://inkverse.co/blog/best-vampire-webtoons',
     imageURL: 'https://ink0.inkverse.co/blog/best-vampire-comics/best-vampire-webtoons-banner.webp',
     author: {
-      name: 'Eleanor Tremeer',
-      url: 'https://twitter.com/extratremeerial',
+      name: 'Daniel Mathews',
+      url: 'https://dmathewwws.com',
     }
   },
   [NotionPage.BEST_ROMANCE_WEBTOONS.path]: {
     priority: '0.9',
-    title: 'The 10 Best Romance Webtoons You Need To Read',
+    title: 'The 10 Best Romance Webtoons To Fall In Love With',
     description: 'From love triangles to polyamory, fake dating and enemies to lovers, this list of the best romance webtoons will have you swooning!',
     url: 'https://inkverse.co/blog/best-romance-webtoons',
     imageURL: 'https://ink0.inkverse.co/blog/best-romance-webtoons/best-romance-webtoons.webp',
     author: {
-      name: 'Eleanor Tremeer',
-      url: 'https://twitter.com/extratremeerial',
+      name: 'Daniel Mathews',
+      url: 'https://dmathewwws.com',
     }
   },
   [NotionPage.BEST_SUPERNATURAL_WEBTOONS.path]: {
@@ -90,8 +90,8 @@ export const additionalInfoForNotionId: { [key: string]: BlogPost } = {
     url: 'https://inkverse.co/blog/best-supernatural-webtoons-to-read',
     imageURL: 'https://ink0.inkverse.co/blog/best-supernatural-webtoons/supernatural-webtoons-banner.png',
     author: {
-      name: 'Eleanor Tremeer',
-      url: 'https://twitter.com/extratremeerial',
+      name: 'Daniel Mathews',
+      url: 'https://dmathewwws.com',
     }
   },
   [NotionPage.BEST_BOYSLOVE_WEBTOONS.path]: {
@@ -101,8 +101,8 @@ export const additionalInfoForNotionId: { [key: string]: BlogPost } = {
     url: 'https://inkverse.co/blog/best-boyslove-webtoons-recommend',
     imageURL: 'https://ink0.inkverse.co/blog/best-boyslove-webtoons-images/boyslove-webtoons-banner.png',
     author: {
-      name: 'Eleanor Tremeer',
-      url: 'https://twitter.com/extratremeerial',
+      name: 'Daniel Mathews',
+      url: 'https://dmathewwws.com',
     }
   },
   [NotionPage.BEST_GIRLSLOVE_WEBTOONS.path]: {
@@ -112,8 +112,8 @@ export const additionalInfoForNotionId: { [key: string]: BlogPost } = {
     url: 'https://inkverse.co/blog/best-girls-love-webtoons-to-read',
     imageURL: 'https://ink0.inkverse.co/blog/girlslove-webtoons-images/best-girlslove-webtoons-banner.webp',
     author: {
-      name: 'Eleanor Tremeer',
-      url: 'https://twitter.com/extratremeerial',
+      name: 'Daniel Mathews',
+      url: 'https://dmathewwws.com',
     }
   },
   [NotionPage.BEST_LGBT_GAY_WEBTOONS.path]: {
@@ -123,19 +123,19 @@ export const additionalInfoForNotionId: { [key: string]: BlogPost } = {
     url: 'https://inkverse.co/blog/best-lgbt-gay-webtoons',
     imageURL: 'https://ink0.inkverse.co/blog/best-lgbtq-webtoons-banner.jpg',
     author: {
-      name: 'Eleanor Tremeer',
-      url: 'https://twitter.com/extratremeerial',
+      name: 'Daniel Mathews',
+      url: 'https://dmathewwws.com',
     }
   },
   [NotionPage.BEST_CANVAS_WEBTOONS.path]: {
     priority: '0.9',
-    title: "The 10 Best Indie & Canvas Webtoons Of All Time",
-    description: "Indie comics can be hard to find, so we've collected the best Canvas webtoons of all time! Whatever your genre, you'll find it here.",
+    title: "The 10 Best Indie Webtoons Of All Time",
+    description: "Indie comics can be hard to find, so we've collected the best Indie & Canvas webtoons of all time! Whatever your genre, you'll find it here.",
     url: 'https://inkverse.co/blog/best-canvas-webtoons-to-read',
     imageURL: 'https://ink0.inkverse.co/blog/best-canvas-webtoons-banner.jpg',
     author: {
-      name: 'Eleanor Tremeer',
-      url: 'https://twitter.com/extratremeerial',
+      name: 'Daniel Mathews',
+      url: 'https://dmathewwws.com',
     }
   },
   [NotionPage.BEST_ACTION_WEBTOONS.path]: {
@@ -145,8 +145,8 @@ export const additionalInfoForNotionId: { [key: string]: BlogPost } = {
     url: 'https://inkverse.co/blog/best-action-webtoons-we-recommend',
     imageURL: 'https://ink0.inkverse.co/blog/best-action-webtoons-banner.jpg',
     author: {
-      name: 'Eleanor Tremeer',
-      url: 'https://twitter.com/extratremeerial',
+      name: 'Daniel Mathews',
+      url: 'https://dmathewwws.com',
     }
   },
   [NotionPage.BEST_WEBTOONS_OF_ALL_TIME.path]: {
