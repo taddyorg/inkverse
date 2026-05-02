@@ -105,10 +105,10 @@ export async function fetchAllHostingProviderTokens(
       const decodedToken = jwtDecode(refreshToken);
       await refreshHostingProviderAccessToken(decodedToken.iss as string);
     }
-    
+
   } catch (error: Error | unknown) {
     console.error('Error fetching all hosting provider tokens:', error);
-  } 
+  }
 }
 
 

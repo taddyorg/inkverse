@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useReducer } from "react";
-import { Link, useLoaderData, useNavigate, type LoaderFunctionArgs, type MetaFunction } from "react-router";
+import { Link, useLoaderData, useNavigate, useSearchParams, type LoaderFunctionArgs, type MetaFunction } from "react-router";
 import { MdSort } from "react-icons/md";
 
 import { ComicSeriesDetails } from "../components/comics/ComicSeriesDetails";
@@ -136,5 +136,7 @@ export function TrendingComicsPage({ title, basePath }: { title: string; basePat
 }
 
 export default function MostDiscussedPage() {
-  return <TrendingComicsPage title={trendingMetricTitles[TrendingMetric.DISCUSSED]} basePath="/most-discussed" />;
+  const [searchParams] = useSearchParams();
+  const period = searchParams.get('period') || 'this-week';
+  return <TrendingComicsPage key={period} title={trendingMetricTitles[TrendingMetric.DISCUSSED]} basePath="/most-discussed" />;
 }

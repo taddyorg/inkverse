@@ -112,13 +112,13 @@ export function AuthRefreshProvider({ children }: AuthRefreshProviderProps) {
         await Promise.allSettled([
           refreshAccessToken(),
           refreshRefreshToken(),
-          fetchAllHostingProviderTokens({ 
-            userClient: userClient as any, 
-            saveHostingProviderRefreshToken, 
-            refreshHostingProviderAccessToken 
+          fetchAllHostingProviderTokens({
+            userClient: userClient as any,
+            saveHostingProviderRefreshToken,
+            refreshHostingProviderAccessToken
           })
         ]);
-        
+
         lastRefreshTimeRef.current = Date.now();
         console.log('✅ Initial token refresh completed');
       } catch (error) {

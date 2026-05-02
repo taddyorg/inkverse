@@ -44,9 +44,9 @@ const productionConfig = {
 
 function getGraphQLURL(isProduction: boolean) {
   if (!isProduction) {
-    return Platform.OS === 'android' 
+    return Platform.OS === 'android'
       ? `http://10.0.2.2:3010/api/graphql`
-      : `http://inkverse.test:3010/api/graphql` 
+      : `http://inkverse.test:3010/api/graphql`
   } else {
     return "https://api-v2.inkverse.co"
   }
@@ -56,7 +56,7 @@ function getAuthURL(isProduction: boolean) {
   if (!isProduction) {
     return Platform.OS === 'android'
       ? `http://10.0.2.2:3010/api/auth`
-      : `http://inkverse.test:3010/api/auth` 
+      : `http://inkverse.test:3010/api/auth`
   } else {
     return "https://inkverse.co/api/auth"
   }

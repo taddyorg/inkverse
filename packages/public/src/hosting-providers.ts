@@ -126,7 +126,7 @@ export async function getNewAccessToken({
 
     const response = await axios.post(newAccessTokenUrl, new URLSearchParams({
       refresh_token: refreshToken,
-    }), {
+    }).toString(), {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
@@ -137,7 +137,9 @@ export async function getNewAccessToken({
     return data.token;
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      throw new Error(`Failed to refresh access token: ${error.response?.data || error.message}`);
+      const body = error.response?.data;
+      const bodyStr = typeof body === 'string' ? body : JSON.stringify(body);
+      throw new Error(`Failed to refresh access token: status=${error.response?.status} body=${bodyStr} message=${error.message}`);
     }
     throw new Error(`Failed to refresh access token: ${error}`);
   }
@@ -164,7 +166,7 @@ export async function getNewRefreshToken({
 
     const response = await axios.post(newRefreshTokenUrl, new URLSearchParams({
       refresh_token: refreshToken,
-    }), {
+    }).toString(), {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
@@ -205,7 +207,7 @@ export async function getNewContentToken({
     const response = await axios.post(newContentTokenUrl, new URLSearchParams({
       access_token: accessToken,
       series_uuid: seriesUuid,
-    }), {
+    }).toString(), {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         'Authorization': `Bearer ${accessToken}`,
