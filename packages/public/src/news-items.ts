@@ -6,7 +6,20 @@ export interface NewsItem {
 
 // Define inkverseNewsItems with example data
 export const inkverseNewsItems: NewsItem[] = [
-  { title: 'Likes and Comments now live! 🎉', url: 'https://inkverse.co/updates/likes-and-comments-now-available' },
-  { title: 'Check out our upcoming Roadmap 🚗🚗🚗', url: 'https://inkverse.co/updates/our-roadmap' },
-  { title: 'Inkverse 2.0 is here! 🎉', url: 'https://inkverse.co/updates/inkverse-2dot0' },
+  {
+    title: 'Likes and Comments now live! 🎉',
+    url: 'https://inkverse.co/updates/likes-and-comments-now-available',
+  },
+  {
+    title: 'Check out our upcoming Roadmap 🚗🚗🚗',
+    url: 'https://inkverse.co/updates/our-roadmap',
+  },
+  {
+    title: 'No pop-ups. No nagging you for coins. Learn more about Inkverse →',
+    url: 'https://inkverse.co/about-us',
+  },
+  {
+    title: 'Introducing Inkverse 2.0 🎉',
+    url: 'https://inkverse.co/updates/inkverse-2dot0',
+  },
 ];

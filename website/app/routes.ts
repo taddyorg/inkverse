@@ -6,6 +6,7 @@ export default [
     route("open-source/:slug?", "routes/open-source.tsx"),
     route("updates/:slug?", "routes/updates.tsx"),
     route("brand-kit/:slug?", "routes/brand-kit.tsx"),
+    route("about-us/:slug?", "routes/about-us.tsx"),
     route("terms-of-service/:slug?", "routes/terms-of-service.tsx"),
     route("comics/:shortUrl", "routes/comicseries.tsx"),
     route("comics/:shortUrl/:episodeId", "routes/comicissue.tsx"),

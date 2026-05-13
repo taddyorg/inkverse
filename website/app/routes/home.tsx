@@ -22,7 +22,7 @@ const MainCopy = {
 
 export const meta: MetaFunction = () => {
   return getMetaTags({
-    title: MainCopy.title, 
+    title: MainCopy.title,
     description: MainCopy.description,
     url: "https://inkverse.co",
   });
@@ -125,16 +125,15 @@ export default function Home() {
   );
 }
 
-
 const FeaturedWebtoons = ({ comicSeries }: { comicSeries: ComicSeries[] | null | undefined }) => {
   const firstComicSeries = comicSeries?.[0];
   return (
     <div className="mb-2 sm:mb-6">
       {firstComicSeries && (
-        <ComicSeriesDetails 
-          key={firstComicSeries.uuid} 
-          comicseries={firstComicSeries} 
-          pageType={'featured-banner'} 
+        <ComicSeriesDetails
+          key={firstComicSeries.uuid}
+          comicseries={firstComicSeries}
+          pageType={'featured-banner'}
         />
       )}
     </div>
@@ -278,10 +277,10 @@ const CuratedLists = ({ lists }: { lists: List[] | null | undefined }) => {
             if (!url) return null;
             return (
               <Link key={list.id} to={url} className="flex-none w-[80vw] md:w-[60vw]">
-                <img 
+                <img
                   className="w-full rounded-lg object-cover object-center"
-                  src={list.bannerImageUrl || undefined} 
-                  alt={list.name || undefined} 
+                  src={list.bannerImageUrl || undefined}
+                  alt={list.name || undefined}
                 />
               </Link>
             )
@@ -299,7 +298,7 @@ const Announcements = ({ newsItems }: { newsItems: NewsItem[] | null | undefined
       <div className="overflow-x-auto">
         <div className="flex gap-4 pb-4">
           {newsItems?.map((item, index) => (
-            <a 
+            <a
               key={item.url}
               href={item.url}
               target="_blank"
@@ -320,13 +319,13 @@ const RecentlyUpdatedWebtoons = ({ comicSeries }: { comicSeries: ComicSeries[] |
       <div className="overflow-x-auto">
         <div className="flex gap-4 pb-4">
           {comicSeries?.map((series) => (
-            <div 
-              key={series.uuid} 
+            <div
+              key={series.uuid}
               className="flex-none"
             >
-              <ComicSeriesDetails 
-                comicseries={series} 
-                pageType={'cover'} 
+              <ComicSeriesDetails
+                comicseries={series}
+                pageType={'cover'}
               />
             </div>
           ))}
@@ -343,13 +342,13 @@ const RecentlyAddedWebtoons = ({ comicSeries }: { comicSeries: ComicSeries[] | n
       <div className="overflow-x-auto">
         <div className="flex gap-4 pb-4">
           {comicSeries?.map((series) => (
-            <div 
-              key={series.uuid} 
+            <div
+              key={series.uuid}
               className="flex-none"
             >
-              <ComicSeriesDetails 
-                comicseries={series} 
-                pageType={'cover'} 
+              <ComicSeriesDetails
+                comicseries={series}
+                pageType={'cover'}
               />
             </div>
           ))}
@@ -369,7 +368,7 @@ const Footer = () => {
           <ul role="list" className="space-y-4">
             {footerNavigation.company.map((item) => (
               <li key={item.name} className={item.additionalStyling}>
-                {item.type === 'internal' 
+                {item.type === 'internal'
                   ? <Link to={item.href} prefetch="intent" className="text-base hover:text-gray-400">
                       {item.name}
                     </Link>
