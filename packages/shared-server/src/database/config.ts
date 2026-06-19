@@ -14,11 +14,12 @@ const connectionString = `postgres://${process.env.DATABASE_USERNAME}:${process.
 // Define the type and create the configuration object in one go
 const config = {
   client: 'pg',
-  version: '13.16',
+  version: '18',
   searchPath: ['knex', 'public'],
   useNullAsDefault: true,
   connection: {
     connectionString,
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
   },
   pool: { min: 0, max: 20 },
   acquireConnectionTimeout: 1800000,

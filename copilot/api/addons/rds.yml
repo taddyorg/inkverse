@@ -36,6 +36,15 @@ Resources:
       FromPort: 5432
       ToPort: 5432
       SourceSecurityGroupId: { 'Fn::ImportValue': !Sub '${App}-${Env}-EnvironmentSecurityGroup' }
+  DBPG18:
+    Type: AWS::RDS::DBParameterGroup
+    Properties:
+      DBParameterGroupName: inkverse-postgres18
+      Family: postgres18
+      Description: Inkverse PG18 + logical replication
+      Parameters:
+        rds.logical_replication: '1'
+        rds.force_ssl: '1'
   # The cluster itself.
   DBInstance:
     Metadata:
@@ -43,7 +52,7 @@ Resources:
     Type: AWS::RDS::DBInstance
     Properties:
       Engine: postgres
-      EngineVersion: '13.20'
+      EngineVersion: '18.4'
       DBInstanceClass: 'db.t4g.micro'
       AllocatedStorage: 20
       StorageType: gp3
@@ -57,6 +66,7 @@ Resources:
       MasterUsername: dmathewwws
       MasterUserPassword: !Sub "{{resolve:ssm-secure:/copilot/${App}/${Env}/secrets/DATABASE_PASSWORD}}"
       DBSubnetGroupName: !Ref 'DBSubnetGroup'
+      DBParameterGroupName: !Ref DBPG18
       VPCSecurityGroups:
         - !Ref DatabaseSecurityGroup
   EndpointAddressParam:

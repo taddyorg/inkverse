@@ -192,9 +192,9 @@ docker run --name inkverse-postgres \
   -e POSTGRES_PASSWORD=PASSWORD \
   -e POSTGRES_DB=DB-NAME \
   -d \
-  -v ~/docker-vms/inkverse-postgresdata:/var/lib/postgresql/data \
+  -v ~/docker-vms/inkverse-postgresdata:/var/lib/postgresql \
   -p "5432:5432" \
-  postgres:13.16
+  postgres:18.4
 ```
 
 Update `.env` file:
