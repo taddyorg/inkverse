@@ -38,7 +38,7 @@ packages/         # Internal packages
 
 ### Prerequisites
 
-- **Node.js** >= 20
+- **Node.js** >= 24
 - **Yarn** package manager
 
 ### Steps

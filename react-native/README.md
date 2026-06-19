@@ -7,7 +7,7 @@ This is the main React Native app for Inkverse, a comic reading platform. It cre
 If you want to quickly setup the iOS or Android apps and see it in action you can setup the app to point to Inkverse's production API. This allows you to tweak code and styles without having to setup your own local server.
 
 ### 0. Basic setups
-  - Have or Install node >= 20.
+  - Have or Install node >= 24.
   - Install yarn (npm install -g yarn)
   - Download the Inkverse project from GitHub.
 

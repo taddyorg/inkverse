@@ -7,7 +7,7 @@ This is the main website for Inkverse, a comic reading platform.
 If you want to quickly setup the website app and see it in action you can setup the website to point to Inkverse's production API. This allows you to tweak code and styles without having to setup your own local server.
 
 ### 0. Basic setups
-  - Have or Install node >= 20.
+  - Have or Install node >= 24.
   - Install yarn (npm install -g yarn)
   - Download the Inkverse project from GitHub.
 
