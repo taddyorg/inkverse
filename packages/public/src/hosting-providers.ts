@@ -177,7 +177,9 @@ export async function getNewRefreshToken({
     return data.token;
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      throw new Error(`Failed to get new refresh token: ${error.response?.data || error.message}`);
+      const body = error.response?.data;
+      const bodyStr = typeof body === 'string' ? body : JSON.stringify(body);
+      throw new Error(`Failed to get new refresh token: status=${error.response?.status} body=${bodyStr} message=${error.message}`);
     }
     throw new Error(`Failed to get new refresh token: ${error}`);
   }
@@ -219,7 +221,9 @@ export async function getNewContentToken({
     return data.token;
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      throw new Error(`Failed to get content token: ${error.response?.data || error.message}`);
+      const body = error.response?.data;
+      const bodyStr = typeof body === 'string' ? body : JSON.stringify(body);
+      throw new Error(`Failed to get content token: status=${error.response?.status} body=${bodyStr} message=${error.message}`);
     }
     throw new Error(`Failed to get content token: ${error}`);
   }

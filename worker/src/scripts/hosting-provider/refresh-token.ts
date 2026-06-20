@@ -21,7 +21,11 @@ export async function refreshHostingProviderAccessToken(outputPath: string): Pro
       crlfDelay: Infinity
     })
 
+    let succeeded = 0;
+    let failed = 0;
+
     for await (const line of rl) {
+      try {
         const oauthToken = JSON.parse(line)
         const { userId, refreshToken, hostingProviderUuid } = oauthToken
         if (!userId || !refreshToken || !hostingProviderUuid) continue
@@ -41,13 +45,13 @@ export async function refreshHostingProviderAccessToken(outputPath: string): Pro
           console.log(`[SYNC] Incorrect hosting provider ${decodedRefreshToken.iss} for ${hostingProviderUuid}`)
           continue
         }
-    
+
         // Verify token is valid
         if (!decodedRefreshToken.sub || !decodedRefreshToken.exp || decodedRefreshToken.exp < Date.now() / 1000) {
           console.log(`[SYNC] Token invalid or expired for ${hostingProviderUuid}`)
           continue
         }
-    
+
         // Verify the user exists before saving tokens
         const user = await User.getUserById(decodedRefreshToken.sub);
 
@@ -62,8 +66,16 @@ export async function refreshHostingProviderAccessToken(outputPath: string): Pro
             refreshToken: newRefreshToken,
             refreshTokenExpiresAt: decodedRefreshToken.exp,
         })
+
+        succeeded++;
+      } catch (error) {
+        // Isolate per-token failures so one bad token doesn't abort the whole batch
+        failed++;
+        const message = error instanceof Error ? error.message : String(error);
+        console.error(`[SYNC] Failed to refresh token: ${message}`);
+      }
     }
 
     const end = +new Date();
-    console.log(`[SYNC] Finished in ${end - start}ms`)
+    console.log(`[SYNC] Finished: ${succeeded} succeeded, ${failed} failed in ${end - start}ms`)
 }
