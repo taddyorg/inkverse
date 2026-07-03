@@ -21,6 +21,7 @@ export async function build(table: string, pk: string, outputPath: string) {
     
     const pg = new pgPackage.Pool({
         connectionString: config.connection.connectionString,
+        ssl: config.connection.ssl,
         min: 10,
         max: 30,
         idleTimeoutMillis: 300
