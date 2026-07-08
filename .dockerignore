@@ -1,4 +1,6 @@
 copilot
+cdk
+cloud
 
 # Build outputs
 **/build
@@ -40,3 +42,9 @@ yarn-error.log*
 # Worker specific
 worker/input/*
 worker/output/*
+
+# Native
+.orig
+.jks
+.p8
+.p12

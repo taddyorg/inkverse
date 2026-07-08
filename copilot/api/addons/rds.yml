@@ -12,6 +12,8 @@ Resources:
   # Subnet group to control where the DB gets placed
   DBSubnetGroup:
     Type: AWS::RDS::DBSubnetGroup
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       DBSubnetGroupDescription: Group of subnets to place DB into
       SubnetIds: !Split [ ',', { 'Fn::ImportValue': !Sub '${App}-${Env}-PrivateSubnets' } ]
@@ -21,6 +23,8 @@ Resources:
     Metadata:
       'aws:copilot:description': 'A security group to access the DB cluster'
     Type: AWS::EC2::SecurityGroup
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       GroupDescription: "DB Security Group"
       VpcId: { 'Fn::ImportValue': !Sub '${App}-${Env}-VpcId' }
@@ -38,6 +42,8 @@ Resources:
       SourceSecurityGroupId: { 'Fn::ImportValue': !Sub '${App}-${Env}-EnvironmentSecurityGroup' }
   DBPG18:
     Type: AWS::RDS::DBParameterGroup
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       DBParameterGroupName: inkverse-postgres18
       Family: postgres18
@@ -50,6 +56,8 @@ Resources:
     Metadata:
       'aws:copilot:description': 'DB cluster'
     Type: AWS::RDS::DBInstance
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       Engine: postgres
       EngineVersion: '18.4'
@@ -71,6 +79,8 @@ Resources:
         - !Ref DatabaseSecurityGroup
   EndpointAddressParam:
     Type: AWS::SSM::Parameter
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       Name: !Sub "/copilot/${App}/${Env}/secrets/DATABASE_ENDPOINT"
       Type: String

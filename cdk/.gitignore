@@ -1,0 +1,15 @@
+# CDK
+cdk.out/
+cdk.context.json
+*.d.ts
+*.js
+!jest.config.js
+
+# Dependencies
+node_modules/
+
+# Local infrastructure identifiers (never commit — copy from config.example.ts)
+config.local.ts
+
+# Logs
+*.log
