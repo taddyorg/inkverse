@@ -1,48 +1,40 @@
-FROM node:24.17
-
-# Create and use /app
+# Inkverse website (React Router 7 + Vite, SSR) in a Yarn Classic workspaces monorepo.
+# Build context is the MONOREPO ROOT so @inkverse/public and @inkverse/shared-client resolve.
+# Copilot: copilot/website/manifest.yml builds this with context = repo root, port 3000.
+FROM node:24.17-slim AS build
 WORKDIR /app
+RUN corepack enable
 
-# Update and install system dependencies
-RUN apt-get update -y && apt-get upgrade -y && \
-    apt-get install -y apt-utils apt-transport-https ca-certificates
-
-# Install Yarn
-RUN curl -o- -L https://yarnpkg.com/install.sh | bash
-
-# Add Yarn to PATH
-ENV PATH="/root/.yarn/bin:$PATH"
-
-# Copy package manifests
+# Copy manifests first for better layer caching, then install from the ROOT lockfile.
 COPY package.json yarn.lock ./
 COPY packages/public/package.json ./packages/public/package.json
 COPY packages/shared-client/package.json ./packages/shared-client/package.json
 COPY website/package.json ./website/package.json
+RUN yarn install --frozen-lockfile
 
-# Install root dependencies
-RUN yarn install
-
-# Copy the rest of the source code
+# Copy sources and build in dependency order (public -> shared-client -> website).
 COPY packages/public/ ./packages/public/
 COPY packages/shared-client/ ./packages/shared-client/
 COPY website/ ./website/
-
-# Set environment
 ENV NODE_ENV=production
 
-# Build public
 WORKDIR /app/packages/public
 RUN yarn build
-
-# Build shared-client
 WORKDIR /app/packages/shared-client
 RUN yarn build
-
-# Build website
 WORKDIR /app/website
 RUN yarn build
 
-EXPOSE 3000
+# --- runtime image ---
+FROM node:24.17-slim AS runtime
+WORKDIR /app/website
+ENV NODE_ENV=production
+ENV PORT=3000
+RUN corepack enable
 
-# Run the server
+# Keep the full workspace tree so hoisted node_modules + the @inkverse/* symlink
+# targets (packages/*/dist) stay valid and `yarn start` (uses cross-env) works.
+COPY --from=build /app /app
+
+EXPOSE 3000
 CMD ["yarn", "start"]

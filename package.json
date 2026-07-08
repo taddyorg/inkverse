@@ -4,6 +4,7 @@
   "author": "Daniel Mathews <danny@taddy.org>",
   "private": true,
   "license": "AGPL-3.0",
+  "packageManager": "yarn@1.22.22",
   "workspaces": {
     "packages": [
       "packages/public",
