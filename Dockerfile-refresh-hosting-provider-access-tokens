@@ -7,11 +7,8 @@ WORKDIR /app
 RUN apt-get update -y && apt-get upgrade -y && \
     apt-get install -y apt-utils apt-transport-https ca-certificates
 
-# Install Yarn
-RUN curl -o- -L https://yarnpkg.com/install.sh | bash
-
-# Add Yarn to PATH
-ENV PATH="/root/.yarn/bin:$PATH"
+# Enable Yarn via Corepack (bundled with Node)
+RUN corepack enable
 
 # Copy package manifests from the monorepo root
 COPY package.json yarn.lock ./
