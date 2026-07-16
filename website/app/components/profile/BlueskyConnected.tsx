@@ -32,7 +32,7 @@ function ComicsFound({ comicSeries, onContinue }: ComicsFoundProps) {
       </div>
       <button
         onClick={onContinue}
-        className="bg-brand-pink dark:bg-taddy-blue text-white px-6 py-2 rounded-lg font-medium hover:bg-brand-pink-dark dark:hover:bg-taddy-blue-dark transition-colors"
+        className="bg-brand-pink dark:bg-taddy-blue text-white px-6 py-2 rounded-lg font-normal hover:bg-brand-pink-dark dark:hover:bg-taddy-blue-dark transition-colors"
       >
         Add these comics to your profile
       </button>

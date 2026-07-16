@@ -68,7 +68,7 @@ export function TrendingComicsPage({ title, basePath }: { title: string; basePat
         <div className="relative" ref={periodRef}>
           <button
             onClick={() => setIsPeriodOpen(!isPeriodOpen)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-black bg-white/80 hover:bg-white rounded-full transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-normal text-black bg-white/80 hover:bg-white rounded-full transition-colors"
           >
             <MdSort className="w-4 h-4" />
             <span>{currentPeriodLabel}</span>
@@ -118,7 +118,7 @@ export function TrendingComicsPage({ title, basePath }: { title: string; basePat
           <button
             onClick={handleLoadMore}
             disabled={state.isLoadingMore}
-            className="px-6 py-3 bg-inkverse-black text-white rounded-full font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 dark:bg-white dark:text-inkverse-black dark:hover:bg-gray-200"
+            className="px-6 py-3 bg-inkverse-black text-white rounded-full font-normal hover:bg-gray-800 transition-colors disabled:opacity-50 dark:bg-white dark:text-inkverse-black dark:hover:bg-gray-200"
           >
             {state.isLoadingMore ? (
               <span className="flex items-center gap-2">

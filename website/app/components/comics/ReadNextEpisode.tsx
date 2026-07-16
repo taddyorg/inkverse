@@ -37,7 +37,7 @@ export function ReadNextEpisode({
     return (
       <div className="w-full mt-6 px-4">
         <div className="text-center mt-8">
-          <p className="text-lg font-medium">You are up to date with this series!</p>
+          <p className="text-lg font-normal">You are up to date with this series!</p>
           {isAuthenticated && onSuperLike && (
             <SuperLikeButton
               isLoading={isSuperLikeLoading ?? false}

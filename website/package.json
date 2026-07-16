@@ -9,7 +9,8 @@
     "dev": "react-router dev",
     "start": "cross-env NODE_ENV=production react-router-serve ./build/server/index.js",
     "typecheck": "react-router typegen && tsc -b",
-    "generate-primary-sitemap": "tsx generate-primary-sitemap.ts"
+    "generate-primary-sitemap": "tsx generate-primary-sitemap.ts",
+    "generate-font-subsets": "tsx generate-font-subsets.ts"
   },
   "dependencies": {
     "@apollo/client": "^4.1.6",
@@ -38,9 +39,11 @@
     "@types/node": "^24",
     "@types/react": "~19.2.14",
     "@types/react-dom": "~19.2.3",
+    "@types/subset-font": "^2.3.0",
     "autoprefixer": "^10.4.21",
     "cross-env": "^7.0.3",
     "postcss": "^8.5.6",
+    "subset-font": "^2.5.0",
     "tailwindcss": "^3.4.19",
     "tsx": "^4.19.4",
     "typescript": "^5.7.2",

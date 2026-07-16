@@ -198,7 +198,7 @@ export function ReportModal(props: ReportModalProps) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <p className="text-lg font-medium text-gray-900 dark:text-gray-100">
+          <p className="text-lg font-normal text-gray-900 dark:text-gray-100">
             Thank you for your report
           </p>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -234,7 +234,7 @@ export function ReportModal(props: ReportModalProps) {
         <button
           onClick={handleSubmit}
           disabled={!selectedReportType || isSubmitting}
-          className={`w-full px-4 py-3 text-base font-medium text-white rounded-lg transition-colors ${
+          className={`w-full px-4 py-3 text-base font-normal text-white rounded-lg transition-colors ${
             !selectedReportType || isSubmitting
               ? 'bg-gray-400 cursor-not-allowed'
               : 'bg-brand-pink hover:bg-brand-pink-dark dark:bg-taddy-blue dark:hover:bg-taddy-blue-dark'
@@ -256,7 +256,7 @@ export function ReportModal(props: ReportModalProps) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <p className="text-lg font-medium text-gray-900 dark:text-gray-100">
+          <p className="text-lg font-normal text-gray-900 dark:text-gray-100">
             Thank you for your report
           </p>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -281,7 +281,7 @@ export function ReportModal(props: ReportModalProps) {
                   : 'bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600'
               }`}
             >
-              <div className="font-medium text-sm">{config.staringPhrase} {label}</div>
+              <div className="font-normal text-sm">{config.staringPhrase} {label}</div>
             </button>
           ))}
         </div>
@@ -292,7 +292,7 @@ export function ReportModal(props: ReportModalProps) {
           <button
             onClick={handleSubmit}
             disabled={!selectedReportType || isSubmitting}
-            className={`w-full px-4 py-3 text-base font-medium text-white rounded-lg transition-colors ${
+            className={`w-full px-4 py-3 text-base font-normal text-white rounded-lg transition-colors ${
               !selectedReportType || isSubmitting
                 ? 'bg-gray-400 cursor-not-allowed'
                 : 'bg-brand-pink hover:bg-brand-pink-dark dark:bg-taddy-blue dark:hover:bg-taddy-blue-dark'

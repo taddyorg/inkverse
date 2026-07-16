@@ -41,7 +41,7 @@ export function SetupAge({ ageRange, setAgeRange, birthYear, setBirthYear, userD
         <button
           type="button"
           onClick={() => setAgeRange(UserAgeRange.UNDER_18)}
-          className={`p-4 rounded-lg font-medium transition-colors border-2 ${
+          className={`p-4 rounded-lg font-normal transition-colors border-2 ${
             ageRange === UserAgeRange.UNDER_18
               ? 'border-brand-pink dark:border-taddy-blue bg-pink-200 dark:bg-taddy-blue text-brand-pink dark:text-white'
               : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-white text-gray-700 dark:text-gray-700 hover:bg-gray-50 dark:hover:bg-gray-50'
@@ -52,7 +52,7 @@ export function SetupAge({ ageRange, setAgeRange, birthYear, setBirthYear, userD
         <button
           type="button"
           onClick={() => setAgeRange(UserAgeRange.AGE_18_24)}
-          className={`p-4 rounded-lg font-medium transition-colors border-2 ${
+          className={`p-4 rounded-lg font-normal transition-colors border-2 ${
             ageRange === UserAgeRange.AGE_18_24
               ? 'border-brand-pink dark:border-taddy-blue bg-pink-200 dark:bg-taddy-blue text-brand-pink dark:text-white'
               : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-white text-gray-700 dark:text-gray-700 hover:bg-gray-50 dark:hover:bg-gray-50'
@@ -63,7 +63,7 @@ export function SetupAge({ ageRange, setAgeRange, birthYear, setBirthYear, userD
         <button
           type="button"
           onClick={() => setAgeRange(UserAgeRange.AGE_25_34)}
-          className={`p-4 rounded-lg font-medium transition-colors border-2 ${
+          className={`p-4 rounded-lg font-normal transition-colors border-2 ${
             ageRange === UserAgeRange.AGE_25_34
               ? 'border-brand-pink dark:border-taddy-blue bg-pink-200 dark:bg-taddy-blue text-brand-pink dark:text-white'
               : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-white text-gray-700 dark:text-gray-700 hover:bg-gray-50 dark:hover:bg-gray-50'
@@ -74,7 +74,7 @@ export function SetupAge({ ageRange, setAgeRange, birthYear, setBirthYear, userD
         <button
           type="button"
           onClick={() => setAgeRange(UserAgeRange.AGE_35_PLUS)}
-          className={`p-4 rounded-lg font-medium transition-colors border-2 ${
+          className={`p-4 rounded-lg font-normal transition-colors border-2 ${
             ageRange === UserAgeRange.AGE_35_PLUS
               ? 'border-brand-pink dark:border-taddy-blue bg-pink-200 dark:bg-taddy-blue text-brand-pink dark:text-white'
               : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-white text-gray-700 dark:text-gray-700 hover:bg-gray-50 dark:hover:bg-gray-50'
@@ -125,7 +125,7 @@ export function SetupAge({ ageRange, setAgeRange, birthYear, setBirthYear, userD
         <button
           type="submit"
           disabled={userDetailsState.isLoading}
-          className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${
+          className={`w-full py-3 px-4 rounded-lg font-normal transition-colors ${
             userDetailsState.isLoading
               ? 'bg-gray-400 cursor-not-allowed'
               : 'bg-brand-pink dark:bg-taddy-blue text-white font-semibold hover:bg-brand-pink-dark dark:hover:bg-taddy-blue-dark'

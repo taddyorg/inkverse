@@ -23,9 +23,9 @@ export const SuperLikeButton = ({
         <div className="flex flex-col items-center gap-2 px-6 py-3 text-rose-400 dark:text-rose-300">
           <div className="flex items-center gap-2">
             <MdFavorite size={20} className="text-red-500 dark:text-red-400" />
-            <span className="font-medium">You liked all episodes!</span>
+            <span className="font-normal">You liked all episodes!</span>
           </div>
-          <span className="font-medium">We'll let {creatorNames} know they are doing a great job!</span>
+          <span className="font-normal">We'll let {creatorNames} know they are doing a great job!</span>
         </div>
       </div>
     );

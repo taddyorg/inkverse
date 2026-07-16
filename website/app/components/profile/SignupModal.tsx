@@ -413,7 +413,7 @@ export function SignupModal({ isOpen, onClose, hideComponent = true, onAuthSucce
             <button
               onClick={handleEmailSubmit}
               disabled={authState.isLoading || !email}
-              className={`mt-4 px-6 py-3 font-medium rounded-full transition-colors w-full text-white ${
+              className={`mt-4 px-6 py-3 font-normal rounded-full transition-colors w-full text-white ${
                 authState.isLoading || !email
                   ? 'bg-brand-pink dark:bg-taddy-blue cursor-not-allowed opacity-50'
                   : 'bg-brand-pink hover:bg-brand-pink-dark dark:bg-taddy-blue dark:hover:bg-taddy-blue-dark'

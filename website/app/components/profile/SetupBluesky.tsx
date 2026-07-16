@@ -35,7 +35,7 @@ export function SetupBluesky({
 
         <form onSubmit={onVerify} className="space-y-4">
           <div>
-            <label htmlFor="blueskyHandle" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label htmlFor="blueskyHandle" className="block text-sm font-normal text-gray-700 dark:text-gray-300 mb-2">
               Enter your Bluesky handle
             </label>
             <input
@@ -59,7 +59,7 @@ export function SetupBluesky({
             <button
               type="submit"
               disabled={userDetailsState.isLoading}
-              className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${
+              className={`w-full py-3 px-4 rounded-lg font-normal transition-colors ${
                 userDetailsState.isLoading
                   ? 'bg-gray-400 cursor-not-allowed'
                   : 'bg-brand-pink dark:bg-taddy-blue text-white hover:bg-brand-pink-dark dark:hover:bg-taddy-blue-dark'
@@ -130,7 +130,7 @@ export function SetupBluesky({
           <button
             type="button"
             onClick={onBack}
-            className="flex-1 py-3 px-4 rounded-lg font-medium transition-colors border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="flex-1 py-3 px-4 rounded-lg font-normal transition-colors border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
           >
             No, go back
           </button>
@@ -138,7 +138,7 @@ export function SetupBluesky({
             type="button"
             onClick={() => onConfirm(profile.did)}
             disabled={userDetailsState.isLoading}
-            className={`flex-1 py-3 px-4 rounded-lg font-medium transition-colors ${
+            className={`flex-1 py-3 px-4 rounded-lg font-normal transition-colors ${
               userDetailsState.isLoading
                 ? 'bg-gray-400 cursor-not-allowed'
                 : 'bg-brand-pink dark:bg-taddy-blue text-white hover:opacity-90'

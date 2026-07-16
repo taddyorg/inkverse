@@ -27,7 +27,7 @@ export default function ErrorPage() {
         <Link 
           to="/"
           className="inline-block px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 
-                     text-white font-medium transition-colors"
+                     text-white font-normal transition-colors"
         >
           Return Home
         </Link>

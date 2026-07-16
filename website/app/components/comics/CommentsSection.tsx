@@ -172,7 +172,7 @@ export function CommentsSection({ issueUuid, seriesUuid, isAuthenticated, commen
         <div className="relative" ref={sortMenuRef}>
           <button
             onClick={() => setShowSortMenu(!showSortMenu)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-black bg-white/80 hover:bg-white rounded-full transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-normal text-black bg-white/80 hover:bg-white rounded-full transition-colors"
           >
             <MdSort size={18} />
             <span>{sortBy === 'NEWEST' ? 'Newest' : 'Top'}</span>
@@ -262,7 +262,7 @@ export function CommentsSection({ issueUuid, seriesUuid, isAuthenticated, commen
             <button
               onClick={handleLoadMore}
               disabled={isLoadingMore}
-              className="flex items-center gap-1 text-sm font-medium text-inkverse-black dark:text-gray-400 hover:underline disabled:opacity-50 transition-colors"
+              className="flex items-center gap-1 text-sm font-normal text-inkverse-black dark:text-gray-400 hover:underline disabled:opacity-50 transition-colors"
             >
               {isLoadingMore ? 'Loading...' : 'Load more comments'}
               {!isLoadingMore && <IoChevronDown size={16} />}
@@ -291,7 +291,7 @@ function EmptyCommentsState({ creators }: { creators?: ({ name?: string | null }
       <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-white dark:bg-transparent flex items-center justify-center">
         <HiOutlineChatBubbleLeftRight size={32} className="text-gray-400 dark:text-gray-500" />
       </div>
-      <p className="text-gray-600 dark:text-gray-300 font-medium">Got any thoughts on this episode?</p>
+      <p className="text-gray-600 dark:text-gray-300 font-normal">Got any thoughts on this episode?</p>
       <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Add a comment, it could make {creatorNames}'s day!</p>
     </div>
   );

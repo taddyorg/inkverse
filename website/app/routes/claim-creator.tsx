@@ -188,14 +188,14 @@ export default function ClaimCreator() {
         {effectiveStatus === 'approved' && (
           <div className="text-center">
             <div className="mb-4 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-              <p className="text-green-700 dark:text-green-400 font-medium">
+              <p className="text-green-700 dark:text-green-400 font-normal">
                 Successfully connected! Your Inkverse account is now linked to this creator profile.
               </p>
             </div>
             {getUserDetails()?.username && (
               <Link
                 to={`/${getUserDetails()?.username}`}
-                className="inline-block bg-brand-pink dark:bg-taddy-blue text-white font-medium px-6 py-3 rounded-3xl transition-colors hover:opacity-90"
+                className="inline-block bg-brand-pink dark:bg-taddy-blue text-white font-normal px-6 py-3 rounded-3xl transition-colors hover:opacity-90"
               >
                 View your new profile
               </Link>
@@ -206,7 +206,7 @@ export default function ClaimCreator() {
         {effectiveStatus === 'rejected' && (
           <div className="text-center">
             <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
-              <p className="text-red-700 dark:text-red-400 font-medium">
+              <p className="text-red-700 dark:text-red-400 font-normal">
                 The request was rejected. Contact danny@inkverse.co if you need help.
               </p>
             </div>
@@ -216,7 +216,7 @@ export default function ClaimCreator() {
         {effectiveStatus === 'pending' && (
           <div className="text-center">
             <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
-              <p className="text-yellow-700 dark:text-yellow-400 font-medium">
+              <p className="text-yellow-700 dark:text-yellow-400 font-normal">
                 Verification in progress. Please complete the verification on {providerName}'s dashboard.
               </p>
             </div>
@@ -226,14 +226,14 @@ export default function ClaimCreator() {
         {errorParam && (
           <div className="text-center">
             <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
-              <p className="text-red-700 dark:text-red-400 font-medium">
+              <p className="text-red-700 dark:text-red-400 font-normal">
                 {errorParam}
               </p>
             </div>
             <button
               onClick={handleClaim}
               disabled={isLoading}
-              className="bg-brand-pink dark:bg-taddy-blue text-white font-medium px-6 py-3 rounded-3xl transition-colors hover:opacity-90"
+              className="bg-brand-pink dark:bg-taddy-blue text-white font-normal px-6 py-3 rounded-3xl transition-colors hover:opacity-90"
             >
               Try again
             </button>
@@ -251,7 +251,7 @@ export default function ClaimCreator() {
             <button
               onClick={handleClaim}
               disabled={isLoading}
-              className={`mt-6 bg-brand-pink dark:bg-taddy-blue text-white font-medium px-6 py-3 rounded-3xl transition-colors ${
+              className={`mt-6 bg-brand-pink dark:bg-taddy-blue text-white font-normal px-6 py-3 rounded-3xl transition-colors ${
                 isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90'
               }`}
             >

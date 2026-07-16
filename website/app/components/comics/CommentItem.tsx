@@ -262,7 +262,7 @@ export function CommentItem({
                     ) : (
                       <MdFavoriteBorder size={18} />
                     )}
-                    {likeCount > 0 && <span className="font-medium">{likeCount}</span>}
+                    {likeCount > 0 && <span className="font-normal">{likeCount}</span>}
                   </button>
 
                   {/* Reply/Replies button (only for top-level comments) */}

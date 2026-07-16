@@ -129,14 +129,14 @@ export function ConfirmModal({
             ref={initialFocusRef}
             onClick={onClose}
             disabled={isLoading}
-            className="flex-1 px-4 py-3 text-base font-medium rounded-lg transition-colors bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+            className="flex-1 px-4 py-3 text-base font-normal rounded-lg transition-colors bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
           >
             Cancel
           </button>
           <button
             onClick={onConfirm}
             disabled={isLoading}
-            className="flex-1 px-4 py-3 text-base font-medium text-white rounded-lg transition-colors bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 px-4 py-3 text-base font-normal text-white rounded-lg transition-colors bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? 'Deleting...' : confirmLabel}
           </button>

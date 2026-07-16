@@ -71,7 +71,7 @@ function ProfileContent({ initialData }: { initialData: Partial<ProfileState> & 
           <div className="flex justify-end gap-2 mb-4 sm:mb-2">
             <Link
               to="/profile/edit"
-              className="bg-brand-pink dark:bg-taddy-blue text-white font-medium px-4 py-2 rounded-3xl transition-colors"
+              className="bg-brand-pink dark:bg-taddy-blue text-white font-normal px-4 py-2 rounded-3xl transition-colors"
             >
               Edit your profile
             </Link>

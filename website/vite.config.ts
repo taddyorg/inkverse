@@ -12,6 +12,11 @@ export default defineConfig({
   },
   plugins: [reactRouter(), tsconfigPaths()],
   publicDir: 'assets',
+  build: {
+    // Never inline font subsets as data URIs — each script's subset must stay
+    // a separate file so browsers fetch it on demand via unicode-range.
+    assetsInlineLimit: (filePath) => (filePath.endsWith('.woff2') ? false : undefined),
+  },
   server: {
     host: 'inkverse.test',
     port: 8082,

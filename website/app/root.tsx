@@ -19,6 +19,8 @@ import config from "../config";
 
 import type { Route } from "./+types/root";
 import stylesheet from "./app.css?url";
+import fontsStylesheet from "./fonts/fonts.css?url";
+import { fontPreloads } from "./fonts/preloads";
 import { getPublicApolloClient, getUserApolloClient } from "@/lib/apollo/client.client";
 import { Navbar } from './components/ui';
 import { refreshAccessToken, refreshRefreshToken, webStorageFunctions } from '@/lib/auth/user';
@@ -33,14 +35,16 @@ import { getRefreshToken } from "@/lib/auth/cookie";
 import { getAndSaveMeDetails } from "@inkverse/shared-client/dispatch/profile";
 
 export const links: Route.LinksFunction = () => [
-  { rel: "preconnect", href: "https://fonts.googleapis.com" },
   { rel: "preconnect", href: "https://ink0.inkverse.co" },
   { rel: "dns-prefetch", href: "https://ax0.taddy.org" },
-  { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-  {
-    rel: "stylesheet",
-    href: "https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;800&display=swap",
-  },
+  ...fontPreloads.map((href) => ({
+    rel: "preload" as const,
+    href,
+    as: "font" as const,
+    type: "font/woff2",
+    crossOrigin: "anonymous" as const,
+  })),
+  { rel: "stylesheet", href: fontsStylesheet },
   { rel: "stylesheet", href: stylesheet },
   { rel: "icon", type: "image/x-icon", href: "/favicon/favicon.ico" },
   { rel: "apple-touch-icon", href: "/favicon/apple-touch-icon.png" },

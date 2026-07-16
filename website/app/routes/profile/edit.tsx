@@ -135,7 +135,7 @@ export default function ProfileEdit() {
     if (property.type === 'switch') {
       return (
         <div key={property.label}>
-          <p className="text-lg font-medium text-inkverse-black dark:text-white">
+          <p className="text-lg font-normal text-inkverse-black dark:text-white">
             {property.label}
           </p>
         </div>
@@ -148,7 +148,7 @@ export default function ProfileEdit() {
             to={property.editPath || ''}
             className="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
           >
-            <p className="text-lg font-medium text-inkverse-black dark:text-white">
+            <p className="text-lg font-normal text-inkverse-black dark:text-white">
               {property.label}
             </p>
             <div className="flex items-center gap-2">

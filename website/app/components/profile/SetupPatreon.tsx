@@ -21,7 +21,7 @@ export function SetupPatreon({ currentStep, onConnect, onSkip, onBack, onContinu
       <div className="space-y-4">
         <button
           onClick={onConnect}
-          className="w-full py-3 px-4 rounded-lg font-medium transition-colors bg-[#FF424D] text-white hover:bg-[#E63946] flex items-center justify-center gap-2"
+          className="w-full py-3 px-4 rounded-lg font-normal transition-colors bg-[#FF424D] text-white hover:bg-[#E63946] flex items-center justify-center gap-2"
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
             <path d="M7.003 3.5C5.897 3.5 5 4.397 5 5.503v13C5 19.607 5.897 20.5 7.003 20.5H8.5V3.5H7.003zm8.443 0c-2.734 0-4.947 2.213-4.947 4.946c0 2.734 2.213 4.947 4.947 4.947c2.734 0 4.948-2.213 4.948-4.947c0-2.733-2.214-4.946-4.948-4.946z"/>

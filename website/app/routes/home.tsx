@@ -256,7 +256,7 @@ const MostTrendingComics = ({ initialComicSeries }: { initialComicSeries: ComicS
       <div className="flex justify-center sm:mt-8 mt-4">
         <Link
           to={metric === TrendingMetric.DISCUSSED ? '/most-discussed' : '/most-liked'}
-          className="text-base font-medium text-inkverse-black dark:text-white hover:text-gray-700 dark:hover:text-gray-200"
+          className="text-base font-normal text-inkverse-black dark:text-white hover:text-gray-700 dark:hover:text-gray-200"
         >
           See All <MdKeyboardArrowRight className="inline text-inkverse-black dark:text-white ml-1 h-4 w-4" />
         </Link>
@@ -363,7 +363,7 @@ const Footer = () => {
       <h2 id="footer-heading" className="sr-only"> Footer </h2>
       <div>
         <div>
-          {/* <h3 className="text-base font-medium text-gray-400">Company</h3> */}
+          {/* <h3 className="text-base font-normal text-gray-400">Company</h3> */}
           <ul role="list" className="space-y-4">
             {footerNavigation.company.map((item) => (
               <li key={item.name} className={item.additionalStyling}>
