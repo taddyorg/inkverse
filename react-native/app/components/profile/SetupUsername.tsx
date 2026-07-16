@@ -76,7 +76,7 @@ export function SetupUsername({
 
   return (
     <View>
-      <ThemedText size="subtitle" style={styles.label} font="bold">
+      <ThemedText size="subtitle" style={styles.label}>
         Choose a username
       </ThemedText>
       

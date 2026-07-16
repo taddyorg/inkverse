@@ -31,9 +31,8 @@ export function ComicHeader({ headerPosition, comicseries, comicissue }: ComicHe
           {comicseries && 
             <ThemedText 
               style={styles.comicTitle} 
-              ellipsizeMode="tail" 
+              ellipsizeMode="tail"
               numberOfLines={1}
-              font="semiBold"
             >
               {comicseries.name}
             </ThemedText>
@@ -41,9 +40,8 @@ export function ComicHeader({ headerPosition, comicseries, comicissue }: ComicHe
           {comicissue && 
             <ThemedText 
               style={styles.episodeTitle} 
-              ellipsizeMode='tail' 
+              ellipsizeMode='tail'
               numberOfLines={1}
-              font="semiBold"
             >
               {comicissue.name}
             </ThemedText>
@@ -98,7 +96,6 @@ const styles = StyleSheet.create({
   episodeTitle: {
     width: '100%',
     fontSize: 16,
-    fontWeight: '600',
     color: '#FFFFFF',
     textAlign: 'center',
   },

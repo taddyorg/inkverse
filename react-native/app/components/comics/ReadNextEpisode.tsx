@@ -159,6 +159,5 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 18,
-    fontWeight: '500',
   },
 }); 

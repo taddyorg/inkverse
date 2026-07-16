@@ -110,7 +110,7 @@ export function BlueskyConnected({
         )}
         
         <PressableOpacity onPress={onSkip} style={styles.skipButton}>
-          <ThemedText style={styles.skipText} font='semiBold'>
+          <ThemedText style={styles.skipText}>
             {comicSeries && comicSeries.length > 0 ? 'Skip' : 'Continue'}
           </ThemedText>
         </PressableOpacity>
@@ -138,7 +138,6 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: '600',
     textAlign: 'center',
   },
   content: {

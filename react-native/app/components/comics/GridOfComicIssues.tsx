@@ -239,7 +239,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 6,
     textAlign: 'center',
-    fontWeight: '600',
   },
   currentEpisodeTitle: {
     color: '#FF69B4',

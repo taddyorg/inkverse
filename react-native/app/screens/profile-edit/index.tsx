@@ -273,7 +273,6 @@ const styles = StyleSheet.create({
   },
   propertyLabel: {
     fontSize: 17,
-    fontWeight: '400',
   },
   verificationText: {
     fontSize: 14,

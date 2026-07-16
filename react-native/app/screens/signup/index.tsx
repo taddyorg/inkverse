@@ -341,7 +341,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     width: '100%',
     fontSize: 24,
-    fontWeight: '600',
   },
   errorContainer: {
     borderRadius: SPACING.sm,

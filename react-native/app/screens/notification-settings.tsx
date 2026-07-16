@@ -106,7 +106,7 @@ export function NotificationSettingsScreen() {
   const renderSectionHeader = useCallback(({ section }: { section: Section }) => {
     return (
       <ThemedView style={styles.sectionHeader}>
-        <ThemedText size="subtitle" style={styles.sectionTitle}>{section.title}</ThemedText>
+        <ThemedText size="subtitle">{section.title}</ThemedText>
         <View style={styles.columnHeaders}>
           <ThemedText style={styles.columnHeaderText}>App</ThemedText>
           <ThemedText style={styles.columnHeaderText}>Email</ThemedText>
@@ -154,9 +154,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 24,
     paddingBottom: 8,
-  },
-  sectionTitle: {
-    fontWeight: '600',
   },
   columnHeaders: {
     flexDirection: 'row',

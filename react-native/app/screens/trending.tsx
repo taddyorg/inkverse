@@ -224,7 +224,6 @@ const styles = StyleSheet.create({
   },
   loadMoreText: {
     fontSize: 16,
-    fontWeight: '600',
   },
   dropdownRow: {
     justifyContent: 'flex-start',

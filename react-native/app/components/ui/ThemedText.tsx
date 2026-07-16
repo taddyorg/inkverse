@@ -3,8 +3,10 @@ import { Text, type TextProps, StyleSheet } from 'react-native';
 import { useThemeColor } from '@/constants/Colors';
 
 type ThemedTextSize = 'default' | 'title' | 'subtitle';
-type ThemedTextFont = 'regular' | 'semiBold' | 'bold';
 
+// iOS does not synthesize weight for custom font families, so `fontWeight` is
+// silently ignored on any text using these fonts. Weight must be selected by
+// font family instead: style={{ fontFamily: ThemedTextFontFamilyMap.semiBold }}.
 export const ThemedTextFontFamilyMap = {
   regular: 'SourceSans3-Regular',
   semiBold: 'SourceSans3-SemiBold',
@@ -15,7 +17,6 @@ export type ThemedTextProps = TextProps & {
   passedInLightColor?: string;
   passedInDarkColor?: string;
   size?: ThemedTextSize;
-  font?: ThemedTextFont;
 };
 
 export function ThemedText({
@@ -23,7 +24,6 @@ export function ThemedText({
   passedInLightColor,
   passedInDarkColor,
   size = 'default',
-  font = 'regular',
   ...rest
 }: ThemedTextProps) {
   const color = useThemeColor({ light: passedInLightColor, dark: passedInDarkColor }, 'text');
@@ -32,7 +32,6 @@ export function ThemedText({
     <Text
       style={[
         { color },
-        { fontFamily: ThemedTextFontFamilyMap[font] },
         styles[size],
         style,
       ]}
@@ -52,7 +51,6 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 20,
-    fontWeight: '500',
     fontFamily: ThemedTextFontFamilyMap.semiBold,
   },
 });

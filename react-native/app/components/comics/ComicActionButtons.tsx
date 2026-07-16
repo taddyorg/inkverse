@@ -106,7 +106,6 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontSize: 16,
-    fontWeight: 'semibold',
     marginLeft: SPACING.xs,
   },
   iconButton: {
@@ -119,7 +118,6 @@ const styles = StyleSheet.create({
   },
   iconButtonText: {
     fontSize: 16,
-    fontWeight: 'bold',
     marginLeft: SPACING.xs,
   },
   dropdownIcon: {

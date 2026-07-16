@@ -469,7 +469,6 @@ const styles = StyleSheet.create({
   },
   heading: {
     fontSize: 24,
-    fontWeight: '700',
     marginBottom: 16,
     textAlign: 'center',
   },
@@ -483,7 +482,6 @@ const styles = StyleSheet.create({
   },
   ctaText: {
     color: 'white',
-    fontWeight: '600',
     fontSize: 16,
   },
   profileNotFoundContainer: {
@@ -507,7 +505,6 @@ const styles = StyleSheet.create({
   },
   username: {
     fontSize: 24,
-    fontWeight: '700',
     flex: 1,
   },
   editButton: {
@@ -525,7 +522,6 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: '600',
     marginBottom: 12,
   },
   emptyComicsContainer: {

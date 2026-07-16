@@ -303,7 +303,6 @@ const styles = StyleSheet.create({
   },
   creatorName: {
     fontSize: 24,
-    fontWeight: 'bold',
     textAlign: 'center',
   },
   subtitle: {
@@ -345,17 +344,14 @@ const styles = StyleSheet.create({
   },
   successText: {
     color: '#22c55e',
-    fontWeight: '600',
     textAlign: 'center',
   },
   errorStatusText: {
     color: '#ef4444',
-    fontWeight: '600',
     textAlign: 'center',
   },
   pendingText: {
     color: '#ca8a04',
-    fontWeight: '600',
     textAlign: 'center',
   },
   errorText: {

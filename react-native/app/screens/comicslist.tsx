@@ -230,7 +230,6 @@ const styles = StyleSheet.create({
   },
   retryText: {
     fontSize: 16,
-    fontWeight: '600',
   },
   footerContainer: {
     padding: 16,
@@ -247,6 +246,5 @@ const styles = StyleSheet.create({
   },
   loadMoreText: {
     fontSize: 16,
-    fontWeight: '600',
   },
 }); 

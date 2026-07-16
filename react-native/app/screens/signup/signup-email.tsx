@@ -283,13 +283,11 @@ const styles = StyleSheet.create({
     marginTop: SPACING.xxl + SPACING.xl,
     marginBottom: SPACING.xl,
     fontSize: 24,
-    fontWeight: '600',
   },
   centerTitle: {
     textAlign: 'center',
     marginBottom: SPACING.md,
     fontSize: 22,
-    fontWeight: '600',
   },
   errorContainer: {
     borderRadius: SPACING.sm,

@@ -457,7 +457,6 @@ const styles = StyleSheet.create({
   },
   shareThoughtsTitle: {
     fontSize: 20,
-    fontWeight: '700',
     color: '#FFFFFF',
     letterSpacing: 0.3,
   },

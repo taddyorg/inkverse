@@ -172,7 +172,7 @@ export function SetupBluesky({
               { borderColor: borderColor }
             ]}
           >
-            <ThemedText style={styles.secondaryButtonText} font="semiBold">
+            <ThemedText style={styles.secondaryButtonText}>
               No, go back
             </ThemedText>
           </PressableOpacity>
@@ -222,7 +222,6 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: '600',
     marginBottom: SPACING.sm,
     textAlign: 'center',
   },
@@ -236,7 +235,6 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    fontWeight: '500',
     marginBottom: SPACING.sm,
   },
   input: {

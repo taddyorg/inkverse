@@ -793,7 +793,6 @@ const styles = StyleSheet.create({
   },
   patreonBackerTitle: {
     fontSize: 18,
-    fontWeight: '600',
     textAlign: 'center',
     marginBottom: 24,
     lineHeight: 24,
@@ -816,7 +815,6 @@ const styles = StyleSheet.create({
   patreonButtonText: {
     color: 'white',
     fontSize: 18,
-    fontWeight: 'bold',
   },
   patreonExclusiveContainer: {
     marginTop: 50,

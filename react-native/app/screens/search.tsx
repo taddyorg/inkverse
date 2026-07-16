@@ -489,7 +489,6 @@ const styles = StyleSheet.create({
   },
   categoryItemText: {
     fontSize: 16, // Larger text
-    fontWeight: '600', // Bolder text
     letterSpacing: 0.5, // Slightly more spacing between letters
   },
   searchBarContainer: {
@@ -552,6 +551,5 @@ const styles = StyleSheet.create({
   },
   loadMoreText: {
     fontSize: 16,
-    fontWeight: '600',
   },
 });

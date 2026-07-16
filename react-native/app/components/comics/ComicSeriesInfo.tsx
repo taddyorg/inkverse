@@ -87,7 +87,6 @@ const styles = StyleSheet.create({
   },
   infoValue: {
     fontSize: 16,
-    fontWeight: '600',
   },
   reportItem: {
     flexDirection: 'row',

@@ -102,7 +102,6 @@ export function SetupAge({
                 styles.ageRangeButtonText,
                 ageRange === option.value && { color: tintColor }
               ]}
-              font={ageRange === option.value ? 'bold' : 'semiBold'}
             >
               {option.label}
             </ThemedText>
@@ -138,12 +137,12 @@ export function SetupAge({
           <View style={[styles.modalContent, { backgroundColor }]}>
             <SafeAreaView>
               <View style={styles.modalHeader}>
-                <ThemedText style={styles.modalTitle} font="semiBold">Select Birth Year</ThemedText>
+                <ThemedText style={styles.modalTitle}>Select Birth Year</ThemedText>
                 <TouchableOpacity
                   onPress={() => setShowYearPicker(false)}
                   style={styles.modalCloseButton}
                 >
-                  <ThemedText style={[styles.modalCloseText, { color: tintColor }]} font="semiBold">
+                  <ThemedText style={[styles.modalCloseText, { color: tintColor }]}>
                     Done
                   </ThemedText>
                 </TouchableOpacity>
@@ -167,7 +166,6 @@ export function SetupAge({
                         styles.yearOptionText,
                         birthYear === year.toString() && { color: tintColor }
                       ]}
-                      font={birthYear === year.toString() ? 'semiBold' : 'regular'}
                     >
                       {year}
                     </ThemedText>

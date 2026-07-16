@@ -219,7 +219,6 @@ const styles = StyleSheet.create({
   },
   primaryButtonText: {
     fontSize: 16,
-    fontWeight: '500',
   },
   secondaryButton: {
     borderRadius: 8,
@@ -229,6 +228,5 @@ const styles = StyleSheet.create({
   },
   secondaryButtonText: {
     fontSize: 16,
-    fontWeight: '500',
   },
 });

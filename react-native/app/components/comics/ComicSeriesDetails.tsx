@@ -113,7 +113,7 @@ export function ComicSeriesDetails({ comicseries, pageType, isHeaderVisible, onH
                 priority={imagePriority}
               />
               <View style={styles.comicSeriesContent}>
-                <ThemedText size="subtitle" font="bold" style={styles.comicSeriesTitle}>{comicseries.name}</ThemedText>
+                <ThemedText size="subtitle" style={styles.comicSeriesTitle}>{comicseries.name}</ThemedText>
                 <ThemedText style={styles.genreTextAlt2}>
                   {formatGenres(comicseries)}
                 </ThemedText>
@@ -422,6 +422,5 @@ const styles = StyleSheet.create({
   },
   statText: {
     fontSize: 14,
-    fontWeight: '500',
   },
 }); 

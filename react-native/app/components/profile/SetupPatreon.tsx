@@ -26,7 +26,7 @@ export function SetupPatreon({ currentStep, onConnect, onSkip, onBack, onContinu
         <ThemedText style={[styles.title]} size="title">
           Connect your Patreon
         </ThemedText>
-        <ThemedText style={[styles.description]} font="bold">
+        <ThemedText style={[styles.description]}>
           Find Inkverse creators that you follow on Patreon
         </ThemedText>
       </View>

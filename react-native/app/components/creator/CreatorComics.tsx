@@ -80,6 +80,5 @@ const styles = StyleSheet.create({
   },
   comicTitle: {
     fontSize: 14,
-    fontWeight: '500',
   },
 }); 

@@ -76,7 +76,7 @@ export function SetupEmail({
 
   return (
     <View>
-      <ThemedText size="subtitle" style={styles.label} font="bold">
+      <ThemedText size="subtitle" style={styles.label}>
         {mode === 'setup' ? 'Enter your email' : 'Update your email'}
       </ThemedText>
       
