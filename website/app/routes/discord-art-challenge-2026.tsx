@@ -259,6 +259,7 @@ function WhatToSubmit() {
     { title: 'Any art style or medium (But no AI-generated artwork)', },
     { title: 'File dimensions: 1080 × 1350 px' },
     { title: 'Optional short description', detail: 'Up to 500 characters about the adventure, e.g. "Blinky visited the Jellyfish Planet, where the locals helped light up a path for Blinky." Judges read it when scoring Originality & Creativity.' },
+    { title: 'Optional link to socials + link to your comic on Inkverse', detail: 'If you\'d like to be tagged on Instagram + Bluesky, include a link to your profile. If you have a comic on Inkverse, include a link to it.' },
   ];
   return (
     <section id="what-to-submit" className="relative px-4 py-16 scroll-mt-24">
@@ -406,7 +407,7 @@ function KeyDates() {
               Apply here
             </a>.
           </p>
-          <p className="mt-3">
+          {/* <p className="mt-3">
             Coming to the event?{' '}
             <a
               href={DISCORD_EVENT_LINK}
@@ -416,7 +417,7 @@ function KeyDates() {
             >
               RSVP on Discord →
             </a>
-          </p>
+          </p> */}
         </>
       ),
     },
