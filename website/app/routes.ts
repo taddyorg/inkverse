@@ -33,5 +33,6 @@ export default [
     route("profile/edit/patreon", "routes/profile/edit/patreon.tsx"),
     route("profile/edit/bluesky", "routes/profile/edit/bluesky.tsx"),
     route("claim-creator/:uuid", "routes/claim-creator.tsx"),
+    route("discord-art-challenge-2026", "routes/discord-art-challenge-2026.tsx"),
     route(":username", "routes/profile.tsx"),
 ] satisfies RouteConfig;

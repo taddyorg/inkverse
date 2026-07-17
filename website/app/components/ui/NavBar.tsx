@@ -13,7 +13,7 @@ interface NavbarProps {
 }
 
 export function Navbar({ theme, zoomMode, onThemeChange, onZoomModeChange }: NavbarProps) {
-  const ignoreNavRoutes = ["/blog", "/terms-of-service", "/open-source", "/brand-kit", "/about-us", "/updates"];
+  const ignoreNavRoutes = ["/blog", "/terms-of-service", "/open-source", "/brand-kit", "/about-us", "/updates", "/discord-art-challenge-2026"];
   const [searchTerm, setSearchTerm] = useState('');
   const [searchTypes, setSearchTypes] = useState('comics');
   const [showSearchBox, setShowSearchBox] = useState(false);
