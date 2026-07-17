@@ -2,7 +2,7 @@
  * A standalone Fargate task definition with no service and no schedule.
  *
  * Used for `db-migrate` and the general-purpose `ad-hoc` image. Run on demand with
- * `aws ecs run-task` (migrate: cdk/scripts/run-migrate.sh; ad-hoc: cdk/scripts/run-task.sh).
+ * `npm run migrate` / `npm run task` (cdk/scripts/run-migrate.ts / run-task.ts).
  * The ad-hoc image's command is overridden per invocation; changing its Dockerfile
  * registers a new task-def revision on `cdk deploy`.
  */
@@ -64,7 +64,7 @@ export class AdHocTask extends Construct {
 
     new CfnOutput(this, 'TaskDefFamily', {
       value: props.family,
-      description: 'Task definition family — used by scripts/run-task.sh / run-migrate.sh',
+      description: 'Task definition family — used by npm run task / npm run migrate',
     });
   }
 }

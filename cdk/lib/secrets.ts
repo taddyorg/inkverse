@@ -29,7 +29,7 @@ export const WORKER_SECRETS = [...BASE_JOB_SECRETS, 'EXPO_PUSH_ACCESS_TOKEN'];
 /**
  * inkverse-adhoc one-off task = worker set + any ad-hoc-only secrets.
  * Add a name here (and create the SSM SecureString) then `cdk deploy InkverseAdHocTask`
- * to make a new secret available to `./scripts/run-task.sh` runs.
+ * to make a new secret available to `npm run task` runs.
  */
 export const ADHOC_SECRETS = [...WORKER_SECRETS];
 

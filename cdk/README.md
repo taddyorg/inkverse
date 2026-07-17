@@ -173,3 +173,10 @@ Run occasionally (e.g. monthly) and review the `npm run gc` dry run before delet
   `aws ssm put-parameter --type SecureString --overwrite`, then reference the name in `secrets.ts`.
 - RDS + its SG + endpoint param are retained/imported resources. Any change to them is deliberate;
   no IaC will recreate them. Always `cdk diff InkverseDataStack` before deploying the data stack.
+
+## Post-migration follow-ups
+
+Deferred until the CDK deployment has been proven in production:
+
+- **`npm run gc`** occasionally (e.g. monthly) to prune unreferenced image hashes from the
+  bootstrap ECR repo.

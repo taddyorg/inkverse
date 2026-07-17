@@ -140,7 +140,7 @@ new ScheduledJobStack(
   common,
 );
 
-// --- Ad-hoc tasks (run via scripts/run-task.sh) ---
+// --- Ad-hoc tasks (run via `npm run task` / `npm run migrate`) ---
 new AdHocTaskStack(
   app,
   'InkverseMigrateTask',
