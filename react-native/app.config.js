@@ -2,7 +2,7 @@ export default {
   expo: {
     name: "Inkverse",
     slug: "inkverse",
-    version: "3.3.3",
+    version: "3.4",
     orientation: "portrait",
     icon: "./assets/icons/ios-light.png",
     scheme: "inkverse",
@@ -29,7 +29,7 @@ export default {
     },
     android: {
       package: "com.bamtoons",
-      versionCode: 103,
+      versionCode: 105,
       minSdkVersion: 35,
       adaptiveIcon: {
         foregroundImage: "./assets/icons/adaptive-icon.png",

@@ -56,6 +56,15 @@ export const meta: MetaFunction = () => {
 const SPACE_NAVY = '#231F31';
 const STAR_YELLOW = '#F5CE55';
 
+const BLINKY_PALETTE: { name: string; hex: string }[] = [
+  { name: 'Inkverse Black', hex: '#403B51' },
+  { name: 'Star Yellow', hex: '#F5CE55' },
+  { name: 'Paper Pink', hex: '#FFE9E4' },
+  { name: 'Brand Pink', hex: '#ED5959' },
+  { name: 'Brand Purple', hex: '#A372F2' },
+  { name: 'Action Green', hex: '#55BC31' },
+];
+
 const SECTIONS = [
   ...(CONTEST_STATE === 'before' ? [] : [{ href: '#entries', label: 'Entries' }]),
   { href: '#theme', label: 'Theme' },
@@ -63,6 +72,7 @@ const SECTIONS = [
   { href: '#prizes', label: 'Prizes' },
   { href: '#how-to-enter', label: 'How to Enter' },
   { href: '#key-dates', label: 'Key Dates' },
+  { href: '#colour-palette', label: 'Colour Palette' },
   { href: '#faqs', label: 'FAQs' },
 ];
 
@@ -197,7 +207,7 @@ function Hero() {
   }[CONTEST_STATE];
 
   return (
-    <section className="relative px-4 pt-16 pb-20 sm:pt-24 text-center">
+    <section className="relative px-4 pt-16 pb-10 sm:pt-24 text-center">
       <div className="mx-auto max-w-3xl">
         <h1 className="my-4 text-5xl sm:text-7xl font-black leading-none text-[#FFF4E8]">
           The Adventures<br />
@@ -221,9 +231,29 @@ function Hero() {
   );
 }
 
+function ColourPalette() {
+  return (
+    <div>
+      <div className="grid grid-cols-3 gap-3">
+        {BLINKY_PALETTE.map((colour) => (
+          <div key={colour.hex} className="text-center">
+            <div
+              className="aspect-square w-full rounded-xl border border-[#FFF4E8]/15"
+              style={{ backgroundColor: colour.hex }}
+              aria-hidden="true"
+            />
+            <p className="mt-1.5 text-xs font-bold text-[#FFF4E8]">{colour.name}</p>
+            <p className="text-xs text-[#FFF4E8]/60">{colour.hex}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function ThemeSection() {
   return (
-    <section id="theme" className="relative px-4 py-16 scroll-mt-24">
+    <section id="theme" className="relative px-4 py-8 scroll-mt-24">
       <div className="mx-auto max-w-3xl">
         <SectionHeading eyebrow="Theme" />
         <img
@@ -253,6 +283,24 @@ function ThemeSection() {
   );
 }
 
+function ColourPaletteSection() {
+  return (
+    <section id="colour-palette" className="relative px-4 py-8 scroll-mt-24">
+      <div className="mx-auto max-w-3xl">
+        <SectionHeading
+          eyebrow="Inkverse Colour Palette"
+        />
+        <p className="mx-auto max-w-xl text-center text-lg leading-relaxed text-[#FFF4E8]/85">
+          Inkverse's colour palette is shared to be a helpful reference. Feel free to use whichever colours you like, using these colours is optional and will have no impact on your score.
+        </p>
+        <div className="mx-auto mt-8 w-full max-w-sm sm:max-w-md">
+          <ColourPalette />
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function WhatToSubmit() {
   const items = [
     { title: '1 finished poster / illustration', },
@@ -262,7 +310,7 @@ function WhatToSubmit() {
     { title: 'Optional link to socials + link to your comic on Inkverse', detail: 'If you\'d like to be tagged on Instagram + Bluesky, include a link to your profile. If you have a comic on Inkverse, include a link to it.' },
   ];
   return (
-    <section id="what-to-submit" className="relative px-4 py-16 scroll-mt-24">
+    <section id="what-to-submit" className="relative px-4 py-8 scroll-mt-24">
       <div className="mx-auto max-w-3xl">
         <SectionHeading eyebrow="What to submit" />
         <ul className="space-y-4">
@@ -314,7 +362,7 @@ const SCORING_RUBRIC: { criterion: string; accent: { heading: string; card: stri
 
 function Prizes() {
   return (
-    <section id="prizes" className="relative px-4 py-16 scroll-mt-24">
+    <section id="prizes" className="relative px-4 py-8 scroll-mt-24">
       <div className="mx-auto max-w-3xl">
         <SectionHeading eyebrow="Prizes" subtitle="12 winners · $1,500 total" />
         <div className="grid gap-4 sm:grid-cols-2">
@@ -365,7 +413,7 @@ function HowToEnter() {
     <><a href={WORKSHOP_APPLICATION_URL} target="_blank" rel="noopener noreferrer" className="font-bold text-[#F5CE55] underline underline-offset-4">Apply to give one of the workshops</a> on announcement day. (Optional)</>,
   ];
   return (
-    <section id="how-to-enter" className="relative px-4 py-16 scroll-mt-24">
+    <section id="how-to-enter" className="relative px-4 py-8 scroll-mt-24">
       <div className="mx-auto max-w-3xl">
         <SectionHeading eyebrow="How to enter" />
         <ol className="space-y-4">
@@ -423,7 +471,7 @@ function KeyDates() {
     },
   ];
   return (
-    <section id="key-dates" className="relative px-4 py-16 scroll-mt-24">
+    <section id="key-dates" className="relative px-4 py-8 scroll-mt-24">
       <div className="mx-auto max-w-3xl">
         <SectionHeading eyebrow="Key dates" />
         <ul className="space-y-4">
@@ -495,7 +543,7 @@ function EntriesGallery() {
     : ENTRIES;
 
   return (
-    <section id="entries" className="relative px-4 py-16 scroll-mt-24">
+    <section id="entries" className="relative px-4 py-8 scroll-mt-24">
       <div className="mx-auto max-w-5xl">
         <div className="mx-auto max-w-3xl">
           <SectionHeading eyebrow="Entries" />
@@ -564,7 +612,7 @@ function Faq() {
   ];
 
   return (
-    <section id="faqs" className="relative px-4 py-16 scroll-mt-24">
+    <section id="faqs" className="relative px-4 py-8 scroll-mt-24">
       <div className="mx-auto max-w-3xl">
         <SectionHeading eyebrow="FAQs" />
         <div className="space-y-3">
@@ -596,6 +644,7 @@ export default function DiscordArtChallenge2026() {
         <Prizes />
         <HowToEnter />
         <KeyDates />
+        <ColourPaletteSection />
         <Faq />
       </main>
     </div>

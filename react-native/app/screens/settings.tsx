@@ -54,7 +54,7 @@ export function SettingsScreen() {
   };
 
   const addYourComicButtonPressed = () => {
-    const url = 'https://taddy.org/upload-on-taddy';
+    const url = 'https://taddy.org?ref=inkverse.co';
 
     try {
       openURL({ url });
@@ -206,7 +206,7 @@ export function SettingsScreen() {
   const emailHelpButtonPressed = () => {
     // Implement email help functionality
     try {
-      openEmail({ toAddress: 'danny@inkverse.com' });
+      openEmail({ toAddress: 'danny@inkverse.co' });
     } catch (e) {
       console.error(e);
     }
@@ -217,6 +217,14 @@ export function SettingsScreen() {
     showShareSheet({ type: 'share-inkverse', item: null });
   };
 
+  const brandKitButtonPressed = () => {
+    // Implement brand kit functionality
+    try {
+      openURL({ url: 'https://inkverse.co/brand-kit' });
+    } catch (e) {
+      console.error(e);
+    }
+  };
   // Combine all items for the main list
   const allSettingsItems: SettingItem[] = [
     { id: 'screen-header', type: 'screen-header', name: 'Account', onPress: () => {} },
@@ -235,6 +243,7 @@ export function SettingsScreen() {
     { id: 'rate-app', type: 'button', name: `🏅 Rate App (5 stars 🙏)`, onPress: rateAppButtonPressed },
     // { id: 'share-inkverse', type: 'button' as const, name: '🤩 Share Inkverse with your friends', onPress: shareInkverseButtonPressed },
     { id: 'add-your-comic', type: 'button', name: '✚ Publish your comic on Inkverse', onPress: addYourComicButtonPressed },
+    { id: 'brand-kit', type: 'button', name: '🎨 Inkverse Brand Assets (for creators)', onPress: brandKitButtonPressed },
     { id: 'clear-image-cache', type: 'button', name: '🗑️ Manually clear image cache', onPress: clearImageCacheButtonPressed },
     ...(user ? [{ id: 'logout', type: 'button' as const, name: '✌️ Logout', onPress: logoutButtonPressed }] : []),
   ];
@@ -311,7 +320,6 @@ export function SettingsScreen() {
 
   // Render the support section
   const renderCombinedFooterSection = () => {
-
     const founderAvatar = 'https://ax0.taddy.org/general/danny-avatar-2.jpg';
     const founderDescription = "👋 Hey! I'm Danny. I'm building Inkverse to help more people discover awesome indie comics. What would make Inkverse even better?";
     
@@ -441,7 +449,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   combinedSectionContainer: {
-    marginTop: 60,
+    marginTop: 30,
     marginBottom: 24,
     paddingHorizontal: 16,
     alignItems: 'center',

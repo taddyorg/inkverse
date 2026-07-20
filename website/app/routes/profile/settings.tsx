@@ -107,7 +107,7 @@ export default function ProfileSettings() {
   };
 
   const handleEmailHelp = () => {
-    window.location.href = 'mailto:danny@inkverse.com';
+    window.location.href = 'mailto:danny@inkverse.co';
   };
 
   const handleLogoutClick = (e: React.MouseEvent) => {

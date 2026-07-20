@@ -39,7 +39,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   if (!data) { return []; }
   else if (!data.comicissue) { return []; }
   return getMetaTags({
-    title: data.comicissue.name, 
+    title: `${data.comicissue.name} | ${data.comicseries?.name}`, 
     description: data.comicissue.creatorNote,
     url: `${inkverseWebsiteUrl}${getInkverseUrl({ type: "comicissue", shortUrl: data.comicseries?.shortUrl, name: data.comicissue.name, uuid: data.comicissue.uuid })}`,
     imageURL: getBannerImageUrl({ bannerImageAsString: data.comicissue.bannerImageAsString }),

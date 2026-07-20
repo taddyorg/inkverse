@@ -1,10 +1,13 @@
-import { type LoaderFunctionArgs, type MetaFunction } from "react-router";
+import { redirect, type LoaderFunctionArgs, type MetaFunction } from "react-router";
 import { useLoaderData } from "react-router";
 import { NotionWrapper } from "../components/ui/NotionWrapper";
 import { loadDocumentation } from "@/lib/loader/documentation.server";
 import { getDocumentMeta } from "@/lib/meta/documentation";
 
 export const loader = async (args: LoaderFunctionArgs) => {
+  if (args.params.slug === "our-roadmap") {
+    throw redirect("/our-roadmap", 301);
+  }
   return await loadDocumentation(args, "/updates");
 };
 
