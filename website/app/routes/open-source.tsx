@@ -319,13 +319,10 @@ function ToolsWeUse() {
               <span aria-hidden="true" className="ml-2 inline-block transition-transform group-hover:translate-x-1">→</span>
             </h3>
             <ul className="mt-3 list-disc space-y-1 pl-5 leading-relaxed text-inkverse-black/80">
+              <li>To power the search functionality.</li>
               <li>To get a list of all comics that use the SSS open-standard.</li>
-              <li>For search.</li>
               <li>To get a webhook notification whenever a new comic or new episode is released.</li>
             </ul>
-            <p className="mt-3 leading-relaxed text-inkverse-black/80">
-              Taddy API is a useful tool, but can cost money if you make a lot of requests to the API. If you choose to fork Inkverse to make your own comic app, you can implement this yourself — you don't have to use Taddy API if you don't find it helpful or don't want to pay for it.
-            </p>
           </a>
           <a
             href={SSS_DOCS_URL}
