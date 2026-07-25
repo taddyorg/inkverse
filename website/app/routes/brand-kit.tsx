@@ -47,7 +47,7 @@ const BRAND_ASSETS: BrandAsset[] = [
   },
 ];
 
-const INTRO_COPY = "Yay! You've added your comic to Inkverse! Here are some some Inkverse brand assets you can use to promote your comic on your socials.";
+const INTRO_COPY = "Yay! You've added your comic to Inkverse! Here are some brand assets you can use to promote your comic and let your readers know about it.";
 
 /* ---------------------------------------------------------------------------
  * Page

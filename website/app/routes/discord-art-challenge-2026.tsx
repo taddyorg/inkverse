@@ -11,9 +11,10 @@ const CONTEST_STATE: ContestState = 'before';
 
 const DISCORD_INVITE_URL = 'https://discord.com/invite/SNZUHpkpQn';
 const SUBMISSION_CHANNEL_URL = 'https://discord.gg/75XPumH4Fx';
-const DISCORD_EVENT_LINK = 'https://discord.com/events/1172669177593606196/1524574918585618512';
+const DISCORD_EVENT_LINK = 'https://discord.gg/ftVnYRd5?event=1530637298197200906';
 const WORKSHOP_APPLICATION_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSfu2YunhUes_nbId-h7Y18NO9qu9JI5dj4xe33jVVdUGIoyLA/viewform';
 const WISE_COUNTRIES_URL = 'https://wise.com/help/articles/2978049/where-can-i-use-wise';
+const YOUTUBE_CHANNEL_URL = 'https://www.youtube.com/@pantheontalks/streams';
 
 const TADDY_URL = 'https://taddy.org';
 const TADDY_LOGO_URL = 'https://ax0.taddy.org/general/Taddy-Logo-Circle-v2.png';
@@ -437,12 +438,12 @@ function KeyDates() {
       title: 'Winners announced',
       detail: (
         <>
-          <p>On September 10th, 2026, we will host a couple of events on the <a href={DISCORD_INVITE_URL} target="_blank" rel="noopener noreferrer" className="font-bold text-[#F5CE55] underline underline-offset-4">Webcomic Creator Hub Discord</a>:</p>
+          <p>On September 10th, 2026, we will host a couple of talks, drawing games, and reveal prize winners on the <a href={DISCORD_INVITE_URL} target="_blank" rel="noopener noreferrer" className="font-bold text-[#F5CE55] underline underline-offset-4">Webcomic Creator Hub Discord</a> which will be MC'ed by Apollo from <a href={YOUTUBE_CHANNEL_URL} target="_blank" rel="noopener noreferrer" className="font-bold text-[#F5CE55] underline underline-offset-4">Pantheon Talks</a>:</p>
           <ul className="mt-3 space-y-1 list-disc pl-5">
-            <li>Workshop #1 — 4:00 PM PST</li>
-            <li>Drawing Games — 4:45 PM PST</li>
-            <li>Workshop #2 — 5:15 PM PST</li>
-            <li>Prize winners revealed on Discord Live Stream — 6:00 PM PST</li>
+            <li>Workshop #1 — 5:00 PM PST (7PM CST)</li>
+            <li>Drawing Games — 5:45 PM PST (7:45PM CST)</li>
+            <li>Workshop #2 — 5:15 PM PST (7:15PM CST)</li>
+            <li>Prize winners revealed on Live Stream — 6:00 PM PST (8PM CST)</li>
           </ul>
           <p className="mt-3">
             Want to give one of those workshops?{' '}
@@ -455,7 +456,7 @@ function KeyDates() {
               Apply here
             </a>.
           </p>
-          {/* <p className="mt-3">
+          <p className="mt-3">
             Coming to the event?{' '}
             <a
               href={DISCORD_EVENT_LINK}
@@ -465,7 +466,7 @@ function KeyDates() {
             >
               RSVP on Discord →
             </a>
-          </p> */}
+          </p>
         </>
       ),
     },
@@ -595,13 +596,16 @@ function Faq() {
       q: 'When and how are winners announced?',
       a: (
         <>
-          <p>Winners are announced on September 10th, 2026, during a day of events on Discord:</p>
-          <ul className="mt-3 space-y-1 list-disc pl-5">
-            <li>Workshop #1 — 4:00 PM PST</li>
-            <li>Drawing Games — 4:45 PM PST</li>
-            <li>Workshop #2 — 5:15 PM PST</li>
-            <li>Prize winners revealed on Discord Live Stream — 6:00 PM PST</li>
-          </ul>
+          <p>Winners are announced on September 10th, 2026, during a day of events on Discord starting at 5:00 PM PST (7:00 PM CST) which will be livestreamed on <a href={YOUTUBE_CHANNEL_URL} target="_blank" rel="noopener noreferrer" className="font-bold text-[#F5CE55] underline underline-offset-4">Pantheon Talks YouTube Live Stream</a>.</p>
+        </>
+      ),
+    },
+    {
+      q: 'What are the workshops and can I give one?',
+      a: (
+        <>
+          <p>On announcement day (September 10th, 2026), we host two talks or workshops from Discord community members who want to share their knowledge with the community.</p>
+          <p className="mt-3">Want to lead one? <a href={WORKSHOP_APPLICATION_URL} target="_blank" rel="noopener noreferrer" className="font-bold text-[#F5CE55] underline underline-offset-4">Apply to give a workshop</a>.</p>
         </>
       ),
     },
