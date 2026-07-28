@@ -442,8 +442,8 @@ function KeyDates() {
           <ul className="mt-3 space-y-1 list-disc pl-5">
             <li>Workshop #1 — 5:00 PM PST (7PM CST)</li>
             <li>Drawing Games — 5:45 PM PST (7:45PM CST)</li>
-            <li>Workshop #2 — 5:15 PM PST (7:15PM CST)</li>
-            <li>Prize winners revealed on Live Stream — 6:00 PM PST (8PM CST)</li>
+            <li>Workshop #2 — 6:15 PM PST (8:15PM CST)</li>
+            <li>Prize winners revealed on Live Stream — 7PM PST (9PM CST)</li>
           </ul>
           <p className="mt-3">
             Want to give one of those workshops?{' '}
