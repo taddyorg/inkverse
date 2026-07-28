@@ -599,7 +599,7 @@ function Faq() {
       q: 'When and how are winners announced?',
       a: (
         <>
-          <p>Winners are announced on September 10th, 2026, during a day of events on Discord starting at 5:00 PM PST (7:00 PM CST) which will be livestreamed on <a href={YOUTUBE_CHANNEL_URL} target="_blank" rel="noopener noreferrer" className="font-bold text-[#F5CE55] underline underline-offset-4">Pantheon Talks YouTube Live Stream</a>.</p>
+          <p>Winners are announced on September 10th, 2026, during a day of events on Discord starting at 5:00 PM PST (7:00 PM CST) which will be livestreamed on <a href={YOUTUBE_LIVE_STREAM_URL} target="_blank" rel="noopener noreferrer" className="font-bold text-[#F5CE55] underline underline-offset-4">Pantheon Talks YouTube Live Stream</a>.</p>
         </>
       ),
     },
