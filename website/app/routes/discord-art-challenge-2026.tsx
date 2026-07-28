@@ -15,6 +15,7 @@ const DISCORD_EVENT_LINK = 'https://discord.gg/ftVnYRd5?event=153063729819720090
 const WORKSHOP_APPLICATION_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSfu2YunhUes_nbId-h7Y18NO9qu9JI5dj4xe33jVVdUGIoyLA/viewform';
 const WISE_COUNTRIES_URL = 'https://wise.com/help/articles/2978049/where-can-i-use-wise';
 const YOUTUBE_CHANNEL_URL = 'https://www.youtube.com/@pantheontalks/streams';
+const YOUTUBE_LIVE_STREAM_URL = 'https://www.youtube.com/live/R0CkRhTnfVI';
 
 const TADDY_URL = 'https://taddy.org';
 const TADDY_LOGO_URL = 'https://ax0.taddy.org/general/Taddy-Logo-Circle-v2.png';
@@ -466,6 +467,8 @@ function KeyDates() {
             >
               RSVP on Discord →
             </a>
+            {' '}
+            or get notified when the live stream goes live on <a href={YOUTUBE_LIVE_STREAM_URL} target="_blank" rel="noopener noreferrer" className="font-bold text-[#F5CE55] underline underline-offset-4">YouTube</a>.
           </p>
         </>
       ),
