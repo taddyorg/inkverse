@@ -49,7 +49,7 @@ export function useSanitizedHtml(html: string | null | undefined, config: Saniti
 
       for (let i = 0; i < links.length; i++) {
         links[i].setAttribute('target', '_blank');
-        links[i].setAttribute('rel', 'noopener noreferrer');
+        links[i].setAttribute('rel', 'ugc noopener noreferrer');
       }
 
       return doc.body.innerHTML;

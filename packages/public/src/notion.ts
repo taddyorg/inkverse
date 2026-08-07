@@ -32,7 +32,8 @@ export type BlogPost = {
   description?: string,
   url?: string,
   imageURL?: string,
-  author?: { name: string, url: string }
+  author?: { name: string, url: string },
+  tags?: string[],
 }
 
 export const additionalInfoForNotionId: { [key: string]: BlogPost } = {
@@ -63,6 +64,7 @@ export const additionalInfoForNotionId: { [key: string]: BlogPost } = {
     description: "Have you ever hungered for an amazing vampire webtoon but don't know where to start? Here are 10 amazing vampire comics to read, no matter what your personal taste.",
     url: 'https://inkverse.co/blog/best-vampire-webtoons',
     imageURL: 'https://ink0.inkverse.co/blog/best-vampire-comics/best-vampire-webtoons-banner.webp',
+    tags: ['vampire', 'supernatural'],
     author: {
       name: 'Daniel Mathews',
       url: 'https://dmathewwws.com',
@@ -74,6 +76,7 @@ export const additionalInfoForNotionId: { [key: string]: BlogPost } = {
     description: 'From love triangles to polyamory, fake dating and enemies to lovers, this list of the best romance webtoons will have you swooning!',
     url: 'https://inkverse.co/blog/best-romance-webtoons',
     imageURL: 'https://ink0.inkverse.co/blog/best-romance-webtoons/best-romance-webtoons.webp',
+    tags: ['romance'],
     author: {
       name: 'Daniel Mathews',
       url: 'https://dmathewwws.com',
@@ -85,6 +88,7 @@ export const additionalInfoForNotionId: { [key: string]: BlogPost } = {
     description: 'Spooky toons and gothic romances! The supernatural webtoon genre truly has everything — and these are the best comics that we recommend.',
     url: 'https://inkverse.co/blog/best-supernatural-webtoons-to-read',
     imageURL: 'https://ink0.inkverse.co/blog/best-supernatural-webtoons/supernatural-webtoons-banner.png',
+    tags: ['supernatural'],
     author: {
       name: 'Daniel Mathews',
       url: 'https://dmathewwws.com',
@@ -96,6 +100,7 @@ export const additionalInfoForNotionId: { [key: string]: BlogPost } = {
     description: "Boys love webtoons can be hard to find, but whether you want wholesome high school romances, or spicy mature affairs, we've got you covered!",
     url: 'https://inkverse.co/blog/best-boyslove-webtoons-recommend',
     imageURL: 'https://ink0.inkverse.co/blog/best-boyslove-webtoons-images/boyslove-webtoons-banner.png',
+    tags: ['boys-love', 'lgbtq', 'romance'],
     author: {
       name: 'Daniel Mathews',
       url: 'https://dmathewwws.com',
@@ -107,6 +112,7 @@ export const additionalInfoForNotionId: { [key: string]: BlogPost } = {
     description: "Girls love webtoons can be hard to find, so we've collected the 10 best girlslove romances you're bound to fall in love with!",
     url: 'https://inkverse.co/blog/best-girls-love-webtoons-to-read',
     imageURL: 'https://ink0.inkverse.co/blog/girlslove-webtoons-images/best-girlslove-webtoons-banner.webp',
+    tags: ['girls-love', 'lgbtq', 'romance'],
     author: {
       name: 'Daniel Mathews',
       url: 'https://dmathewwws.com',
@@ -118,6 +124,7 @@ export const additionalInfoForNotionId: { [key: string]: BlogPost } = {
     description: "Good LGBT representation can be hard to find, but there are plenty of gay webtoons out there! We count down our 10 favourite queer webtoons, from romances to heartfelt real life stories.",
     url: 'https://inkverse.co/blog/best-lgbt-gay-webtoons',
     imageURL: 'https://ink0.inkverse.co/blog/best-lgbtq-webtoons-banner.jpg',
+    tags: ['lgbtq', 'romance'],
     author: {
       name: 'Daniel Mathews',
       url: 'https://dmathewwws.com',
@@ -129,6 +136,7 @@ export const additionalInfoForNotionId: { [key: string]: BlogPost } = {
     description: "Indie comics can be hard to find, so we've collected the best Indie & Canvas webtoons of all time! Whatever your genre, you'll find it here.",
     url: 'https://inkverse.co/blog/best-canvas-webtoons-to-read',
     imageURL: 'https://ink0.inkverse.co/blog/best-canvas-webtoons-banner.jpg',
+    tags: ['indie'],
     author: {
       name: 'Daniel Mathews',
       url: 'https://dmathewwws.com',
@@ -140,6 +148,7 @@ export const additionalInfoForNotionId: { [key: string]: BlogPost } = {
     description: "From scifi to fantasy, action webtoons span so many genres it can be hard to know what to read next! So here are the 10 action webtoons we think are the best.",
     url: 'https://inkverse.co/blog/best-action-webtoons-we-recommend',
     imageURL: 'https://ink0.inkverse.co/blog/best-action-webtoons-banner.jpg',
+    tags: ['action', 'fantasy'],
     author: {
       name: 'Daniel Mathews',
       url: 'https://dmathewwws.com',
@@ -151,6 +160,7 @@ export const additionalInfoForNotionId: { [key: string]: BlogPost } = {
     description: "There are so many webtoons that sometimes it can be hard to pick what to read next. So, we've rounded up 20 of the most popular webtoons to make your choice easier!",
     url: 'https://inkverse.co/blog/best-webtoons-of-all-time',
     imageURL: 'https://ink0.inkverse.co/blog/best-webtoons-images/best-webtoons-banner.webp',
+    tags: ['top-picks'],
     author: {
       name: 'Daniel Mathews',
       url: 'https://dmathewwws.com',
