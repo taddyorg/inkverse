@@ -36,7 +36,7 @@ import { getAndSaveMeDetails } from "@inkverse/shared-client/dispatch/profile";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://ink0.inkverse.co" },
-  { rel: "dns-prefetch", href: "https://ax0.taddy.org" },
+  { rel: "preconnect", href: "https://ax0.taddy.org" },
   ...fontPreloads.map((href) => ({
     rel: "preload" as const,
     href,

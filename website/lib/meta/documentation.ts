@@ -6,14 +6,16 @@ import { type GetDocumentationQuery } from "@inkverse/shared-client/graphql/oper
 export function getDocumentMeta(data: GetDocumentationQuery['getDocumentation']) {
   if (!data || !data.id || !data.text) { return []; }
 
+  const curatedInfo = additionalInfoForNotionId[data.id];
+
   const recordMap = JSON.parse(data.text);
   const allBlocks: Record<string, any>[] = Object.values(recordMap.block);
   const pageBlockObjects = allBlocks.filter((block: Record<string, any>) => { return block.value && block.value.type === 'page' });
   const mainBlock = get(pageBlockObjects, '[0]', null);
   const titleArray = get(mainBlock, 'value.properties.title', ['Inkverse Webtoons & Webcomics']);
-  const title = titleArray.join(' ');
-  const description = getDescription(recordMap.block, mainBlock?.value?.content || []);
-  const imageURL = getImageUrl(data.id, additionalInfoForNotionId[data.id]);
+  const title = curatedInfo?.title || titleArray.join(' ');
+  const description = curatedInfo?.description || getDescription(recordMap.block, mainBlock?.value?.content || []);
+  const imageURL = getImageUrl(data.id, curatedInfo);
 
   return getMetaTags({
     title,

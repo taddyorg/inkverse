@@ -1,7 +1,9 @@
 import { type MetaFunction } from "react-router";
 import { Link, useSearchParams } from "react-router";
 import { getMetaTags } from "@/lib/seo";
-import { NotionPage, additionalInfoForNotionId, type BlogPost } from "@inkverse/public/notion";
+import { NotionPage, additionalInfoForNotionId, getBlogPostListings, type BlogPostListing } from "@inkverse/public/notion";
+import { formatTag } from "../data/blog/tags";
+import { ACCENTS } from "../components/blog/accents";
 
 const INTRO_COPY = "Find your next favourite webtoon, no matter what genre you love.";
 
@@ -14,47 +16,14 @@ const POST_RANKING: string[] = [
   '/blog/best-girls-love-webtoons-to-read',
   '/blog/best-lgbt-gay-webtoons',
   '/blog/best-supernatural-webtoons-to-read',
-];
-
-interface Accent {
-  heading: string;
-  card: string;
-  shadow: string;
-}
-
-const ACCENTS: Accent[] = [
-  {
-    heading: 'text-brand-pink',
-    card: 'border-brand-pink/60',
-    shadow: 'shadow-[6px_6px_0_0_theme(colors.brand-pink)]',
-  },
-  {
-    heading: 'text-brand-purple',
-    card: 'border-brand-purple/60',
-    shadow: 'shadow-[6px_6px_0_0_theme(colors.brand-purple)]',
-  },
-  {
-    heading: 'text-taddy-blue',
-    card: 'border-taddy-blue/60',
-    shadow: 'shadow-[6px_6px_0_0_theme(colors.taddy-blue)]',
-  },
-  {
-    heading: 'text-action-green',
-    card: 'border-action-green/60',
-    shadow: 'shadow-[6px_6px_0_0_theme(colors.action-green)]',
-  },
+  '/blog/best-canvas-webtoons-to-read',
 ];
 
 /* ---------------------------------------------------------------------------
  * Page
  * ------------------------------------------------------------------------- */
 
-type IndexPost = BlogPost & { path: string };
-
-const BLOG_POSTS: IndexPost[] = Object.values(NotionPage)
-  .filter((page) => page.path.startsWith('/blog/'))
-  .map((page) => ({ path: page.path, ...additionalInfoForNotionId[page.path] }))
-  .filter((post) => post.title && post.imageURL)
+const BLOG_POSTS: BlogPostListing[] = getBlogPostListings()
   .sort((a, b) => {
     const rankA = POST_RANKING.indexOf(a.path);
     const rankB = POST_RANKING.indexOf(b.path);
@@ -64,24 +33,13 @@ const BLOG_POSTS: IndexPost[] = Object.values(NotionPage)
     return Number(b.priority) - Number(a.priority);
   });
 
-const ALL_TAGS: string[] = [...new Set(BLOG_POSTS.flatMap((post) => post.tags ?? []))].sort();
-
-const SPECIAL_TAG_LABELS: Record<string, string> = {
-  'lgbtq': 'LGBTQ+',
-  'sci-fi': 'Sci-Fi',
-};
-
-function formatTag(tag: string): string {
-  return SPECIAL_TAG_LABELS[tag]
-    ?? tag.split('-').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-}
+const ALL_TAGS: string[] = ['action', 'romance', 'fantasy', 'indie', 'boys-love', 'girls-love', 'LGBTQ+', 'vampire', 'supernatural'];
 
 export const meta: MetaFunction = () => {
   return getMetaTags({
     title: "Blog",
     description: INTRO_COPY,
     url: "https://inkverse.co/blog",
-    imageURL: additionalInfoForNotionId[NotionPage.BEST_WEBTOONS_OF_ALL_TIME.path].imageURL,
   });
 };
 
@@ -127,7 +85,7 @@ function TagFilterBar({ activeTag, onSelectTag }: { activeTag: string | null; on
   );
 }
 
-function PostGrid({ posts, onSelectTag }: { posts: IndexPost[]; onSelectTag: (tag: string | null) => void }) {
+function PostGrid({ posts, onSelectTag }: { posts: BlogPostListing[]; onSelectTag: (tag: string | null) => void }) {
   return (
     <section className="px-4 py-8 pb-16">
       <div className="mx-auto max-w-4xl">

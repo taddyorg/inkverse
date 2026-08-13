@@ -1,27 +1,30 @@
 import { type LoaderFunctionArgs, type MetaFunction } from "react-router";
-import { useLoaderData } from "react-router";
-import { loadDocumentation } from "@/lib/loader/documentation.server";
-import { getDocumentMeta } from "@/lib/meta/documentation";
+import { useParams } from "react-router";
+import { getBlogPostMeta } from "@/lib/meta/blog-post";
+import { getStructuredPost } from "../data/blog";
 
-import { NotionWrapper } from "../components/ui/NotionWrapper";
+import { RankedListPostPage } from "../components/blog/RankedListPostPage";
 
-export const loader = async (args: LoaderFunctionArgs) => {
-  return await loadDocumentation(args, "/blog");
+// All blog posts are statically bundled with the route — no Notion fetch.
+export const loader = async ({ params }: LoaderFunctionArgs) => {
+  if (!getStructuredPost(params.slug)) {
+    throw new Response("Not Found", { status: 404 });
+  }
+  return null;
 };
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
-  if (!data) { return []; }
-  else if (!data.documentation) { return []; }
-  return getDocumentMeta(data.documentation);
+export const meta: MetaFunction = ({ params }) => {
+  const post = getStructuredPost(params.slug);
+  return post ? getBlogPostMeta(post) : [];
 };
 
-export default function() {
-  const data = useLoaderData<typeof loader>();
-  if (!data || !data.documentation || !data.documentation.text) {
+export default function BlogPost() {
+  const { slug } = useParams();
+
+  const post = getStructuredPost(slug);
+  if (!post) {
     return <div>Could not find post</div>;
   }
 
-  return (
-    <NotionWrapper blockText={data.documentation.text}/>
-  );
+  return <RankedListPostPage post={post} />;
 }

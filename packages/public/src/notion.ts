@@ -30,7 +30,6 @@ export type BlogPost = {
   priority: string,
   title?: string,
   description?: string,
-  url?: string,
   imageURL?: string,
   author?: { name: string, url: string },
   tags?: string[],
@@ -62,7 +61,6 @@ export const additionalInfoForNotionId: { [key: string]: BlogPost } = {
     priority: '0.9',
     title: "The 10 Best Vampire Webtoons To Fit Everyone's Taste",
     description: "Have you ever hungered for an amazing vampire webtoon but don't know where to start? Here are 10 amazing vampire comics to read, no matter what your personal taste.",
-    url: 'https://inkverse.co/blog/best-vampire-webtoons',
     imageURL: 'https://ink0.inkverse.co/blog/best-vampire-comics/best-vampire-webtoons-banner.webp',
     tags: ['vampire', 'supernatural'],
     author: {
@@ -74,7 +72,6 @@ export const additionalInfoForNotionId: { [key: string]: BlogPost } = {
     priority: '0.9',
     title: 'The 10 Best Romance Webtoons To Fall In Love With',
     description: 'From love triangles to polyamory, fake dating and enemies to lovers, this list of the best romance webtoons will have you swooning!',
-    url: 'https://inkverse.co/blog/best-romance-webtoons',
     imageURL: 'https://ink0.inkverse.co/blog/best-romance-webtoons/best-romance-webtoons.webp',
     tags: ['romance'],
     author: {
@@ -86,7 +83,6 @@ export const additionalInfoForNotionId: { [key: string]: BlogPost } = {
     priority: '0.9',
     title: 'The 10 Best Supernatural Webtoons That We Recommend',
     description: 'Spooky toons and gothic romances! The supernatural webtoon genre truly has everything — and these are the best comics that we recommend.',
-    url: 'https://inkverse.co/blog/best-supernatural-webtoons-to-read',
     imageURL: 'https://ink0.inkverse.co/blog/best-supernatural-webtoons/supernatural-webtoons-banner.png',
     tags: ['supernatural'],
     author: {
@@ -98,9 +94,8 @@ export const additionalInfoForNotionId: { [key: string]: BlogPost } = {
     priority: '0.9',
     title: "The 10 Best Boys Love Webtoons We Can't Stop Reading",
     description: "Boys love webtoons can be hard to find, but whether you want wholesome high school romances, or spicy mature affairs, we've got you covered!",
-    url: 'https://inkverse.co/blog/best-boyslove-webtoons-recommend',
     imageURL: 'https://ink0.inkverse.co/blog/best-boyslove-webtoons-images/boyslove-webtoons-banner.png',
-    tags: ['boys-love', 'lgbtq', 'romance'],
+    tags: ['boys-love', 'LGBTQ+', 'romance'],
     author: {
       name: 'Daniel Mathews',
       url: 'https://dmathewwws.com',
@@ -110,9 +105,8 @@ export const additionalInfoForNotionId: { [key: string]: BlogPost } = {
     priority: '0.9',
     title: "The 10 Best Girls Love Romance Webtoons To Fall In Love With",
     description: "Girls love webtoons can be hard to find, so we've collected the 10 best girlslove romances you're bound to fall in love with!",
-    url: 'https://inkverse.co/blog/best-girls-love-webtoons-to-read',
     imageURL: 'https://ink0.inkverse.co/blog/girlslove-webtoons-images/best-girlslove-webtoons-banner.webp',
-    tags: ['girls-love', 'lgbtq', 'romance'],
+    tags: ['girls-love', 'LGBTQ+', 'romance'],
     author: {
       name: 'Daniel Mathews',
       url: 'https://dmathewwws.com',
@@ -122,9 +116,8 @@ export const additionalInfoForNotionId: { [key: string]: BlogPost } = {
     priority: '0.9',
     title: "The 10 Best Gay Webtoons Of All Time",
     description: "Good LGBT representation can be hard to find, but there are plenty of gay webtoons out there! We count down our 10 favourite queer webtoons, from romances to heartfelt real life stories.",
-    url: 'https://inkverse.co/blog/best-lgbt-gay-webtoons',
     imageURL: 'https://ink0.inkverse.co/blog/best-lgbtq-webtoons-banner.jpg',
-    tags: ['lgbtq', 'romance'],
+    tags: ['LGBTQ+', 'romance'],
     author: {
       name: 'Daniel Mathews',
       url: 'https://dmathewwws.com',
@@ -134,7 +127,6 @@ export const additionalInfoForNotionId: { [key: string]: BlogPost } = {
     priority: '0.9',
     title: "The 10 Best Indie Webtoons Of All Time",
     description: "Indie comics can be hard to find, so we've collected the best Indie & Canvas webtoons of all time! Whatever your genre, you'll find it here.",
-    url: 'https://inkverse.co/blog/best-canvas-webtoons-to-read',
     imageURL: 'https://ink0.inkverse.co/blog/best-canvas-webtoons-banner.jpg',
     tags: ['indie'],
     author: {
@@ -146,7 +138,6 @@ export const additionalInfoForNotionId: { [key: string]: BlogPost } = {
     priority: '0.9',
     title: "The 10 Best Action Webtoons That We Recommend",
     description: "From scifi to fantasy, action webtoons span so many genres it can be hard to know what to read next! So here are the 10 action webtoons we think are the best.",
-    url: 'https://inkverse.co/blog/best-action-webtoons-we-recommend',
     imageURL: 'https://ink0.inkverse.co/blog/best-action-webtoons-banner.jpg',
     tags: ['action', 'fantasy'],
     author: {
@@ -156,9 +147,8 @@ export const additionalInfoForNotionId: { [key: string]: BlogPost } = {
   },
   [NotionPage.BEST_WEBTOONS_OF_ALL_TIME.path]: {
     priority: '0.9',
-    title: "The 20 Best Webtoons of All Time, Ranked",
+    title: "The 20 Best Webtoons of All Time",
     description: "There are so many webtoons that sometimes it can be hard to pick what to read next. So, we've rounded up 20 of the most popular webtoons to make your choice easier!",
-    url: 'https://inkverse.co/blog/best-webtoons-of-all-time',
     imageURL: 'https://ink0.inkverse.co/blog/best-webtoons-images/best-webtoons-banner.webp',
     tags: ['top-picks'],
     author: {
@@ -170,7 +160,6 @@ export const additionalInfoForNotionId: { [key: string]: BlogPost } = {
     priority: '0.9',
     title: "A list of all the updates to the Inkverse app",
     description: "We've been working on the Inkverse app and we wanted to share a list of all the updates we've made to the app so far!",
-    url: 'https://inkverse.co/updates',
     imageURL: 'https://ink0.inkverse.co/blog/best-webtoons-images/best-webtoons-banner.webp',
     author: {
       name: 'Daniel Mathews',
@@ -181,7 +170,6 @@ export const additionalInfoForNotionId: { [key: string]: BlogPost } = {
     priority: '0.9',
     title: "New Inkverse app has been launched!",
     description: "We're excited to announce that the new iOS, Android and Web Inkverse app has been launched!",
-    url: 'https://inkverse.co/updates/new-app-launched',
     author: {
       name: 'Daniel Mathews',
       url: 'https://dmathewwws.com',
@@ -191,7 +179,6 @@ export const additionalInfoForNotionId: { [key: string]: BlogPost } = {
     priority: '0.8',
     title: "Inkverse 2.0 has been launched!",
     description: "We're excited to announce that the new Inkverse app has been launched!",
-    url: 'https://inkverse.co/updates/inkverse-2dot0',
     author: {
       name: 'Daniel Mathews',
       url: 'https://dmathewwws.com',
@@ -212,4 +199,17 @@ export const additionalInfoForNotionId: { [key: string]: BlogPost } = {
   [NotionPage.CODE_OF_CONDUCT.path]: {
     priority: '0.7',
   },
+}
+
+export type BlogPostListing = BlogPost & { path: string };
+
+/** All /blog/ pages that have card metadata, in NotionPage declaration order. */
+export function getBlogPostListings(): BlogPostListing[] {
+  return Object.values(NotionPage)
+    .filter((page) => page.path.startsWith('/blog/'))
+    .map((page): BlogPostListing | undefined => {
+      const info = additionalInfoForNotionId[page.path];
+      return info ? { ...info, path: page.path } : undefined;
+    })
+    .filter((post): post is BlogPostListing => !!post?.title && !!post.imageURL);
 }
