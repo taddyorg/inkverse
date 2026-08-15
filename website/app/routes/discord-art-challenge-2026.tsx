@@ -568,7 +568,7 @@ function EntriesGallery() {
     <section id="entries" className="relative px-4 py-8 scroll-mt-24">
       <div className="mx-auto max-w-5xl">
         <div className="mx-auto max-w-3xl">
-          <SectionHeading eyebrow="Entries" />
+          <SectionHeading eyebrow="Contest Entries" />
         </div>
         <div className="mx-auto max-w-3xl">
           {entries.length === 0 ? (
