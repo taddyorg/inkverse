@@ -7,7 +7,7 @@ import { getMetaTags } from "@/lib/seo";
 
 // 'before' = challenge hasn't started, 'current' = accepting entries, 'after' = winners announced
 type ContestState = 'before' | 'current' | 'after';
-const CONTEST_STATE: ContestState = 'before';
+const CONTEST_STATE: ContestState = 'current';
 
 const DISCORD_INVITE_URL = 'https://discord.com/invite/SNZUHpkpQn';
 const SUBMISSION_CHANNEL_URL = 'https://discord.gg/75XPumH4Fx';
@@ -33,13 +33,12 @@ interface ContestEntry {
 
 const ENTRIES: ContestEntry[] = [
   // Example entry — copy this shape:
-  // {
-  //   imageUrl: 'https://ax0.taddy.org/general/testy.jpg',
-  //   creatorName: 'Jane Doe',
-  //   inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
-  //   description: 'Blinky visited the Jellyfish Planet, where the locals helped light up a path for Blinky.',
-  //   winner: 'grand-best-art',
-  // },
+  {
+    imageUrl: 'https://media.discordapp.net/attachments/1200547884827938877/1538078204605239348/blinky.jpg?ex=6a815e74&is=6a800cf4&hm=430fe1b72e5acccb93e95b4fea99db0605fd08b393155368cfbe4810bcc1b5c2&=&format=webp&width=1229&height=1536',
+    creatorName: 'SNBX',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: 'Blinky travelled to Sagittarius A, the black hole in the centre of our galaxy, back in the 80s with the help of two scientists. Unfortunately, while sketching Srg A with pastels, they miss judged the distance of the Event Horizon by 0.0001mm, which resulted in Blinky experiencing spaghettification and time dilation of about 50 years. Blinky, now (mostly) recovered from spaghettification watches the stars peacefully on Earth through a telescope.',
+  },
 ];
 
 /* ---------------------------------------------------------------------------
@@ -68,12 +67,12 @@ const BLINKY_PALETTE: { name: string; hex: string }[] = [
 ];
 
 const SECTIONS = [
-  ...(CONTEST_STATE === 'before' ? [] : [{ href: '#entries', label: 'Entries' }]),
   { href: '#theme', label: 'Theme' },
   { href: '#what-to-submit', label: 'What to Submit' },
   { href: '#prizes', label: 'Prizes' },
   { href: '#how-to-enter', label: 'How to Enter' },
   { href: '#key-dates', label: 'Key Dates' },
+  { href: '#entries', label: 'Entries' },
   { href: '#colour-palette', label: 'Colour Palette' },
   { href: '#faqs', label: 'FAQs' },
 ];
@@ -431,6 +430,25 @@ function HowToEnter() {
   );
 }
 
+const creditLinkClass = 'font-semibold text-[#F5CE55]/80 underline underline-offset-4';
+
+const ANNOUNCEMENT_SCHEDULE: { pst: string; cst: string; title: string; highlight?: boolean; by?: React.ReactNode }[] = [
+  {
+    pst: '5:00 PM',
+    cst: '7:00 PM CST',
+    title: 'How to Pace your Story',
+    by: <>by <a href="https://www.instagram.com/whiskyguin/" target="_blank" rel="noopener noreferrer" className={creditLinkClass}>WhiskyGuin</a>, the creator of <a href="https://inkverse.co/comics/my-advisor-is-a-distraction" target="_blank" rel="noopener noreferrer" className={creditLinkClass}>My Advisor is a Distraction</a></>,
+  },
+  { pst: '5:45 PM', cst: '7:45 PM CST', title: 'Drawing Games' },
+  {
+    pst: '6:15 PM',
+    cst: '8:15 PM CST',
+    title: 'Clip Studio Tips',
+    by: <>by <a href="https://www.instagram.com/t.a.teufel/" target="_blank" rel="noopener noreferrer" className={creditLinkClass}>Thea</a>, the creator of <a href="https://inkverse.co/comics/fragmented-dreams" target="_blank" rel="noopener noreferrer" className={creditLinkClass}>Fragmented Dreams</a></>,
+  },
+  { pst: '7:00 PM', cst: '9:00 PM CST', title: 'Prize Winners Revealed on Live Stream', highlight: true },
+];
+
 function KeyDates() {
   const dates: { title: string; detail: React.ReactNode }[] = [
     { title: 'Starts', detail: 'August 1st, 2026' },
@@ -439,37 +457,37 @@ function KeyDates() {
       title: 'Winners announced',
       detail: (
         <>
-          <p>On September 10th, 2026, we will host a couple of talks, drawing games, and reveal prize winners on the <a href={DISCORD_INVITE_URL} target="_blank" rel="noopener noreferrer" className="font-bold text-[#F5CE55] underline underline-offset-4">Webcomic Creator Hub Discord</a> which will be MC'ed by Apollo from <a href={YOUTUBE_CHANNEL_URL} target="_blank" rel="noopener noreferrer" className="font-bold text-[#F5CE55] underline underline-offset-4">Pantheon Talks</a>:</p>
-          <ul className="mt-3 space-y-1 list-disc pl-5">
-            <li>Workshop #1 — 5:00 PM PST (7PM CST)</li>
-            <li>Drawing Games — 5:45 PM PST (7:45PM CST)</li>
-            <li>Workshop #2 — 6:15 PM PST (8:15PM CST)</li>
-            <li>Prize winners revealed on Live Stream — 7PM PST (9PM CST)</li>
+          <p className="text-lg font-bold text-[#FFF4E8]">September 10th, 2026</p>
+          <p className="mt-2">We will host a couple of talks, drawing games, and reveal prize winners on the <a href={DISCORD_INVITE_URL} target="_blank" rel="noopener noreferrer" className="font-bold text-[#F5CE55] underline underline-offset-4">Webcomic Creator Hub Discord</a>, MC'ed by Apollo from <a href={YOUTUBE_CHANNEL_URL} target="_blank" rel="noopener noreferrer" className="font-bold text-[#F5CE55] underline underline-offset-4">Pantheon Talks</a>.</p>
+          <ul className="mt-5 space-y-4">
+            {ANNOUNCEMENT_SCHEDULE.map((slot) => (
+              <li key={slot.pst} className="flex items-start gap-4">
+                <div className="w-24 shrink-0 text-center">
+                  <span className="inline-flex w-full items-center justify-center rounded-full bg-[#F5CE55]/15 py-0.5 text-sm font-bold text-[#F5CE55]">{slot.pst} PST</span>
+                  <p className="mt-1 text-xs text-[#FFF4E8]/50">{slot.cst}</p>
+                </div>
+                <div className="pt-0.5">
+                  <p className={`font-bold text-[#FFF4E8]`}>
+                    {slot.title}
+                  </p>
+                  {slot.by && <p className="mt-0.5 text-sm text-[#FFF4E8]/60">{slot.by}</p>}
+                </div>
+              </li>
+            ))}
           </ul>
-          <p className="mt-3">
-            Want to give one of those workshops?{' '}
-            <a
-              href={WORKSHOP_APPLICATION_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-bold text-[#F5CE55] underline underline-offset-4"
-            >
-              Apply here
-            </a>.
-          </p>
-          <p className="mt-3">
-            Coming to the event?{' '}
+          <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-3">
             <a
               href={DISCORD_EVENT_LINK}
               target="_blank"
               rel="noopener noreferrer"
-              className="font-bold text-[#F5CE55] underline underline-offset-4"
+              className="inline-block rounded-full bg-[#F5CE55] px-6 py-3 font-bold text-[#231F31] shadow-[0_0_20px_rgba(245,206,85,0.25)] transition-transform hover:scale-105 hover:shadow-[0_0_30px_rgba(245,206,85,0.5)]"
             >
               RSVP on Discord →
             </a>
-            {' '}
-            or get notified when the live stream goes live on <a href={YOUTUBE_LIVE_STREAM_URL} target="_blank" rel="noopener noreferrer" className="font-bold text-[#F5CE55] underline underline-offset-4">YouTube</a>.
-          </p>
+            <p className="text-sm">
+              or get notified when the live stream goes live on <a href={YOUTUBE_LIVE_STREAM_URL} target="_blank" rel="noopener noreferrer" className="font-semibold text-[#F5CE55]/80 underline underline-offset-4">YouTube</a>.
+            </p>
+          </div>
         </>
       ),
     },
@@ -645,12 +663,12 @@ export default function DiscordArtChallenge2026() {
       <Starfield />
       <main className="relative">
         <Hero />
-        <EntriesGallery />
         <ThemeSection />
         <WhatToSubmit />
         <Prizes />
         <HowToEnter />
         <KeyDates />
+        <EntriesGallery />
         <ColourPaletteSection />
         <Faq />
       </main>
