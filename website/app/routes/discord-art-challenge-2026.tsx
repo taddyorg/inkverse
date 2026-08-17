@@ -34,13 +34,13 @@ interface ContestEntry {
 const ENTRIES: ContestEntry[] = [
   // Example entry — copy this shape:
   {
-    imageUrl: 'https://media.discordapp.net/attachments/1200547884827938877/1538078204605239348/blinky.jpg?ex=6a815e74&is=6a800cf4&hm=430fe1b72e5acccb93e95b4fea99db0605fd08b393155368cfbe4810bcc1b5c2&=&format=webp&width=1229&height=1536',
+    imageUrl: 'https://ax0.taddy.org/discord-event/SNBX.jpg',
     creatorName: 'SNBX',
     // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
     description: 'Blinky travelled to Sagittarius A, the black hole in the centre of our galaxy, back in the 80s with the help of two scientists. Unfortunately, while sketching Srg A with pastels, they miss judged the distance of the Event Horizon by 0.0001mm, which resulted in Blinky experiencing spaghettification and time dilation of about 50 years. Blinky, now (mostly) recovered from spaghettification watches the stars peacefully on Earth through a telescope.',
   },
   {
-    imageUrl: 'https://cdn.discordapp.com/attachments/1200547884827938877/1538375459899711599/Inkverse_Entry.png?ex=6a82734b&is=6a8121cb&hm=83893e669b64da91e7c4fb5197d77a173d0cbb7119c8b645547a77619970d078',
+    imageUrl: 'https://ax0.taddy.org/discord-event/Stormy.png',
     creatorName: 'Stormy',
     // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
     description: 'Blinky visits an ocean planet where marine life freely travels between air and water. While sailing to a small island, they spot an alien species flying above the ocean surface.',
