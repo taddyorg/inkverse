@@ -9,7 +9,7 @@ export function GetAppButton() {
           <span className="flex items-center justify-center mr-4 w-9 h-9 bg-paper-pink rounded-lg">
             <img src="https://ax0.taddy.org/inkverse/inkverse-square-transparent.png" alt="App logo" className="w-7 h-7" />
           </span>
-          <span className="font-semibold">Get the Inkverse app</span>
+          <span className="font-semibold">Read on the Inkverse App</span>
         </div>
         <svg 
           xmlns="http://www.w3.org/2000/svg" 

@@ -10,7 +10,6 @@ import { AppDownloadCTA } from "./AppDownloadCTA";
 import { RecapList } from "./RecapList";
 import { RelatedPosts } from "./RelatedPosts";
 import { Footer } from "../ui/Footer";
-import { GetAppButton } from "../ui/GetAppButton";
 
 const INLINE_CTA_AFTER_ENTRY = 5;
 
@@ -129,7 +128,6 @@ export function RankedListPostPage({ post }: { post: RankedListPost }) {
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <Footer />
       </div>
-      <GetAppButton />
     </div>
   );
 }
