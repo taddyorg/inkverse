@@ -14,6 +14,7 @@ const SUBMISSION_CHANNEL_URL = 'https://discord.gg/75XPumH4Fx';
 const DISCORD_EVENT_LINK = 'https://discord.gg/ftVnYRd5?event=1530637298197200906';
 const WORKSHOP_APPLICATION_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSfu2YunhUes_nbId-h7Y18NO9qu9JI5dj4xe33jVVdUGIoyLA/viewform';
 const WISE_COUNTRIES_URL = 'https://wise.com/help/articles/2978049/where-can-i-use-wise';
+const PAYPAL_COUNTRIES_URL = 'https://www.paypal.com/us/webapps/mpp/country-worldwide';
 const YOUTUBE_CHANNEL_URL = 'https://www.youtube.com/@pantheontalks/streams';
 const YOUTUBE_LIVE_STREAM_URL = 'https://www.youtube.com/live/R0CkRhTnfVI';
 
@@ -44,6 +45,12 @@ const ENTRIES: ContestEntry[] = [
     creatorName: 'Stormy',
     // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
     description: 'Blinky visits an ocean planet where marine life freely travels between air and water. While sailing to a small island, they spot an alien species flying above the ocean surface.',
+  },
+  {
+    imageUrl: 'https://ax0.taddy.org/discord-event/wrartist.png',
+    creatorName: 'Wrartist',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: "Blinky enters a planet covered entirely by a cosmic sea, it feels like water but it isn't, there're lights all around the planet including from it's natives, the Scyphapods, a bioluminescent species who give him a tour of their part of the milky seas."
   },
 ];
 
@@ -591,6 +598,11 @@ function EntriesGallery() {
                 ))}
               </div>
           )}
+          {CONTEST_STATE === 'current' && (
+            <p className="mt-8 text-center text-lg font-semibold text-[#FFF4E8]">
+              The contest is currently underway and new entries are being added as they are submitted. The deadline is August 31st, 2026 Midnight PST.
+            </p>
+          )}
         </div>
       </div>
     </section>
@@ -601,11 +613,11 @@ function Faq() {
   const faqs: { q: string; a: React.ReactNode }[] = [
     {
       q: 'Who can enter?',
-      a: <>Anyone who is a member of the <a href={DISCORD_INVITE_URL} target="_blank" rel="noopener noreferrer" className="font-bold text-[#F5CE55] underline underline-offset-4">Webcomic Creator Hub Discord</a> and is 13 years or older. If you're under 18, you'll need a guardian to create a Wise account for you to receive prize funds.</>,
+      a: <>Anyone who is a member of the <a href={DISCORD_INVITE_URL} target="_blank" rel="noopener noreferrer" className="font-bold text-[#F5CE55] underline underline-offset-4">Webcomic Creator Hub Discord</a> and is 13 years or older. If you're under 18, you'll need a guardian to receive prize funds on your behalf (via PayPal or Wise).</>,
     },
     {
       q: 'How do winners get paid?',
-      a: <>We send winners payment via Wise (similar to PayPal). Wise is accepted in most countries, but excludes some (Afghanistan, Iran, Venezuela, etc.). <a href={WISE_COUNTRIES_URL} target="_blank" rel="noopener noreferrer" className="font-bold text-[#F5CE55] underline underline-offset-4">Check that your country is not on the excluded list</a>.</>,
+      a: <>We can send winners payment via PayPal or Wise. If you are a winner we will DM you and ask you to provide your PayPal email address or Wise account details. Both are available in most countries, but each excludes some (Afghanistan, Iran, Venezuela, etc.). Check that your country is supported by <a href={PAYPAL_COUNTRIES_URL} target="_blank" rel="noopener noreferrer" className="font-bold text-[#F5CE55] underline underline-offset-4">PayPal</a> or <a href={WISE_COUNTRIES_URL} target="_blank" rel="noopener noreferrer" className="font-bold text-[#F5CE55] underline underline-offset-4">Wise</a>.</>,
     },
     {
       q: 'Is AI-generated artwork allowed?',
