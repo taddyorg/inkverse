@@ -1,5 +1,7 @@
 import { type MetaFunction } from "react-router";
 import { getMetaTags } from "@/lib/seo";
+import { linkIconNames } from "@inkverse/shared-client/utils/link-icons";
+import { LinkType } from "@inkverse/shared-client/graphql/operations";
 
 /* ---------------------------------------------------------------------------
  * EDIT THIS SECTION TO UPDATE THE PAGE (then redeploy)
@@ -14,6 +16,7 @@ interface BrandAsset {
   name: string;
   url: string;
   alt: string;
+  secondaryText?: string;
   // Spans both grid columns on desktop
   wide?: boolean;
 }
@@ -34,20 +37,45 @@ const BRAND_ASSETS: BrandAsset[] = [
     url: 'https://ink0.inkverse.co/general/inkverse-mascot.png',
     alt: 'Blinky, the Inkverse mascot',
   },
+  // {
+  //   name: 'Read on Inkverse',
+  //   url: 'https://ink0.inkverse.co/general/read-on-inkverse-mascot.png',
+  //   alt: 'Blinky holding a "Read On" sign',
+  // },
+  // {
+  //   name: 'Read on Inkverse — Badge',
+  //   url: 'https://ink0.inkverse.co/general/read-on-inkverse-badge.png',
+  //   alt: 'Read on Inkverse badge with Blinky',
+  //   wide: true,
+  // },
   {
-    name: 'Read on Inkverse',
-    url: 'https://ink0.inkverse.co/general/read-on-inkverse-mascot.png',
-    alt: 'Blinky holding a "Read On" sign',
+    name: 'Dancing Blinky #1 - Sticker',
+    url: 'https://ink0.inkverse.co/general/dancing-blinky-1.gif',
+    alt: 'Dancing Blinky #1 holding a "Read On" sign',
+    secondaryText: 'Search for #read-on-inkverse on Instagram or TikTok',
   },
   {
-    name: 'Read on Inkverse — Badge',
-    url: 'https://ink0.inkverse.co/general/read-on-inkverse-badge.png',
-    alt: 'Read on Inkverse badge with Blinky',
-    wide: true,
+    name: 'Dancing Blinky #2 - Sticker',
+    url: 'https://ink0.inkverse.co/general/dancing-blinky-2.gif',
+    alt: 'Dancing Blinky #1 holding a "Read On" sign',
+    secondaryText: 'Search for #read-on-inkverse on Instagram or TikTok',
+  },
+  {
+    name: 'Dancing Blinky #3 - Sticker',
+    url: 'https://ink0.inkverse.co/general/dancing-blinky-3.gif',
+    alt: 'Dancing Blinky #2 holding a "Read On" sign',
+    secondaryText: 'Search for #read-on-inkverse on Instagram or TikTok',
   },
 ];
 
-const INTRO_COPY = "Yay! You've added your comic to Inkverse! Here are some brand assets you can use to promote your comic and let your readers know about it.";
+const INTRO_COPY = "Yay! You've added your comic to Inkverse! Follow these steps to let your readers where to read your comic.";
+
+const SOCIAL_PLATFORMS: { name: string; type: LinkType }[] = [
+  { name: 'Instagram', type: LinkType.INSTAGRAM },
+  { name: 'TikTok', type: LinkType.TIKTOK },
+  { name: 'Bluesky', type: LinkType.BLUESKY },
+  { name: 'Patreon', type: LinkType.PATREON },
+];
 
 /* ---------------------------------------------------------------------------
  * Page
@@ -72,14 +100,22 @@ const pageStyles = `
   }
 `;
 
-function SectionHeading({ eyebrow, accent, subtitle }: { eyebrow: string; accent: string; subtitle?: string }) {
+function SectionHeading({ eyebrow, accent, subtitle, step }: { eyebrow: string; accent: string; subtitle?: string; step?: number }) {
   return (
     <div className="mb-8 text-center">
       <div className="inline-block">
-        <span className={`${accent} opacity-70`} aria-hidden="true">✦</span>
-        <h2 className={`mt-2 -mr-[0.18em] text-2xl sm:text-3xl font-extrabold uppercase tracking-[0.18em] ${accent}`}>
-          {eyebrow}
-        </h2>
+        <div className="flex items-center justify-center gap-3 sm:gap-4">
+          {step ? (
+            <span className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-current text-lg font-black ${accent}`}>
+              <span className="text-white">{step}</span>
+            </span>
+          ) : (
+            <span className={`${accent} opacity-70`} aria-hidden="true">✦</span>
+          )}
+          <h2 className={`-mr-[0.08em] sm:-mr-[0.18em] text-left sm:text-center text-xl sm:text-3xl font-extrabold uppercase tracking-[0.08em] sm:tracking-[0.18em] ${accent}`}>
+            {eyebrow}
+          </h2>
+        </div>
         <div className="mt-3 h-0.5 w-full rounded-full bg-current opacity-40" aria-hidden="true" />
       </div>
       {subtitle && (
@@ -115,8 +151,9 @@ function LogosAndMascot() {
     <section className="px-4 py-8">
       <div className="mx-auto max-w-3xl">
         <SectionHeading
-          eyebrow="Logos & Mascot"
-          accent="text-brand-pink"
+          step={1}
+          eyebrow="Pick an Image or Animated Sticker"
+          accent="text-taddy-blue"
         />
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {BRAND_ASSETS.map((asset) => (
@@ -139,6 +176,11 @@ function LogosAndMascot() {
                 <p className="mt-3 text-center text-sm font-bold">
                   {asset.name}
                 </p>
+                {asset.secondaryText && (
+                  <p className="mt-1 text-center text-sm text-inkverse-black/70 dark:text-white/70">
+                    {asset.secondaryText}
+                  </p>
+                )}
               </a>
             ))}
           </div>
@@ -148,7 +190,7 @@ function LogosAndMascot() {
             download
             className="inline-block rounded-full bg-inkverse-black px-6 py-3 font-bold text-white transition-colors hover:bg-gray-800 dark:bg-white dark:text-inkverse-black dark:hover:bg-gray-200"
           >
-            Download All Logos & Mascots (.zip)
+            Download All Logos, Mascots & Stickers (.zip)
           </a>
         </div>
       </div>
@@ -175,7 +217,8 @@ function ComicLink() {
     <section className="px-4 py-16">
       <div className="mx-auto max-w-3xl">
         <SectionHeading
-          eyebrow="How to get a link to your comic"
+          step={2}
+          eyebrow="Get the Link to Your Comic"
           accent="text-taddy-blue"
         />
         <div className="grid gap-8 sm:grid-cols-2">
@@ -195,9 +238,36 @@ function ComicLink() {
             </div>
           ))}
         </div>
-        <p className="mt-6 text-center leading-relaxed text-inkverse-black/80 dark:text-white/80">
-          Both will generate the same link.
+      </div>
+    </section>
+  );
+}
+
+function TellYourAudience() {
+  return (
+    <section className="px-4 py-8 pb-16">
+      <div className="mx-auto max-w-3xl">
+        <SectionHeading
+          step={3}
+          eyebrow="Tell Your Fans About Your Comic"
+          accent="text-taddy-blue"
+        />
+        <p className="mx-auto max-w-2xl text-center text-lg leading-relaxed text-inkverse-black/80 dark:text-white/80">
+          Let your fans on Instagram, TikTok, Bluesky, and Patreon know where to read your comic.
         </p>
+        <div className="mt-8 flex items-start justify-center gap-10 sm:gap-14">
+          {SOCIAL_PLATFORMS.map((platform) => (
+            <div key={platform.name} className="flex flex-col items-center">
+              <img
+                src={`https://ax0.taddy.org/brands/${linkIconNames[platform.type]}.svg`}
+                alt={`${platform.name} logo`}
+                loading="lazy"
+                className="h-10 w-10 sm:h-12 sm:w-12 object-contain dark:brightness-0 dark:invert"
+              />
+              <p className="mt-3 text-sm font-bold">{platform.name}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );
@@ -211,6 +281,7 @@ export default function BrandKit() {
         <Hero />
         <LogosAndMascot />
         <ComicLink />
+        <TellYourAudience />
       </main>
     </div>
   );
