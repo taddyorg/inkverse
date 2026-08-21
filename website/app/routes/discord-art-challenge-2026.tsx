@@ -52,6 +52,24 @@ const ENTRIES: ContestEntry[] = [
     // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
     description: "Blinky enters a planet covered entirely by a cosmic sea, it feels like water but it isn't, there're lights all around the planet including from it's natives, the Scyphapods, a bioluminescent species who give him a tour of their part of the milky seas."
   },
+  {
+    imageUrl: 'https://ax0.taddy.org/discord-event/StarlightEclipsecritter.png',
+    creatorName: 'StarlightEclipsecritter',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: "Blinky visits the Eclipsecritter universe and meets a few new friends! Together they talk about the stories they're from, and have seen! Eclipsecritter is a writer and artist, Alley is a cat from space, and Crimson is a rabbit from a strange alternative reality. And Blinky explores all kinds of worlds, including this one!"
+  },
+  {
+    imageUrl: 'https://ax0.taddy.org/discord-event/porkie.png',
+    creatorName: 'porkie',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: "When Blinky gets tired travelling from planet to planet, they find that the best place to rest is within the clouds. There is nothing more comforting than sitting on a mound of fluff while watching the warm sun shine through. Blinky always enjoys the kind welcome from the cloud creatures, watching them create shapes in the sky. And the best part about visiting the clouds is that the view is always a new sight to see."
+  },
+  {
+    imageUrl: 'https://ax0.taddy.org/discord-event/hairaaaaa.png',
+    creatorName: 'hairaaaaa',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: "Blinky's first adventure takes them to Kumoyume, an unreal planet made of clouds and dreams. On the way, Blinky met a huge flying creature, as Blinky was offered a tour around the planet. There, Blinky saw many different creatures and took pictures of them, they were all super friendly, and one even clung to Blinky along the ride! The planet itself feels like a dream that Blinky never wants to wake up from!"
+  },
 ];
 
 /* ---------------------------------------------------------------------------
