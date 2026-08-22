@@ -1,4 +1,7 @@
+import React, { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Link, type MetaFunction } from "react-router";
+import { IoChevronBack, IoChevronForward, IoClose } from "react-icons/io5";
 import { getMetaTags } from "@/lib/seo";
 
 /* ---------------------------------------------------------------------------
@@ -69,6 +72,18 @@ const ENTRIES: ContestEntry[] = [
     creatorName: 'hairaaaaa',
     // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
     description: "Blinky's first adventure takes them to Kumoyume, an unreal planet made of clouds and dreams. On the way, Blinky met a huge flying creature, as Blinky was offered a tour around the planet. There, Blinky saw many different creatures and took pictures of them, they were all super friendly, and one even clung to Blinky along the ride! The planet itself feels like a dream that Blinky never wants to wake up from!"
+  },
+  {
+    imageUrl: 'https://ax0.taddy.org/discord-event/Zemyzemph.jpg',
+    creatorName: 'Zemyzemph',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: "Journey entry: ​Planet Ophiuchus! Blinky is caught in a vintage comic book tempest, gliding through parting clouds as two legendary sky serpents burst into radiant light. Two metallic Sentinels hover beside their serpent gods, keeping watch over the skies. Catching the updraft in his cape, Blinky sketched the terrifying beauty of these cosmic titans to create an unforgettable journey."
+  },
+  {
+    imageUrl: 'https://ax0.taddy.org/discord-event/Versim.jpg',
+    creatorName: 'Versim',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: "Blinky travels to a bioluminescent planet, where the sky is devoid of light and the local flora and fauna rely on the light they create themselves to navigate."
   },
 ];
 
@@ -555,11 +570,16 @@ const WINNER_SORT_ORDER: Record<Winner, number> = {
   'winner': 2,
 };
 
-function EntryCard({ entry }: { entry: ContestEntry }) {
+function EntryCard({ entry, onOpen }: { entry: ContestEntry; onOpen: () => void }) {
   const showBadge = CONTEST_STATE === 'after' && entry.winner;
   return (
     <figure className="flex flex-col overflow-hidden rounded-2xl border border-[#FFF4E8]/10 bg-[#FFF4E8]/5">
-      <div className="relative aspect-[4/5]">
+      <button
+        type="button"
+        onClick={onOpen}
+        aria-label={`View larger: entry by ${entry.creatorName}`}
+        className="group relative block aspect-[4/5] w-full cursor-zoom-in overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#F5CE55]"
+      >
         <img
           src={entry.imageUrl}
           alt={`Art challenge entry by ${entry.creatorName}`}
@@ -571,7 +591,7 @@ function EntryCard({ entry }: { entry: ContestEntry }) {
             {WINNER_BADGES[entry.winner].label}
           </span>
         )}
-      </div>
+      </button>
       <figcaption className="flex flex-1 flex-col gap-2 p-5">
         <p className="font-bold text-[#FFF4E8]">{entry.creatorName}</p>
         {entry.description && <p className="text-sm leading-relaxed text-[#FFF4E8]/70">{entry.description}</p>}
@@ -588,12 +608,213 @@ function EntryCard({ entry }: { entry: ContestEntry }) {
   );
 }
 
+const lightboxIconButtonClass =
+  'flex items-center justify-center rounded-full bg-[#231F31]/80 text-[#FFF4E8] backdrop-blur-sm transition-colors hover:bg-[#F5CE55] hover:text-[#231F31] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F5CE55]';
+
+function EntryLightbox({
+  entries,
+  index,
+  onClose,
+  onPrev,
+  onNext,
+}: {
+  entries: ContestEntry[];
+  index: number;
+  onClose: () => void;
+  onPrev: () => void;
+  onNext: () => void;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const entry = entries[index];
+  const showBadge = CONTEST_STATE === 'after' && entry.winner;
+  const hasSiblings = entries.length > 1;
+
+  // Lock the page behind the lightbox, padding for the scrollbar so it doesn't shift
+  useEffect(() => {
+    const originalOverflow = window.getComputedStyle(document.body).overflow;
+    const originalPaddingRight = window.getComputedStyle(document.body).paddingRight;
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.body.style.paddingRight = originalPaddingRight;
+    };
+  }, []);
+
+  // Focus the close button on open, hand focus back to the entry that was clicked on close
+  useEffect(() => {
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    const timer = setTimeout(() => closeButtonRef.current?.focus(), 0);
+    return () => {
+      clearTimeout(timer);
+      previouslyFocused?.focus?.();
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+        return;
+      }
+      if (event.key === 'ArrowLeft' && hasSiblings) {
+        onPrev();
+        return;
+      }
+      if (event.key === 'ArrowRight' && hasSiblings) {
+        onNext();
+        return;
+      }
+      if (event.key === 'Tab' && containerRef.current) {
+        const focusable = Array.from(
+          containerRef.current.querySelectorAll(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+          )
+        ).filter((el) => (el as HTMLElement).offsetParent !== null) as HTMLElement[];
+        if (focusable.length === 0) return;
+        const firstElement = focusable[0];
+        const lastElement = focusable[focusable.length - 1];
+
+        if (event.shiftKey && document.activeElement === firstElement) {
+          lastElement.focus();
+          event.preventDefault();
+        } else if (!event.shiftKey && document.activeElement === lastElement) {
+          firstElement.focus();
+          event.preventDefault();
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [onClose, onPrev, onNext, hasSiblings]);
+
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
+    <div
+      ref={containerRef}
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/85 p-4"
+      onClick={handleBackdropClick}
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Art challenge entry by ${entry.creatorName}`}
+    >
+      <button
+        ref={closeButtonRef}
+        type="button"
+        onClick={onClose}
+        aria-label="Close"
+        className={`absolute right-4 top-4 z-10 h-11 w-11 ${lightboxIconButtonClass}`}
+      >
+        <IoClose size={24} />
+      </button>
+
+      {hasSiblings && (
+        <>
+          <button
+            type="button"
+            onClick={onPrev}
+            aria-label="Previous entry"
+            className={`absolute left-4 top-1/2 z-10 hidden h-12 w-12 -translate-y-1/2 sm:flex ${lightboxIconButtonClass}`}
+          >
+            <IoChevronBack size={26} />
+          </button>
+          <button
+            type="button"
+            onClick={onNext}
+            aria-label="Next entry"
+            className={`absolute right-4 top-1/2 z-10 hidden h-12 w-12 -translate-y-1/2 sm:flex ${lightboxIconButtonClass}`}
+          >
+            <IoChevronForward size={26} />
+          </button>
+        </>
+      )}
+
+      <figure
+        className="relative flex max-h-[92vh] w-full max-w-3xl flex-col overflow-y-auto rounded-2xl border border-[#F5CE55]/30 shadow-[0_0_60px_rgba(0,0,0,0.6)] lg:w-auto lg:max-w-none lg:flex-row lg:overflow-hidden"
+        style={{ backgroundColor: SPACE_NAVY }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="relative shrink-0 lg:flex lg:items-center lg:justify-center">
+          <img
+            src={entry.imageUrl}
+            alt={`Art challenge entry by ${entry.creatorName}`}
+            className="mx-auto max-h-[72vh] w-auto max-w-full object-contain sm:max-h-[78vh] lg:max-h-[92vh] lg:max-w-[calc(100vw-27rem)]"
+          />
+          {showBadge && entry.winner && (
+            <span className={`absolute left-3 top-3 rounded-full px-3 py-1 text-sm font-bold ${WINNER_BADGES[entry.winner].className}`}>
+              {WINNER_BADGES[entry.winner].label}
+            </span>
+          )}
+        </div>
+
+        <div className="flex flex-col lg:w-80 lg:shrink-0 lg:overflow-y-auto lg:border-l lg:border-[#FFF4E8]/10 xl:w-96">
+          {hasSiblings && (
+            <div className="flex items-center justify-center gap-4 border-t border-[#FFF4E8]/10 px-5 py-3 lg:border-t-0 lg:border-b">
+              <button
+                type="button"
+                onClick={onPrev}
+                aria-label="Previous entry"
+                className={`h-10 w-10 sm:hidden ${lightboxIconButtonClass}`}
+              >
+                <IoChevronBack size={22} />
+              </button>
+              <p className="text-sm font-semibold text-[#FFF4E8]/60">
+                {index + 1} of {entries.length}
+              </p>
+              <button
+                type="button"
+                onClick={onNext}
+                aria-label="Next entry"
+                className={`h-10 w-10 sm:hidden ${lightboxIconButtonClass}`}
+              >
+                <IoChevronForward size={22} />
+              </button>
+            </div>
+          )}
+
+          <figcaption className="flex flex-col gap-2 px-5 pb-5 pt-4">
+            <p className="text-lg font-bold text-[#FFF4E8]">{entry.creatorName}</p>
+            {entry.description && <p className="leading-relaxed text-[#FFF4E8]/70">{entry.description}</p>}
+            {entry.inkverseComicUrl && (
+              <a
+                href={entry.inkverseComicUrl}
+                className="pt-1 text-sm font-bold text-[#F5CE55] hover:underline underline-offset-4"
+              >
+                Read their comic on Inkverse →
+              </a>
+            )}
+          </figcaption>
+        </div>
+      </figure>
+    </div>,
+    document.body
+  );
+}
+
 function EntriesGallery() {
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+
   if (CONTEST_STATE === 'before') return null;
 
   const entries = CONTEST_STATE === 'after'
     ? [...ENTRIES].sort((a, b) => (a.winner ? WINNER_SORT_ORDER[a.winner] : 3) - (b.winner ? WINNER_SORT_ORDER[b.winner] : 3))
     : ENTRIES;
+
+  const total = entries.length;
 
   return (
     <section id="entries" className="relative px-4 py-8 scroll-mt-24">
@@ -612,7 +833,7 @@ function EntriesGallery() {
           ) : (
               <div className="grid gap-6 sm:grid-cols-2">
                 {entries.map((entry, i) => (
-                  <EntryCard key={`${entry.creatorName}-${i}`} entry={entry} />
+                  <EntryCard key={`${entry.creatorName}-${i}`} entry={entry} onOpen={() => setActiveIndex(i)} />
                 ))}
               </div>
           )}
@@ -620,6 +841,15 @@ function EntriesGallery() {
             <p className="mt-8 text-center text-lg font-semibold text-[#FFF4E8]">
               The contest is currently underway and new entries are being added as they are submitted. The deadline is August 31st, 2026 Midnight PST.
             </p>
+          )}
+          {activeIndex !== null && (
+            <EntryLightbox
+              entries={entries}
+              index={activeIndex}
+              onClose={() => setActiveIndex(null)}
+              onPrev={() => setActiveIndex((i) => (i === null ? null : (i - 1 + total) % total))}
+              onNext={() => setActiveIndex((i) => (i === null ? null : (i + 1) % total))}
+            />
           )}
         </div>
       </div>
