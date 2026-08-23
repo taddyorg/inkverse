@@ -85,6 +85,12 @@ const ENTRIES: ContestEntry[] = [
     // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
     description: "Blinky travels to a bioluminescent planet, where the sky is devoid of light and the local flora and fauna rely on the light they create themselves to navigate."
   },
+  {
+    imageUrl: 'https://ax0.taddy.org/discord-event/corny.png',
+    creatorName: 'corny',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: "Blinky travels to EARTH! 🌍 Will he meet some new friends or will he get himself into trouble? What could possibly go wrong?"
+  },
 ];
 
 /* ---------------------------------------------------------------------------
