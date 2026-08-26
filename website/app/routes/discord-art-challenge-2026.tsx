@@ -91,6 +91,51 @@ const ENTRIES: ContestEntry[] = [
     // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
     description: "Blinky travels to EARTH! 🌍 Will he meet some new friends or will he get himself into trouble? What could possibly go wrong?"
   },
+  {
+    imageUrl: 'https://ax0.taddy.org/discord-event/Ginle_T.png',
+    creatorName: 'Ginle_T',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: "Blinky dropped down on Planet Vividius, a place filled with every colour imaginable, except black. Thus, Blinky became a ✨ global sensation ✨ overnight for their cosmic appearance! At first, Blinky enjoyed being in the spotlight… until everyone wanted their autograph! Will Blinky be able to survive this new found fame?"
+  },
+  {
+    imageUrl: 'https://ax0.taddy.org/discord-event/Ky.png',
+    creatorName: 'Ky',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: "Blinky travels to a planet covered in blankets, pillows, and comfort! Plant Fort! Every adventurer needs a place to rest before their next adventure, so why not here!"
+  },
+  {
+    imageUrl: 'https://ax0.taddy.org/discord-event/Dopppelgänger.png',
+    creatorName: 'Dopppelgänger',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: "One day, I was cruising through space when I crash-landed on a nearby planet. Emerging from my ship I was met by a girl and a group of rabbit headed servants clad in lab coats. The girl’s name was Juno. She invited me to brunch, and as leader on the planet she offered to fix my ship! Meanwhile, I went to explore and found an abandoned lab hidden away. Papers on the floor spoke of an experiment which turned on its creators. Before I could learn more, my ship was fixed and I was bid farewell."
+  },
+  {
+    imageUrl: 'https://ax0.taddy.org/discord-event/Råttantouille.png',
+    creatorName: 'Råttantouille',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: `Blinky was having a perfectly ordinary day in space… until a wobble, a wiggle, and one unfortunate BEEP sent his spaceship tumbling down, down, down!
+He crash-landed in Whimblewood, where Wizzbizz stared at the strange visitor with wide, curious eyes.
+A spaceship? In his forest?
+And so, beneath the whispering trees of Whimblewood, two curious creatures met...A new friendship was about to take flight! (unlike Blinkys ship...)`
+  },
+  {
+    imageUrl: 'https://ax0.taddy.org/discord-event/BluMouse.jpg',
+    creatorName: 'BluMouse',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: "Blinky visited a peculiar world called Varaluz, where some of the inhabitants have elemental powers and monsters seem to be the norm. Not all of the monsters are scary though! "
+  },
+  {
+    imageUrl: 'https://ax0.taddy.org/discord-event/SummerIllustration.png',
+    creatorName: 'SummerIllustration',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: "Blinky visited an uncharted planet of cosmic vistas and magic. Traditional pencil and ink with digital colors."
+  },
+  {
+    imageUrl: 'https://ax0.taddy.org/discord-event/shirley.png',
+    creatorName: 'shirley',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: "Blink lands in ████, a strange place hidden between planets where the world appears to be caught in confusion. While exploring the seemingly endless fields, they notice that the clouds, strange beings, and even their own limbs occasionally disappear and reappear. These being appear harmless at first, but Blinky becomes slightly concerned when the entities take an interest in them and they start to feel a tingling sensation in their feet. After wandering through the strange space for a while, Blinky finds a small crack and luckily lands back in Inkverse. Perhaps some places are better left unexplored."
+  },
 ];
 
 /* ---------------------------------------------------------------------------
