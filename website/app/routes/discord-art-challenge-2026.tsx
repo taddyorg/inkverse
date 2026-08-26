@@ -128,7 +128,7 @@ And so, beneath the whispering trees of Whimblewood, two curious creatures met..
     imageUrl: 'https://ax0.taddy.org/discord-event/SummerIllustration.png',
     creatorName: 'SummerIllustration',
     // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
-    description: "Blinky visited an uncharted planet of cosmic vistas and magic. Traditional pencil and ink with digital colors."
+    description: "Blinky visited an uncharted planet of cosmic vistas and magic."
   },
   {
     imageUrl: 'https://ax0.taddy.org/discord-event/shirley.png',

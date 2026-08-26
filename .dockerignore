@@ -3,7 +3,7 @@ cdk
 cloud
 
 # Build outputs
-**/build
+website/build
 **/dist
 
 # Website
