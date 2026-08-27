@@ -136,6 +136,18 @@ And so, beneath the whispering trees of Whimblewood, two curious creatures met..
     // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
     description: "Blink lands in ████, a strange place hidden between planets where the world appears to be caught in confusion. While exploring the seemingly endless fields, they notice that the clouds, strange beings, and even their own limbs occasionally disappear and reappear. These being appear harmless at first, but Blinky becomes slightly concerned when the entities take an interest in them and they start to feel a tingling sensation in their feet. After wandering through the strange space for a while, Blinky finds a small crack and luckily lands back in Inkverse. Perhaps some places are better left unexplored."
   },
+  {
+    imageUrl: 'https://ax0.taddy.org/discord-event/Kaelyn.jpg',
+    creatorName: 'Kaelyn',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: "Blinky’s Date Disaster! In this illustration, Blinky tends to live on a little planet called Saturnia and meets another fella named Blinka! So, the two of them decide to go on a date in the park together until a strange UFO comes by and invades the planet. So, when Blinky finds out that the UFO took his lover away, Blinky gets mad and takes his paint brush with him to go get revenge on the UFO for destroying his date out in the park."
+  },
+  {
+    imageUrl: 'https://ax0.taddy.org/discord-event/Rachel.jpg',
+    creatorName: 'Rachel',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: "Blinky visiting a star dimension (painting)"
+  },
 ];
 
 /* ---------------------------------------------------------------------------
