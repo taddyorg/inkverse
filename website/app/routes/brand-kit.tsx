@@ -7,7 +7,7 @@ import { LinkType } from "@inkverse/shared-client/graphql/operations";
  * EDIT THIS SECTION TO UPDATE THE PAGE (then redeploy)
  * ------------------------------------------------------------------------- */
 
-const BRAND_ZIP_URL = 'https://ink0.inkverse.co/general/inkverse-logos-mascots-stickers.zip';
+const BRAND_ZIP_URL = 'https://ink0.inkverse.co/general/inkverse-logos-mascots-stickers-2.zip';
 const COMIC_LINK_WEB_IMG = 'https://ink0.inkverse.co/general/comic-unique-link-web-snipped.jpg';
 const COMIC_LINK_MOBILE_IMG = 'https://ax0.taddy.org/general/comic-unique-link-2.jpg';
 const BLINKY_IMG = 'https://ink0.inkverse.co/general/blinky.png';
