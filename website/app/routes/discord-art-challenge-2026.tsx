@@ -148,6 +148,36 @@ And so, beneath the whispering trees of Whimblewood, two curious creatures met..
     // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
     description: "Blinky visiting a star dimension (painting)"
   },
+  {
+    imageUrl: 'https://ax0.taddy.org/discord-event/Ryan.jpg',
+    creatorName: 'Ryan',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: "Blinky is traveling the cosmos meeting a superhero, Captain Comet, as both of them meet an ensemble of beings that they don't know if those beings are friends or foes."
+  },
+  {
+    imageUrl: 'https://ax0.taddy.org/discord-event/KalKatComics.gif',
+    creatorName: 'KalKatComics',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: "Traversing through comic worlds, Blinky stumbles through an unseen gap within the comics' borders. Appearing within the Void, Blinky finds the space where various creatives do storyboarding, updates, post art, etc. Each artist's space is different, reflecting the individual's tastes, and many have their original characters keeping them company. Blinky helps brainstorm ideas with multiple artists, as they help open up the next space, until Blinky finally steps out back home."
+  },
+  {
+    imageUrl: 'https://ax0.taddy.org/discord-event/Sedarun.png',
+    creatorName: 'Sedarun',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: `Blinky arrived in a world filled with snow and trees and... more snow? And more trees??..  Everywhere he looked, there was nothing but snow, frozen rivers, and trees shrouded in mist; there were no paths, no signs pointing the way. Fortunately, he was not alone; for if you happen to get lost in the cold northern wilds, the "Aegis" will light your path with their harmonious songs, glowing berries, and radiant flowers until you can find your way back home.`
+  },
+  {
+    imageUrl: 'https://ax0.taddy.org/discord-event/Lucie.jpg',
+    creatorName: 'Lucie',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: "Blinky decided to take a detour to the Twilight Planet, where it is always lit by the moons. It's known for its fantastic meteor showers, which Blinky went to see. Much of the flora there glows, and the animals have evolved large eyes to better navigate in the low light."
+  },
+  // {
+  //   imageUrl: 'https://ax0.taddy.org/discord-event/Andrea.webp',
+  //   creatorName: 'Andrea',
+  //   // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+  //   description: "Blinky didn't know where Freakshow was taking them, but Freakshow had promised wherever it was, adventure was sure to follow both of them. This was also Blinky's first time discovering Freakshow could fly through the cosmos!"
+  // },
 ];
 
 /* ---------------------------------------------------------------------------
