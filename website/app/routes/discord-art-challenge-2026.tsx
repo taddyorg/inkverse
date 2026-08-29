@@ -137,6 +137,18 @@ And so, beneath the whispering trees of Whimblewood, two curious creatures met..
     description: "Blink lands in ████, a strange place hidden between planets where the world appears to be caught in confusion. While exploring the seemingly endless fields, they notice that the clouds, strange beings, and even their own limbs occasionally disappear and reappear. These being appear harmless at first, but Blinky becomes slightly concerned when the entities take an interest in them and they start to feel a tingling sensation in their feet. After wandering through the strange space for a while, Blinky finds a small crack and luckily lands back in Inkverse. Perhaps some places are better left unexplored."
   },
   {
+    imageUrl: 'https://ax0.taddy.org/discord-event/Kendrico.png',
+    creatorName: 'Kendrico',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: "Blinky found an ordinary-looking remote control, but when she pressed one of the buttons, a portal opened up. Filled with curiosity, Blinky approached the portal—since she couldn't see anything on the other side—and got quite a surprise: alarms blaring everywhere and broken pipes. She had landed on a giant button, infuriating the massive Mr. X-voltex, who had been busy working. Enraged, he began destroying everything in his path... let's hope Blinky manages to make it out alive!"
+  },
+  {
+    imageUrl: 'https://ax0.taddy.org/discord-event/Axelotl.png',
+    creatorName: 'Axelotl',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: "Blinky is a little hungry so he decides to stop at a convenience store on earth for a snack. He starts eating the food because he thinks it's free but the employees tell him that he needs to pay money, so he tries to use the scratch tickets but doesn't know he has to pay for those too. In the end, he got his snack, said hi to the reflection in the convex mirror, said sorry to the convenience store workers for not paying for his food and using the tickets."
+  },
+  {
     imageUrl: 'https://ax0.taddy.org/discord-event/Kaelyn.jpg',
     creatorName: 'Kaelyn',
     // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
@@ -147,6 +159,12 @@ And so, beneath the whispering trees of Whimblewood, two curious creatures met..
     creatorName: 'Rachel',
     // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
     description: "Blinky visiting a star dimension (painting)"
+  },
+  {
+    imageUrl: 'https://ax0.taddy.org/discord-event/Andrea.webp',
+    creatorName: 'Andrea',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: "Blinky didn't know where Freakshow was taking them, but Freakshow had promised wherever it was, adventure was sure to follow both of them. This was also Blinky's first time discovering Freakshow could fly through the cosmos!"
   },
   {
     imageUrl: 'https://ax0.taddy.org/discord-event/Ryan.jpg',
@@ -172,12 +190,6 @@ And so, beneath the whispering trees of Whimblewood, two curious creatures met..
     // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
     description: "Blinky decided to take a detour to the Twilight Planet, where it is always lit by the moons. It's known for its fantastic meteor showers, which Blinky went to see. Much of the flora there glows, and the animals have evolved large eyes to better navigate in the low light."
   },
-  // {
-  //   imageUrl: 'https://ax0.taddy.org/discord-event/Andrea.webp',
-  //   creatorName: 'Andrea',
-  //   // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
-  //   description: "Blinky didn't know where Freakshow was taking them, but Freakshow had promised wherever it was, adventure was sure to follow both of them. This was also Blinky's first time discovering Freakshow could fly through the cosmos!"
-  // },
 ];
 
 /* ---------------------------------------------------------------------------
