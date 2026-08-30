@@ -190,6 +190,39 @@ And so, beneath the whispering trees of Whimblewood, two curious creatures met..
     // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
     description: "Blinky decided to take a detour to the Twilight Planet, where it is always lit by the moons. It's known for its fantastic meteor showers, which Blinky went to see. Much of the flora there glows, and the animals have evolved large eyes to better navigate in the low light."
   },
+  {
+    imageUrl: 'https://ax0.taddy.org/discord-event/ararataka-2.png',
+    creatorName: 'ararataka',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: ""
+  },
+  {
+    imageUrl: 'https://ax0.taddy.org/discord-event/niebi6.png',
+    creatorName: 'niebi6',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: "While traveling, Blinky ends up on Earth, between the layers of reality, in the Forest, they meet Lady Death there and have a nice walk with her while unknowingly also getting followed by Makaron and a very disappointed Theatrum Mundi cat, normally visitors can't leave but Makaron mercifully chooses against keeping them.. this time.."
+  },
+  {
+    imageUrl: 'https://ax0.taddy.org/discord-event/RANO.png',
+    creatorName: 'RANO',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: "Blinky visits the planet B-12-K and goes on a guided tour to the urchin fields where they have a close encounter with a giant spiny toad! The tour guide, Tuk is an odd fellow with very little safety concerns and a fascination with Earth. Blinky paints their encounter with the toad and includes some pictures captured by Tuk. Doesn't Tuk seem to be having a bit too much fun?! That was dangerous! At least Blinky managed to collect a souvenir."
+  },
+  {
+    imageUrl: 'https://ax0.taddy.org/discord-event/Bunny.Castles.png',
+    creatorName: 'Bunny.Castles',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: `I came to rest on planet Dorian and settled atop an affable creature.
+Weary, I partook in its journey to the far off horizon. 
+These radiant beasts lumber across the land without rest, filling the air with song.
+ 
+The short days sounded motifs of joy. 
+And those nights - truly my favourite hours - were for ballads and soothingly delicate symphonies. 
+In my time there, I admired and listened. 
+And on my departure, I found a memento in my notebook. 
+
+I think it's a score.`
+  },
 ];
 
 /* ---------------------------------------------------------------------------
