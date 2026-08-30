@@ -194,7 +194,7 @@ And so, beneath the whispering trees of Whimblewood, two curious creatures met..
     imageUrl: 'https://ax0.taddy.org/discord-event/ararataka-2.png',
     creatorName: 'ararataka',
     // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
-    description: ""
+    description: "On his way back home, Blinky stops by an intergalactic market filled with vendors from all over the galaxy. In a small corner of the market, he finds a vendor selling a beautiful gem that shines in every color of the rainbow. Blinky buys it and brings it home, marking the intergalactic marketplace on his map so he can visit it again. Every once in a while, he raises the gem in the starlight and bathes in its color, the reflections dancing on his inky body like an aurora borealis in the winter."
   },
   {
     imageUrl: 'https://ax0.taddy.org/discord-event/niebi6.png',
@@ -222,6 +222,30 @@ In my time there, I admired and listened.
 And on my departure, I found a memento in my notebook. 
 
 I think it's a score.`
+  },
+  {
+    imageUrl: 'https://ax0.taddy.org/discord-event/Isaamar_MC.jpg',
+    creatorName: 'Isaamar_MC',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: "Blinky was traveling home in his spaceship when a thick fog caused him to crash into a forest. There, Medea, a witch, offered to help him return home by casting a spell to open a portal. However, Blinky made a mistake, and a friendly dragon emerged from the cauldron. The dragon offered to guide him home, becoming Blinky’s new friend and adventure companion."
+  },
+  {
+    imageUrl: 'https://ax0.taddy.org/discord-event/rzvroom.png',
+    creatorName: 'rzvroom',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: "Inkverse is a big universe of artistry. Blinky flew to its many planets to learn more from artists. So much so that their notebook filled up with pages of writings and drawings of fun adventures. After the final planet of today's list, Blinky hops back into their tiny spaceship, and returns to their own planet: Planet Blinky. The planet where clones of Blinky reside. Just like Blinky, these Blinkies go to their own adventures. Blinky couldn't wait to share their notebook!"
+  },
+  {
+    imageUrl: 'https://ax0.taddy.org/discord-event/Sophie.jpg',
+    creatorName: 'Sophie',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: ""
+  },
+  {
+    imageUrl: 'https://ax0.taddy.org/discord-event/bored_ing.png',
+    creatorName: 'bored_ing',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: "Blinky landed on Spectre, a tiny planet submerged in freezing seawater! Centuries ago, a cursed meteor struck, leaving all life in a state of being dead and alive. Stricken by the curse, Spectre could no longer receive sunlight. However, its ecosystem has adapted to emit their own vivid, ghostly glow to light up the planet. Before Blinky was about to freeze to death, a school of Ghost Fish lit up the way to Spectre’s warm palace. Their kindness made this visit a warm and unforgettable journey!"
   },
 ];
 
