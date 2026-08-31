@@ -247,6 +247,54 @@ I think it's a score.`
     // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
     description: "Blinky landed on Spectre, a tiny planet submerged in freezing seawater! Centuries ago, a cursed meteor struck, leaving all life in a state of being dead and alive. Stricken by the curse, Spectre could no longer receive sunlight. However, its ecosystem has adapted to emit their own vivid, ghostly glow to light up the planet. Before Blinky was about to freeze to death, a school of Ghost Fish lit up the way to Spectre’s warm palace. Their kindness made this visit a warm and unforgettable journey!"
   },
+  {
+    imageUrl: 'https://ax0.taddy.org/discord-event/RAMSEN_THE.png',
+    creatorName: 'RAMSEN_THE',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: "Shhhhshhhh....Blinky doesn't wanna become next specimen in a jar . It's a pocket dimension where humans have adapted to live as Chimeras . Humans are turned into Chimeras in labs to increase their chances of survival ,and any new creatures catch their attention goes for experiments , then straight under the knife....Blinky has made a mess in the Chimera lab, hope he doesn't get caught blinking."
+  },
+  {
+    imageUrl: 'https://ax0.taddy.org/discord-event/buckoo-joestar.png',
+    creatorName: 'buckoo joestar',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: `Upon Blinky's consumption of hours worth of necromancy content online, it got him in the mood to bust some myths! After memorizing the steps required to raise a corpse from an unnecessary lengthy tutorial, a skeleton had risen, though it was a little too big, unbeknownst to Blinky he had actually summoned the "Deity of Defections" who then raised an army of fallen Blinkies from scrapped ideas. Blinky being the perfectionist that he is, promptly ran away, and totally not because he was going to become a smudge if he stayed any longer. At least the myth wasn't busted.`
+  },
+  {
+    imageUrl: 'https://ax0.taddy.org/discord-event/animekcooper.jpg',
+    creatorName: 'animekcooper',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: `After getting lost from a previous adventure, Blinky ends up lost in the loud and vast "New Lark City" While exploring he stumbles into the Artist extraordinaire Art Lavender, who after taking animmediately liking to him, introduces him to the adventurous Skylark Family lead by Robin Skylark! After hearing Blinky's situation, the gang offer their (somewhat) reliable assistance to aid their newfound friend! Though not all is sunshine and rainbows in New Lark, Blinky isn't the city's otherworldly visitor, adding on to the already hostile residents, will Blinky's first ever Skylark adventure be his last?`
+  },
+  {
+    imageUrl: 'https://ax0.taddy.org/discord-event/artdragon.png',
+    creatorName: 'artdragon',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: "Blinky explores a haunted house! Oooo so spooky!"
+  },
+  {
+    imageUrl: 'https://ax0.taddy.org/discord-event/Rush-art.png',
+    creatorName: 'Rush.art',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: ""
+  },
+  {
+    imageUrl: 'https://ax0.taddy.org/discord-event/BJ.png',
+    creatorName: 'BJ',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: "Blinky is traveling through space when he discovers a strange planet ahead. As he gets closer, he realizes something is wrong. The planet has been split completely in half. One side is still full of life, with green fields and beautiful waterfalls. The other side is dark and destroyed, covered in cracks and glowing lava. Floating between the two halves is a mysterious energy core. Blinky gazes toward the core, wondering: “What happened here?” As he examines the planet further, he realizes a fingerprint-like imprint on the second half. That's when he realizes, this planet did not break by itself. Something opened it."
+  },
+  {
+    imageUrl: 'https://ax0.taddy.org/discord-event/Ro.png',
+    creatorName: 'Ro',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: "Beneath a sky filled with stars and moons, Blinky drifted across a silent lake toward a glowing wave of celestial light and a black hole, following a path that seemed to lead beyond the edge of the world. ⭐ 🪐 💜 💙 🌙"
+  },
+  {
+    imageUrl: 'https://ax0.taddy.org/discord-event/Invasion_animator.png',
+    creatorName: 'Invasion animator',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: "Blinky visits a world of Sneeple, (snail sheep people) and decides he needs to relax. So he changes his form to that of a deity. And he has the natives feed him and give him compliments. He then leaves."
+  },
 ];
 
 /* ---------------------------------------------------------------------------
