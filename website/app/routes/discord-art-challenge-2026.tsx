@@ -10,7 +10,7 @@ import { getMetaTags } from "@/lib/seo";
 
 // 'before' = challenge hasn't started, 'current' = accepting entries, 'after' = winners announced
 type ContestState = 'before' | 'current' | 'after';
-const CONTEST_STATE: ContestState = 'current';
+const CONTEST_STATE: ContestState = 'after';
 
 const DISCORD_INVITE_URL = 'https://discord.com/invite/SNZUHpkpQn';
 const SUBMISSION_CHANNEL_URL = 'https://discord.gg/75XPumH4Fx';
@@ -506,7 +506,7 @@ function Hero() {
   const statusLine = {
     before: 'Starts August 1st, 2026',
     current: 'Deadline: August 31st, 2026 at Midnight PST',
-    after: 'The challenge has ended. Winners were announced on September 10th, 2026',
+    after: 'The challenge has ended. Winners will be announced on September 10th, 2026',
   }[CONTEST_STATE];
 
   return (
