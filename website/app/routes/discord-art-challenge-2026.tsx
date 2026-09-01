@@ -295,6 +295,46 @@ I think it's a score.`
     // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
     description: "Blinky visits a world of Sneeple, (snail sheep people) and decides he needs to relax. So he changes his form to that of a deity. And he has the natives feed him and give him compliments. He then leaves."
   },
+  {
+    imageUrl: 'https://ax0.taddy.org/discord-event/dodokingdiluc.png',
+    creatorName: 'dodokingdiluc',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: `Blinky stumbled upon Divinara, a magical planet veiled from the Universe to hide it's divine secrets of Prophecy. Blinky found the Forbidden Codex but fortunately it wasn't very Beginner friendly!`
+  },
+  {
+    imageUrl: 'https://ax0.taddy.org/discord-event/Beggz.png',
+    creatorName: 'Beggz',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: `During his visit to the so-called “Glittering Planet,” Blinky was advised to visit the Cave of Goddesses, the home of the Bowbows. They are a species known for weaving large webs high above the ground, much like hammocks where they sleep together in groups. Blinky was deeply pleased by the scenery, as well as by the planet’s remarkably convenient transportation system: three-dimensional portals set up by the planet’s tourism office, allowing visitors to easily reach its most remarkable landmarks.`
+  },
+  {
+    imageUrl: 'https://ax0.taddy.org/discord-event/FizztBump.png',
+    creatorName: 'FizztBump',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: "Blinky decided to go back and explore Earth, only to find out he went the wrong way and landed in an almost identical planet! How long will it take until he figures out fish don´t usually float above water??..."
+  },
+  {
+    imageUrl: 'https://ax0.taddy.org/discord-event/foxy.gif',
+    creatorName: 'foxy',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: "Blinky has recently (re)discovered their own planet, TADD-E! Apparently, TADD-E itself also loves to explore different worlds within the Inkverse! Sadly, it recently found itself trapped within an unknown pocket dimension for a newly-formed story portal for a month. To prevent a repeat of this blunder, Blinky and two of their pals, Dapper and Abstract, made magical paper collage maps for TADD-E and all its citizens. As the Inkverse evolves, returning home may become trickier. It’s hard to say what the future holds, but no blinker will fail to return back to where all of their adventures began: home."
+  },
+  {
+    imageUrl: "https://ax0.taddy.org/discord-event/UM'sthename.jpeg",
+    creatorName: "UM'sthename",
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: `Blinky’s Journal Entry #1181 Cosmic Story Wormhole -- “Today, I set off once again, drifting from one story planet to the next, when I was suddenly pulled into a strange vortex. At first, I was frightened by the swirl of random objects and visions spinning all around me, and for a moment I wasn’t sure I would ever find my way out. Turns out it was a cosmic-wormhole where lost ideas, unfinished scraps, and fragments of other worlds end up clumped together. But after pushing through the chaos, I finally made it to the other side, shaken but relieved, and a little more certain that even the strangest paths can still lead to somewhere wonderful.”`
+  },
+  {
+    imageUrl: 'https://ax0.taddy.org/discord-event/Krina311.jpg',
+    creatorName: 'Krina311',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: `Blinky landed on a strange little planet where the islands floated among the clouds. Every island was home to a different creature mushroom friends, flower creatures, tiny plant buddies, and magical flying animals.
+Blinky soon realized they were all very friendly.They spent the day exploring, sharing snacks, and having a little picnic together. 🌱🍄
+Before leaving, Blinky gathered everyone for one special group selfie a memory of the day they became friends. 📸
+
+“Some memories become special not because of where you were, but because of who was beside you.” 💫`
+  },
 ];
 
 /* ---------------------------------------------------------------------------
