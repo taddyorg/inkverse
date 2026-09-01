@@ -335,6 +335,12 @@ Before leaving, Blinky gathered everyone for one special group selfie a memory o
 
 “Some memories become special not because of where you were, but because of who was beside you.” 💫`
   },
+  {
+    imageUrl: "https://ax0.taddy.org/discord-event/Sohinip.png",
+    creatorName: "Sohinip",
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: `NUVEDO is a mysterious planet where vast networks of fungi form a single, living neural consciousness beneath the surface. Long ago, an unknown extraterrestrial civilization connected this fungal mind to an advanced byte-based computing system, allowing the network to communicate across the planet. The fungi still use the ancient machine, but their memories of its creators have faded completely. Now, the forgotten technology remains—functioning without its makers, and waiting to reveal its origins.`
+  },
 ];
 
 /* ---------------------------------------------------------------------------
