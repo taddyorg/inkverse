@@ -25,7 +25,7 @@ const TADDY_URL = 'https://taddy.org';
 const TADDY_LOGO_URL = 'https://ax0.taddy.org/general/Taddy-Logo-Circle-v2.png';
 const INKVERSE_LOGO_URL = 'https://ax0.taddy.org/inkverse/inkverse-square-transparent.png';
 
-type Winner = 'grand-best-art' | 'grand-most-original' | 'winner';
+type Winner = 'grand-best-art' | 'grand-most-creative' | 'winner';
 
 interface ContestEntry {
   imageUrl: string;          // the 1080x1350 poster
@@ -36,7 +36,20 @@ interface ContestEntry {
 }
 
 const ENTRIES: ContestEntry[] = [
-  // Example entry — copy this shape:
+  {
+    imageUrl: 'https://ax0.taddy.org/discord-event/hairaaaaa.png',
+    creatorName: 'hairaaaaa',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: "Blinky's first adventure takes them to Kumoyume, an unreal planet made of clouds and dreams. On the way, Blinky met a huge flying creature, as Blinky was offered a tour around the planet. There, Blinky saw many different creatures and took pictures of them, they were all super friendly, and one even clung to Blinky along the ride! The planet itself feels like a dream that Blinky never wants to wake up from!",
+    winner: 'grand-best-art',
+  },
+  {
+    imageUrl: 'https://ax0.taddy.org/discord-event/RANO.png',
+    creatorName: 'RANO',
+    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
+    description: "Blinky visits the planet B-12-K and goes on a guided tour to the urchin fields where they have a close encounter with a giant spiny toad! The tour guide, Tuk is an odd fellow with very little safety concerns and a fascination with Earth. Blinky paints their encounter with the toad and includes some pictures captured by Tuk. Doesn't Tuk seem to be having a bit too much fun?! That was dangerous! At least Blinky managed to collect a souvenir.",
+    winner: 'grand-most-creative',
+  },
   {
     imageUrl: 'https://ax0.taddy.org/discord-event/SNBX.jpg',
     creatorName: 'SNBX',
@@ -67,12 +80,7 @@ const ENTRIES: ContestEntry[] = [
     // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
     description: "When Blinky gets tired travelling from planet to planet, they find that the best place to rest is within the clouds. There is nothing more comforting than sitting on a mound of fluff while watching the warm sun shine through. Blinky always enjoys the kind welcome from the cloud creatures, watching them create shapes in the sky. And the best part about visiting the clouds is that the view is always a new sight to see."
   },
-  {
-    imageUrl: 'https://ax0.taddy.org/discord-event/hairaaaaa.png',
-    creatorName: 'hairaaaaa',
-    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
-    description: "Blinky's first adventure takes them to Kumoyume, an unreal planet made of clouds and dreams. On the way, Blinky met a huge flying creature, as Blinky was offered a tour around the planet. There, Blinky saw many different creatures and took pictures of them, they were all super friendly, and one even clung to Blinky along the ride! The planet itself feels like a dream that Blinky never wants to wake up from!"
-  },
+
   {
     imageUrl: 'https://ax0.taddy.org/discord-event/Zemyzemph.jpg',
     creatorName: 'Zemyzemph',
@@ -83,7 +91,8 @@ const ENTRIES: ContestEntry[] = [
     imageUrl: 'https://ax0.taddy.org/discord-event/Versim.jpg',
     creatorName: 'Versim',
     // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
-    description: "Blinky travels to a bioluminescent planet, where the sky is devoid of light and the local flora and fauna rely on the light they create themselves to navigate."
+    description: "Blinky travels to a bioluminescent planet, where the sky is devoid of light and the local flora and fauna rely on the light they create themselves to navigate.",
+    winner: 'winner',
   },
   {
     imageUrl: 'https://ax0.taddy.org/discord-event/corny.png',
@@ -116,7 +125,8 @@ const ENTRIES: ContestEntry[] = [
     description: `Blinky was having a perfectly ordinary day in space… until a wobble, a wiggle, and one unfortunate BEEP sent his spaceship tumbling down, down, down!
 He crash-landed in Whimblewood, where Wizzbizz stared at the strange visitor with wide, curious eyes.
 A spaceship? In his forest?
-And so, beneath the whispering trees of Whimblewood, two curious creatures met...A new friendship was about to take flight! (unlike Blinkys ship...)`
+And so, beneath the whispering trees of Whimblewood, two curious creatures met...A new friendship was about to take flight! (unlike Blinkys ship...)`,
+    winner: 'winner',
   },
   {
     imageUrl: 'https://ax0.taddy.org/discord-event/BluMouse.jpg',
@@ -134,7 +144,8 @@ And so, beneath the whispering trees of Whimblewood, two curious creatures met..
     imageUrl: 'https://ax0.taddy.org/discord-event/shirley.png',
     creatorName: 'shirley',
     // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
-    description: "Blink lands in ████, a strange place hidden between planets where the world appears to be caught in confusion. While exploring the seemingly endless fields, they notice that the clouds, strange beings, and even their own limbs occasionally disappear and reappear. These being appear harmless at first, but Blinky becomes slightly concerned when the entities take an interest in them and they start to feel a tingling sensation in their feet. After wandering through the strange space for a while, Blinky finds a small crack and luckily lands back in Inkverse. Perhaps some places are better left unexplored."
+    description: "Blink lands in ████, a strange place hidden between planets where the world appears to be caught in confusion. While exploring the seemingly endless fields, they notice that the clouds, strange beings, and even their own limbs occasionally disappear and reappear. These being appear harmless at first, but Blinky becomes slightly concerned when the entities take an interest in them and they start to feel a tingling sensation in their feet. After wandering through the strange space for a while, Blinky finds a small crack and luckily lands back in Inkverse. Perhaps some places are better left unexplored.",
+    winner: 'winner',
   },
   {
     imageUrl: 'https://ax0.taddy.org/discord-event/Kendrico.png',
@@ -152,7 +163,8 @@ And so, beneath the whispering trees of Whimblewood, two curious creatures met..
     imageUrl: 'https://ax0.taddy.org/discord-event/Kaelyn.jpg',
     creatorName: 'Kaelyn',
     // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
-    description: "Blinky’s Date Disaster! In this illustration, Blinky tends to live on a little planet called Saturnia and meets another fella named Blinka! So, the two of them decide to go on a date in the park together until a strange UFO comes by and invades the planet. So, when Blinky finds out that the UFO took his lover away, Blinky gets mad and takes his paint brush with him to go get revenge on the UFO for destroying his date out in the park."
+    description: "Blinky’s Date Disaster! In this illustration, Blinky tends to live on a little planet called Saturnia and meets another fella named Blinka! So, the two of them decide to go on a date in the park together until a strange UFO comes by and invades the planet. So, when Blinky finds out that the UFO took his lover away, Blinky gets mad and takes his paint brush with him to go get revenge on the UFO for destroying his date out in the park.",
+    winner: 'winner',
   },
   {
     imageUrl: 'https://ax0.taddy.org/discord-event/Rachel.jpg',
@@ -182,7 +194,8 @@ And so, beneath the whispering trees of Whimblewood, two curious creatures met..
     imageUrl: 'https://ax0.taddy.org/discord-event/Sedarun.png',
     creatorName: 'Sedarun',
     // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
-    description: `Blinky arrived in a world filled with snow and trees and... more snow? And more trees??..  Everywhere he looked, there was nothing but snow, frozen rivers, and trees shrouded in mist; there were no paths, no signs pointing the way. Fortunately, he was not alone; for if you happen to get lost in the cold northern wilds, the "Aegis" will light your path with their harmonious songs, glowing berries, and radiant flowers until you can find your way back home.`
+    description: `Blinky arrived in a world filled with snow and trees and... more snow? And more trees??..  Everywhere he looked, there was nothing but snow, frozen rivers, and trees shrouded in mist; there were no paths, no signs pointing the way. Fortunately, he was not alone; for if you happen to get lost in the cold northern wilds, the "Aegis" will light your path with their harmonious songs, glowing berries, and radiant flowers until you can find your way back home.`,
+    winner: 'winner',
   },
   {
     imageUrl: 'https://ax0.taddy.org/discord-event/Lucie.jpg',
@@ -194,19 +207,14 @@ And so, beneath the whispering trees of Whimblewood, two curious creatures met..
     imageUrl: 'https://ax0.taddy.org/discord-event/ararataka-2.png',
     creatorName: 'ararataka',
     // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
-    description: "On his way back home, Blinky stops by an intergalactic market filled with vendors from all over the galaxy. In a small corner of the market, he finds a vendor selling a beautiful gem that shines in every color of the rainbow. Blinky buys it and brings it home, marking the intergalactic marketplace on his map so he can visit it again. Every once in a while, he raises the gem in the starlight and bathes in its color, the reflections dancing on his inky body like an aurora borealis in the winter."
+    description: "On his way back home, Blinky stops by an intergalactic market filled with vendors from all over the galaxy. In a small corner of the market, he finds a vendor selling a beautiful gem that shines in every color of the rainbow. Blinky buys it and brings it home, marking the intergalactic marketplace on his map so he can visit it again. Every once in a while, he raises the gem in the starlight and bathes in its color, the reflections dancing on his inky body like an aurora borealis in the winter.",
+    winner: 'winner',
   },
   {
     imageUrl: 'https://ax0.taddy.org/discord-event/niebi6.png',
     creatorName: 'niebi6',
     // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
     description: "While traveling, Blinky ends up on Earth, between the layers of reality, in the Forest, they meet Lady Death there and have a nice walk with her while unknowingly also getting followed by Makaron and a very disappointed Theatrum Mundi cat, normally visitors can't leave but Makaron mercifully chooses against keeping them.. this time.."
-  },
-  {
-    imageUrl: 'https://ax0.taddy.org/discord-event/RANO.png',
-    creatorName: 'RANO',
-    // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
-    description: "Blinky visits the planet B-12-K and goes on a guided tour to the urchin fields where they have a close encounter with a giant spiny toad! The tour guide, Tuk is an odd fellow with very little safety concerns and a fascination with Earth. Blinky paints their encounter with the toad and includes some pictures captured by Tuk. Doesn't Tuk seem to be having a bit too much fun?! That was dangerous! At least Blinky managed to collect a souvenir."
   },
   {
     imageUrl: 'https://ax0.taddy.org/discord-event/Bunny.Castles.png',
@@ -245,7 +253,8 @@ I think it's a score.`
     imageUrl: 'https://ax0.taddy.org/discord-event/bored_ing.png',
     creatorName: 'bored_ing',
     // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
-    description: "Blinky landed on Spectre, a tiny planet submerged in freezing seawater! Centuries ago, a cursed meteor struck, leaving all life in a state of being dead and alive. Stricken by the curse, Spectre could no longer receive sunlight. However, its ecosystem has adapted to emit their own vivid, ghostly glow to light up the planet. Before Blinky was about to freeze to death, a school of Ghost Fish lit up the way to Spectre’s warm palace. Their kindness made this visit a warm and unforgettable journey!"
+    description: "Blinky landed on Spectre, a tiny planet submerged in freezing seawater! Centuries ago, a cursed meteor struck, leaving all life in a state of being dead and alive. Stricken by the curse, Spectre could no longer receive sunlight. However, its ecosystem has adapted to emit their own vivid, ghostly glow to light up the planet. Before Blinky was about to freeze to death, a school of Ghost Fish lit up the way to Spectre’s warm palace. Their kindness made this visit a warm and unforgettable journey!",
+    winner: 'winner',
   },
   {
     imageUrl: 'https://ax0.taddy.org/discord-event/RAMSEN_THE.png',
@@ -287,7 +296,8 @@ I think it's a score.`
     imageUrl: 'https://ax0.taddy.org/discord-event/Ro.png',
     creatorName: 'Ro',
     // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
-    description: "Beneath a sky filled with stars and moons, Blinky drifted across a silent lake toward a glowing wave of celestial light and a black hole, following a path that seemed to lead beyond the edge of the world. ⭐ 🪐 💜 💙 🌙"
+    description: "Beneath a sky filled with stars and moons, Blinky drifted across a silent lake toward a glowing wave of celestial light and a black hole, following a path that seemed to lead beyond the edge of the world. ⭐ 🪐 💜 💙 🌙",
+    winner: 'winner',
   },
   {
     imageUrl: 'https://ax0.taddy.org/discord-event/Invasion_animator.png',
@@ -305,7 +315,8 @@ I think it's a score.`
     imageUrl: 'https://ax0.taddy.org/discord-event/Beggz.png',
     creatorName: 'Beggz',
     // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
-    description: `During his visit to the so-called “Glittering Planet,” Blinky was advised to visit the Cave of Goddesses, the home of the Bowbows. They are a species known for weaving large webs high above the ground, much like hammocks where they sleep together in groups. Blinky was deeply pleased by the scenery, as well as by the planet’s remarkably convenient transportation system: three-dimensional portals set up by the planet’s tourism office, allowing visitors to easily reach its most remarkable landmarks.`
+    description: `During his visit to the so-called “Glittering Planet,” Blinky was advised to visit the Cave of Goddesses, the home of the Bowbows. They are a species known for weaving large webs high above the ground, much like hammocks where they sleep together in groups. Blinky was deeply pleased by the scenery, as well as by the planet’s remarkably convenient transportation system: three-dimensional portals set up by the planet’s tourism office, allowing visitors to easily reach its most remarkable landmarks.`,
+    winner: 'winner',
   },
   {
     imageUrl: 'https://ax0.taddy.org/discord-event/FizztBump.png',
@@ -317,7 +328,8 @@ I think it's a score.`
     imageUrl: 'https://ax0.taddy.org/discord-event/foxy.gif',
     creatorName: 'foxy',
     // inkverseComicUrl: 'https://inkverse.co/comics/janes-comic',
-    description: "Blinky has recently (re)discovered their own planet, TADD-E! Apparently, TADD-E itself also loves to explore different worlds within the Inkverse! Sadly, it recently found itself trapped within an unknown pocket dimension for a newly-formed story portal for a month. To prevent a repeat of this blunder, Blinky and two of their pals, Dapper and Abstract, made magical paper collage maps for TADD-E and all its citizens. As the Inkverse evolves, returning home may become trickier. It’s hard to say what the future holds, but no blinker will fail to return back to where all of their adventures began: home."
+    description: "Blinky has recently (re)discovered their own planet, TADD-E! Apparently, TADD-E itself also loves to explore different worlds within the Inkverse! Sadly, it recently found itself trapped within an unknown pocket dimension for a newly-formed story portal for a month. To prevent a repeat of this blunder, Blinky and two of their pals, Dapper and Abstract, made magical paper collage maps for TADD-E and all its citizens. As the Inkverse evolves, returning home may become trickier. It’s hard to say what the future holds, but no blinker will fail to return back to where all of their adventures began: home.",
+    winner: 'winner',
   },
   {
     imageUrl: "https://ax0.taddy.org/discord-event/UM'sthename.jpeg",
@@ -815,14 +827,14 @@ function KeyDates() {
 }
 
 const WINNER_BADGES: Record<Winner, { label: string; className: string }> = {
-  'grand-best-art': { label: '🏆 Grand Prize — Best Art', className: 'bg-[#F5CE55] text-[#231F31]' },
-  'grand-most-original': { label: '🏆 Grand Prize — Most Original', className: 'bg-[#A372F2] text-[#231F31]' },
-  'winner': { label: '⭐ Winner', className: 'bg-[#FFF4E8] text-[#231F31]' },
+  'grand-best-art': { label: 'Grand Prize — Best Art', className: 'bg-[#F5CE55] text-[#231F31]' },
+  'grand-most-creative': { label: 'Grand Prize — Most Creative', className: 'bg-[#F5CE55] text-[#231F31]' },
+  'winner': { label: 'Winner', className: 'bg-[#F5CE55] text-[#231F31]' },
 };
 
 const WINNER_SORT_ORDER: Record<Winner, number> = {
   'grand-best-art': 0,
-  'grand-most-original': 1,
+  'grand-most-creative': 1,
   'winner': 2,
 };
 
