@@ -43,3 +43,6 @@ addons.parameters.yml
 
 # Typescript
 tsconfig.tsbuildinfo
+
+# Claude Code per-developer settings (holds MCP secrets)
+.claude/settings.local.json

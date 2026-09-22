@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "sred": {
+      "type": "http",
+      "url": "${TADDY_SRED_MCP_URL}",
+      "headers": {
+        "Authorization": "Bearer ${TADDY_TOKEN}"
+      }
+    }
+  }
+}

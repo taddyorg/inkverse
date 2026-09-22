@@ -30,6 +30,19 @@ yarn run graphql-codegen
 yarn typecheck
 ```
 
+### MCP Servers
+
+The `sred` MCP server (SR&ED claims tracker) is defined in `.mcp.json` and reads its endpoint URL and bearer token from the `TADDY_SRED_MCP_URL` and `TADDY_TOKEN` environment variables. Create a gitignored `.claude/settings.local.json` with your own values before launching Claude Code:
+
+```json
+{
+  "env": {
+    "TADDY_SRED_MCP_URL": "<sred-mcp-endpoint-url>",
+    "TADDY_TOKEN": "<your-taddy-token>"
+  }
+}
+```
+
 ## Architecture
 
 ### System Components
