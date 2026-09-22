@@ -39,6 +39,9 @@ One JSON object per line. Only lines with a `timestamp` are messages; the rest i
   is missing the subject comes from `-m "…"` or the heredoc's first line and `sha` stays null
   (`commits.py --join` then matches on the subject). `ok` is false on `Exit code` / `nothing to
   commit`; `suspect` is true when the command also runs `git init` or `cd`s outside the repo.
+  `commits.py --join` also reads each commit's `Work-Session` trailers, the session ids
+  `taddy-commit` stamps in a commit-only conversation, and joins those first (`matchedBy:
+  trailer`), warning on an id that is not in the digest.
 - `archiveName` — `<date>-<slug>.jsonl`, the slug from `aiTitle` (else the session `slug`, else the
   first words of the first human message), for the upload's `name`.
 - `humanTurns`, `assistantTurns`, `toolUses`, `hasSubagents`, `bytes`.

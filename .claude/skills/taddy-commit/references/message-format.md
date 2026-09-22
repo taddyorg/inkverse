@@ -54,6 +54,20 @@ SRED-Exclusion: routine
 
 `SRED-Exclusion` takes exactly `routine` or `production` and appears only on `SRED: no`.
 
+In a commit-only conversation, after those lines, one `Work-Session` line per session behind
+the commit, in the sessions' `start` order, the value being the `sessionId` from the
+`work-sessions.py` digest (never the `Claude-Session:` URL the harness adds):
+
+```
+SRED: no
+SRED-Exclusion: routine
+Work-Session: ffffffff-6666-4666-8666-ffffffffffff
+Work-Session: 99999999-7777-4777-8777-999999999999
+```
+
+A commit of the work done in this conversation carries no `Work-Session` line: the weekly pass
+finds this conversation through its own `git commit` call.
+
 ## Example 1 — SR&ED work
 
 ```
@@ -80,13 +94,28 @@ SRED: no
 SRED-Exclusion: production
 ```
 
+## Example 3 — the same fix, committed in a commit-only conversation
+
+Session `bbbbbbbb-…` did the work and left it uncommitted; a fresh conversation commits it.
+
+```
+Fix podcast artwork not loading on the episode page
+
+The CDN URL lost its size suffix after the image migration; the suffix is appended again in
+artwork.ts.
+
+SRED: no
+SRED-Exclusion: production
+Work-Session: bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb
+```
+
 ## How the weekly pass reads it
 
-`taddy-weekly-tasks` runs
-`git log --format='%H%x1f%s%x1f%b%x1f%(trailers:key=SRED,valueonly)%x1f%(trailers:key=SRED-Exclusion,valueonly)%x1e'`
+`taddy-weekly-tasks` runs `git log` with
+`--format='%H%x1f%h%x1f%aI%x1f%ae%x1f%s%x1f%B%x1f%(trailers:key=SRED,valueonly)%x1f%(trailers:key=SRED-Exclusion,valueonly)%x1f%(trailers:key=Work-Session,valueonly)%x1e'`
 and uses the trailers for routine versus SR&ED work and the body (the recap) to seed each task's
 body and to judge its kind (`experiment` when something was run or tried, `decision` when the
 work was only a choice). A commit with no `SRED` trailer is classified again from its session's
-first human message. After a commit-only conversation, the weekly pass sees that conversation
-as the commit's session and the earlier work sessions as uncommitted candidates; merge them in
-the draft.
+first human message. The `Work-Session` ids are joined to the sessions before anything else, so
+after a commit-only conversation the commit's task cites the sessions that did the work, and
+they never surface as uncommitted candidates.

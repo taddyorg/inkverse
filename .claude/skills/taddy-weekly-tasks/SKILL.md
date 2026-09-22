@@ -64,15 +64,21 @@ python3 scripts/commits.py --from <from> --to <to> --exclude <filed shas, comma-
 ```
 
 (save the Step 2 output as `sessions.json` first.) Each commit in `commits` is one candidate,
-with the sessions whose in-session `git commit` produced it in `sessionIds` (matched by sha,
-else by subject). Every session in `uncommittedSessions` is a candidate too: one per session, or
-one per run of sessions on the same work (same branch, same topic — your call, say so). `repo`
-is the short name for `commit` sources, taken from the git remote.
+with its sessions in `sessionIds`: first the commit's `Work-Session` trailers (`matchedBy:
+trailer` — a commit-only conversation committed for them; the conversation that ran `git commit`
+follows them and is not the work), then the session whose in-session `git commit` produced it
+(sha, else subject). A trailer id `warnings` reports as not in `sessions.json` is outside the
+range, already filed or from another machine: cite it without re-uploading when it is under
+`skipped` as `already-filed`, otherwise leave it out of `sources` and say so. Every session in
+`uncommittedSessions` is a candidate too: one per session, or one per run of sessions on the
+same work (same branch, same topic — your call, say so). `repo` is the short name for `commit`
+sources, taken from the git remote.
 
 ## Step 4: project per candidate
 
 For each candidate call `pick_project({ text })`, `text` = the first human message of the first
-session behind it, a blank line, then the commit subject when there is one (a commit with no
+session in `sessionIds` (never a commit-only conversation's own request), a blank line, then
+the commit subject when there is one (a commit with no
 session: subject + body). Cache by session: a session's commits share one answer.
 
 - `confidence` ≥ `PROJECT_CONFIDENCE_THRESHOLD` → its `projectId`.
@@ -172,6 +178,8 @@ archived session ids. Point at the dashboard for the hours split and the review.
   else a tool echoed goes up as-is.
 - A commit flagged `suspect` (its command also ran `git init` or `cd` outside the repo) may
   belong to another repo — check before filing it.
+- Upload only sessions listed in `sessions.json`'s `sessions`; a `Work-Session` id outside the
+  range has no digest and no summary, even when `sessions.py --dump` can still show it.
 - `pick_project` with a single visible project answers without Jev, confidence 1.
 - The draft file is scratch: delete it, never commit it.
 

@@ -94,6 +94,8 @@ session behind a commit, or any unmatched file.
 - The body = one recap merged from the sessions' closing recaps and your summaries, in `start`
   order: what was done, what was found, what was decided and why, what is next. Nothing the
   dumps do not state. Files with no session get a sentence that says only what changed.
+- The trailers = the SRED lines, then one `Work-Session: <sessionId>` per session, in `start`
+  order. That is how the weekly pass joins the commit to these sessions.
 
 ## Example 1: one session, one commit
 
@@ -102,7 +104,8 @@ session behind a commit, or any unmatched file.
 load after the image migration?". Its dump ends "Done: the suffix is appended again in
 artwork.ts. Left uncommitted." One commit, `classify_work` on that first message (production,
 0.75), body "The CDN URL lost its size suffix after the image migration; the suffix is appended
-again in artwork.ts.", `SRED: no` + `SRED-Exclusion: production`, shown for approval.
+again in artwork.ts.", `SRED: no` + `SRED-Exclusion: production` +
+`Work-Session: bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb`, shown for approval.
 
 ## Example 2: two sessions, one commit
 
@@ -120,6 +123,8 @@ The nav and the player bar use different greys now, align both on the --surface-
 (routine, 0.8). Body: "Widened the player's progress track from 2px to 6px and gave the play
 button a 44px hit area for mobile. Replaced the two hard-coded greys in nav.css and player.css
 with var(--surface-2), defined once in the new tokens.css, so the nav and the player bar
-match." Trailers `SRED: no` +
-`SRED-Exclusion: routine`. With `src/artwork.ts` also uncommitted, the plan is two commits: this
-one and Example 1's, each classified on its own, shown and approved one at a time.
+match." Trailers `SRED: no` + `SRED-Exclusion: routine` +
+`Work-Session: ffffffff-6666-4666-8666-ffffffffffff` +
+`Work-Session: 99999999-7777-4777-8777-999999999999`. With `src/artwork.ts` also uncommitted,
+the plan is two commits: this one and Example 1's, each classified on its own, shown and
+approved one at a time.

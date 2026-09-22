@@ -16,7 +16,8 @@ work, or in a fresh conversation whose only job is to commit files changed earli
 work, classifies each commit, writes its message, shows it for approval and commits. It never
 creates tasks, needs no configuration and touches the SR&ED app through one MCP call per commit,
 `classify_work`. The weekly pass (`taddy-weekly-tasks`) later reads the trailers off `git log`,
-so every commit made here must carry them.
+so every commit made here must carry them; in a commit-only conversation the `Work-Session`
+trailers are what joins the commit to the sessions that did the work.
 
 ## Does this apply?
 
@@ -50,7 +51,8 @@ so every commit made here must carry them.
    and get a confirmation when there is more than one commit, more than one session behind a
    commit, or any unmatched file.
 4. Then, per commit: `git add -- <its files>` (whole files; say so if the user wants a partial
-   hunk) and Steps 1–5 below. Commit one before staging the next.
+   hunk) and Steps 1–5 below. Its sessions' ids become its `Work-Session` trailers in Step 3.
+   Commit one before staging the next.
 
 ## Workflow (per commit)
 
@@ -77,11 +79,14 @@ so every commit made here must carry them.
    small `SRED: no` change gets one or two sentences. Files with no session behind them get a
    body that says only what changed. Rules and examples: `references/message-format.md`.
 3. **Approve.** After a blank line, `SRED: yes` or `SRED: no`, and on `no` the line
-   `SRED-Exclusion: routine` or `SRED-Exclusion: production`. They go before the usual attribution
-   trailers (`Co-Authored-By`, `Claude-Session`), which stay. Show the whole message (subject,
-   body, trailers) and the files staged for it, then stop and wait: the user approves or edits
-   it. An edit to the subject or body is applied verbatim; an edit to a trailer is an override.
-   Commit only after an explicit yes, with a heredoc:
+   `SRED-Exclusion: routine` or `SRED-Exclusion: production`. In a commit-only conversation, then
+   one `Work-Session: <sessionId>` per session behind the commit, in start order: the digest's
+   `sessionId`, never the `Claude-Session:` URL. A commit of this conversation's own work gets
+   none. They all go before the usual attribution trailers (`Co-Authored-By`, `Claude-Session`),
+   which stay. Show the whole message (subject, body, trailers) and the files staged for it,
+   then stop and wait: the user approves or edits it. An edit to the subject or body is applied
+   verbatim; an edit to a trailer is an override. Commit only after an explicit yes, with a
+   heredoc:
 
    ```
    git commit -F - <<'EOF'
@@ -91,15 +96,17 @@ so every commit made here must carry them.
 
    SRED: no
    SRED-Exclusion: production
+   Work-Session: bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb
    Co-Authored-By: ...
    EOF
    ```
 
-4. **Verify:** `git log -1 --format='%(trailers:key=SRED)%(trailers:key=SRED-Exclusion)'` prints
-   `SRED: yes`, or `SRED: no` followed by `SRED-Exclusion: routine` / `SRED-Exclusion: production`.
-   Nothing printed means the trailer block was not the last paragraph: fix with
-   `git commit --amend -F -`.
-5. **Print the commit message and trailers:** `git log -1 --format='%(trailers:key=SRED)%(trailers:key=SRED-Exclusion)'`.
+4. **Verify:** `git log -1 --format='%(trailers:key=SRED)%(trailers:key=SRED-Exclusion)%(trailers:key=Work-Session)'`
+   prints `SRED: yes`, or `SRED: no` followed by `SRED-Exclusion: routine` /
+   `SRED-Exclusion: production`, then in a commit-only conversation one `Work-Session:` line per
+   session. Nothing printed, or a session missing, means the trailer block was not the last
+   paragraph or a line was dropped: fix with `git commit --amend -F -`.
+5. **Print the commit message and trailers:** the same `git log -1` as Step 4.
    With several commits, go back to Step 0.4 for the next one: stage it, then Steps 1–5 again,
    so an approved message never goes stale against a changed staging area.
 
@@ -113,6 +120,9 @@ so every commit made here must carry them.
 | any | < threshold, user says yes | `SRED: yes` |
 | any | < threshold, user says no | `SRED: no` + `SRED-Exclusion:` the likelier of routine / production |
 | any | user overrides | whatever the user said |
+
+In a commit-only conversation every row also gets one `Work-Session: <sessionId>` per session
+behind the commit; it is not a classification and never depends on `classify_work`.
 
 ## Rules
 
@@ -136,6 +146,10 @@ so every commit made here must carry them.
   line from the body.
 - `git commit --amend` keeps the trailers as they were; re-run the classification only if the
   user says the work changed.
+- Without `Work-Session` lines the weekly pass joins a commit to the conversation that ran
+  `git commit` (by sha or subject), so a commit-only conversation would be filed as the work
+  and the real sessions listed as uncommitted. The ids come from the digest, never typed by
+  hand or taken from `Claude-Session`.
 - If `classify_work` is unavailable (no MCP server, auth error), say so, ask *Is this SR&ED
   viable?* and stamp the trailers from the answer; do not commit without them.
 

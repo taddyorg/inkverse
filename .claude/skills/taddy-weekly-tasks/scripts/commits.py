@@ -9,8 +9,10 @@
 # Defaults: --from = the latest Monday, --to = today (local); --author = `git config user.email`;
 # --repo-name = the origin remote's basename (without .git), else the directory name.
 # --exclude lists shas already filed (from list_sources' `commit` refs); they land in `skipped`.
-# --join takes sessions.py's output and fills each commit's `sessionIds` (matched by sha, else by
-# subject); sessions matched to no commit are listed under `uncommittedSessions`.
+# --join takes sessions.py's output and fills each commit's `sessionIds`: first the commit's
+# `Work-Session` trailers (stamped by taddy-commit in a commit-only conversation), then the
+# sessions whose in-session `git commit` produced it (matched by sha, else by subject); sessions
+# matched to no commit are listed under `uncommittedSessions`.
 
 import argparse
 import datetime as dt
@@ -22,6 +24,7 @@ import sys
 
 RS, FS = "\x1e", "\x1f"
 TRAILER_LINE_RE = re.compile(r"^[A-Za-z0-9-]+: ")
+SESSION_ID_RE = re.compile(r"^[A-Za-z0-9._-]{1,200}$")  # the shape draft.py accepts as a file source id
 REPO_NAME_RE = re.compile(r"^[^@\s]+$")
 CODE_EXCLUSIONS = ("routine", "production")
 
@@ -90,10 +93,10 @@ def parse_log(raw, name, warnings):
         if not rec.strip():
             continue
         parts = rec.split(FS)
-        if len(parts) < 8:
+        if len(parts) < 9:
             warnings.append(f"unparseable git log record: {rec[:80]!r}")
             continue
-        sha, short, authored, email, subject, full, sred_raw, excl_raw = parts[:8]
+        sha, short, authored, email, subject, full, sred_raw, excl_raw, ws_raw = parts[:9]
         sred_val = sred_raw.strip().splitlines()[0].strip().lower() if sred_raw.strip() else ""
         excl_val = excl_raw.strip().splitlines()[0].strip().lower() if excl_raw.strip() else ""
         sred = True if sred_val == "yes" else False if sred_val == "no" else None
@@ -102,6 +105,14 @@ def parse_log(raw, name, warnings):
         excl = excl_val or None
         if excl and excl not in CODE_EXCLUSIONS:
             warnings.append(f"commit {short} has SRED-Exclusion '{excl}' (not routine|production)")
+        work_sessions = []
+        for v in (l.strip() for l in ws_raw.splitlines()):
+            if not v or v in work_sessions:
+                continue
+            if not SESSION_ID_RE.match(v):
+                warnings.append(f"commit {short} has Work-Session {v!r} (not a session id)")
+                continue
+            work_sessions.append(v)
         body = split_body(full)
         date = dt.datetime.fromisoformat(authored).astimezone().date()
         commits.append({
@@ -113,7 +124,7 @@ def parse_log(raw, name, warnings):
             "authorEmail": email,
             "subject": subject.strip(),
             "body": body,
-            "trailers": {"SRED": sred_val or None, "SRED-Exclusion": excl},
+            "trailers": {"SRED": sred_val or None, "SRED-Exclusion": excl, "Work-Session": work_sessions},
             "sred": sred,
             "sredExclusion": excl,
             "source": {"type": "commit", "ref": f"{name}@{sha}", "label": subject.strip()[:200]},
@@ -132,11 +143,20 @@ def norm(s):
     return re.sub(r"\s+", " ", (s or "").strip().lower())
 
 
-def join_sessions(commits, sessions_json):
+def join_sessions(commits, sessions_json, warnings):
     with open(sessions_json, encoding="utf-8") as f:
         sessions = json.load(f).get("sessions", [])
+    known = {s["sessionId"] for s in sessions}
     matched = set()
     for c in commits:
+        # The Work-Session trailers first: the sessions a commit-only conversation committed for.
+        for sid in c["trailers"]["Work-Session"]:
+            if sid not in c["sessionIds"]:
+                c["sessionIds"].append(sid)
+                c["matchedBy"] = c["matchedBy"] or "trailer"
+                matched.add(sid)
+            if sid not in known:
+                warnings.append(f"commit {c['short']} cites Work-Session {sid} not in sessions.json (outside the range, already filed, or another machine)")
         for s in sessions:
             for sc in s.get("commits", []):
                 if sc.get("ok") is False:
@@ -174,7 +194,7 @@ def main():
     start, end = range_bounds(args)
     name = repo_name(repo, args.repo_name)
     author = None if args.all_authors else (args.author or git(repo, "config", "user.email", check=False).strip() or None)
-    fmt = "%H" + FS + "%h" + FS + "%aI" + FS + "%ae" + FS + "%s" + FS + "%B" + FS + "%(trailers:key=SRED,valueonly)" + FS + "%(trailers:key=SRED-Exclusion,valueonly)" + RS
+    fmt = "%H" + FS + "%h" + FS + "%aI" + FS + "%ae" + FS + "%s" + FS + "%B" + FS + "%(trailers:key=SRED,valueonly)" + FS + "%(trailers:key=SRED-Exclusion,valueonly)" + FS + "%(trailers:key=Work-Session,valueonly)" + RS
     # --since alone (committer date; git stops walking at the first older commit). The range itself
     # is applied below on the author date, so a commit rebased after the range still counts once.
     cmd = ["log", f"--since={start} 00:00:00", "--no-merges", f"--format={fmt}"]
@@ -202,7 +222,7 @@ def main():
             kept.append(c)
     commits = kept
 
-    uncommitted = join_sessions(commits, args.join) if args.join else []
+    uncommitted = join_sessions(commits, args.join, warnings) if args.join else []
     out = {
         "range": {"from": start.isoformat(), "to": end.isoformat()},
         "repo": name,
