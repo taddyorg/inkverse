@@ -15,6 +15,7 @@ node_modules
 
 # Environment files
 **/.env
+.claude
 
 # IDE files
 **/.DS_Store
