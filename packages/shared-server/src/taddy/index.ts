@@ -11,6 +11,7 @@ dotenv.config({ path: envPath });
 
 export async function taddyGraphqlRequest(query: string, variables: any): Promise<Record<string, any> | undefined> {
   const endpointUrl = "https://api.taddy.org/";
+  const TADDY_REQUEST_TIMEOUT_MS = 15_000;
 
   if (!process.env.TADDY_USER_ID || !process.env.TADDY_API_KEY) {
     throw new Error("TADDY_USER_ID and TADDY_API_KEY must be set");
@@ -24,7 +25,8 @@ export async function taddyGraphqlRequest(query: string, variables: any): Promis
   }
   
   try {
-    const client = new GraphQLClient(endpointUrl, { headers })
+    // AbortSignal.timeout prevents the request from hanging forever if the network path to api.taddy.org stalls
+    const client = new GraphQLClient(endpointUrl, { headers, signal: AbortSignal.timeout(TADDY_REQUEST_TIMEOUT_MS) })
     const data = await client.request(query, variables)
     
     // const comicSeries = get(data, 'search.comicSeries', []);

@@ -109,8 +109,16 @@ if (import.meta.url.replace('file://', '') === fileURLToPath(pathToFileURL(proce
   const webhookEvent = webhookEventAsString as TaddyWebhookValidEvents;
   const taddyType = webhookEvent.toString().split('.')[0] as TaddyWebhookType;
   const action = webhookEvent.toString().split('.')[1] as TaddyWebhookAction;
-  
+
   mockWebhookEvent(taddyType, action, uuid)
+    .then(() => {
+      console.log('Done');
+      process.exit(0);
+    })
+    .catch((error) => {
+      console.error(error);
+      process.exit(1);
+    });
 }
 
 export { 
