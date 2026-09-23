@@ -1,13 +1,20 @@
 #!/usr/bin/env python3
-# The Claude Code sessions behind a repo's uncommitted work, for the taddy-commit skill's
-# commit-only conversation (a fresh conversation whose only job is to commit files changed
-# earlier). Python 3.9+, standard library only; reads ~/.claude/projects/<encoded cwd>*/<id>.jsonl
-# and prints JSON; never uploads or writes anything. A self-contained copy of the transcript
-# plumbing in taddy-weekly-tasks/scripts/sessions.py — the two skills share no code on purpose.
+# The Claude Code sessions behind a repo's uncommitted work, for the taddy-commit skill: run
+# before every commit, it lists the earlier sessions that edited the files about to be
+# committed and marks the conversation that is running now. Python 3.9+, standard library
+# only; reads ~/.claude/projects/<encoded cwd>*/<id>.jsonl (and <id>/subagents/*.jsonl for
+# the files a session edited through a subagent) and prints JSON; never uploads or writes
+# anything. A self-contained copy of the transcript plumbing in
+# taddy-weekly-tasks/scripts/sessions.py — the two skills share no code on purpose.
 #
 # Usage:
-#   work-sessions.py --cwd "$PWD" [--since ISO] [--files a,b,c] [--repo DIR]   # digest
+#   work-sessions.py --cwd "$PWD" [--since ISO] [--files a,b,c] [--repo DIR] [--self ID]   # digest
 #   work-sessions.py --cwd "$PWD" --dump <session id> [--max-chars 800] [--max-turns 80]
+#
+# --self is this conversation's session id (default: $CLAUDE_CODE_SESSION_ID, which Claude Code
+# sets in Bash). The matching session is marked `current: true` and never dumped: its recap is
+# already in context. `currentSession` at the top level repeats the id (null when unset) and
+# `currentSessionInDigest` says whether it was found among the kept sessions.
 #
 # Defaults: --since = the last commit's committer date (`git log -1 --format=%cI`; the epoch when
 # the repo has no commit); --files = the paths `git status --porcelain` lists (renames: the new
@@ -51,7 +58,21 @@ def candidate_dirs(root, cwd):
 
 def transcript_files(dirs):
     for d in dirs:
-        yield from sorted(d.glob("*.jsonl"))  # top level only: <id>/subagents/*.jsonl are never read
+        yield from sorted(d.glob("*.jsonl"))  # top level; <id>/subagents/*.jsonl are folded into <id> by digest_file
+
+
+def subagent_messages(path):
+    """The timestamped lines of <id>/subagents/*.jsonl: a subagent's edits and commands count as
+    the parent session's, since the parent transcript only records that it delegated."""
+    sub_dir = path.parent / path.stem / "subagents"
+    if not sub_dir.is_dir():
+        return [], 0
+    messages, files = [], 0
+    for f in sorted(sub_dir.glob("*.jsonl")):
+        files += 1
+        lines, _ = read_lines(f)
+        messages.extend(l for l in lines if isinstance(l.get("timestamp"), str))
+    return messages, files
 
 
 def local(ts):
@@ -258,14 +279,16 @@ def digest_file(path, cwd, since, uncommitted, dates, max_first):
         return None, {"sessionId": sid, "path": str(path), "reason": "other-cwd"}
     start_dt = local(first["timestamp"])
     end_dt = local(messages[-1]["timestamp"])
-    edited = edited_files(messages, cwd)
+    subs, sub_files = subagent_messages(path)
+    work = messages + subs  # what the session did, subagents included; turns and dates stay the parent's
+    edited = edited_files(work, cwd)
     touched, stale = [], []
     for f in uncommitted:
         if f not in edited:
             continue
         committed = dates.get(f)
         (touched if committed is None or end_dt > committed else stale).append(f)
-    mentioned = [f for f in mentioned_files(messages, uncommitted)
+    mentioned = [f for f in mentioned_files(work, uncommitted)
                  if f not in touched and f not in stale and (dates.get(f) is None or end_dt > dates[f])]
     after = end_dt > since
     if not touched and not mentioned and not after:
@@ -297,7 +320,8 @@ def digest_file(path, cwd, since, uncommitted, dates, max_first):
         "touchedBeforeCommit": stale,
         "mentioned": mentioned,
         "afterLastCommit": after,
-        "commits": find_commits(messages, cwd),
+        "commits": find_commits(work, cwd),
+        "subagentFiles": sub_files,
         "unparsedLines": bad,
     }, None
 
@@ -322,6 +346,9 @@ def cmd_digest(args, cwd, root):
             session = None
         (sessions if session else skipped).append(session or skip)
     sessions.sort(key=lambda s: s["start"])
+    me = (args.self_id or "").strip() or None
+    for s in sessions:
+        s["current"] = s["sessionId"] == me
     matched = {f for s in sessions for f in s["touched"] + s["mentioned"]}
     counts = Counter(k["reason"] for k in skipped)
     listed = [k for k in skipped if k["reason"] not in ("before-last-commit", "other-cwd")]
@@ -331,6 +358,8 @@ def cmd_digest(args, cwd, root):
         "projectDirs": [str(d) for d in dirs],
         "uncommittedFiles": uncommitted,
         "fileLastCommit": {f: (d.isoformat() if d else None) for f, d in dates.items()},
+        "currentSession": me,
+        "currentSessionInDigest": any(s["current"] for s in sessions),
         "sessions": sessions,
         "unmatchedFiles": [f for f in uncommitted if f not in matched],
         "skipped": listed,
@@ -355,6 +384,8 @@ def truncate(text, cap):
 
 
 def cmd_dump(args, cwd, root):
+    if args.self_id and args.dump == args.self_id.strip():
+        sys.exit(f"error: {args.dump} is this conversation (--self); its recap is already in context, do not dump it")
     path = find_session(root, cwd, args.dump)
     lines, _ = read_lines(path)
     messages = [l for l in lines if isinstance(l.get("timestamp"), str)]
@@ -403,6 +434,8 @@ def main():
     ap.add_argument("--files", help="comma-separated repo-relative paths (default: git status --porcelain)")
     ap.add_argument("--repo", help="where git runs for the defaults and the per-file commit dates (default: --cwd)")
     ap.add_argument("--projects-root", default=str(DEFAULT_ROOT), help="where Claude Code keeps transcripts")
+    ap.add_argument("--self", dest="self_id", default=os.environ.get("CLAUDE_CODE_SESSION_ID"),
+                    help="this conversation's session id, marked current and never dumped (default: $CLAUDE_CODE_SESSION_ID)")
     ap.add_argument("--max-first", type=int, default=2000, help="characters kept of the first human message")
     ap.add_argument("--dump", metavar="SESSION_ID", help="print one session's human turns and assistant text instead")
     ap.add_argument("--max-chars", type=int, default=800, help="dump: characters kept per turn")

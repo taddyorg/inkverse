@@ -28,6 +28,9 @@ yarn run graphql-codegen
 
 # Typecheck all packages
 yarn typecheck
+
+# Pull the latest team Claude Code skills into .claude/skills/ (needs `gh auth login`)
+yarn sync-skills [--ref <branch|tag>]
 ```
 
 ### MCP Servers

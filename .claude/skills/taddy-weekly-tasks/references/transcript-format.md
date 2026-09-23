@@ -32,22 +32,27 @@ One JSON object per line. Only lines with a `timestamp` are messages; the rest i
 ## What the digest derives per session
 
 - `date` — the local day of the first message; a session belongs to the range by that day.
-- `weekStart` — that day's Monday (journals are keyed by week).
-- `firstHumanMessage` — the first human turn, the text `pick_project` and `classify_work` take.
+- `weekStart` — that day's Monday, shown on the conversation's `Date` line.
+- `firstHumanMessage` — the first human turn: what the conversation was about, the recap's
+  opening and the report heading's fallback when the session has no title.
 - `commits` — every Bash `tool_use` whose command runs `git commit`, paired with its result. Git
   prints `[<branch> <sha>] <subject>` on success, which gives `sha` and `subject`; when the output
   is missing the subject comes from `-m "…"` or the heredoc's first line and `sha` stays null
   (`commits.py --join` then matches on the subject). `ok` is false on `Exit code` / `nothing to
   commit`; `suspect` is true when the command also runs `git init` or `cd`s outside the repo.
   `commits.py --join` also reads each commit's `Work-Session` trailers, the session ids
-  `taddy-commit` stamps in a commit-only conversation, and joins those first (`matchedBy:
-  trailer`), warning on an id that is not in the digest.
+  `taddy-commit` stamps on every commit (the sessions that did the work, the committing
+  conversation included when it did any of it), and joins those first (`matchedBy:
+  trailer`), warning on an id that is not in the digest. It also reads the `SRED-Project`
+  trailer into the commit's `projectId` (null when absent, with a warning when it is not a
+  positive integer).
 - `archiveName` — `<date>-<slug>.jsonl`, the slug from `aiTitle` (else the session `slug`, else the
-  first words of the first human message), for the upload's `name`.
+  first words of the first human message), for the upload's `name` and the report's `Archived` line.
 - `humanTurns`, `assistantTurns`, `toolUses`, `hasSubagents`, `bytes`.
 
 Sessions from other days or sibling repos are only counted (`skippedCounts`); `skipped` lists the
-ones worth a look: `already-filed` (excluded by `--exclude`), `no-messages`, `parse-error`.
+ones worth a look: `no-messages`, `parse-error` (and `already-filed` when `--exclude` is passed,
+which the report pass does not do: every session in the range is reported).
 
 Nothing about time is measured; timestamps only order the turns.
 
@@ -65,5 +70,5 @@ session <id> | <date> | branch <branch> | <title> | <n> turns
 
 It skips `thinking`, tool inputs, tool results, attachments and injected lines. The last
 `--keep-tail` assistant messages get three times the cap so the closing summary survives; beyond
-`--max-turns` it keeps the first third and the last two thirds. Summarise each session from its
-dump right after printing it, then move on; do not keep dumps around.
+`--max-turns` it keeps the first third and the last two thirds. Write each session's recap from
+its dump right after printing it, then move on; do not keep dumps around.

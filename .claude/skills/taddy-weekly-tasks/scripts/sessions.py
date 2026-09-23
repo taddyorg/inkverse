@@ -9,7 +9,7 @@
 #   sessions.py --cwd "$PWD" --dump <session id> [--max-chars 800] [--max-turns 80]    # one session's turns
 #
 # Defaults: --from = the latest Monday (today if today is a Monday), --to = today, both local time.
-# --exclude lists session ids already filed (from list_sources' `file` refs); they land in `skipped`.
+# --exclude lists session ids to leave out (reported under `skipped`); the report pass does not use it.
 
 import argparse
 import datetime as dt

@@ -4,8 +4,11 @@
 # original (see redact.py); the token is never printed.
 #
 # Usage:
-#   upload.sh --session <id> --file <path.jsonl> --date <YYYY-MM-DD> --name <name.jsonl> --project <projectId> --repo <product repo>
-#             [--base-url https://console.taddy.org] [--no-redact] [--dry-run]
+#   upload.sh --session <id> --file <path.jsonl> --date <YYYY-MM-DD> --name <name.jsonl> --repo <product repo>
+#             [--project <projectId>] [--base-url https://console.taddy.org] [--no-redact] [--dry-run]
+#
+# --project is the project the file is filed under (a commit's SRED-Project trailer); leave it out
+# when the project is unknown and the file is archived with no project.
 #
 # Token, in order: $SRED_TOKEN; the Authorization header of the `sred` MCP server (`claude mcp get sred`,
 # then ~/.claude.json); otherwise exit 2. Use the 180-day exchange token from the Settings page, not the
@@ -19,7 +22,7 @@ redact=1
 dry_run=0
 session=""; file=""; date=""; name=""; project=""; repo=""
 
-usage() { sed -n '2,15p' "$0" | sed 's/^# \{0,1\}//' >&2; exit 2; }
+usage() { sed -n '2,18p' "$0" | sed 's/^# \{0,1\}//' >&2; exit 2; }
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -36,10 +39,10 @@ while [ $# -gt 0 ]; do
     *) echo "unknown argument: $1" >&2; usage ;;
   esac
 done
-[ -n "$session" ] && [ -n "$file" ] && [ -n "$date" ] && [ -n "$name" ] && [ -n "$project" ] && [ -n "$repo" ] || usage
+[ -n "$session" ] && [ -n "$file" ] && [ -n "$date" ] && [ -n "$name" ] && [ -n "$repo" ] || usage
 [ -f "$file" ] || { echo "error: no such file: $file" >&2; exit 2; }
 [[ "$session" =~ ^[A-Za-z0-9._-]{1,200}$ ]] || { echo "error: session id may only contain letters, digits, '.', '_' and '-'" >&2; exit 2; }
-[[ "$project" =~ ^[0-9]+$ ]] || { echo "error: --project must be a project id" >&2; exit 2; }
+[ -z "$project" ] || [[ "$project" =~ ^[0-9]+$ ]] || { echo "error: --project must be a project id" >&2; exit 2; }
 
 here="$(cd "$(dirname "$0")" && pwd)"
 
@@ -95,7 +98,9 @@ if [ "$bytes" -gt "$MAX_BYTES" ]; then
 fi
 if [ "$bytes" -eq 0 ]; then echo "error: the file is empty" >&2; exit 3; fi
 
-meta="$(python3 -c 'import json,sys; print(json.dumps({"type":"transcript","name":sys.argv[1],"date":sys.argv[2],"projectId":int(sys.argv[3])}))' "$name" "$date" "$project")"
+meta="$(python3 -c 'import json,sys; m={"type":"transcript","name":sys.argv[1],"date":sys.argv[2]}
+if sys.argv[3]: m["projectId"]=int(sys.argv[3])
+print(json.dumps(m))' "$name" "$date" "$project")"
 url="$base_url/sred/api/files/$session"
 
 if [ "$dry_run" -eq 1 ]; then

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-# The product repo's commits over a range of days, with their SRED trailers, as JSON — for the
-# taddy-weekly-tasks skill. Python 3.9+, standard library only; shells out to git. Reads only.
+# The product repo's commits over a range of days, with their SRED, SRED-Project and Work-Session
+# trailers, as JSON — for the taddy-weekly-tasks skill. Python 3.9+, standard library only;
+# shells out to git. Reads only.
 #
 # Usage:
 #   commits.py [--from YYYY-MM-DD] [--to YYYY-MM-DD] [--exclude sha,sha] [--repo .] [--repo-name taddy]
@@ -8,11 +9,14 @@
 #
 # Defaults: --from = the latest Monday, --to = today (local); --author = `git config user.email`;
 # --repo-name = the origin remote's basename (without .git), else the directory name.
-# --exclude lists shas already filed (from list_sources' `commit` refs); they land in `skipped`.
+# --exclude lists shas to leave out (reported under `skipped`); the report pass does not use it.
 # --join takes sessions.py's output and fills each commit's `sessionIds`: first the commit's
-# `Work-Session` trailers (stamped by taddy-commit in a commit-only conversation), then the
-# sessions whose in-session `git commit` produced it (matched by sha, else by subject); sessions
-# matched to no commit are listed under `uncommittedSessions`.
+# `Work-Session` trailers (stamped by taddy-commit on every commit: the sessions that did the
+# work, the committing conversation included when it did any of it), then the sessions whose
+# in-session `git commit` produced it (matched by sha, else by subject; a session already listed
+# from the trailer is not repeated); sessions matched to no commit are listed under
+# `uncommittedSessions`.
+# `projectId` is the commit's SRED-Project trailer (the project id taddy-commit stamped), else null.
 
 import argparse
 import datetime as dt
@@ -24,7 +28,7 @@ import sys
 
 RS, FS = "\x1e", "\x1f"
 TRAILER_LINE_RE = re.compile(r"^[A-Za-z0-9-]+: ")
-SESSION_ID_RE = re.compile(r"^[A-Za-z0-9._-]{1,200}$")  # the shape draft.py accepts as a file source id
+SESSION_ID_RE = re.compile(r"^[A-Za-z0-9._-]{1,200}$")  # the shape upload.sh accepts as a session id
 REPO_NAME_RE = re.compile(r"^[^@\s]+$")
 CODE_EXCLUSIONS = ("routine", "production")
 
@@ -93,10 +97,10 @@ def parse_log(raw, name, warnings):
         if not rec.strip():
             continue
         parts = rec.split(FS)
-        if len(parts) < 9:
+        if len(parts) < 10:
             warnings.append(f"unparseable git log record: {rec[:80]!r}")
             continue
-        sha, short, authored, email, subject, full, sred_raw, excl_raw, ws_raw = parts[:9]
+        sha, short, authored, email, subject, full, sred_raw, excl_raw, ws_raw, proj_raw = parts[:10]
         sred_val = sred_raw.strip().splitlines()[0].strip().lower() if sred_raw.strip() else ""
         excl_val = excl_raw.strip().splitlines()[0].strip().lower() if excl_raw.strip() else ""
         sred = True if sred_val == "yes" else False if sred_val == "no" else None
@@ -113,6 +117,10 @@ def parse_log(raw, name, warnings):
                 warnings.append(f"commit {short} has Work-Session {v!r} (not a session id)")
                 continue
             work_sessions.append(v)
+        proj_val = proj_raw.strip().splitlines()[0].strip() if proj_raw.strip() else ""
+        project_id = int(proj_val) if re.fullmatch(r"[1-9]\d*", proj_val) else None
+        if proj_val and project_id is None:
+            warnings.append(f"commit {short} has SRED-Project {proj_val!r} (not a project id)")
         body = split_body(full)
         date = dt.datetime.fromisoformat(authored).astimezone().date()
         commits.append({
@@ -124,9 +132,10 @@ def parse_log(raw, name, warnings):
             "authorEmail": email,
             "subject": subject.strip(),
             "body": body,
-            "trailers": {"SRED": sred_val or None, "SRED-Exclusion": excl, "Work-Session": work_sessions},
+            "trailers": {"SRED": sred_val or None, "SRED-Exclusion": excl, "SRED-Project": project_id, "Work-Session": work_sessions},
             "sred": sred,
             "sredExclusion": excl,
+            "projectId": project_id,
             "source": {"type": "commit", "ref": f"{name}@{sha}", "label": subject.strip()[:200]},
             "sessionIds": [],
             "matchedBy": None,
@@ -194,7 +203,7 @@ def main():
     start, end = range_bounds(args)
     name = repo_name(repo, args.repo_name)
     author = None if args.all_authors else (args.author or git(repo, "config", "user.email", check=False).strip() or None)
-    fmt = "%H" + FS + "%h" + FS + "%aI" + FS + "%ae" + FS + "%s" + FS + "%B" + FS + "%(trailers:key=SRED,valueonly)" + FS + "%(trailers:key=SRED-Exclusion,valueonly)" + FS + "%(trailers:key=Work-Session,valueonly)" + RS
+    fmt = "%H" + FS + "%h" + FS + "%aI" + FS + "%ae" + FS + "%s" + FS + "%B" + FS + "%(trailers:key=SRED,valueonly)" + FS + "%(trailers:key=SRED-Exclusion,valueonly)" + FS + "%(trailers:key=Work-Session,valueonly)" + FS + "%(trailers:key=SRED-Project,valueonly)" + RS
     # --since alone (committer date; git stops walking at the first older commit). The range itself
     # is applied below on the author date, so a commit rebased after the range still counts once.
     cmd = ["log", f"--since={start} 00:00:00", "--no-merges", f"--format={fmt}"]
