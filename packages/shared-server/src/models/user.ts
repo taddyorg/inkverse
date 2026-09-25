@@ -9,6 +9,7 @@ import { type UserAgeRange } from "@inkverse/public/graphql/types";
 import { generateRandomString } from "../utils/crypto.js";
 import { currentDate } from "../utils/date.js";
 import { addContactToList, removeContactFromList } from "../messaging/email/octopus.js";
+import { purgeCacheOnCdn, purgeMultipleCacheOnCdn } from "../cache/index.js";
 
 interface UserCreateOrUpdateInput {
   email?: string | null;
@@ -218,31 +219,164 @@ export class User {
 
   /**
    * Delete user account and all associated data
+   *
+   * Removes every row keyed to the user (devices, tokens, subscriptions, notification
+   * preferences/settings, likes, comments, reports, creator claims, notifications sent
+   * and received), plus likes/notifications/reports that point at the user's comments.
+   * Replies other users left on the deleted comments are left in place.
+   * After the transaction commits, purges the affected CDN caches and unsubscribes the
+   * user from the email list.
    */
   static async deleteUser(id: string): Promise<boolean> {
     try {
-
       const user = await User.getUserById(id);
       if (!user) { return false }
+
+      // Collect ids needed for cache purging before anything is deleted
+      const comments: { uuid: string; targetUuid: string; parentUuid: string | null }[] = await database('user_comments')
+        .where({ userId: id })
+        .select('uuid', 'targetUuid', 'parentUuid');
+
+      const likes: { likeableUuid: string; likeableType: string; parentUuid: string | null }[] = await database('user_likes')
+        .where({ userId: id })
+        .select('likeableUuid', 'likeableType', 'parentUuid');
+
+      const recipientRows: { recipientId: number | string }[] = await database('user_notifications')
+        .where({ senderId: id })
+        .distinct('recipientId');
+
+      const commentUuids = comments.map(c => c.uuid);
+      const recipientIds = recipientRows
+        .map(r => String(r.recipientId))
+        .filter(recipientId => recipientId !== String(id));
 
       // Start a transaction to ensure all deletions succeed or fail together
       await database.transaction(async (trx) => {
         // Delete related data first
-        await trx('user_device').where({ user_id: id }).del();
-        await trx('oauth_token').where({ user_id: id }).del();
+        await trx('user_device').where({ userId: id }).del();
+        await trx('oauth_token').where({ userId: id }).del();
         await trx('userseries_subscriptions').where({ userId: id }).del();
-        await trx('notification_preferences').where({ user_id: id }).del();
-        
+        await trx('notification_preferences').where({ userId: id }).del();
+        await trx('notification_settings').where({ userId: id }).del();
+        await trx('user_reports').where({ reporterUserId: id }).del();
+        await trx('user_creator_claims').where({ userId: id }).del();
+
+        // Notifications the user received or triggered for others
+        await trx('user_notifications')
+          .where({ recipientId: id })
+          .orWhere({ senderId: id })
+          .del();
+
+        // Rows that point at the user's comments and would be orphaned
+        if (commentUuids.length > 0) {
+          await trx('user_notifications')
+            .where((builder) => {
+              builder
+                .where({ targetType: 'COMMENT' }).whereIn('targetUuid', commentUuids)
+                .orWhere((inner) => {
+                  inner.where({ contextType: 'COMMENT' }).whereIn('contextUuid', commentUuids);
+                });
+            })
+            .del();
+
+          await trx('user_likes')
+            .where({ likeableType: 'COMMENT' })
+            .whereIn('likeableUuid', commentUuids)
+            .del();
+
+          await trx('user_reports')
+            .where({ targetType: 'COMMENT' })
+            .whereIn('targetUuid', commentUuids)
+            .del();
+        }
+
+        await trx('user_likes').where({ userId: id }).del();
+        await trx('user_comments').where({ userId: id }).del();
+
         // Finally delete the user
         await trx('users').where({ id }).del();
       });
 
+      await User.purgeCachesForDeletedUser({ id, username: user.username, creatorUuid: user.creatorUuid, comments, likes, recipientIds });
+
       await removeContactFromList('signup', { email: user.email });
-      
+
       return true;
     } catch (error) {
       console.error('Error deleting user:', error);
       return false;
+    }
+  }
+
+  /**
+   * Purge every CDN / GraphQL cache entry that could still reference a deleted user
+   * or the comments and likes that were removed with them.
+   */
+  private static async purgeCachesForDeletedUser({ id, username, creatorUuid, comments, likes, recipientIds }: {
+    id: string;
+    username: string | null | undefined;
+    creatorUuid: string | null | undefined;
+    comments: { uuid: string; targetUuid: string; parentUuid: string | null }[];
+    likes: { likeableUuid: string; likeableType: string; parentUuid: string | null }[];
+    recipientIds: string[];
+  }): Promise<void> {
+    try {
+      const commentTargetUuids = new Set<string>();
+      const issueUuids = new Set<string>();
+      const seriesUuids = new Set<string>();
+
+      for (const comment of comments) {
+        if (comment.targetUuid) {
+          commentTargetUuids.add(comment.targetUuid);
+          issueUuids.add(comment.targetUuid);
+        }
+        if (comment.parentUuid) { seriesUuids.add(comment.parentUuid); }
+      }
+
+      for (const like of likes) {
+        switch (like.likeableType) {
+          case 'COMICISSUE':
+            issueUuids.add(like.likeableUuid);
+            if (like.parentUuid) { seriesUuids.add(like.parentUuid); }
+            break;
+          case 'COMICSERIES':
+            seriesUuids.add(like.likeableUuid);
+            break;
+          case 'COMMENT':
+            // Comment likes store the issue as the parent
+            if (like.parentUuid) {
+              commentTargetUuids.add(like.parentUuid);
+              issueUuids.add(like.parentUuid);
+            }
+            break;
+        }
+      }
+
+      await purgeCacheOnCdn({ type: 'user', id, shortUrl: username || '' });
+      await purgeCacheOnCdn({ type: 'profilecomicseries', id, shortUrl: username || '' });
+      await purgeCacheOnCdn({ type: 'notificationsettings', id });
+
+      if (creatorUuid) {
+        await purgeCacheOnCdn({ type: 'creator', id: creatorUuid });
+      }
+
+      for (const targetUuid of commentTargetUuids) {
+        await purgeCacheOnCdn({ type: 'comments', id: targetUuid });
+      }
+
+      if (issueUuids.size > 0) {
+        await purgeMultipleCacheOnCdn({ type: 'comicissuestats', ids: [...issueUuids] });
+      }
+
+      for (const seriesUuid of seriesUuids) {
+        await purgeCacheOnCdn({ type: 'comicseriesstats', id: seriesUuid });
+      }
+
+      if (recipientIds.length > 0) {
+        await purgeMultipleCacheOnCdn({ type: 'notificationfeed', ids: recipientIds });
+      }
+    } catch (error) {
+      console.error('Error purging caches for deleted user:', error);
     }
   }
 }

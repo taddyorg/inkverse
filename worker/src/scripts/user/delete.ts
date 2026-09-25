@@ -6,7 +6,7 @@ async function run() {
 
   if (!userId) {
     console.error('Error: User ID is required');
-    console.log('Usage: yarn worker:user:delete <userId>');
+    console.log('Usage: yarn delete-user <userId>');
     process.exit(1);
   }
 
@@ -30,9 +30,16 @@ async function run() {
     if (success) {
       console.log('Successfully deleted user and all associated data:');
       console.log('- User record');
-      console.log('- User devices');
+      console.log('- User devices (push tokens)');
       console.log('- OAuth tokens');
       console.log('- Comic series subscriptions');
+      console.log('- Notification preferences and settings');
+      console.log('- Likes (issues, series, comments)');
+      console.log('- Comments, plus likes/notifications/reports on those comments (replies by other users are kept)');
+      console.log('- Reports filed by the user');
+      console.log('- Creator claims');
+      console.log('- Notifications sent and received');
+      console.log('- Purged CDN caches (profile, comments, stats, notification feeds)');
       console.log('- Removed from email lists');
     } else {
       console.error('Failed to delete user');
