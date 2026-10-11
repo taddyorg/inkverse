@@ -28,7 +28,7 @@ export function WrappedApiHostingProviderScreen() {
   const { uuid, code, error } = route.params || {};
   
   const userClient = getUserApolloClient();
-  const pollingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const pollingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const attemptCountRef = useRef(0);
   
   const buttonColor = useThemeColor(

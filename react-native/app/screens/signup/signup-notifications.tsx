@@ -2,7 +2,7 @@ import React, { useReducer } from 'react';
 import { StyleSheet, View, Platform } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import * as Notifications from 'expo-notifications';
+import { Notifications } from '@/lib/notifications';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 import { Screen, ThemedView, ThemedText, PressableOpacity, HeaderBackButton, ThemedActivityIndicator, ThemedTextFontFamilyMap } from '@/app/components/ui';
@@ -38,6 +38,12 @@ export function SignupNotificationsScreen() {
 
   const handleEnableNotifications = async () => {
     dispatch({ type: UserDetailsActionType.USER_DETAILS_CLEAR_ERROR });
+
+    // Notifications are unavailable in Expo Go on Android
+    if (!Notifications) {
+      loadNextScreen();
+      return;
+    }
     
     try {
       const { status } = await Notifications.requestPermissionsAsync();

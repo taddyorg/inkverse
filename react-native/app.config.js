@@ -2,7 +2,7 @@ export default {
   expo: {
     name: "Inkverse",
     slug: "inkverse",
-    version: "3.4",
+    version: "3.5",
     orientation: "portrait",
     icon: "./assets/icons/ios-light.png",
     scheme: "inkverse",
@@ -11,7 +11,7 @@ export default {
     jsEngine: "hermes",
     ios: {
       bundleIdentifier: "art.bamcomics.taddy",
-      buildNumber: "2",
+      buildNumber: "1",
       supportsTablet: false,
       infoPlist: {
         LSApplicationQueriesSchemes: [
@@ -59,6 +59,23 @@ export default {
     plugins: [
       "@bacons/apple-targets",
       [
+        "expo-build-properties",
+        {
+          ios: {
+            // Required to build with Xcode 27 / iOS 27 SDK on SDK 57. Remove after upgrading to SDK 58.
+            enableSceneSupport: true
+          }
+        }
+      ],
+      "expo-status-bar",
+      [
+        "expo-navigation-bar",
+        {
+          // Keep navigation bar visible but fully transparent (no contrast scrim behind 3-button nav)
+          enforceContrast: false
+        }
+      ],
+      [
         "expo-splash-screen",
         {
           backgroundColor: "#FFE9E4",
@@ -75,18 +92,6 @@ export default {
             "assets/fonts/SourceSans3-SemiBold.ttf",
             "assets/fonts/SourceSans3-Bold.ttf"
           ]
-        }
-      ],
-      [
-        "react-native-edge-to-edge",
-        {
-          android: {
-            parentTheme: "Light",
-            enforceNavigationBarContrast: false,
-            // Keep navigation bar visible but transparent
-            navigationBarStyle: "light",
-            navigationBarColor: "transparent"
-          }
         }
       ],
       [

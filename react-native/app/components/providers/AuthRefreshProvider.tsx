@@ -14,7 +14,7 @@ const REFRESH_INTERVAL = 15 * 60 * 1000;
 
 export function AuthRefreshProvider({ children }: AuthRefreshProviderProps) {
   const appState = useRef(AppState.currentState);
-  const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const refreshIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const lastRefreshTimeRef = useRef<number>(Date.now());
   const userClient = getUserApolloClient();
 

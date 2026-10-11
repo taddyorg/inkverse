@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import * as Notifications from 'expo-notifications';
+import type { EventSubscription, NotificationResponse } from 'expo-notifications';
+import { Notifications } from '@/lib/notifications';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { navigateToDeepLinkAndResetNavigation } from '@/constants/Navigation';
@@ -16,7 +17,7 @@ interface NotificationData {
   [key: string]: any;
 }
 
-Notifications.setNotificationHandler({
+Notifications?.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
     shouldPlaySound: true,
@@ -27,14 +28,20 @@ Notifications.setNotificationHandler({
 });
 
 export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // Notifications are unavailable in Expo Go on Android
+  if (!Notifications) return <>{children}</>;
+  return <NotificationListeners notifications={Notifications}>{children}</NotificationListeners>;
+};
+
+const NotificationListeners: React.FC<{ notifications: NonNullable<typeof Notifications>; children: React.ReactNode }> = ({ notifications, children }) => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const notificationListener = useRef<Notifications.EventSubscription | null>(null);
-  const responseListener = useRef<Notifications.EventSubscription | null>(null);
-  const lastNotificationResponse = Notifications.useLastNotificationResponse();
+  const notificationListener = useRef<EventSubscription | null>(null);
+  const responseListener = useRef<EventSubscription | null>(null);
+  const lastNotificationResponse = notifications.useLastNotificationResponse();
   const processedNotificationIds = useRef<Set<string>>(new Set());
   const isNavigating = useRef(false);
 
-  const handleNotificationResponse = (response: Notifications.NotificationResponse) => {
+  const handleNotificationResponse = (response: NotificationResponse) => {
     const notificationId = response.notification.request.identifier;
     
     // Prevent processing the same notification multiple times
@@ -123,11 +130,11 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   }, [lastNotificationResponse?.notification?.request?.identifier]);
 
   useEffect(() => {
-    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+    notificationListener.current = notifications.addNotificationReceivedListener(notification => {
       console.log('Notification received:', notification);
     });
 
-    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+    responseListener.current = notifications.addNotificationResponseReceivedListener(response => {
       handleNotificationResponse(response);
     });
 
