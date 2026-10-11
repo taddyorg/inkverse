@@ -29,7 +29,7 @@ export default {
     },
     android: {
       package: "com.bamtoons",
-      versionCode: 105,
+      versionCode: 106,
       minSdkVersion: 35,
       adaptiveIcon: {
         foregroundImage: "./assets/icons/adaptive-icon.png",
