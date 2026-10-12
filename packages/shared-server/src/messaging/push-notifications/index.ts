@@ -6,7 +6,7 @@ import { type DigestTotals, getDigestText } from '../notifications/digest.js';
 import path from 'path';
 import { fileURLToPath } from "url";
 import dotenv from 'dotenv';
-import type { INKVERSE_HIGH_PRIORITY_TYPE } from 'src/queues/utils.js';
+import type { INKVERSE_HIGH_PRIORITY_TYPE } from '../../queues/utils.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

@@ -24,7 +24,6 @@
     "lib": ["es2022"],
 
     "moduleResolution": "NodeNext",
-    "baseUrl": ".",
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"],

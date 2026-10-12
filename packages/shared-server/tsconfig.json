@@ -25,7 +25,6 @@
 
     /* Module Resolution */
     "moduleResolution": "NodeNext",
-    "baseUrl": ".", // Base URL for path mappings within this package if needed
 
     /* If your code doesn't run in the DOM: */
     "lib": ["es2022"]

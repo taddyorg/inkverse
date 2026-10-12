@@ -1,3 +1,5 @@
+const isProductionBuild = process.env.EAS_BUILD_PROFILE === "production";
+
 export default {
   expo: {
     name: "Inkverse",
@@ -19,7 +21,19 @@ export default {
           "mailto",
           "itms-apps"
         ],
-        ITSAppUsesNonExemptEncryption: false
+        ITSAppUsesNonExemptEncryption: false,
+        // Allow plain HTTP to the local dev server (config.ts uses http://inkverse.test:3010 in __DEV__)
+        ...(isProductionBuild ? {} : {
+          NSAppTransportSecurity: {
+            NSAllowsArbitraryLoads: false,
+            NSAllowsLocalNetworking: true,
+            NSExceptionDomains: {
+              "inkverse.test": {
+                NSExceptionAllowsInsecureHTTPLoads: true
+              }
+            }
+          }
+        })
       },
       associatedDomains: [
         "applinks:inkverse.co"

@@ -25,10 +25,10 @@
 
     /* Module Resolution */
     "moduleResolution": "NodeNext",
-    "baseUrl": ".", // Base URL for path mappings within this package if needed
 
     /* If your code doesn't run in the DOM: */
-    "lib": ["es2022", "DOM", "DOM.Iterable"]
+    "lib": ["es2022", "DOM", "DOM.Iterable"],
+    "types": ["node"]
   },
   "include": ["src"], // Include all TS files in the src directory
   "exclude": ["node_modules", "dist"] // Exclude node_modules and the output dir
