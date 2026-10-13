@@ -15,7 +15,7 @@ uploaded by the skill, never hand-edited (change the inputs and re-render) and n
 
 ## Journal
 
-<the journal, verbatim from journal.md>
+<the journal, verbatim from journal.md: bullet blocks, one per work item>
 
 ## Conversations
 
@@ -78,15 +78,32 @@ admin's plain-language overview of the range, one per range, in the third person
 member's weekly journal in the app (one per project per week, in the author's own voice,
 written with `put_journal`), which this skill never drafts.
 
-- It is about the work, not the person. The subject of a sentence is the thing worked on: "The
-  overlap set was re-run on pyannote 3.1; DER fell from 21% to 17%, and two-speaker crosstalk
-  still merged." Not "I tried pyannote 3.1" and not "we".
-- Plain language, in the order it happened: what was built or changed, what was tried, what
-  happened (with the numbers exactly as the sessions state them), what was decided and why,
-  what was left open.
-- Every conversation and commit in the range is covered, the small ones in a clause. No split
-  by project, no SR&ED vocabulary (no "uncertainty", "experiment", "routine"), no hours, no
-  list of files or commands.
+It is a work log, not a diary. The shape is bullet blocks, one per work item, and no narrative
+paragraphs.
+
+- One block per work item: a feature, a fix, an experiment, an attempt. Blocks are in the
+  order the work happened. The sessions and commits behind the same item go in one block, so a
+  fix made in one conversation and committed from another is still one block.
+- A block is a bold lead naming the thing worked on, then two to five bullets, one fact each:
+  what changed, what the result was, what was decided and why, what is still open. Prefix a
+  decision bullet with `Decision:` and an open item with `Open:` when the block has one. An
+  uncommitted attempt says so in its bullet.
+- Short declarative sentences with the thing worked on as the subject. Not "I tried pyannote
+  3.1" and not "we"; no "then", "after that", "unfortunately". The numbers and names are
+  exactly as the sessions state them.
+
+  ```markdown
+  **Diarization: pyannote 3.1 on the overlap set**
+  - Replaced 2.1 with 3.1 on the 40-clip overlap set. DER 21% -> 17%.
+  - Tried a 0.3 s minimum segment length on top: DER unchanged, cut short correct segments. Dropped.
+  - Decision: keep 3.1; the gain is in the model, not the post-processing.
+  - Open: two-speaker crosstalk still merged into one segment.
+  ```
+
+- Every conversation and commit in the range is covered. A small one is a single bullet in
+  the block it belongs to, or its own one-bullet block. No split by project, no SR&ED
+  vocabulary (no "uncertainty", "experiment", "routine"), no hours, no list of files or
+  commands.
 - Nothing that the recaps and commit bodies do not show. A failed attempt is stated as tried
   and not working.
 
@@ -94,9 +111,10 @@ written with `put_journal`), which this skill never drafts.
 
 One per session, at most 200 words, in `recaps.json`, from the dump alone: what the
 conversation was about (the first human message), what was tried, what happened, what was
-decided, and which commits it made (`commits` in the digest). Same voice as the journal: the
-work is the subject, the numbers are the author's. A session that only asked a question or
-only ran a commit gets two or three sentences that say so.
+decided, and which commits it made (`commits` in the digest). A recap is short prose, not
+bullets; it shares the journal's subject (the work, not the person) and the numbers are the
+author's. A session that only asked a question or only ran a commit gets two or three
+sentences that say so.
 
 ## Full example
 
@@ -112,16 +130,22 @@ Inputs: the fixture digest (sessions `aaaaaaaa-…` on 2026-09-15, `bbbbbbbb-…
 
 ## Journal
 
-The diarization pipeline moved from pyannote 2.1 to 3.1 on the 40-clip overlap set: DER fell
-from 21% to 17%, but two-speaker crosstalk is still merged into one segment. A 0.3 s minimum
-segment length on top of 3.1 left DER unchanged and only cut short correct segments, so it was
-dropped; 3.1 stays because the gain is in the model, not the post-processing. Crosstalk is
-still open.
+**Diarization: pyannote 3.1 on the overlap set**
+- Replaced 2.1 with 3.1 on the 40-clip overlap set. DER 21% -> 17%.
+- Two-speaker crosstalk still merged into one segment.
+- Tried a 0.3 s minimum segment length on top: DER unchanged, cut short correct segments. Dropped.
+- Decision: keep 3.1; the gain is in the model, not the post-processing.
+- Open: crosstalk.
 
-The episode page had stopped showing podcast artwork: the CDN URL had lost its size suffix in
-the image migration. The suffix is appended again in artwork.ts.
+**Episode page artwork**
+- Artwork stopped loading: the CDN URL lost its size suffix in the image migration.
+- Suffix appended again in artwork.ts. Fixed.
 
-A loading skeleton for the podcast page was started on feat/skeleton and left uncommitted.
+**Podcast page loading skeleton**
+- Placeholder blocks for artwork, title and episode list. Started on feat/skeleton, uncommitted.
+
+**Commit made by hand with no trailer**
+- Committed on 2026-09-17 with no body and no conversation behind it; what it changed is not in the inputs.
 
 ## Conversations
 

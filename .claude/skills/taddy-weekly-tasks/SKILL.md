@@ -93,12 +93,17 @@ failure does not stop the run: the report says which sessions were not archived.
 
 ## Step 5: the journal
 
-Write `$WORK/journal.md`: one plain-language journal for the whole range, from the recaps and
-the commit bodies, for someone who was not there. It is about the work, not the person: what
-was built, tried, observed and decided, in the order it happened, with the exact numbers and
-names from the sessions ("The overlap set was re-run on pyannote 3.1; DER fell from 21% to
-17%", never "I tried pyannote"). No hours, no SR&ED vocabulary, no split by project, no list of
-files. A few paragraphs is normal; a one-commit week is one paragraph.
+Write `$WORK/journal.md`: one journal for the whole range, from the recaps and the commit
+bodies, for someone who was not there. It is a work log, not a diary: bullet blocks, one per
+work item (a feature, a fix, an experiment, an attempt), in the order the work happened, with
+the sessions and commits behind the same item grouped into one block. A block is a bold lead
+naming the thing worked on, then two to five bullets, one fact each: what changed, what the
+result was (the exact numbers and names from the sessions), `Decision:` what was decided and
+why, `Open:` what is still open; an uncommitted attempt says so. Short declarative sentences,
+the thing worked on as the subject ("- Replaced 2.1 with 3.1 on the overlap set. DER 21% ->
+17%.", never "I tried pyannote"), no narrative paragraphs. No hours, no SR&ED vocabulary, no
+split by project, no list of files. A small session or commit is one bullet in the block it
+belongs to, or its own one-bullet block; a one-commit week is one block.
 
 ## Step 6: render
 
