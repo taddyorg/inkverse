@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 # Digest a repo's Claude Code transcripts over a range of days, for the taddy-weekly-tasks skill.
 # Python 3.9+, standard library only. Reads ~/.claude/projects/<encoded cwd>*/<session id>.jsonl
-# and prints JSON; never uploads or writes anything. Nothing about time is measured: timestamps
-# only give each session its day and the order of turns.
+# (and <id>/subagents/*.jsonl, whose commands and commits count as the session's) and prints JSON;
+# never uploads or writes anything. Nothing about time is measured: timestamps only give each
+# session its day and the order of turns. A self-contained copy of the transcript plumbing in
+# taddy-commit/scripts/work-sessions.py — the two skills share no code on purpose; the shared
+# functions are kept byte-identical by evals/run-scripts.sh.
 #
 # Usage:
 #   sessions.py --cwd "$PWD" [--from YYYY-MM-DD] [--to YYYY-MM-DD] [--exclude id,id]   # digest
@@ -25,6 +28,9 @@ COMMIT_CMD_RE = re.compile(r"\bgit\s+(?:-C\s+\S+\s+)?commit\b")
 COMMIT_OUT_RE = re.compile(r"^\[(?P<branch>[^\s\]]+)(?: \([^)]*\))? (?P<sha>[0-9a-f]{7,40})\] (?P<subject>.*)$", re.M)
 MSG_FLAG_RE = re.compile(r"""-m\s+(?:"((?:[^"\\]|\\.)*)"|'([^']*)')""")
 HEREDOC_RE = re.compile(r"<<-?\s*'?\"?(\w+)'?\"?\s*\n(.*)", re.S)
+AGENT_TOOLS = ("Agent", "Task")
+AGENT_LAUNCHED = "Async agent launched successfully"  # the harness's acknowledgement, not a report
+AGENT_RESULT_RE = re.compile(r"<result>(.*?)</result>", re.S)
 
 
 def parse_date(s):
@@ -60,7 +66,21 @@ def candidate_dirs(root, cwd):
 
 def transcript_files(dirs):
     for d in dirs:
-        yield from sorted(d.glob("*.jsonl"))  # top level only: <id>/subagents/*.jsonl are never read
+        yield from sorted(d.glob("*.jsonl"))  # top level; <id>/subagents/*.jsonl are folded into <id> by digest_file
+
+
+def subagent_messages(path):
+    """The timestamped lines of <id>/subagents/*.jsonl: a subagent's edits and commands count as
+    the parent session's, since the parent transcript only records that it delegated."""
+    sub_dir = path.parent / path.stem / "subagents"
+    if not sub_dir.is_dir():
+        return [], 0
+    messages, files = [], 0
+    for f in sorted(sub_dir.glob("*.jsonl")):
+        files += 1
+        lines, _ = read_lines(f)
+        messages.extend(l for l in lines if isinstance(l.get("timestamp"), str))
+    return messages, files
 
 
 def local(ts):
@@ -193,6 +213,8 @@ def digest_file(path, cwd, start, end, exclude, max_first):
     if sid in exclude:
         return None, {"sessionId": sid, "path": str(path), "reason": "already-filed"}
 
+    subs, sub_files = subagent_messages(path)
+    work = sorted(messages + subs, key=lambda m: m["timestamp"])  # what the session did, subagents included; turns and dates stay the parent's
     title = next((l.get("aiTitle") for l in lines if l.get("type") == "ai-title" and l.get("aiTitle")), None)
     branch = next((m.get("gitBranch") for m in messages if m.get("gitBranch")), None)
     version = next((m.get("version") for m in messages if m.get("version")), None)
@@ -204,6 +226,8 @@ def digest_file(path, cwd, start, end, exclude, max_first):
     for m in messages:
         if m.get("type") == "assistant":
             assistant_turns += 1
+    for m in work:
+        if m.get("type") == "assistant":
             for b in (m.get("message") or {}).get("content") or []:
                 if isinstance(b, dict) and b.get("type") == "tool_use":
                     tool_uses[b.get("name") or "?"] += 1
@@ -224,8 +248,9 @@ def digest_file(path, cwd, start, end, exclude, max_first):
         "assistantTurns": assistant_turns,
         "toolUses": dict(tool_uses),
         "firstHumanMessage": first_human[:max_first],
-        "commits": find_commits(messages, cwd),
-        "hasSubagents": (path.parent / path.stem / "subagents").is_dir(),
+        "commits": find_commits(work, cwd),
+        "hasSubagents": sub_files > 0,
+        "subagentFiles": sub_files,
         "unparsedLines": bad,
     }, None
 
@@ -273,29 +298,48 @@ def truncate(text, cap):
     return text[:cap].rstrip() + f" …(+{len(text) - cap} chars)"
 
 
-def cmd_dump(args, cwd, root):
-    path = find_session(root, cwd, args.dump)
-    lines, _ = read_lines(path)
-    messages = [l for l in lines if isinstance(l.get("timestamp"), str)]
-    title = next((l.get("aiTitle") for l in lines if l.get("type") == "ai-title"), None)
-    entries = []  # (kind, timestamp, text)
+def agent_report(text):
+    """The report in a task notification: its <result> block, else the text without the tags."""
+    m = AGENT_RESULT_RE.search(text)
+    return (m.group(1) if m else re.sub(r"</?task-notification>", "", text)).strip()
+
+
+def collect_entries(messages):
+    """The dump's entries in order: human turns (H), assistant text (A), tool-only turns (T) and
+    the report an Agent tool call returned (R), from its result or from the task notification
+    that delivered it. Thinking, tool inputs and every other tool result are left out."""
+    entries, agent_calls = [], set()
     for m in messages:
         if is_human(m):
             t = text_of((m.get("message") or {}).get("content"))
             if t.strip():
                 entries.append(["H", m["timestamp"], t])
+        elif m.get("type") == "user" and (m.get("origin") or {}).get("kind") == "task-notification":
+            t = agent_report(text_of((m.get("message") or {}).get("content")))
+            if t:
+                entries.append(["R", m["timestamp"], t])
         elif m.get("type") == "assistant":
             blocks = (m.get("message") or {}).get("content") or []
             text = "\n".join(b.get("text", "") for b in blocks if isinstance(b, dict) and b.get("type") == "text").strip()
             tools = Counter(b.get("name") or "?" for b in blocks if isinstance(b, dict) and b.get("type") == "tool_use")
+            agent_calls.update(b.get("id") for b in blocks if isinstance(b, dict) and b.get("type") == "tool_use" and b.get("name") in AGENT_TOOLS)
             if text:
                 entries.append(["A", m["timestamp"], text])
             elif tools:
                 entries.append(["T", m["timestamp"], " ".join(f"{k}×{v}" for k, v in tools.items())])
-    if not messages:
-        sys.exit(f"error: {path} holds no messages")
+        elif m.get("type") == "user" and agent_calls:
+            for b in (m.get("message") or {}).get("content") or []:
+                if isinstance(b, dict) and b.get("type") == "tool_result" and b.get("tool_use_id") in agent_calls:
+                    c = b.get("content")
+                    t = c if isinstance(c, str) else text_of(c)
+                    if t.strip() and not t.startswith(AGENT_LAUNCHED):  # the report follows in a task notification
+                        entries.append(["R", m["timestamp"], t])
+    return entries
+
+
+def print_dump(sid, messages, title, entries, args):
     first = messages[0]
-    print(f"session {path.stem} | {local(first['timestamp']).date()} | branch {first.get('gitBranch')} | {title or '(no title)'} | {len(entries)} turns")
+    print(f"session {sid} | {local(first['timestamp']).date()} | branch {first.get('gitBranch')} | {title or '(no title)'} | {len(entries)} turns")
     if len(entries) > args.max_turns:
         head = args.max_turns // 3
         tail = args.max_turns - head
@@ -311,8 +355,21 @@ def cmd_dump(args, cwd, root):
         if kind == "T":
             print(f"[tools {stamp}] {text}")
             continue
+        if kind == "R":
+            print(f"[agent {stamp}] {truncate(text, args.max_chars)}")
+            continue
         cap = args.max_chars * (3 if i in tail_set else 1)
         print(f"[{kind} {stamp}] {truncate(text, cap)}")
+
+
+def cmd_dump(args, cwd, root):
+    path = find_session(root, cwd, args.dump)
+    lines, _ = read_lines(path)
+    messages = [l for l in lines if isinstance(l.get("timestamp"), str)]
+    if not messages:
+        sys.exit(f"error: {path} holds no messages")
+    title = next((l.get("aiTitle") for l in lines if l.get("type") == "ai-title"), None)
+    print_dump(path.stem, messages, title, collect_entries(messages), args)
 
 
 def main():

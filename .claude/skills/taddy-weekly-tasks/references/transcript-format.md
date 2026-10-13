@@ -11,8 +11,11 @@ directory's absolute path with every character that is not a letter or digit rep
 lands in its own directory (`…-taddy-apps-web`), so the digest scans every directory whose name is
 the encoded repo path or starts with it followed by `-`, and keeps a file only when its first
 message's `cwd` is the repo or a path under it (a sibling such as `…-taddy-other` is skipped as
-`other-cwd`). Subagent transcripts live in `<session id>/subagents/*.jsonl` and are never read or
-archived.
+`other-cwd`). Subagent transcripts live in `<session id>/subagents/*.jsonl`: the work a session
+delegated. Their commands and commits are folded into the session's `commits` and `toolUses`
+(`subagentFiles` counts them), their lines go after the parent's in the archived copy, and the
+dump shows the report each Agent call returned. Turns, dates and the first human message stay
+the parent's.
 
 ## Line shapes
 
@@ -35,7 +38,8 @@ One JSON object per line. Only lines with a `timestamp` are messages; the rest i
 - `weekStart` — that day's Monday, shown on the conversation's `Date` line.
 - `firstHumanMessage` — the first human turn: what the conversation was about, the recap's
   opening and the report heading's fallback when the session has no title.
-- `commits` — every Bash `tool_use` whose command runs `git commit`, paired with its result. Git
+- `commits` — every Bash `tool_use` whose command runs `git commit`, subagent transcripts
+  included, paired with its result. Git
   prints `[<branch> <sha>] <subject>` on success, which gives `sha` and `subject`; when the output
   is missing the subject comes from `-m "…"` or the heredoc's first line and `sha` stays null
   (`commits.py --join` then matches on the subject). `ok` is false on `Exit code` / `nothing to
@@ -43,12 +47,14 @@ One JSON object per line. Only lines with a `timestamp` are messages; the rest i
   `commits.py --join` also reads each commit's `Work-Session` trailers, the session ids
   `taddy-commit` stamps on every commit (the sessions that did the work, the committing
   conversation included when it did any of it), and joins those first (`matchedBy:
-  trailer`), warning on an id that is not in the digest. It also reads the `SRED-Project`
-  trailer into the commit's `projectId` (null when absent, with a warning when it is not a
-  positive integer).
+  trailer`), warning on an id that is not in the digest. It also reads the `Taddy-Project`
+  trailer into the commit's `projectId`, falling back to the `SRED-Project` trailer older
+  commits carry (null when absent, with a warning when it is not a
+  positive integer). It walks every local and remote-tracking branch, and lists a commit
+  authored after the range whose trailers name a session of the range under `laterCommits`.
 - `archiveName` — `<date>-<slug>.jsonl`, the slug from `aiTitle` (else the session `slug`, else the
   first words of the first human message), for the upload's `name` and the report's `Archived` line.
-- `humanTurns`, `assistantTurns`, `toolUses`, `hasSubagents`, `bytes`.
+- `humanTurns`, `assistantTurns`, `toolUses`, `hasSubagents`, `subagentFiles`, `bytes`.
 
 Sessions from other days or sibling repos are only counted (`skippedCounts`); `skipped` lists the
 ones worth a look: `no-messages`, `parse-error` (and `already-filed` when `--exclude` is passed,
@@ -65,10 +71,13 @@ session <id> | <date> | branch <branch> | <title> | <n> turns
 [H 09:14] <human turn, up to --max-chars>
 [A 09:15] <assistant text, up to --max-chars> …(+N chars)
 [tools 09:16] Bash×3 Edit×2
+[agent 09:17] <the report an Agent call returned, up to --max-chars>
 [… skipped N turns …]
 ```
 
-It skips `thinking`, tool inputs, tool results, attachments and injected lines. The last
+It skips `thinking`, tool inputs, attachments, injected lines and every tool result except the
+report an Agent call returned (what a delegated subagent did, in its own words), read from
+the call's result or from the task notification that delivered it. The last
 `--keep-tail` assistant messages get three times the cap so the closing summary survives; beyond
 `--max-turns` it keeps the first third and the last two thirds. Write each session's recap from
 its dump right after printing it, then move on; do not keep dumps around.

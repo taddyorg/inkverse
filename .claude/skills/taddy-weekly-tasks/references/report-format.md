@@ -22,8 +22,8 @@ uploaded by the skill, never hand-edited (change the inputs and re-render) and n
 ### <date> · <title, else the first words of the first human message> · `<session id>`
 - Date: <date> (week of <weekStart>)
 - Branch: <branch>
-- Commits: <repo>@<short> <subject> (trailer | in-session); … | none
-- Project: <id> (<code> <name>)[, …][, Unknown] — from the SRED-Project trailer | Unknown
+- Commits: <repo>@<short> <subject> (trailer | in-session[, committed after the range]); … | none
+- Project: <id> (<code> <name>)[, …][, Unknown] — from the Taddy-Project trailer | Unknown
 - Archived: yes (<archiveName>) | already (archived earlier) | no — <reason>
 
 <the session's recap, verbatim from recaps.json>
@@ -31,24 +31,28 @@ uploaded by the skill, never hand-edited (change the inputs and re-render) and n
 ## Commits
 
 ### <date> · <repo>@<short> · <subject>
-- Project: <id> (<code> <name>) — SRED-Project trailer | Unknown (no SRED-Project trailer)
+- Project: <id> (<code> <name>) — Taddy-Project trailer | Unknown (no Taddy-Project trailer)[ — on a branch, not yet on HEAD]
 - Sessions: `<session id>` (trailer | in-session[, not in range]); … | none
+[- Note: a session not in range was archived by an earlier pass, if at all, and keeps the project it had then; the task carries the project.]
 
 <the commit body, verbatim, or "(no body)">
 ```
 
 - Conversations are in `start` order, one `###` per session in `sessions.json`, uploaded or not.
-- A conversation's `Commits` are the commits whose `sessionIds` hold it. Each is suffixed with
-  how the join was made: `trailer` when the session is one of the commit's `Work-Session`
-  trailers, `in-session` when the digest saw the session run that `git commit`.
+- A conversation's `Commits` are the commits whose `sessionIds` hold it, `laterCommits`
+  included. Each is suffixed with how the join was made: `trailer` when the session is one of
+  the commit's `Work-Session` trailers, `in-session` when the digest saw the session run that
+  `git commit`, plus `committed after the range` for a later commit.
 - A conversation's `Project` lists the distinct `projectId`s of those commits, in order, then
   `Unknown` when one of them has no trailer; a conversation with no commit is `Unknown`. A
   project id that is not in `projects.json` renders as `<id> (not visible to you)`.
 - `Archived` comes from the flags: `--archived` (uploaded in this run, with the archive name),
   `--already` (returned by `list_files`), `--failed "<id>=<reason>"` (an upload that failed), else
   `no — not uploaded`.
-- Commits are in date order, one `###` per commit in `commits.json`; a session id under a commit
-  that is not in `sessions.json` is marked `not in range`.
+- Commits are in date order, one `###` per commit in `commits.json`'s `commits` (every branch;
+  `laterCommits` are not listed here); a commit not yet on HEAD says so on its Project line. A
+  session id under a commit that is not in `sessions.json` is marked `not in range`, with the
+  Note line under the commit.
 - Nothing in the file is classified as SR&ED or routine, and nothing carries hours.
 
 ## What `report.py` enforces
@@ -64,12 +68,15 @@ Warnings, one `warning:` per line on stderr, with the report still rendered:
 - a recap over 1 500 characters (about 200 words);
 - a `projectId` that is not in `projects.json`;
 - a recap keyed by a session id that is not in `sessions.json` (ignored);
-- every `warnings` line from `commits.json` (a bad `SRED-Project` value, a `Work-Session` id
+- every `warnings` line from `commits.json` (a bad `Taddy-Project` value, a `Work-Session` id
   not in the digest).
 
 ## Writing the journal
 
-One journal for the whole range, in `journal.md`, for someone who was not there.
+One journal for the whole range, in `journal.md`, for someone who was not there. It is the
+admin's plain-language overview of the range, one per range, in the third person. It is not the
+member's weekly journal in the app (one per project per week, in the author's own voice,
+written with `put_journal`), which this skill never drafts.
 
 - It is about the work, not the person. The subject of a sentence is the thing worked on: "The
   overlap set was re-run on pyannote 3.1; DER fell from 21% to 17%, and two-speaker crosstalk
@@ -122,7 +129,7 @@ A loading skeleton for the podcast page was started on feat/skeleton and left un
 - Date: 2026-09-15 (week of 2026-09-14)
 - Branch: develop
 - Commits: fixture@1a2b3c4 Try pyannote 3.1 for diarization on overlapping speech (trailer)
-- Project: 3 (TP-03 Diarization) — from the SRED-Project trailer
+- Project: 3 (TP-03 Diarization) — from the Taddy-Project trailer
 - Archived: yes (2026-09-15-pyannote-3-1-diarization-overlap.jsonl)
 
 The 3.1 pipeline replaced 2.1 on the 40-clip overlap set. DER went from 21% to 17%; crosstalk
@@ -134,7 +141,7 @@ speech" with 3.1 kept and no filter.
 - Date: 2026-09-16 (week of 2026-09-14)
 - Branch: develop
 - Commits: fixture@e55aa4d Fix podcast artwork not loading on the episode page (trailer)
-- Project: 5 (Web app) — from the SRED-Project trailer
+- Project: 5 (Web app) — from the Taddy-Project trailer
 - Archived: yes (2026-09-16-fix-episode-artwork-cdn-suffix.jsonl)
 
 The episode page artwork was not loading. The CDN URL had lost its size suffix after the image
@@ -154,7 +161,7 @@ episode list while the feed loads, no behaviour yet. Nothing was committed.
 ## Commits
 
 ### 2026-09-15 · fixture@1a2b3c4 · Try pyannote 3.1 for diarization on overlapping speech
-- Project: 3 (TP-03 Diarization) — SRED-Project trailer
+- Project: 3 (TP-03 Diarization) — Taddy-Project trailer
 - Sessions: `aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa` (trailer)
 
 Ran the 3.1 pipeline on the overlap set. DER 21% -> 17%, crosstalk still merged.
@@ -162,13 +169,13 @@ Ran the 3.1 pipeline on the overlap set. DER 21% -> 17%, crosstalk still merged.
 Keeping 3.1: the gain is in the model.
 
 ### 2026-09-16 · fixture@e55aa4d · Fix podcast artwork not loading on the episode page
-- Project: 5 (Web app) — SRED-Project trailer
+- Project: 5 (Web app) — Taddy-Project trailer
 - Sessions: `bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb` (trailer); `cccccccc-3333-4333-8333-cccccccccccc` (trailer, not in range)
 
 The CDN URL lost its size suffix.
 
 ### 2026-09-17 · fixture@9f8e7d6 · Commit made by hand with no trailer
-- Project: Unknown (no SRED-Project trailer)
+- Project: Unknown (no Taddy-Project trailer)
 - Sessions: none
 
 (no body)

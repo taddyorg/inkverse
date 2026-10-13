@@ -46,7 +46,7 @@ KEY_SKIP_RE = re.compile(r"(?i)[_-]?(url|uri|path|file|dir|name|id|header|ttl|ex
 VAR_NAME_RE = re.compile(r"^[A-Z_][A-Z0-9_]*$")
 
 ASSIGN_RE = re.compile(
-    r"(?i)\b([A-Za-z_][\w.-]*?(?:api[_-]?key|apikey|secret|token|passw(?:or)?d|private[_-]?key|"
+    r"(?i)\b([\w.-]*?(?:api[_-]?key|apikey|secret|token|passw(?:or)?d|private[_-]?key|"
     r"client[_-]?secret|access[_-]?key|credential)[\w-]*)\s*[:=]\s*[\"']?([^\s\"',;]{8,})"
 )
 RULES = [

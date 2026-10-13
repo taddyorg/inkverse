@@ -1,9 +1,9 @@
 ---
 name: taddy-commit
-description: Commit in a Taddy product repo under an SR&ED project. Use this skill whenever the user asks to commit, "commit this", "commit this to AI Tools", "commit under TP-04", "commit and push", "wrap this up in a commit", "commit what's sitting uncommitted", "split this into two commits", or otherwise wants work turned into one or more git commits (two topics make two commits) in a repo that has the Taddy SR&ED MCP server (tools such as list_projects, pick_project). The work may be from this conversation or from earlier ones whose files are still uncommitted. It resolves the project named in the request against list_projects, writes the commit message (the work's recap as the body), shows it for approval, stamps the SRED-Project and Work-Session trailers, and stops on a secret or a dropped .gitignore line until the user keeps or unstages each finding by number. Not for reverting, rebasing, amending only the author, answering git log or diff questions, or opening a PR when nothing new is being committed.
+description: Commit in a Taddy product repo under an SR&ED project. Use this skill whenever the user asks to commit, "commit this", "commit this to AI Tools", "commit under TP-04", "commit and push", "wrap this up in a commit", "commit what's sitting uncommitted", "split this into two commits", or otherwise wants work turned into one or more git commits (two topics make two commits) in a repo that has the Taddy SR&ED MCP server (tools such as list_projects, pick_project). The work may be from this conversation or from earlier ones whose files are still uncommitted. It resolves the project named in the request against list_projects, writes the commit message (the work's recap as the body), shows it for approval, stamps the Taddy-Project and Work-Session trailers, and stops on a secret or a dropped .gitignore line until the user keeps or unstages each finding by number. Not for reverting, rebasing, amending only the author, answering git log or diff questions, or opening a PR when nothing new is being committed.
 metadata:
-  version: "0.1.0"
-  updated: "2026-09-23"
+  version: "1.1.0"
+  updated: "2026-10-13"
   source: "https://github.com/taddyorg/taddy-internal-skills"
 ---
 
@@ -98,7 +98,7 @@ Shapes, matching examples and errors: `references/project.md`.
    nothing not stated in the conversation(s) behind the commit. A small change (a bug fix, a
    config bump) gets one or two sentences. Files with no session behind them get a body that
    says only what changed. Rules and examples: `references/message-format.md`.
-3. **Approve.** After a blank line, `SRED-Project: <id>` from the Project step, then one
+3. **Approve.** After a blank line, `Taddy-Project: <id>` from the Project step, then one
    `Work-Session: <id>` per session behind the commit, in start order: the digest's
    `sessionId` for each earlier session and, last, this conversation's own id when it did any
    of the work (`echo $CLAUDE_CODE_SESSION_ID`, equal to the digest's `currentSession`). A
@@ -108,26 +108,14 @@ Shapes, matching examples and errors: `references/project.md`.
    message, `clean` or `kept: #n kind file:line excerpt` per kept finding, then stop and wait:
    the user approves or edits it. An edit to the subject or body is applied verbatim; a new
    project name or code is re-matched against the list already fetched
-   (`references/project.md`). Commit only after an explicit yes, behind the scan:
-
-   ```
-   M=$(mktemp); cat > "$M" <<'EOF'
-   <subject>
-
-   <body>
-
-   SRED-Project: 5
-   Work-Session: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
-   Co-Authored-By: ...
-   EOF
-   python3 .claude/skills/taddy-commit/scripts/secret-scan.py --message-file "$M" \
-     --approved "<approvalId, omitted when the scan was clean>" && git commit -F "$M"
-   ```
-
+   (`references/project.md`). Commit only after an explicit yes, behind the scan: write the
+   message to a temp file `$M` (subject, blank line, body, blank line, trailers) and run
+   `secret-scan.py --message-file "$M" --approved "<approvalId>" && git commit -F "$M"`,
+   `--approved` omitted when the scan was clean (the exact command: `references/security.md`).
    Exit 1 here means the index changed since the reviewed scan or the message holds a
    value: back to Step 1, never `git commit` on its own.
-4. **Verify:** `git log -1 --format='%(trailers:key=SRED-Project)%(trailers:key=Work-Session)'`
-   prints `SRED-Project: <id>`, then one `Work-Session:` line per session, at least one on
+4. **Verify:** `git log -1 --format='%(trailers:key=Taddy-Project)%(trailers:key=Work-Session)'`
+   prints `Taddy-Project: <id>`, then one `Work-Session:` line per session, at least one on
    every commit. Nothing printed, or a line missing, means the trailer block was not the last
    paragraph or a line was dropped: fix with `git commit --amend -F -`.
 5. **Print the commit message and trailers:** the same `git log -1` as Step 4.
@@ -136,7 +124,7 @@ Shapes, matching examples and errors: `references/project.md`.
 
 ## Trailers
 
-Every commit gets `SRED-Project: <id>` and one `Work-Session: <id>` per session behind it, this
+Every commit gets `Taddy-Project: <id>` and one `Work-Session: <id>` per session behind it, this
 conversation included when it did the work. Neither is a classification: this skill never writes
 an `SRED:` or `SRED-Exclusion:` line; if the user wants it noted, it goes in the body in their
 words and the admin decides from the weekly report.
@@ -144,7 +132,7 @@ words and the admin decides from the weekly report.
 ## Rules
 
 - Never run `git commit` on a message the user has not seen and approved in this conversation.
-- Never commit without `SRED-Project`. The id comes from `list_projects` matched against the
+- Never commit without `Taddy-Project`. The id comes from `list_projects` matched against the
   user's words (or their answer to the candidates), never from `pick_project`, the diff or
   memory of an earlier conversation.
 - Never `git add -f`, `git commit -a`, `-m` or `--no-verify`; never edit a `.gitignore`,
@@ -166,7 +154,7 @@ words and the admin decides from the weekly report.
 - Transcripts live under `~/.claude/projects` (a session's subagents under `<id>/subagents/`);
   `work-sessions.py` only reads them and never uploads. A work session that already committed part of its work (an entry in `commits` with
   `ok: true`) still counts for the files it edited that remain uncommitted.
-- Git trailer tokens allow letters, digits and `-` only, hence `SRED-Project` and
+- Git trailer tokens allow letters, digits and `-` only, hence `Taddy-Project` and
   `Work-Session`, never `SRED_Project`. Trailers must form the final paragraph of the message,
   separated by a blank line from the body.
 - `git commit --amend` keeps the trailers as they were.
@@ -182,7 +170,13 @@ words and the admin decides from the weekly report.
 - A member only sees the projects they are assigned to, so a name with no hit may be a project
   they are not assigned to: say so, show what `list_projects` returned and ask.
 - If `list_projects` is unavailable (no MCP server, auth error), say so and ask the user for the
-  numeric id from the app's Projects page; do not commit without `SRED-Project`.
+  numeric id from the app's Projects page; do not commit without `Taddy-Project`.
+- A squash merge drops the trailers: the squash commit is a new commit with none. Merge or
+  rebase keeps them; a team that squashes puts `Taddy-Project` and every `Work-Session` line
+  back on the squash commit.
+- An attempt that will not ship still gets a commit: it is the only way the weekly report files
+  the session under a project (a session with no commit is `Unknown`). Its body says what was
+  tried and that it did not work; the change can be reverted after.
 
 ## Reference routing
 

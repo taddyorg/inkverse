@@ -4,7 +4,8 @@ Read this at Workflow Step 1 and again when a finding is open. Every commit's st
 scanned before its message is written, and the same scan runs in front of `git commit`. A
 finding is answered by the user, by number, before anything else happens. The committing
 conversation's transcript is archived by the weekly pass, so nothing raw ever goes into it:
-the script masks every value and the skill never pastes a flagged line.
+the script masks every value and the skill never pastes a flagged line. The weekly pass's
+`redact.py` masks the same rules in every transcript before archiving it.
 
 ## What the scan reads
 
@@ -64,7 +65,7 @@ M=$(mktemp); cat > "$M" <<'EOF'
 
 <body>
 
-SRED-Project: 5
+Taddy-Project: 5
 Work-Session: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
 Co-Authored-By: ...
 EOF

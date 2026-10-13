@@ -2,7 +2,8 @@
 
 The only view of a transcript this skill uses, run before every commit: it lists the earlier
 sessions behind the uncommitted files and marks the conversation running now. The script is
-this skill's own copy of the transcript plumbing (the weekly skill has its own); it reads
+this skill's own copy of the transcript plumbing (the weekly skill has its own; the shared
+functions are kept byte-identical by the repo's script tests); it reads
 `~/.claude/projects/<encoded cwd>*/<session id>.jsonl`, folds in `<session id>/subagents/*.jsonl`
 (the edits and commands a session ran through a subagent) and prints JSON. It never uploads or
 writes anything. Never open a `.jsonl` yourself.
@@ -70,10 +71,13 @@ session <id> | <date> | branch <branch> | <title> | <n> turns
 [H 09:14] <human turn, up to --max-chars>
 [A 09:15] <assistant text, up to --max-chars> …(+N chars)
 [tools 09:16] Bash×3 Edit×2
+[agent 09:17] <the report an Agent call returned, up to --max-chars>
 [… skipped N turns …]
 ```
 
-It skips thinking, tool inputs, tool results, attachments and injected lines. The last
+It skips thinking, tool inputs, attachments, injected lines and every tool result except the
+report an Agent call returned (what a delegated subagent did, in its own words), read from
+the call's result or from the task notification that delivered it. The last
 `--keep-tail` (5) assistant messages get three times the cap so the closing recap survives;
 beyond `--max-turns` (80) it keeps the first third and the last two thirds. Summarise each
 session right after its dump (≤ 200 words: first human message, what was tried, what happened,
@@ -108,7 +112,7 @@ session behind a commit, or any unmatched file.
   order: what was done, what was found, what was decided and why, what is next, within the
   8-line, 72-column limit: with several sessions behind one commit, one or two plain
   sentences per session, the numbers kept. Nothing the dumps do not state. Files with no session get a sentence that says only what changed.
-- The trailers = `SRED-Project: <id>` from the Project step, then one
+- The trailers = `Taddy-Project: <id>` from the Project step, then one
   `Work-Session: <sessionId>` per session, in `start` order, this conversation last when it
   did any of the work. That is how the weekly pass joins the commit to these sessions, and
   each id is the file id its archived transcript gets.
@@ -119,7 +123,7 @@ session behind a commit, or any unmatched file.
 `touched: ["src/artwork.ts"]` and `firstHumanMessage` "Why does the episode page artwork fail to
 load after the image migration?". Its dump ends "Done: the suffix is appended again in
 artwork.ts. Left uncommitted." One commit, body "The CDN URL lost its size suffix after the
-image migration. The suffix is appended again in artwork.ts.", `SRED-Project: 5` +
+image migration. The suffix is appended again in artwork.ts.", `Taddy-Project: 5` +
 `Work-Session: bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb`, shown for approval.
 
 ## Example 2: two sessions, one commit
@@ -131,7 +135,7 @@ mentioned `tokens.css`, written by a Bash heredoc) share `player.css` and restyl
 so they are one unit. Subject "Restyle the player bar to match the nav". Body: "Widened the player's progress track from 2px to 6px and gave the play
 button a 44px hit area for mobile. Replaced the two hard-coded greys in nav.css and player.css
 with var(--surface-2), defined once in the new tokens.css, so the nav and the player bar
-match." Trailers `SRED-Project: 5` +
+match." Trailers `Taddy-Project: 5` +
 `Work-Session: ffffffff-6666-4666-8666-ffffffffffff` +
 `Work-Session: 99999999-7777-4777-8777-999999999999`. With `src/artwork.ts` also uncommitted,
 the plan is two commits: this one and Example 1's, each shown and approved one at a time.
@@ -144,7 +148,7 @@ marked `current: true` (`currentSession` = `$CLAUDE_CODE_SESSION_ID`), which ali
 here: `nav.css` under its `touched`, `tokens.css` under `unmatchedFiles` because a Bash script
 wrote it. Only `ffffffff-…` is dumped. One unit (same topic, back to back), subject "Restyle the player
 bar to match the nav": body merged from
-ffffffff's recap then this conversation's, trailers `SRED-Project: 5` +
+ffffffff's recap then this conversation's, trailers `Taddy-Project: 5` +
 `Work-Session: ffffffff-6666-4666-8666-ffffffffffff` + `Work-Session: <this conversation's id>`,
 shown for approval.
 

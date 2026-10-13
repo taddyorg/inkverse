@@ -1,28 +1,32 @@
 #!/usr/bin/env bash
 # Archive one Claude Code session transcript in the SR&ED app (PUT /sred/api/files/<session id>)
 # for the taddy-weekly-tasks skill. bash + curl + python3. A redacted copy is uploaded, never the
-# original (see redact.py); the token is never printed.
+# original (see redact.py); the token is never printed. The session's subagent transcripts
+# (<path>/<id>/subagents/*.jsonl, where the work a session delegated is recorded) go in the same
+# file, their lines after the parent's, unless --no-subagents.
 #
 # Usage:
 #   upload.sh --session <id> --file <path.jsonl> --date <YYYY-MM-DD> --name <name.jsonl> --repo <product repo>
-#             [--project <projectId>] [--base-url https://console.taddy.org] [--no-redact] [--dry-run]
+#             [--project <projectId>] [--base-url https://console.taddy.org] [--no-redact] [--no-subagents] [--dry-run]
 #
-# --project is the project the file is filed under (a commit's SRED-Project trailer); leave it out
+# --project is the project the file is filed under (a commit's Taddy-Project trailer); leave it out
 # when the project is unknown and the file is archived with no project.
 #
 # Token, in order: $SRED_TOKEN; the Authorization header of the `sred` MCP server (`claude mcp get sred`,
 # then ~/.claude.json); otherwise exit 2. Use the 180-day exchange token from the Settings page, not the
 # 2-hour access token. Exit codes: 0 uploaded (prints {"ok":true,"file":…}); 2 no token; 3 file too
-# large; 4 token rejected; 5 the server refused the upload (prints its error); 6 other HTTP status.
+# large (subagent lines included); 4 token rejected; 5 the server refused the upload (prints its
+# error); 6 other HTTP status.
 set -euo pipefail
 
 MAX_BYTES=$((25 * 1024 * 1024))
 base_url="https://console.taddy.org"
 redact=1
+subagents=1
 dry_run=0
 session=""; file=""; date=""; name=""; project=""; repo=""
 
-usage() { sed -n '2,18p' "$0" | sed 's/^# \{0,1\}//' >&2; exit 2; }
+usage() { sed -n '2,21p' "$0" | sed 's/^# \{0,1\}//' >&2; exit 2; }
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -34,6 +38,7 @@ while [ $# -gt 0 ]; do
     --repo) repo="$2"; shift 2 ;;
     --base-url) base_url="${2%/}"; shift 2 ;;
     --no-redact) redact=0; shift ;;
+    --no-subagents) subagents=0; shift ;;
     --dry-run) dry_run=1; shift ;;
     -h|--help) usage ;;
     *) echo "unknown argument: $1" >&2; usage ;;
@@ -45,6 +50,14 @@ done
 [ -z "$project" ] || [[ "$project" =~ ^[0-9]+$ ]] || { echo "error: --project must be a project id" >&2; exit 2; }
 
 here="$(cd "$(dirname "$0")" && pwd)"
+
+# The session's subagent transcripts, sorted; empty when there are none or with --no-subagents.
+subs=()
+sub_dir="${file%.jsonl}/subagents"
+if [ "$subagents" -eq 1 ] && [ -d "$sub_dir" ]; then
+  while IFS= read -r f; do [ -n "$f" ] && subs+=("$f"); done < <(ls "$sub_dir"/*.jsonl 2>/dev/null | sort)
+fi
+sub_count=${#subs[@]}
 
 # Reads the sred server's bearer token out of ~/.claude.json (top level, then any project entry).
 read -r -d '' CLAUDE_JSON_TOKEN_PY <<'PY' || true
@@ -83,9 +96,15 @@ tmp=""
 cleanup() { [ -n "$tmp" ] && rm -f "$tmp" "$tmp.body" 2>/dev/null || true; }
 trap cleanup EXIT
 
+append_args=()
+for f in ${subs[@]+"${subs[@]}"}; do append_args+=(--append "$f"); done
 if [ "$redact" -eq 1 ]; then
   tmp="$(mktemp "${TMPDIR:-/tmp}/sred-upload.XXXXXX")"
-  python3 "$here/redact.py" --repo "$repo" --in "$file" --out "$tmp"
+  python3 "$here/redact.py" --repo "$repo" --in "$file" --out "$tmp" ${append_args[@]+"${append_args[@]}"}
+  body_file="$tmp"
+elif [ "$sub_count" -gt 0 ]; then
+  tmp="$(mktemp "${TMPDIR:-/tmp}/sred-upload.XXXXXX")"
+  cat "$file" "${subs[@]}" > "$tmp"
   body_file="$tmp"
 else
   body_file="$file"
@@ -105,7 +124,9 @@ url="$base_url/sred/api/files/$session"
 
 if [ "$dry_run" -eq 1 ]; then
   if resolve_token >/dev/null; then tok="found via $token_source"; else tok="none (export SRED_TOKEN or connect the sred MCP server)"; fi
-  echo "dry run: would PUT $bytes bytes ($([ "$redact" -eq 1 ] && echo redacted || echo original)) to $url"
+  how="$([ "$redact" -eq 1 ] && echo redacted || echo original)"
+  [ "$sub_count" -eq 0 ] || how="$how, $sub_count subagent file$([ "$sub_count" -eq 1 ] || echo s) appended"
+  echo "dry run: would PUT $bytes bytes ($how) to $url"
   echo "  -H 'Content-Type: application/x-ndjson' -H 'X-File-Meta: $meta' --data-binary @<file>"
   echo "  token: $tok"
   exit 0

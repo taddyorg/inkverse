@@ -77,7 +77,7 @@ episode list loaded. It now renders a grey skeleton in the shape of the
 list until the data arrives. The skeleton is its own component so the
 episode page can reuse it next.
 
-SRED-Project: 5
+Taddy-Project: 5
 Work-Session: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
 ```
 

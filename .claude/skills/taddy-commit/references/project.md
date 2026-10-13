@@ -1,4 +1,4 @@
-# The project: `list_projects` and the `SRED-Project` trailer
+# The project: `list_projects` and the `Taddy-Project` trailer
 
 Read this before the Project step. The user names the project in the commit request; this skill
 turns that name into the numeric project id the weekly report lists the commit under. One
@@ -65,12 +65,12 @@ code (or "put this one under Web app"); match it against the list already fetche
 ## The trailer
 
 ```
-SRED-Project: 3
+Taddy-Project: 3
 ```
 
 Numeric id only, one line, on every commit, the first trailer, before any `Work-Session`
 line (see `references/message-format.md`). The weekly pass reads it with
-`%(trailers:key=SRED-Project,valueonly)` and lists the commit under that project in the weekly
+`%(trailers:key=Taddy-Project,valueonly)` and lists the commit under that project in the weekly
 report; a commit without it shows as `Unknown` there, for the admin to place.
 
 ## Errors

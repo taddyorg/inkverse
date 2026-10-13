@@ -9,7 +9,8 @@
 #             [--projects projects.json] [--author "Name"] [--archived id,id] [--already id,id]
 #             [--failed "<id>=<reason>"]... [--generated YYYY-MM-DD]
 #
-# sessions.json / commits.json are sessions.py's and commits.py --join's output; recaps.json is
+# sessions.json / commits.json are sessions.py's and commits.py --join's output (its `laterCommits`,
+# the range's work committed after --to, show on their conversations only); recaps.json is
 # { "<session id>": "<recap>" } with one entry per session in sessions.json; journal.md is the
 # range's journal, plain text; projects.json is [{ "id", "code", "name" }] from list_projects.
 # --archived: sessions uploaded in this run; --already: sessions list_files already had;
@@ -124,10 +125,19 @@ def main():
             print(f"error: {e}", file=sys.stderr)
         sys.exit(1)
 
+    later = sorted(commits_doc.get("laterCommits", []), key=lambda c: (c.get("date") or "", c.get("authoredAt") or ""))
     by_session = {}
-    for c in commits:
+    for c in commits + later:
         for sid in c.get("sessionIds", []):
             by_session.setdefault(sid, []).append(c)
+    later_shas = {c["sha"] for c in later}
+
+    def commit_ref(c):
+        return f"{c['source']['ref'].split('@')[0]}@{c['short']}"
+
+    def commit_line(c, sid):
+        how = match_method(c, sid) + (", committed after the range" if c["sha"] in later_shas else "")
+        return f"{commit_ref(c)} {c['subject']} ({how})"
 
     out = []
     generated = args.generated or dt.date.today().isoformat()
@@ -154,7 +164,7 @@ def main():
         out.append(f"- Branch: {s.get('branch') or '(none)'}")
         cs = by_session.get(sid, [])
         if cs:
-            out.append("- Commits: " + "; ".join(f"{c['source']['ref'].split('@')[0]}@{c['short']} {c['subject']} ({match_method(c, sid)})" for c in cs))
+            out.append("- Commits: " + "; ".join(commit_line(c, sid) for c in cs))
         else:
             out.append("- Commits: none")
         pids = []
@@ -165,7 +175,7 @@ def main():
         if None in pids:
             labels.append("Unknown")
         if labels and any(p is not None for p in pids):
-            out.append("- Project: " + ", ".join(labels) + " — from the SRED-Project trailer")
+            out.append("- Project: " + ", ".join(labels) + " — from the Taddy-Project trailer")
         else:
             out.append("- Project: Unknown")
         if sid in archived:
@@ -185,12 +195,12 @@ def main():
         out.append("No commits in this range.")
         out.append("")
     for c in commits:
-        ref = f"{c['source']['ref'].split('@')[0]}@{c['short']}"
-        out.append(f"### {c.get('date')} · {ref} · {c.get('subject')}")
+        out.append(f"### {c.get('date')} · {commit_ref(c)} · {c.get('subject')}")
+        branch_note = " — on a branch, not yet on HEAD" if c.get("onHead") is False else ""
         if c.get("projectId") is not None:
-            out.append(f"- Project: {project_label(c['projectId'], projects, warnings, seen_missing)} — SRED-Project trailer")
+            out.append(f"- Project: {project_label(c['projectId'], projects, warnings, seen_missing)} — Taddy-Project trailer{branch_note}")
         else:
-            out.append("- Project: Unknown (no SRED-Project trailer)")
+            out.append(f"- Project: Unknown (no Taddy-Project trailer){branch_note}")
         sids = c.get("sessionIds", [])
         if sids:
             parts = []
@@ -198,6 +208,8 @@ def main():
                 note = match_method(c, sid) + ("" if sid in known else ", not in range")
                 parts.append(f"`{sid}` ({note})")
             out.append("- Sessions: " + "; ".join(parts))
+            if any(sid not in known for sid in sids):
+                out.append("- Note: a session not in range was archived by an earlier pass, if at all, and keeps the project it had then; the task carries the project.")
         else:
             out.append("- Sessions: none")
         out.append("")

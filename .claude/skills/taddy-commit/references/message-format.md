@@ -60,7 +60,7 @@ size by packing clauses is worse than a longer one. Two changes squeezed into on
 Tag commits with a project and turn the weekly pass into a report
 
 taddy-commit takes the project from the request, matched by one
-list_projects call and stamped as SRED-Project; it no longer classifies
+list_projects call and stamped as Taddy-Project; it no longer classifies
 or writes SRED / SRED-Exclusion. Every commit lists its sessions as
 Work-Session lines, subagent edits included, and bodies are capped at 5
 lines of 72. The weekly pass now only writes TADDY-SRED-REPORT-*.md.
@@ -72,7 +72,7 @@ The same facts are two commits, each in plain sentences:
 Stamp the project and every work session on each commit
 
 The commit request now names the SR&ED project. The skill matches it
-against one list_projects call and writes the id as SRED-Project. It
+against one list_projects call and writes the id as Taddy-Project. It
 no longer classifies the work, so the SRED and SRED-Exclusion trailers
 are gone and the admin decides from the weekly report. Every commit
 also lists each session that did the work as a Work-Session line,
@@ -96,7 +96,7 @@ First, on every commit, the project the Project step resolved from the user's wo
 `list_projects` (`references/project.md`), the numeric id only:
 
 ```
-SRED-Project: 3
+Taddy-Project: 3
 ```
 
 Then one `Work-Session` line per session behind the commit, in the sessions' `start` order:
@@ -107,7 +107,7 @@ that is a different id. The value is the transcript's uuid, which is also the id
 pass archives the transcript under, so the commit names the transcripts behind it.
 
 ```
-SRED-Project: 5
+Taddy-Project: 5
 Work-Session: ffffffff-6666-4666-8666-ffffffffffff
 Work-Session: 99999999-7777-4777-8777-999999999999
 ```
@@ -130,7 +130,7 @@ segment. A 0.3 s minimum segment length on top left DER unchanged and
 only cut short correct segments. Keeping 3.1 without the filter: the
 gain is in the model, not post-processing. Crosstalk stays open.
 
-SRED-Project: 3
+Taddy-Project: 3
 Work-Session: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
 ```
 
@@ -143,7 +143,7 @@ Fix podcast artwork not loading on the episode page
 
 The CDN URL lost its size suffix after the image migration.
 
-SRED-Project: 5
+Taddy-Project: 5
 Work-Session: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
 ```
 
@@ -159,7 +159,7 @@ Fix podcast artwork not loading on the episode page
 The CDN URL lost its size suffix after the image migration. The suffix
 is appended again in artwork.ts.
 
-SRED-Project: 5
+Taddy-Project: 5
 Work-Session: bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb
 ```
 
@@ -181,21 +181,24 @@ button a 44px hit area for mobile. Replaced the two hard-coded greys in
 nav.css and player.css with var(--surface-2), defined once in the new
 tokens.css, so the nav and the player bar match.
 
-SRED-Project: 5
+Taddy-Project: 5
 Work-Session: ffffffff-6666-4666-8666-ffffffffffff
 Work-Session: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
 ```
 
 ## How the weekly pass reads it
 
-`taddy-weekly-tasks` runs `git log` with
-`--format='%H%x1f%h%x1f%aI%x1f%ae%x1f%s%x1f%B%x1f%(trailers:key=SRED,valueonly)%x1f%(trailers:key=SRED-Exclusion,valueonly)%x1f%(trailers:key=Work-Session,valueonly)%x1f%(trailers:key=SRED-Project,valueonly)%x1e'`
+`taddy-weekly-tasks` runs `git log --branches --remotes` with
+`--format='%H%x1f%h%x1f%aI%x1f%ae%x1f%s%x1f%B%x1f%(trailers:key=Work-Session,valueonly)%x1f%(trailers:key=Taddy-Project,valueonly)%x1f%(trailers:key=SRED-Project,valueonly)%x1e'`
 and writes each commit into the weekly report for the SR&ED admin: the body verbatim under the
-commit, the `SRED-Project` id as the commit's project (`Unknown` when the trailer is missing or
-not a number; the pass never picks one), and the `Work-Session` ids as the conversations behind
-it, marked `trailer`. The body is short by design: the report carries a recap of each session
+commit, the `Taddy-Project` id as the commit's project (`SRED-Project` on older commits;
+`Unknown` when the trailer is missing or not a number; the pass never picks one), and the
+`Work-Session` ids as the conversations behind it, marked `trailer`. The body is short by design: the report carries a recap of each session
 too, so an 8-line recap that keeps the number, the failed attempt and the decision is enough.
 Nothing is classified in the pass; the admin decides SR&ED versus routine from the report and
 creates the tasks in the app. Without `Work-Session` lines the pass falls back to the session
 whose in-session `git commit` produced the commit (matched by sha, else subject), marked
-`in-session`.
+`in-session`. A commit is reported the week it was authored, on any branch, and a commit made
+after the week whose trailers name one of its sessions still files that session's transcript
+under its project. A squash merge is a new commit with no trailers: merge or rebase instead,
+or put the trailers back on the squash commit.

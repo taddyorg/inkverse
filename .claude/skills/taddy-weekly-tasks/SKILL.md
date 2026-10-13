@@ -1,9 +1,9 @@
 ---
 name: taddy-weekly-tasks
-description: The weekly SR&ED report for a Taddy product repo over a range of days. Use this skill whenever the user runs /taddy-weekly-tasks, asks for the weekly SR&ED pass or report, wants last week's or this week's work written up for the SR&ED admin, wants a journal drafted from their Claude Code sessions and commits, or wants their Claude Code transcripts archived to the SR&ED app. It digests the local transcripts, reads the range's commits and their SRED-Project and Work-Session trailers, archives every session's redacted transcript, and writes one Markdown report (journal, every conversation with its recap, every commit with its project id or Unknown) for the admin, who classifies the work and creates the tasks in the app. Not for committing (that is taddy-commit), logging or checking hours, the hours split, drafting T661 narratives, classifying work, or creating or listing tasks.
+description: The weekly SR&ED report for a Taddy product repo over a range of days. Use this skill whenever the user runs /taddy-weekly-tasks, asks for the weekly SR&ED pass or report, wants last week's or this week's work written up for the SR&ED admin, wants a journal drafted from their Claude Code sessions and commits, or wants their Claude Code transcripts archived to the SR&ED app. It digests the local transcripts, reads the range's commits and their Taddy-Project and Work-Session trailers, archives every session's redacted transcript, and writes one Markdown report (journal, every conversation with its recap, every commit with its project id or Unknown) for the admin, who classifies the work and creates the tasks in the app. Not for committing (that is taddy-commit), logging or checking hours, the hours split, drafting T661 narratives, classifying work, or creating or listing tasks.
 metadata:
-  version: "0.1.0"
-  updated: "2026-09-23"
+  version: "1.1.0"
+  updated: "2026-10-13"
   source: "https://github.com/taddyorg/taddy-internal-skills"
 ---
 
@@ -11,7 +11,7 @@ metadata:
 
 Runs in the product repo. Its output is one file, `TADDY-SRED-REPORT-<from>-<to>.md` at the
 repo root, for the SR&ED admin: the range's journal, every Claude Code conversation with a
-recap, and every commit with the project its `SRED-Project` trailer names, else `Unknown`. The
+recap, and every commit with the project its `Taddy-Project` trailer names, else `Unknown`. The
 admin decides what is SR&ED and creates the tasks in the app; this skill never classifies work,
 never picks a project, never writes a journal or a task to the app, and never reads, writes or
 estimates hours. Its only writes to the app are the redacted transcripts it archives. Helper
@@ -57,28 +57,36 @@ where the closing recap lives; lean on it. Collect the recaps as `$WORK/recaps.j
 python3 scripts/commits.py --from <from> --to <to> --join $WORK/sessions.json > $WORK/commits.json
 ```
 
-Each commit carries `projectId` (its `SRED-Project` trailer, null when absent or not a number)
-and `sessionIds`, the conversations behind it: first its `Work-Session` trailers (`matchedBy:
-trailer`; `taddy-commit` stamps one per session that did the work), then, for a commit without
-them, the session whose in-session `git commit` produced it (sha, else subject). `warnings`
-names a trailer id not in `sessions.json` (outside the range, another machine): it stays listed
-under the commit, marked not in range, and is not uploaded. `uncommittedSessions` are
-conversations with no commit; they stay in the report with `Commits: none`. Read `projectId`,
-`sessionIds` and `warnings`; ignore the legacy `sred` / `sredExclusion` fields.
+Every local and remote-tracking branch is walked, so a commit authored on a branch this week
+is in this week's report and not again once merged or rebased (the author date stays);
+`onHead` says whether it is on HEAD yet. Each commit carries `projectId` (its `Taddy-Project`
+trailer, else the `SRED-Project` trailer older commits carry, null when absent or not a
+number) and `sessionIds`, the conversations behind it:
+first its `Work-Session` trailers (`matchedBy: trailer`; `taddy-commit` stamps one per session
+that did the work), then, for a commit without them, the session whose in-session `git commit`
+produced it (sha, else subject). `warnings` names a trailer id not in `sessions.json` (outside
+the range, another machine): it stays listed under the commit, marked not in range, and is not
+uploaded. `laterCommits` are commits authored after the range whose trailers name a session in
+it (the week's work committed the Monday after, or a pass run late): they give the session its
+project and show on its conversation, not in the Commits section. `uncommittedSessions` are
+conversations with no commit in either list; they stay in the report with `Commits: none`.
 
 ## Step 4: archive the transcripts
 
 No confirmation step: say in one line that a redacted copy of each session is being uploaded
-(every `.env` value and every `Bearer` token become `XXX_SECRET_XXX`; the bucket is private to
-the uploader and admins). Then, for every session in `sessions.json` whose id Step 3 did not
-return from `list_files`:
+(every `.env` value, every `Bearer` token and every value the commit scan's token rules match
+become `XXX_SECRET_XXX`; the session's subagent transcripts follow the parent's lines; the
+bucket is private to the uploader and admins). Then, for every session in `sessions.json`
+whose id Step 1 did not return from `list_files`:
 
 ```
 bash scripts/upload.sh --session <sessionId> --file <path> --date <date> --name <archiveName> [--project <id>] --repo "$PWD"
 ```
 
-`--project` is the `projectId` of the first commit in `commits.json` whose `sessionIds` holds
-the session; leave it out when there is none (the file is archived with no project). Keep three
+`--project` is the `projectId` of the first commit in `commits.json`'s `commits` whose
+`sessionIds` holds the session, else the first in `laterCommits`; leave it out when neither has
+one (the file is archived with no project, and the app keeps the project a file got on its
+first upload). Keep three
 lists for Step 6: `archived` (printed `"ok": true`), `already` (from `list_files`), and
 `failed` with the error line for any other exit. Report each upload's redaction counts. A
 failure does not stop the run: the report says which sessions were not archived.
@@ -130,14 +138,23 @@ committed. Delete `$WORK`.
 - A session belongs to the range by the day of its first message. Running mid-week is normal.
 - Sessions in a subdirectory of the repo are included; a sibling repo is not (`other-cwd`).
 - A resumed session keeps its id: re-uploading overwrites the bytes; `projectId` is fixed at the
-  first upload, so a session already archived keeps whatever project it had.
-- Redaction only knows the repo's `.env` values (8+ characters) and `Bearer` tokens; anything
-  else a tool echoed goes up as-is.
+  first upload, so a session already archived keeps whatever project it had. The task the admin
+  creates carries the project, so the file's is secondary.
+- A session with no commit is `Unknown` and is archived with no project. The way to carry its
+  project is to commit the attempt with `taddy-commit` (a failed attempt gets a body that says
+  so), even when the change is reverted after.
+- Redaction knows the repo's `.env` values (8+ characters), `Bearer` tokens and the commit
+  scan's token rules (`secret-scan.py`'s list, kept identical); a token in a format none of
+  them knows goes up as-is.
+- A squash merge is a new commit with no trailers: the branch's commits were reported the week
+  they were authored, and the squash commit shows as `Unknown` unless its trailers are put back.
+- A session's subagent transcripts (`<id>/subagents/*.jsonl`) go in its archived file and count
+  toward the 25 MB cap.
 - A commit flagged `suspect` in the digest (its command also ran `git init` or `cd` outside the
   repo) may belong to another repo; say so in its recap.
 - The `Work-Session` uuid is the transcript's file name and the archive file id; the
   `session_…` id in a `Claude-Session:` URL is a different id and never joined.
-- An `SRED-Project` id not in `list_projects` (archived, someone else's) renders as
+- An `Taddy-Project` id not in `list_projects` (archived, someone else's) renders as
   `<id> (not visible to you)` with a warning; leave it, the admin can see it.
 - `upload.sh` exit 2 is a missing token (`SRED_TOKEN` or the `sred` MCP header); tell the user
   how to get the 180-day exchange token from the Settings page and list those sessions as not

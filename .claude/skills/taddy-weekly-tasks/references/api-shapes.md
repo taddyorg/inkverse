@@ -15,7 +15,7 @@ Input `{ status?: "active" | "archived" | "all" (default active), mine?: boolean
 with no arguments. Output
 `{ projects: [{ id, code, sredNumber, name, description, claimable, status, sortOrder, assignees, … }] }`
 — the projects the caller can see. `code` is `TP-NN` for claimable projects, null for routine
-ones. Save `[{ id, code, name }]` as `projects.json`: `report.py` labels every `SRED-Project` id
+ones. Save `[{ id, code, name }]` as `projects.json`: `report.py` labels every `Taddy-Project` id
 with them (`3 (TP-03 Diarization)`) and marks an id that is not there `(not visible to you)`.
 Members only see the projects they are assigned to, so that case is normal, not an error.
 
@@ -34,10 +34,13 @@ marked `already`; they are not uploaded again.
 `Content-Type: application/x-ndjson`,
 `X-File-Meta: {"type":"transcript","name":"<date>-<slug>.jsonl","date":"<date>","projectId":<id>}`
 — `projectId` is optional: the script writes it only when `--project` is given (the first
-commit's `SRED-Project` behind the session) and leaves it out for a session with no commit or
-no trailer. Body = the redacted copy, ≤ 25 MB, `Content-Length` set (curl does). Response
-`201 { file: { id, userId, projectId, type, name, contentType, bytes, date, createdAt } }`. The same
-id overwrites the bytes; `projectId` is fixed at first upload. Errors the script maps to exit
+commit's `Taddy-Project` behind the session, in the range or committed after it) and leaves it
+out for a session with no commit or no trailer. Body = the redacted copy (the parent's lines,
+then its subagent transcripts' lines), ≤ 25 MB together, `Content-Length` set (curl does).
+Response `201 { file: { id, userId, projectId, type, name, contentType, bytes, date, createdAt } }`.
+The same id overwrites the bytes; `projectId` is fixed at first upload, so a session archived
+before its commit keeps no project: the task the admin creates carries it. Errors the script
+maps to exit
 codes: 2 no token, 3 too large or empty, 4 token rejected (401), 5 refused (400/403/413/415), 6
 other. The token is `$SRED_TOKEN`, else the `sred` MCP server's Authorization header.
 

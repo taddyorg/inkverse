@@ -1,22 +1,31 @@
 #!/usr/bin/env python3
-# The product repo's commits over a range of days, with their SRED, SRED-Project and Work-Session
+# The product repo's commits over a range of days, with their Taddy-Project and Work-Session
 # trailers, as JSON — for the taddy-weekly-tasks skill. Python 3.9+, standard library only;
 # shells out to git. Reads only.
 #
 # Usage:
 #   commits.py [--from YYYY-MM-DD] [--to YYYY-MM-DD] [--exclude sha,sha] [--repo .] [--repo-name taddy]
-#              [--author me@example.com | --all-authors] [--branches HEAD|all] [--join sessions.json]
+#              [--author me@example.com | --all-authors] [--branches all|HEAD] [--join sessions.json]
 #
 # Defaults: --from = the latest Monday, --to = today (local); --author = `git config user.email`;
 # --repo-name = the origin remote's basename (without .git), else the directory name.
+# --branches all (the default) walks every local and remote-tracking branch (`git log --branches
+# --remotes`, never `--all`, which would include the stash), so a commit authored on a branch is
+# reported the week it was authored and not again once merged or rebased (the author date is
+# kept). A rebased copy left on a stale remote-tracking ref (same subject and author date, another
+# sha) is skipped as `rebased-copy`; the sha on HEAD, else on a local branch, is the one kept.
+# `onHead` says whether the commit is reachable from HEAD.
 # --exclude lists shas to leave out (reported under `skipped`); the report pass does not use it.
 # --join takes sessions.py's output and fills each commit's `sessionIds`: first the commit's
 # `Work-Session` trailers (stamped by taddy-commit on every commit: the sessions that did the
 # work, the committing conversation included when it did any of it), then the sessions whose
 # in-session `git commit` produced it (matched by sha, else by subject; a session already listed
-# from the trailer is not repeated); sessions matched to no commit are listed under
+# from the trailer is not repeated). A commit authored after --to whose trailers name a session
+# in the digest goes under `laterCommits` (the range's work, committed later: a pass run on
+# Monday for last week, or run late); sessions matched to no commit in either list are
 # `uncommittedSessions`.
-# `projectId` is the commit's SRED-Project trailer (the project id taddy-commit stamped), else null.
+# `projectId` is the commit's Taddy-Project trailer (the project id taddy-commit stamped), else its
+# SRED-Project trailer (the name before 1.1.0, still on older commits), else null.
 
 import argparse
 import datetime as dt
@@ -30,7 +39,6 @@ RS, FS = "\x1e", "\x1f"
 TRAILER_LINE_RE = re.compile(r"^[A-Za-z0-9-]+: ")
 SESSION_ID_RE = re.compile(r"^[A-Za-z0-9._-]{1,200}$")  # the shape upload.sh accepts as a session id
 REPO_NAME_RE = re.compile(r"^[^@\s]+$")
-CODE_EXCLUSIONS = ("routine", "production")
 
 
 def parse_date(s):
@@ -97,18 +105,10 @@ def parse_log(raw, name, warnings):
         if not rec.strip():
             continue
         parts = rec.split(FS)
-        if len(parts) < 10:
+        if len(parts) < 9:
             warnings.append(f"unparseable git log record: {rec[:80]!r}")
             continue
-        sha, short, authored, email, subject, full, sred_raw, excl_raw, ws_raw, proj_raw = parts[:10]
-        sred_val = sred_raw.strip().splitlines()[0].strip().lower() if sred_raw.strip() else ""
-        excl_val = excl_raw.strip().splitlines()[0].strip().lower() if excl_raw.strip() else ""
-        sred = True if sred_val == "yes" else False if sred_val == "no" else None
-        if sred_val and sred is None:
-            warnings.append(f"commit {short} has SRED '{sred_val}' (not yes|no)")
-        excl = excl_val or None
-        if excl and excl not in CODE_EXCLUSIONS:
-            warnings.append(f"commit {short} has SRED-Exclusion '{excl}' (not routine|production)")
+        sha, short, authored, email, subject, full, ws_raw, proj_raw, legacy_raw = parts[:9]
         work_sessions = []
         for v in (l.strip() for l in ws_raw.splitlines()):
             if not v or v in work_sessions:
@@ -117,10 +117,13 @@ def parse_log(raw, name, warnings):
                 warnings.append(f"commit {short} has Work-Session {v!r} (not a session id)")
                 continue
             work_sessions.append(v)
+        proj_key = "Taddy-Project"
+        if not proj_raw.strip() and legacy_raw.strip():
+            proj_key, proj_raw = "SRED-Project", legacy_raw
         proj_val = proj_raw.strip().splitlines()[0].strip() if proj_raw.strip() else ""
         project_id = int(proj_val) if re.fullmatch(r"[1-9]\d*", proj_val) else None
         if proj_val and project_id is None:
-            warnings.append(f"commit {short} has SRED-Project {proj_val!r} (not a project id)")
+            warnings.append(f"commit {short} has {proj_key} {proj_val!r} (not a project id)")
         body = split_body(full)
         date = dt.datetime.fromisoformat(authored).astimezone().date()
         commits.append({
@@ -132,15 +135,42 @@ def parse_log(raw, name, warnings):
             "authorEmail": email,
             "subject": subject.strip(),
             "body": body,
-            "trailers": {"SRED": sred_val or None, "SRED-Exclusion": excl, "SRED-Project": project_id, "Work-Session": work_sessions},
-            "sred": sred,
-            "sredExclusion": excl,
+            "trailers": {"Taddy-Project": project_id, "Work-Session": work_sessions},
             "projectId": project_id,
+            "onHead": None,
             "source": {"type": "commit", "ref": f"{name}@{sha}", "label": subject.strip()[:200]},
             "sessionIds": [],
             "matchedBy": None,
         })
     return commits
+
+
+def rev_set(repo, start, *refs):
+    """The shas reachable from the given refs, committed since the range start."""
+    out = git(repo, "rev-list", f"--since={start} 00:00:00", *refs, check=False)
+    return set(out.split())
+
+
+def dedupe(commits, on_head, on_local, skipped):
+    """One record per sha, and one per (subject, author date): a rebased copy left on a stale
+    remote-tracking ref is skipped, the sha on HEAD (else on a local branch) kept."""
+    seen, unique = set(), []
+    for c in commits:
+        if c["sha"] not in seen:
+            seen.add(c["sha"])
+            unique.append(c)
+    groups = {}
+    for c in unique:
+        groups.setdefault((c["subject"], c["authoredAt"]), []).append(c)
+    kept_shas = set()
+    for members in groups.values():
+        keep = next((c for c in members if c["sha"] in on_head), None) \
+            or next((c for c in members if c["sha"] in on_local), None) or members[0]
+        kept_shas.add(keep["sha"])
+        for c in members:
+            if c is not keep:
+                skipped.append({"sha": c["sha"], "subject": c["subject"], "reason": "rebased-copy", "of": keep["sha"]})
+    return [c for c in unique if c["sha"] in kept_shas]
 
 
 def sha_match(a, b):
@@ -152,7 +182,7 @@ def norm(s):
     return re.sub(r"\s+", " ", (s or "").strip().lower())
 
 
-def join_sessions(commits, sessions_json, warnings):
+def join_sessions(commits, later, sessions_json, warnings):
     with open(sessions_json, encoding="utf-8") as f:
         sessions = json.load(f).get("sessions", [])
     known = {s["sessionId"] for s in sessions}
@@ -183,11 +213,22 @@ def join_sessions(commits, sessions_json, warnings):
                     c["sessionIds"].append(s["sessionId"])
                     c["matchedBy"] = c["matchedBy"] or how
                     matched.add(s["sessionId"])
-    return [s["sessionId"] for s in sessions if s["sessionId"] not in matched]
+    # Commits authored after the range whose trailers name a session of the range: the work was
+    # committed later (a pass run on Monday for last week, or run late). Trailers only.
+    later_kept = []
+    for c in later:
+        hits = [sid for sid in c["trailers"]["Work-Session"] if sid in known]
+        if not hits:
+            continue
+        c["sessionIds"] = hits
+        c["matchedBy"] = "trailer"
+        matched.update(hits)
+        later_kept.append(c)
+    return later_kept, [s["sessionId"] for s in sessions if s["sessionId"] not in matched]
 
 
 def main():
-    ap = argparse.ArgumentParser(description="The repo's commits in a range of days, with SRED trailers, as JSON.")
+    ap = argparse.ArgumentParser(description="The repo's commits in a range of days, with their trailers, as JSON.")
     ap.add_argument("--from", dest="frm", help="first day, YYYY-MM-DD (default: the latest Monday)")
     ap.add_argument("--to", help="last day, YYYY-MM-DD (default: today)")
     ap.add_argument("--exclude", help="comma-separated shas (full or abbreviated) already filed; reported under skipped")
@@ -195,7 +236,7 @@ def main():
     ap.add_argument("--repo-name", help="short name for commit sources, <name>@<sha> (default: from the origin remote)")
     ap.add_argument("--author", help="only this author's commits (default: git config user.email)")
     ap.add_argument("--all-authors", action="store_true", help="every author's commits")
-    ap.add_argument("--branches", choices=["HEAD", "all"], default="HEAD", help="HEAD's history or every branch")
+    ap.add_argument("--branches", choices=["all", "HEAD"], default="all", help="every local and remote-tracking branch (default) or HEAD's history only")
     ap.add_argument("--join", metavar="SESSIONS_JSON", help="sessions.py output to join on")
     args = ap.parse_args()
 
@@ -203,26 +244,26 @@ def main():
     start, end = range_bounds(args)
     name = repo_name(repo, args.repo_name)
     author = None if args.all_authors else (args.author or git(repo, "config", "user.email", check=False).strip() or None)
-    fmt = "%H" + FS + "%h" + FS + "%aI" + FS + "%ae" + FS + "%s" + FS + "%B" + FS + "%(trailers:key=SRED,valueonly)" + FS + "%(trailers:key=SRED-Exclusion,valueonly)" + FS + "%(trailers:key=Work-Session,valueonly)" + FS + "%(trailers:key=SRED-Project,valueonly)" + RS
+    fmt = "%H" + FS + "%h" + FS + "%aI" + FS + "%ae" + FS + "%s" + FS + "%B" + FS + "%(trailers:key=Work-Session,valueonly)" + FS + "%(trailers:key=Taddy-Project,valueonly)" + FS + "%(trailers:key=SRED-Project,valueonly)" + RS
     # --since alone (committer date; git stops walking at the first older commit). The range itself
-    # is applied below on the author date, so a commit rebased after the range still counts once.
+    # is applied below on the author date, so a commit rebased after the range still counts once,
+    # and a commit authored after the range is kept aside as a later commit.
     cmd = ["log", f"--since={start} 00:00:00", "--no-merges", f"--format={fmt}"]
     if author:
         cmd.append(f"--author={author}")
     if args.branches == "all":
-        cmd.append("--all")
+        cmd.extend(["--branches", "--remotes"])
     warnings = []
-    commits = [c for c in parse_log(git(repo, *cmd), name, warnings) if start.isoformat() <= c["date"] <= end.isoformat()]
-    if args.branches == "all":
-        seen, unique = set(), []
-        for c in commits:
-            if c["sha"] not in seen:
-                seen.add(c["sha"])
-                unique.append(c)
-        commits = unique
+    skipped = []
+    on_head = rev_set(repo, start, "HEAD")
+    on_local = rev_set(repo, start, "--branches") if args.branches == "all" else on_head
+    parsed = dedupe(parse_log(git(repo, *cmd), name, warnings), on_head, on_local, skipped)
+    for c in parsed:
+        c["onHead"] = c["sha"] in on_head
+    commits = [c for c in parsed if start.isoformat() <= c["date"] <= end.isoformat()]
+    later = [c for c in parsed if c["date"] > end.isoformat()]
 
     exclude = [s.strip() for s in (args.exclude or "").split(",") if s.strip()]
-    skipped = []
     kept = []
     for c in commits:
         if any(sha_match(c["sha"], x) for x in exclude):
@@ -231,12 +272,14 @@ def main():
             kept.append(c)
     commits = kept
 
-    uncommitted = join_sessions(commits, args.join, warnings) if args.join else []
+    later_commits, uncommitted = join_sessions(commits, later, args.join, warnings) if args.join else ([], [])
     out = {
         "range": {"from": start.isoformat(), "to": end.isoformat()},
         "repo": name,
         "author": author or "*",
+        "branches": args.branches,
         "commits": commits,
+        "laterCommits": later_commits,
         "skipped": skipped,
         "uncommittedSessions": uncommitted,
         "warnings": warnings,

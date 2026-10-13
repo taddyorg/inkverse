@@ -5,7 +5,8 @@
 # only; reads ~/.claude/projects/<encoded cwd>*/<id>.jsonl (and <id>/subagents/*.jsonl for
 # the files a session edited through a subagent) and prints JSON; never uploads or writes
 # anything. A self-contained copy of the transcript plumbing in
-# taddy-weekly-tasks/scripts/sessions.py — the two skills share no code on purpose.
+# taddy-weekly-tasks/scripts/sessions.py — the two skills share no code on purpose; the shared
+# functions are kept byte-identical by evals/run-scripts.sh.
 #
 # Usage:
 #   work-sessions.py --cwd "$PWD" [--since ISO] [--files a,b,c] [--repo DIR] [--self ID]   # digest
@@ -42,6 +43,9 @@ COMMIT_CMD_RE = re.compile(r"\bgit\s+(?:-C\s+\S+\s+)?commit\b")
 COMMIT_OUT_RE = re.compile(r"^\[(?P<branch>[^\s\]]+)(?: \([^)]*\))? (?P<sha>[0-9a-f]{7,40})\] (?P<subject>.*)$", re.M)
 MSG_FLAG_RE = re.compile(r"""-m\s+(?:"((?:[^"\\]|\\.)*)"|'([^']*)')""")
 HEREDOC_RE = re.compile(r"<<-?\s*'?\"?(\w+)'?\"?\s*\n(.*)", re.S)
+AGENT_TOOLS = ("Agent", "Task")
+AGENT_LAUNCHED = "Async agent launched successfully"  # the harness's acknowledgement, not a report
+AGENT_RESULT_RE = re.compile(r"<result>(.*?)</result>", re.S)
 EPOCH = dt.datetime(1970, 1, 1, tzinfo=dt.timezone.utc)
 
 
@@ -280,7 +284,7 @@ def digest_file(path, cwd, since, uncommitted, dates, max_first):
     start_dt = local(first["timestamp"])
     end_dt = local(messages[-1]["timestamp"])
     subs, sub_files = subagent_messages(path)
-    work = messages + subs  # what the session did, subagents included; turns and dates stay the parent's
+    work = sorted(messages + subs, key=lambda m: m["timestamp"])  # what the session did, subagents included; turns and dates stay the parent's
     edited = edited_files(work, cwd)
     touched, stale = [], []
     for f in uncommitted:
@@ -299,7 +303,7 @@ def digest_file(path, cwd, since, uncommitted, dates, max_first):
     humans = [text_of((m.get("message") or {}).get("content")) for m in messages if is_human(m)]
     first_human = next((h for h in humans if h.strip()), "")
     tool_uses = Counter()
-    for m in messages:
+    for m in work:
         if m.get("type") == "assistant":
             for b in (m.get("message") or {}).get("content") or []:
                 if isinstance(b, dict) and b.get("type") == "tool_use":
@@ -383,31 +387,48 @@ def truncate(text, cap):
     return text[:cap].rstrip() + f" …(+{len(text) - cap} chars)"
 
 
-def cmd_dump(args, cwd, root):
-    if args.self_id and args.dump == args.self_id.strip():
-        sys.exit(f"error: {args.dump} is this conversation (--self); its recap is already in context, do not dump it")
-    path = find_session(root, cwd, args.dump)
-    lines, _ = read_lines(path)
-    messages = [l for l in lines if isinstance(l.get("timestamp"), str)]
-    title = next((l.get("aiTitle") for l in lines if l.get("type") == "ai-title"), None)
-    entries = []  # (kind, timestamp, text)
+def agent_report(text):
+    """The report in a task notification: its <result> block, else the text without the tags."""
+    m = AGENT_RESULT_RE.search(text)
+    return (m.group(1) if m else re.sub(r"</?task-notification>", "", text)).strip()
+
+
+def collect_entries(messages):
+    """The dump's entries in order: human turns (H), assistant text (A), tool-only turns (T) and
+    the report an Agent tool call returned (R), from its result or from the task notification
+    that delivered it. Thinking, tool inputs and every other tool result are left out."""
+    entries, agent_calls = [], set()
     for m in messages:
         if is_human(m):
             t = text_of((m.get("message") or {}).get("content"))
             if t.strip():
                 entries.append(["H", m["timestamp"], t])
+        elif m.get("type") == "user" and (m.get("origin") or {}).get("kind") == "task-notification":
+            t = agent_report(text_of((m.get("message") or {}).get("content")))
+            if t:
+                entries.append(["R", m["timestamp"], t])
         elif m.get("type") == "assistant":
             blocks = (m.get("message") or {}).get("content") or []
             text = "\n".join(b.get("text", "") for b in blocks if isinstance(b, dict) and b.get("type") == "text").strip()
             tools = Counter(b.get("name") or "?" for b in blocks if isinstance(b, dict) and b.get("type") == "tool_use")
+            agent_calls.update(b.get("id") for b in blocks if isinstance(b, dict) and b.get("type") == "tool_use" and b.get("name") in AGENT_TOOLS)
             if text:
                 entries.append(["A", m["timestamp"], text])
             elif tools:
                 entries.append(["T", m["timestamp"], " ".join(f"{k}×{v}" for k, v in tools.items())])
-    if not messages:
-        sys.exit(f"error: {path} holds no messages")
+        elif m.get("type") == "user" and agent_calls:
+            for b in (m.get("message") or {}).get("content") or []:
+                if isinstance(b, dict) and b.get("type") == "tool_result" and b.get("tool_use_id") in agent_calls:
+                    c = b.get("content")
+                    t = c if isinstance(c, str) else text_of(c)
+                    if t.strip() and not t.startswith(AGENT_LAUNCHED):  # the report follows in a task notification
+                        entries.append(["R", m["timestamp"], t])
+    return entries
+
+
+def print_dump(sid, messages, title, entries, args):
     first = messages[0]
-    print(f"session {path.stem} | {local(first['timestamp']).date()} | branch {first.get('gitBranch')} | {title or '(no title)'} | {len(entries)} turns")
+    print(f"session {sid} | {local(first['timestamp']).date()} | branch {first.get('gitBranch')} | {title or '(no title)'} | {len(entries)} turns")
     if len(entries) > args.max_turns:
         head = args.max_turns // 3
         tail = args.max_turns - head
@@ -423,8 +444,23 @@ def cmd_dump(args, cwd, root):
         if kind == "T":
             print(f"[tools {stamp}] {text}")
             continue
+        if kind == "R":
+            print(f"[agent {stamp}] {truncate(text, args.max_chars)}")
+            continue
         cap = args.max_chars * (3 if i in tail_set else 1)
         print(f"[{kind} {stamp}] {truncate(text, cap)}")
+
+
+def cmd_dump(args, cwd, root):
+    if args.self_id and args.dump == args.self_id.strip():
+        sys.exit(f"error: {args.dump} is this conversation (--self); its recap is already in context, do not dump it")
+    path = find_session(root, cwd, args.dump)
+    lines, _ = read_lines(path)
+    messages = [l for l in lines if isinstance(l.get("timestamp"), str)]
+    if not messages:
+        sys.exit(f"error: {path} holds no messages")
+    title = next((l.get("aiTitle") for l in lines if l.get("type") == "ai-title"), None)
+    print_dump(path.stem, messages, title, collect_entries(messages), args)
 
 
 def main():
