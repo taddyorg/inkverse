@@ -5,8 +5,9 @@ interface AddToProfileButtonProps {
   isSubscribed: boolean;
   isLoading: boolean;
   onPress: () => void;
-  selectedText: string;
-  unselectedText: string;
+  // Leave both out for an icon-only button
+  selectedText?: string;
+  unselectedText?: string;
 }
 
 interface NotificationButtonProps {
@@ -15,18 +16,21 @@ interface NotificationButtonProps {
   onPress: () => void;
 }
 
-export const AddToProfileButton = ({ 
-  isSubscribed, 
-  isLoading, 
+export const AddToProfileButton = ({
+  isSubscribed,
+  isLoading,
   onPress,
   selectedText,
   unselectedText
 }: AddToProfileButtonProps) => {
+  const buttonText = isSubscribed ? selectedText : unselectedText;
+
   return (
     <button
       onClick={onPress}
       disabled={isLoading}
-      className="flex items-center justify-center bg-white/80 hover:bg-white rounded-full h-10 px-4 mr-2 transition-colors duration-200 disabled:opacity-50 disabled:dark:opacity-20"
+      aria-label={isSubscribed ? 'Saved' : 'Save'}
+      className={`flex shrink-0 items-center justify-center bg-white/80 hover:bg-white rounded-full h-10 ${buttonText ? 'px-4' : 'w-10'} transition-colors duration-200 disabled:opacity-50 disabled:dark:opacity-20`}
     >
       <div className="flex items-center justify-center">
         {isLoading ? (
@@ -40,9 +44,11 @@ export const AddToProfileButton = ({
             )}
           </>
         )}
-        <span className="ml-1.5 text-black font-semibold">
-          {isSubscribed ? selectedText : unselectedText}
-        </span>
+        {!!buttonText && (
+          <span className="ml-1.5 text-black font-semibold">
+            {buttonText}
+          </span>
+        )}
       </div>
     </button>
   );
@@ -57,7 +63,8 @@ export const NotificationButton = ({
     <button
       onClick={onPress}
       disabled={isLoading}
-      className="flex items-center justify-center bg-white/80 hover:bg-white rounded-full h-10 w-10 transition-colors duration-200 disabled:opacity-50 disabled:dark:opacity-20"
+      aria-label={isReceivingNotifications ? 'Turn off notifications' : 'Turn on notifications'}
+      className="flex shrink-0 items-center justify-center bg-white/80 hover:bg-white rounded-full h-10 w-10 transition-colors duration-200 disabled:opacity-50 disabled:dark:opacity-20"
     >
       <div className="flex items-center justify-center">
         {isLoading ? (
@@ -72,6 +79,6 @@ export const NotificationButton = ({
           </>
         )}
       </div>
-    </button> 
+    </button>
   );
 };

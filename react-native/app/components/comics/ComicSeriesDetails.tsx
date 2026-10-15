@@ -1,19 +1,20 @@
 import * as React from 'react';
-import { StyleSheet, TouchableOpacity, View, Dimensions, Pressable } from 'react-native';
+import { StyleSheet, TouchableOpacity, View, Pressable } from 'react-native';
 import { Image } from 'expo-image';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@/constants/Navigation';
 
-import { ThemedText, ThemedTextFontFamilyMap, ThemedView, PressableOpacity } from '../ui';
-import { CreatorDetails } from '../creator/CreatorDetails';
+import { ThemedText, ThemedTextFontFamilyMap, ThemedView, PressableOpacity, ExpandableText, useLayout } from '../ui';
 
 import { COMICS_LIST_SCREEN, COMICSERIES_SCREEN } from '@/constants/Navigation';
 import { ComicSeries, Genre } from '@inkverse/shared-client/graphql/operations';
 import { getBannerImageUrl, getCoverImageUrl, getThumbnailImageUrl } from '@inkverse/public/comicseries';
 import { getPrettyGenre } from '@inkverse/public/genres';
+import { getGenreAndTagPills } from '@inkverse/shared-client/utils/genre-tag-pills';
 import { formatCompactNumber } from '@inkverse/public/utils';
 import { useThemeColor } from '@/constants/Colors';
+import { SPACING } from '@/constants/Spacing';
 import { Ionicons } from '@expo/vector-icons';
 
 type ComicSeriesPageType = 
@@ -35,10 +36,20 @@ interface ComicSeriesDetailsProps {
   imagePriority?: 'high' | 'normal' | 'low';
   likeCount?: number;
   commentCount?: number;
+  // Rendered between the stats and the description on the comicseries screen
+  actions?: React.ReactNode;
 }
 
-export function ComicSeriesDetails({ comicseries, pageType, isHeaderVisible, onHeaderVisibilityChange, imagePriority, likeCount, commentCount }: ComicSeriesDetailsProps) {
+type Pill = {
+  label: string;
+  onPress: () => void;
+};
+
+export function ComicSeriesDetails({ comicseries, pageType, isHeaderVisible, onHeaderVisibilityChange, imagePriority, likeCount, commentCount, actions }: ComicSeriesDetailsProps) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const tagColor = useThemeColor({}, 'tag');
+  const textColor = useThemeColor({}, 'text');
+  const { contentWidth, isSm } = useLayout();
 
   if (!comicseries) return null;
 
@@ -57,6 +68,12 @@ export function ComicSeriesDetails({ comicseries, pageType, isHeaderVisible, onH
     const genres = [comicseries.genre0, comicseries.genre1, comicseries.genre2];
     return genres.filter(Boolean).map(genre => getPrettyGenre(genre as Genre)).join('  •  ');
   };
+
+  const getPills = (comicseries: ComicSeries): Pill[] =>
+    getGenreAndTagPills(comicseries).map(pill => ({
+      label: pill.label,
+      onPress: () => navigation.navigate(COMICS_LIST_SCREEN, { pageType: pill.kind, value: pill.value }),
+    }));
 
   switch (pageType) {
     case 'most-popular':
@@ -174,65 +191,53 @@ export function ComicSeriesDetails({ comicseries, pageType, isHeaderVisible, onH
       );
 
     case 'comicseries-screen':
-      const tagColor = useThemeColor({}, 'tag');
-      const textColor = useThemeColor({}, 'text');
-      
+      // No visible title: the cover art always includes it, so screen readers get it from the cover.
+      // Wider layouts keep the same single column, with a fixed-size cover centered on top.
+      const description = comicseries.description?.trim();
       return (
         <ThemedView style={styles.container}>
-          <Pressable onPress={handlePressForShowAndHideHeader}>
+          <Pressable
+            onPress={handlePressForShowAndHideHeader}
+            disabled={isSm}
+            style={isSm && styles.coverCentered}
+            accessible
+            accessibilityRole="header"
+            accessibilityLabel={comicseries.name ?? undefined}
+          >
             <Image
               source={getCoverImageUrl({ coverImageAsString: comicseries.coverImageAsString })}
-              style={styles.coverImageFullWidth}
+              style={isSm ? styles.coverImageCentered : [styles.coverImageFullWidth, { height: contentWidth * 6 / 4 }]}
               contentFit="cover"
               recyclingKey={comicseries.uuid}
               priority="high"
             />
           </Pressable>
-          <View style={styles.infoContainer}>
-            <ThemedText size="title" style={styles.title}>{comicseries.name} </ThemedText>
-            <View style={styles.genreAndStatsContainer}>
-              <ThemedText style={styles.genreText}>
-                {formatGenres(comicseries)}
-              </ThemedText>
-              {((likeCount ?? 0) > 0 || (commentCount ?? 0) > 0) && (
-                <View style={styles.statsRow}>
-                  {(likeCount ?? 0) > 0 && (
-                    <View style={styles.statItem}>
-                      <Ionicons name="heart" size={18} color="#f43f5e" />
-                      <ThemedText style={styles.statText}>{formatCompactNumber(likeCount ?? 0)}</ThemedText>
-                    </View>
-                  )}
-                  {(commentCount ?? 0) > 0 && (
-                    <View style={styles.statItem}>
-                      <Ionicons name="chatbubble" size={16} color={textColor} />
-                      <ThemedText style={styles.statText}>{formatCompactNumber(commentCount ?? 0)}</ThemedText>
-                    </View>
-                  )}
+          {((likeCount ?? 0) > 0 || (commentCount ?? 0) > 0) && (
+            <View style={styles.statsRow}>
+              {(likeCount ?? 0) > 0 && (
+                <View style={styles.statItem}>
+                  <Ionicons name="heart" size={18} color="#f43f5e" />
+                  <ThemedText style={styles.statText}>{formatCompactNumber(likeCount ?? 0)}</ThemedText>
+                </View>
+              )}
+              {(commentCount ?? 0) > 0 && (
+                <View style={styles.statItem}>
+                  <Ionicons name="chatbubble" size={16} color={textColor} />
+                  <ThemedText style={styles.statText}>{formatCompactNumber(commentCount ?? 0)}</ThemedText>
                 </View>
               )}
             </View>
-            <View style={styles.creatorContainer}>
-              <View style={styles.creatorGrid}>
-                {comicseries.creators?.map((creator, index) => (
-                  <CreatorDetails 
-                    key={creator?.uuid} 
-                    creator={creator} 
-                    pageType='mini-creator' 
-                  />
-                ))}
-              </View>
-            </View>
-            <ThemedText style={styles.description}>
-              {comicseries.description?.trim()}
-            </ThemedText>
+          )}
+          {actions}
+          <View style={styles.infoContainer}>
+            {!!description && (
+              <ExpandableText text={description} numberOfLines={3} style={styles.description} />
+            )}
             <View style={styles.tagsContainer}>
-              {comicseries.tags?.map((tag, index) => (
-                <PressableOpacity key={tag?.toLowerCase()} fadeLevel={0.3} style={[styles.tag, { backgroundColor: tagColor + '20', borderColor: tagColor + '40' }]} onPress={() => tag && navigation.navigate(COMICS_LIST_SCREEN, {
-                  pageType: 'tag',
-                  value: tag,
-                })}>
+              {getPills(comicseries).map(pill => (
+                <PressableOpacity key={pill.label} fadeLevel={0.3} style={[styles.tag, { backgroundColor: tagColor + '20', borderColor: tagColor + '40' }]} onPress={pill.onPress}>
                   <ThemedText style={styles.tagText}>
-                    {tag?.toLowerCase()}
+                    {pill.label}
                   </ThemedText>
                 </PressableOpacity>
               ))}
@@ -256,26 +261,23 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   coverImageFullWidth: {
-    height: Dimensions.get('window').width * 6 / 4,
     width: '100%',
     borderRadius: 1,
+  },
+  coverCentered: {
+    alignSelf: 'center',
+  },
+  coverImageCentered: {
+    height: 360,
+    aspectRatio: 4 / 6,
+    borderRadius: 8,
   },
   infoContainer: {
     marginHorizontal: 16,
   },
-  genreAndStatsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
   genreInfoContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-  },
-  genreText: {
-    fontSize: 16,
-    fontFamily: ThemedTextFontFamilyMap.bold,
-    marginBottom: 8,
   },
   genreTextAlt: {
     fontSize: 16,
@@ -284,18 +286,6 @@ const styles = StyleSheet.create({
   genreTextAlt2: {
     fontSize: 16,
     marginBottom: 4,
-  },
-  title: {
-    marginTop: 12,
-    marginBottom: 2,
-  },
-  creatorContainer: {
-    marginBottom: 2,
-  },
-  creatorGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginHorizontal: -8,
   },
   creatorWrapper: {
     width: '50%',
@@ -317,19 +307,18 @@ const styles = StyleSheet.create({
   },
   description: {
     fontSize: 16,
-    marginBottom: 10,
+    marginBottom: SPACING.md,
   },
   tagsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginBottom: 8,
+    justifyContent: 'center',
+    gap: SPACING.sm,
   },
   tag: {
     borderRadius: 100,
     paddingHorizontal: 14,
     paddingVertical: 8,
-    marginRight: 8,
-    marginBottom: 8,
   },
   tagText: {
     fontSize: 15,
@@ -411,9 +400,10 @@ const styles = StyleSheet.create({
   },
   statsRow: {
     flexDirection: 'row',
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 8,
-    gap: 8,
+    marginTop: SPACING.md,
+    gap: SPACING.md,
   },
   statItem: {
     flexDirection: 'row',

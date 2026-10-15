@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { MdLock } from 'react-icons/md';
+import { MdLock, MdPlayCircleFilled } from 'react-icons/md';
 
 import type { ComicIssue, ComicSeries, Creator } from '@inkverse/shared-client/graphql/operations';
 import { getThumbnailImageUrl } from '@inkverse/public/comicissue';
@@ -81,6 +81,7 @@ export function ReadNextEpisode({
             <p className="text-sm font-semibold text-brand-pink dark:text-brand-purple mt-2">PATREON EXCLUSIVE</p>
           )}
         </div>
+        <MdPlayCircleFilled size={64} className="shrink-0 ml-2 text-brand-pink dark:text-brand-purple" />
       </div>
       </Link>
     </div>

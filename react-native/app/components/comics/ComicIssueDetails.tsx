@@ -10,6 +10,7 @@ import { ThemedText, ThemedTextFontFamilyMap, PressableOpacity } from '@/app/com
 import { ComicIssue, ComicSeries } from '@inkverse/shared-client/graphql/operations';
 import { prettyFormattedDate, prettyFormattedFreeInDays } from '@inkverse/shared-client/utils/date';
 import { Colors, useThemeColor } from '@/constants/Colors';
+import { SPACING } from '@/constants/Spacing';
 import { getThumbnailImageUrl } from '@inkverse/public/comicseries';
 
 import { COMICISSUE_SCREEN } from '@/constants/Navigation';
@@ -158,13 +159,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 12,
+    paddingHorizontal: SPACING.md,
     marginBottom: 8,
   },
+  // margin + padding add up to the row's SPACING.md inset so thumbnails stay aligned
   currentIssueContainer: {
     paddingVertical: 8,
-    paddingHorizontal: 8,
-    marginHorizontal: 6,
+    paddingHorizontal: SPACING.sm,
+    marginHorizontal: SPACING.sm,
     borderRadius: 16,
   },
   episodeItemLeft: {

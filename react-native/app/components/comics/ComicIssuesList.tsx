@@ -3,8 +3,9 @@ import React, { useReducer, useMemo, useState } from 'react'
 import { FlashList } from '@shopify/flash-list';
 import { Octicons } from '@expo/vector-icons';
 
-import { Colors } from '@/constants/Colors';
-import { ThemedText, ThemedIcon } from '../ui';
+import { Colors, useThemeColor } from '@/constants/Colors';
+import { SPACING } from '@/constants/Spacing';
+import { ThemedText, ThemedIcon, ThemedButton } from '../ui';
 import { ComicIssue, ComicSeries } from '@inkverse/shared-client/graphql/operations';
 import { ComicIssueDetails } from './ComicIssueDetails';
 import { PressableOpacity } from '../ui/PressableOpacity';
@@ -16,11 +17,14 @@ export interface ComicIssuesListProps {
   likedIssueUuids?: string[];
   issueLikeLoadingMap?: Record<string, boolean>;
   onLikeIssue?: (issueUuid: string) => void;
+  initialVisibleCount?: number;
 }
 
 export const ComicIssuesList = (props: ComicIssuesListProps) => {
-  const { comicissues, comicseries, currentIssueUuid, likedIssueUuids, issueLikeLoadingMap, onLikeIssue } = props;
+  const { comicissues, comicseries, currentIssueUuid, likedIssueUuids, issueLikeLoadingMap, onLikeIssue, initialVisibleCount } = props;
   const [isNewestFirst, setIsNewestFirst] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const textColor = useThemeColor({}, 'text');
 
   const [tokenQuery, tokenDispatch] = useReducer((state: any, action: any) => state, {});
   const { isSavingTokens } = tokenQuery;
@@ -58,6 +62,10 @@ export const ComicIssuesList = (props: ComicIssuesListProps) => {
     });
   }, [comicissues, comicseries, isNewestFirst, likedIssueUuids, issueLikeLoadingMap]);
 
+  // Collapse to the first few episodes (in the current sort order) until expanded
+  const isCollapsible = !!initialVisibleCount && listData.length > initialVisibleCount;
+  const visibleData = isCollapsible && !isExpanded ? listData.slice(0, initialVisibleCount) : listData;
+
   const toggleSortOrder = () => {
     setIsNewestFirst(!isNewestFirst);
   };
@@ -90,7 +98,7 @@ export const ComicIssuesList = (props: ComicIssuesListProps) => {
       </View>
       <View style={styles.flashListContainer}>
         <FlashList
-          data={listData}
+          data={visibleData}
           renderItem={renderItem}
           keyExtractor={(item) => item.key}
           maintainVisibleContentPosition={{
@@ -101,6 +109,14 @@ export const ComicIssuesList = (props: ComicIssuesListProps) => {
           }}
         />
       </View>
+      {isCollapsible && (
+        <ThemedButton
+          buttonText={isExpanded ? 'Show less episodes' : 'See all episodes'}
+          style={[styles.seeAllButton, { borderColor: textColor }]}
+          buttonTextProps={[styles.seeAllText, { color: textColor }]}
+          onPress={() => setIsExpanded(!isExpanded)}
+        />
+      )}
     </View>
   );
 };
@@ -110,7 +126,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   sectionHeader: {
-    paddingHorizontal: 12,
+    paddingHorizontal: SPACING.md,
     marginBottom: 12,
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -124,6 +140,18 @@ const styles = StyleSheet.create({
   },
   sortText: {
     marginLeft: 4,
+  },
+  seeAllButton: {
+    alignSelf: 'center',
+    height: 40,
+    paddingVertical: 0,
+    paddingHorizontal: SPACING.lg,
+    marginTop: SPACING.sm,
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+  },
+  seeAllText: {
+    fontSize: 16,
   },
   flashListContainer: {
     flex: 1,

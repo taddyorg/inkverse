@@ -5,6 +5,7 @@ import type { ComicSeries } from '@inkverse/shared-client/graphql/operations';
 import { getPrettySeriesStatus } from '@inkverse/public/status';
 import { getPrettyContentRating } from '@inkverse/public/ratings';
 import { ReportModal } from '../ui/ReportModal';
+import { CreatorDetails } from '../creator/CreatorDetails';
 
 interface ComicSeriesInfoProps {
   comicseries: ComicSeries;
@@ -12,9 +13,10 @@ interface ComicSeriesInfoProps {
 
 export function ComicSeriesInfo({ comicseries }: ComicSeriesInfoProps) {
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const creators = comicseries.creators?.filter(Boolean) ?? [];
 
   return (
-    <div className="mt-6 px-8 sm:px-10 lg:px-12">
+    <div className="mt-6 px-4">
       <div className="grid grid-cols-2 gap-4 mb-4">
         {comicseries.status && (
           <div>
@@ -43,6 +45,17 @@ export function ComicSeriesInfo({ comicseries }: ComicSeriesInfoProps) {
           </button>
         </div>
       </div>
+      {creators.length > 0 && (
+        <div className="mt-4 grid grid-cols-2 gap-4">
+          {creators.map((creator) => (
+            <CreatorDetails
+              key={creator?.uuid}
+              creator={creator}
+              pageType='mini-creator'
+            />
+          ))}
+        </div>
+      )}
 
       <ReportModal
         variant="comicseries"

@@ -7,10 +7,11 @@ import { Colors } from '@/constants/Colors';
 type ThemedButtonProps = TouchableOpacityProps & {
   buttonText: string;
   buttonTextProps?: StyleProp<TextStyle>;
+  icon?: React.ReactNode;
   props?: StyleProp<TouchableOpacityProps>;
 }
 
-export function ThemedButton({ buttonText, onPress, style, buttonTextProps, ...props }: ThemedButtonProps) {
+export function ThemedButton({ buttonText, onPress, style, buttonTextProps, icon, ...props }: ThemedButtonProps) {
   const colorScheme = useColorScheme() ?? 'light';
 
   const backgroundColor = colorScheme === 'light' ? Colors.light.button : Colors.dark.button;
@@ -22,6 +23,7 @@ export function ThemedButton({ buttonText, onPress, style, buttonTextProps, ...p
         style={[styles.button, { backgroundColor }, style]}
         {...props}
         >
+        {icon}
         <ThemedText style={[styles.buttonText, { color: buttonTextColor }, buttonTextProps]}>
             {buttonText}
         </ThemedText>

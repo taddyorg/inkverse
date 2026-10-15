@@ -8,8 +8,9 @@ interface AddToProfileButtonProps {
   isSubscribed: boolean;
   isLoading: boolean;
   onPress: () => void;
-  selectedText: string;
-  unselectedText: string;
+  // Leave both out for an icon-only button
+  selectedText?: string;
+  unselectedText?: string;
 }
 
 interface NotificationButtonProps {
@@ -18,39 +19,42 @@ interface NotificationButtonProps {
   onPress: () => void;
 }
 
-export const AddToProfileButton = ({ 
-  isSubscribed, 
-  isLoading, 
+export const AddToProfileButton = ({
+  isSubscribed,
+  isLoading,
   onPress,
   selectedText,
   unselectedText
 }: AddToProfileButtonProps) => {
-  const iconColor = 'black'; 
-  const textColor = 'black'; 
+  const iconColor = 'black';
+  const textColor = 'black';
+  const buttonText = isSubscribed ? selectedText : unselectedText;
 
   return (
-    <View style={styles.buttonMargin}>
-      <PressableOpacity
-        onPress={onPress}
-        disabled={isLoading}
-        style={[styles.button, isLoading && styles.disabledButton]}
-      >
-        <View style={styles.buttonContainer}>
-          {isLoading ? (
-            <ActivityIndicator size="small" color={iconColor} />
-          ) : (
-            <MaterialIcons
-              name={isSubscribed ? "bookmark" : "bookmark-outline"}
-              size={22}
-              color={iconColor}
-            />
-          )}
+    <PressableOpacity
+      onPress={onPress}
+      disabled={isLoading}
+      style={[styles.button, isLoading && styles.disabledButton]}
+      accessibilityRole="button"
+      accessibilityLabel={isSubscribed ? 'Saved' : 'Save'}
+    >
+      <View style={styles.buttonContainer}>
+        {isLoading ? (
+          <ActivityIndicator size="small" color={iconColor} />
+        ) : (
+          <MaterialIcons
+            name={isSubscribed ? "bookmark" : "bookmark-outline"}
+            size={22}
+            color={iconColor}
+          />
+        )}
+        {!!buttonText && (
           <ThemedText style={[styles.buttonText, { color: textColor, fontFamily: ThemedTextFontFamilyMap.semiBold }]}>
-            {isSubscribed ? selectedText : unselectedText}
+            {buttonText}
           </ThemedText>
-        </View>
-      </PressableOpacity>
-    </View>
+        )}
+      </View>
+    </PressableOpacity>
   );
 };
 
@@ -59,34 +63,31 @@ export const NotificationButton = ({
   isLoading,
   onPress,
 }: NotificationButtonProps) => {
-  const iconColor = 'black'; 
+  const iconColor = 'black';
 
   return (
-    <View style={styles.buttonMargin}>
-      <PressableOpacity
-        onPress={onPress}
-        disabled={isLoading}
-        style={[styles.button, isLoading && styles.disabledButton]}
-      >
-        <View style={styles.buttonContainer}>
-          {isLoading
-          ? <ActivityIndicator size="small" color={iconColor} />
-          : <MaterialIcons
-                name={isReceivingNotifications ? "notifications-active" : "notifications-none"}
-                size={24}
-                color={iconColor}
-              />
-          }
-        </View>
-      </PressableOpacity>
-    </View>
+    <PressableOpacity
+      onPress={onPress}
+      disabled={isLoading}
+      style={[styles.button, isLoading && styles.disabledButton]}
+      accessibilityRole="button"
+      accessibilityLabel={isReceivingNotifications ? 'Turn off notifications' : 'Turn on notifications'}
+    >
+      <View style={styles.buttonContainer}>
+        {isLoading
+        ? <ActivityIndicator size="small" color={iconColor} />
+        : <MaterialIcons
+              name={isReceivingNotifications ? "notifications-active" : "notifications-none"}
+              size={24}
+              color={iconColor}
+            />
+        }
+      </View>
+    </PressableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
-  buttonMargin: {
-    marginRight: SPACING.sm,
-  },
   button: {
     borderRadius: 20,
     height: 40,

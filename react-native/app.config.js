@@ -5,7 +5,7 @@ export default {
     name: "Inkverse",
     slug: "inkverse",
     version: "3.5",
-    orientation: "portrait",
+    orientation: "default",
     icon: "./assets/icons/ios-light.png",
     scheme: "inkverse",
     userInterfaceStyle: "automatic",
@@ -14,7 +14,7 @@ export default {
     ios: {
       bundleIdentifier: "art.bamcomics.taddy",
       buildNumber: "1",
-      supportsTablet: false,
+      supportsTablet: true,
       infoPlist: {
         LSApplicationQueriesSchemes: [
           "https",

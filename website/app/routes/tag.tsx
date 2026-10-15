@@ -9,7 +9,7 @@ import { loadComicsList, type ComicsListLoaderData } from '@/lib/loader/tag.serv
 
 function getTitle(tag: string | undefined): string | undefined {
   if (!tag) { return undefined; }
-  return `Comics tagged "${tag?.toLowerCase()}"`
+  return `Comics tagged ${tag?.toLowerCase()}`
 }
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {

@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native';
+import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { PressableOpacity } from './PressableOpacity';
 import { showShareSheet } from '@/lib/share-sheet';
@@ -8,11 +8,12 @@ interface HeaderShareButtonProps {
   type: InkverseUrlType;
   item: any;
   parentItem?: any;
+  style?: StyleProp<ViewStyle>;
 }
 
-export function HeaderShareButton({ type, item, parentItem }: HeaderShareButtonProps) {
+export function HeaderShareButton({ type, item, parentItem, style }: HeaderShareButtonProps) {
   return (
-    <View style={styles.shareButtonPosition}>
+    <View style={[styles.shareButtonPosition, style]}>
       <PressableOpacity
         style={styles.shareButtonVisual}
         onPress={() => showShareSheet({ type, item, parentItem })}>

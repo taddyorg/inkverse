@@ -3,8 +3,10 @@ import { StyleSheet, View } from 'react-native';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { FlashList } from '@shopify/flash-list';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { MaterialIcons } from '@expo/vector-icons';
 
-import { Screen, HeaderBackButton, HeaderShareButton, ThemedActivityIndicator, ThemedRefreshControl, FadeInView } from '@/app/components/ui';
+import { Screen, HeaderBackButton, HeaderShareButton, ThemedActivityIndicator, ThemedButton, ThemedRefreshControl, FadeInView, useLayout } from '@/app/components/ui';
 import { ComicSeriesDetails } from '@/app/components/comics/ComicSeriesDetails';
 import { ComicIssuesList, ComicIssuesListProps } from '@/app/components/comics/ComicIssuesList';
 import { ComicSeriesInfo } from '@/app/components/comics/ComicSeriesInfo';
@@ -19,6 +21,8 @@ import { RootStackParamList, COMICSERIES_SCREEN, COMICISSUE_SCREEN, SIGNUP_SCREE
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ReadNextEpisode } from '../components/comics/ReadNextEpisode';
 import { useAnalytics } from '@/lib/analytics';
+import { SPACING } from '@/constants/Spacing';
+import { useThemeColor } from '@/constants/Colors';
 
 export interface ComicSeriesScreenParams {
   uuid: string;
@@ -26,10 +30,23 @@ export interface ComicSeriesScreenParams {
 
 type ListItem = 
   | { type: 'header'; data: ComicSeries }
-  | { type: 'action-buttons'; data: ComicSeries }
   | { type: 'info'; data: ComicSeries }
   | { type: 'issues'; data: ComicIssuesListProps }
   | { type: 'next-episode'; data: ComicIssue | null };
+
+// Floating back / share buttons
+const HEADER_BUTTON_SIZE = 40;
+const INITIAL_VISIBLE_ISSUES = 5;
+const getHeaderButtonsTop = (isLandscape: boolean) => isLandscape ? 16 : 40;
+// In landscape, hug the screen edges rather than the content column. The side safe-area
+// inset is for the Dynamic Island, which sits mid-height, so a button this close to the
+// top only needs to clear the rounded display corner.
+const getHeaderButtonsSideOffset = (isLandscape: boolean, contentInsetX: number) =>
+  isLandscape ? SPACING.xl : contentInsetX + 16;
+// In landscape the centered cover sits between the buttons, so it can start level with them
+const getHeaderPaddingTop = (isLandscape: boolean) => isLandscape
+  ? getHeaderButtonsTop(isLandscape)
+  : getHeaderButtonsTop(isLandscape) + HEADER_BUTTON_SIZE + 16;
 
 export function ComicSeriesScreen() {
   const route = useRoute<NativeStackScreenProps<RootStackParamList, typeof COMICSERIES_SCREEN>['route']>();
@@ -63,6 +80,14 @@ export function ComicSeriesScreen() {
   const [comicSeriesState, dispatch] = useReducer(comicSeriesReducer, comicSeriesInitialState);
   const [refreshing, setRefreshing] = useState(false);
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+  const { contentInsetX, isSm, isLandscape } = useLayout();
+  const insets = useSafeAreaInsets();
+  // In landscape the buttons hug the screen edges, so pull the content in past them
+  const listInsetX = isLandscape
+    ? Math.max(contentInsetX, getHeaderButtonsSideOffset(true, contentInsetX) + HEADER_BUTTON_SIZE + SPACING.md)
+    : contentInsetX;
+  const actionColor = useThemeColor({}, 'action');
+  const actionTextColor = useThemeColor({}, 'actionText');
 
   const { isComicSeriesLoading, comicseries, issues, userComicData, isUserDataLoading, isSubscriptionLoading, isNotificationLoading, issueLikeLoadingMap, likeCount, commentCount } = comicSeriesState;
 
@@ -159,33 +184,44 @@ export function ComicSeriesScreen() {
     }
   }, [isLoggedIn, userClient, currentUser?.id, comicseries?.uuid, userComicData?.likedComicIssueUuids, navigation]);
 
+  const firstIssue = issues?.[0];
+
   const renderItem = useCallback(({ item }: { item: ListItem }) => {
     switch (item.type) {
       case 'header':
+        // On wider layouts, leave room above the header for the floating buttons
         return (
-          <ComicSeriesDetails
-            comicseries={item.data}
-            pageType='comicseries-screen'
-            isHeaderVisible={isHeaderVisible}
-            onHeaderVisibilityChange={setIsHeaderVisible}
-            likeCount={likeCount}
-            commentCount={commentCount}
-          />
-        );
-      case 'action-buttons':
-        return (
-          <View style={styles.actionButtonsContainer}>
-            <AddToProfileButton
-              isSubscribed={userComicData?.isSubscribed || false}
-              isLoading={isSubscriptionLoading || isUserDataLoading || false}
-              onPress={handleAddToProfile}
-              selectedText='SAVED'
-              unselectedText='SAVE'
-            />
-            <NotificationButton
-              isReceivingNotifications={userComicData?.hasNotificationEnabled || false}
-              isLoading={isNotificationLoading || isUserDataLoading || false}
-              onPress={handleGetNotifications}
+          <View style={isSm && { paddingTop: getHeaderPaddingTop(isLandscape) }}>
+            <ComicSeriesDetails
+              comicseries={item.data}
+              pageType='comicseries-screen'
+              isHeaderVisible={isHeaderVisible}
+              onHeaderVisibilityChange={setIsHeaderVisible}
+              likeCount={likeCount}
+              commentCount={commentCount}
+              actions={
+                <View style={[styles.actionButtonsContainer, isSm && styles.actionButtonsContainerSm]}>
+                  {!!firstIssue && (
+                    <ThemedButton
+                      buttonText='Start Reading'
+                      style={[styles.startReadingButton, { backgroundColor: actionColor }]}
+                      buttonTextProps={{ color: actionTextColor }}
+                      icon={<MaterialIcons name="play-arrow" size={22} color={actionTextColor} />}
+                      onPress={() => handleNavigateToIssue(firstIssue.uuid, item.data.uuid)}
+                    />
+                  )}
+                  <AddToProfileButton
+                    isSubscribed={userComicData?.isSubscribed || false}
+                    isLoading={isSubscriptionLoading || isUserDataLoading || false}
+                    onPress={handleAddToProfile}
+                  />
+                  <NotificationButton
+                    isReceivingNotifications={userComicData?.hasNotificationEnabled || false}
+                    isLoading={isNotificationLoading || isUserDataLoading || false}
+                    onPress={handleGetNotifications}
+                  />
+                </View>
+              }
             />
           </View>
         );
@@ -193,14 +229,17 @@ export function ComicSeriesScreen() {
         return <ComicSeriesInfo comicseries={item.data} />;
       case 'issues':
         return (
-          <ComicIssuesList
-            comicissues={item.data.comicissues}
-            comicseries={item.data.comicseries}
-            currentIssueUuid={item.data.currentIssueUuid}
-            likedIssueUuids={userComicData?.likedComicIssueUuids}
-            issueLikeLoadingMap={issueLikeLoadingMap}
-            onLikeIssue={handleLikeIssue}
-          />
+          <View style={styles.section}>
+            <ComicIssuesList
+              comicissues={item.data.comicissues}
+              comicseries={item.data.comicseries}
+              currentIssueUuid={item.data.currentIssueUuid}
+              likedIssueUuids={userComicData?.likedComicIssueUuids}
+              issueLikeLoadingMap={issueLikeLoadingMap}
+              onLikeIssue={handleLikeIssue}
+              initialVisibleCount={INITIAL_VISIBLE_ISSUES}
+            />
+          </View>
         );
       case 'next-episode':
         if (!item.data) { return null; }
@@ -216,12 +255,11 @@ export function ComicSeriesScreen() {
       default:
         return null;
     }
-  }, [comicseries, issues, userComicData, isUserDataLoading, isSubscriptionLoading, isNotificationLoading, isHeaderVisible, setIsHeaderVisible, handleAddToProfile, handleGetNotifications, handleNavigateToIssue, issueLikeLoadingMap, handleLikeIssue]);
+  }, [comicseries, issues, userComicData, isUserDataLoading, isSubscriptionLoading, isNotificationLoading, isHeaderVisible, setIsHeaderVisible, handleAddToProfile, handleGetNotifications, handleNavigateToIssue, issueLikeLoadingMap, handleLikeIssue, isSm, isLandscape, likeCount, commentCount, firstIssue, actionColor, actionTextColor]);
 
   const keyExtractor = useCallback((item: ListItem) => {
     switch (item.type) {
       case 'header':
-      case 'action-buttons':
       case 'info':
       case 'issues':
       case 'next-episode':
@@ -233,7 +271,6 @@ export function ComicSeriesScreen() {
     if (!comicseries) return [];
     return [
       { type: 'header', data: comicseries },
-      { type: 'action-buttons', data: comicseries },
       { type: 'issues', data: { comicissues: issues || [], comicseries, currentIssueUuid: issues?.[0]?.uuid } },
       { type: 'info', data: comicseries },
       ...(issues?.length && issues.length > 3 ? [{ type: 'next-episode' as const, data: issues[0] }] : []),
@@ -258,6 +295,7 @@ export function ComicSeriesScreen() {
           renderItem={renderItem}
           keyExtractor={keyExtractor}
           showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: listInsetX, paddingBottom: insets.bottom + SPACING.lg }}
           onScroll={(event) => {
             const yOffset = event.nativeEvent.contentOffset.y;
             if (yOffset <= 0) {
@@ -283,12 +321,17 @@ interface ComicSeriesScreenWrapperProps {
 }
 
 const ComicSeriesScreenWrapper = ({ children, isHeaderVisible, comicseries }: ComicSeriesScreenWrapperProps) => {
+  const { contentInsetX, isSm, isLandscape } = useLayout();
+  const top = getHeaderButtonsTop(isLandscape);
+  const sideOffset = getHeaderButtonsSideOffset(isLandscape, contentInsetX);
+
+  // On wider layouts the cover isn't behind the buttons, so keep them visible
   return (
     <Screen style={styles.container}>
-      {isHeaderVisible && (
+      {(isHeaderVisible || isSm) && (
         <View>
-          <HeaderBackButton />
-          <HeaderShareButton type="comicseries" item={comicseries} />
+          <HeaderBackButton style={{ top, left: sideOffset }} />
+          <HeaderShareButton type="comicseries" item={comicseries} style={{ top, right: sideOffset }} />
         </View>
       )}
       {children}
@@ -306,9 +349,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   actionButtonsContainer: {
-    paddingHorizontal: 16,
-    paddingBottom: 12,
     flexDirection: 'row',
-    alignSelf: 'flex-start',
+    alignItems: 'center',
+    gap: SPACING.sm,
+    marginHorizontal: SPACING.md,
+    marginTop: SPACING.md,
+    marginBottom: SPACING.md,
+  },
+  actionButtonsContainerSm: {
+    width: '100%',
+    maxWidth: 420,
+    alignSelf: 'center',
+  },
+  // Section break before Episodes, larger than the gaps inside a section
+  section: {
+    marginTop: SPACING.lg,
+  },
+  startReadingButton: {
+    flex: 1,
+    height: 40,
+    paddingVertical: 0,
   },
 }); 

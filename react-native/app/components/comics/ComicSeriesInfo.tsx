@@ -9,6 +9,8 @@ import { getPrettySeriesStatus } from '@inkverse/public/status';
 import { getPrettyContentRating } from '@inkverse/public/ratings';
 import { REPORTS_SCREEN } from '@/constants/Navigation';
 import { Ionicons } from '@expo/vector-icons';
+import { CreatorDetails } from '../creator/CreatorDetails';
+import { SPACING } from '@/constants/Spacing';
 
 interface ComicSeriesInfoProps {
   comicseries: ComicSeries;
@@ -23,6 +25,8 @@ export function ComicSeriesInfo({ comicseries }: ComicSeriesInfoProps) {
       type: 'comicseries',
     });
   };
+
+  const creators = comicseries.creators?.filter(Boolean) ?? [];
 
   return (
     <ThemedView style={styles.infoContainer}>
@@ -42,7 +46,7 @@ export function ComicSeriesInfo({ comicseries }: ComicSeriesInfoProps) {
           )
         }
       </View>
-      <View style={styles.infoRow}>
+      <View style={[styles.infoRow, creators.length === 0 && styles.lastInfoRow]}>
         <View style={styles.infoItem}>
           <ThemedText style={styles.infoLabel}># of Episodes</ThemedText>
           <ThemedText style={styles.infoValue}>{comicseries.issueCount || 0}</ThemedText>
@@ -59,20 +63,44 @@ export function ComicSeriesInfo({ comicseries }: ComicSeriesInfoProps) {
 
         </View>
       </View>
+      {creators.length > 0 && (
+        <View>
+          {/*<ThemedText style={styles.infoLabel}>{creators.length > 1 ? 'Creators Info' : 'Creator Info'}</ThemedText>*/}
+          <View style={styles.creatorGrid}>
+            {creators.map((creator) => (
+              <CreatorDetails
+                key={creator?.uuid}
+                creator={creator}
+                pageType='mini-creator'
+              />
+            ))}
+          </View>
+        </View>
+      )}
     </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
   infoContainer: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
+    paddingHorizontal: SPACING.md,
+    paddingTop: SPACING.md,
+  },
+  // Last element: the next section (or the list's bottom padding) supplies the space below
+  creatorGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginHorizontal: -8,
   },
   infoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: SPACING.md,
+  },
+  // Used when there are no creators below, so the next section supplies the space
+  lastInfoRow: {
+    marginBottom: 0,
   },
   infoItem: {
     flex: 1,
@@ -90,7 +118,6 @@ const styles = StyleSheet.create({
   },
   reportItem: {
     flexDirection: 'row',
-    paddingVertical: 8,
   },
   reportButton: {
     flexDirection: 'row',

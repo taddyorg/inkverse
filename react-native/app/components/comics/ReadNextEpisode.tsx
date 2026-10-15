@@ -95,6 +95,7 @@ export function ReadNextEpisode({
               <ThemedText style={[styles.patreonExclusiveText, { color }]}>PATREON EXCLUSIVE</ThemedText>
             )}
           </View>
+          <MaterialIcons name="play-circle-filled" size={56} color={color} style={styles.playIcon} />
         </View>
       </PressableOpacity>
     </View>
@@ -146,6 +147,9 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
+  },
+  playIcon: {
+    marginLeft: 8,
   },
   patreonExclusiveText: {
     fontSize: 14,

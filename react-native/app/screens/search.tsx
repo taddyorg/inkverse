@@ -215,7 +215,7 @@ export function SearchScreen() {
       
       case 'tags_section':
         return (
-          <Section title="Popular Tags">
+          <Section title="Popular Tropes">
             <View style={styles.tagsContainer}>
               {POPULAR_TAGS.map((tag) => (
                 <SelectableItem 

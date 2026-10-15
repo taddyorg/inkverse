@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Link } from "react-router";
 import { MdFavorite } from 'react-icons/md';
 import { BsFillChatFill } from 'react-icons/bs';
@@ -6,8 +7,8 @@ import type { ComicSeries } from '@inkverse/shared-client/graphql/operations';
 import { getInkverseUrl, formatCompactNumber } from '@inkverse/public/utils';
 import { getPrettyGenre } from '@inkverse/public/genres';
 import { getBannerImageUrl, getCoverImageUrl, getThumbnailImageUrl } from '@inkverse/public/comicseries';
-import { getAvatarImageUrl } from '@inkverse/public/creator';
-import { AddToProfileButton, NotificationButton } from './ComicActionButtons';
+import { getGenreAndTagPills } from '@inkverse/shared-client/utils/genre-tag-pills';
+import { ExpandableText } from '../ui/ExpandableText';
 
 export type ComicSeriesPageType =
   | 'comicseries-screen'
@@ -23,23 +24,14 @@ type ComicSeriesDetailsProps = {
   comicseries: ComicSeries | null | undefined;
   pageType: ComicSeriesPageType;
   index?: number;
-  // Action button props for comicseries-screen
-  userComicData?: {
-    isSubscribed?: boolean;
-    isRecommended?: boolean;
-    hasNotificationEnabled?: boolean;
-  } | null;
-  isSubscriptionLoading?: boolean;
-  isNotificationLoading?: boolean;
-  isUserDataLoading?: boolean;
-  onAddToProfile?: () => void;
-  onGetNotifications?: () => void;
   likeCount?: number;
   commentCount?: number;
+  // Rendered between the stats and the description on the comicseries screen
+  actions?: ReactNode;
 }
 
 export function ComicSeriesDetails(props: ComicSeriesDetailsProps){
-  const { comicseries, pageType, onAddToProfile, onGetNotifications, userComicData, isSubscriptionLoading, isNotificationLoading, isUserDataLoading, likeCount, commentCount } = props;
+  const { comicseries, pageType, likeCount, commentCount, actions } = props;
 
   if (!comicseries) { return <></>; }
 
@@ -150,41 +142,28 @@ export function ComicSeriesDetails(props: ComicSeriesDetailsProps){
     );
   }
 
-  
+  // comicseries-screen
+  // No visible title: the cover art always includes it, so the h1 is for search engines and screen readers.
+  // Every width uses the same single column with a centered cover on top, capped to the viewport height on phones.
+  const description = comicseries.description?.trim();
   return (
-    <div className="pt-6 pb-3 mt-2 px-4 sm:px-6 lg:px-8 rounded-md">
-      <div className="flex flex-col sm:flex-row ">
-        <CoverArt comicseries={comicseries} pageType={pageType} />
-        <div className="sm:w-2/3 sm:pl-4">
-          <Name comicseries={comicseries} pageType={pageType}/>
-          <div className='flex flex-row justify-between'>
-            <Genre comicseries={comicseries} pageType={pageType}/>
-            <Counts comicseries={comicseries} pageType={pageType} likeCount={likeCount} commentCount={commentCount}/>
-          </div>
-          <Creators comicseries={comicseries} pageType={pageType}/>
-          <p className='mt-2'>{comicseries?.description?.trim()}</p>
-          <Tags comicseries={comicseries} pageType={pageType}/>
-          {pageType === 'comicseries-screen' && onAddToProfile && onGetNotifications && (
-            <ComicSeriesActionButtons
-              userComicData={userComicData}
-              isSubscriptionLoading={isSubscriptionLoading}
-              isNotificationLoading={isNotificationLoading}
-              isUserDataLoading={isUserDataLoading}
-              onAddToProfile={onAddToProfile}
-              onGetNotifications={onGetNotifications}
-            />
-          )}
-        </div>
+    <div>
+      <h1 className="sr-only">{comicseries.name}</h1>
+      <CoverArt comicseries={comicseries} pageType={pageType} />
+      <Counts likeCount={likeCount} commentCount={commentCount} />
+      {actions}
+      <div className="mx-4">
+        {!!description && (
+          <ExpandableText text={description} numberOfLines={3} className="mb-4" />
+        )}
+        <GenreAndTagPills comicseries={comicseries} />
       </div>
-      
     </div>
   );
 }
 
 const Name = ({ comicseries, pageType }: { comicseries: ComicSeries, pageType: ComicSeriesPageType }) => {
   switch (pageType) {
-    case 'comicseries-screen':
-      return <h1 className="mt-4 sm:mt-0 font-bold text-xl">{comicseries.name}</h1>;
     case 'list-item':
     case 'list-item-no-link':
       return <h2 className="font-bold text-xl">{comicseries.name}</h2>;
@@ -237,12 +216,13 @@ const CoverArt = ({ comicseries, pageType }: { comicseries: ComicSeries, pageTyp
           className="h-20 aspect-1 rounded-md object-contain object-center mr-2"
         />
     );
+    case 'comicseries-screen':
     default:
       return (
         <img
           src={getCoverImageUrl({ coverImageAsString: comicseries.coverImageAsString }) || undefined}
           alt={`${comicseries.name} comic cover art`}
-          className="h-90 sm:h-60 aspect-4/6 rounded-lg object-contain object-center mr-2"
+          className="block mx-auto mt-4 h-[min(50vh,360px)] aspect-4/6 rounded-lg object-cover sm:mt-0 sm:h-[360px]"
         />
       );
   }
@@ -265,118 +245,46 @@ const Genre = ({ comicseries, pageType }: { comicseries: ComicSeries, pageType: 
   );
 }
 
-const Tags = ({ comicseries, pageType }: { comicseries: ComicSeries, pageType: ComicSeriesPageType }) => {
-  if (pageType !== 'comicseries-screen' || !comicseries.tags || comicseries.tags.length === 0) {
-    return <></>;
-  }
+const pillClassName = 'px-3.5 py-2 rounded-full text-[15px] bg-brand-pink/20 dark:bg-taddy-blue/20';
+
+// Genres and tags share one group of lowercase pills. The website has no genre page, so only tags link.
+const GenreAndTagPills = ({ comicseries }: { comicseries: ComicSeries }) => {
+  const pills = getGenreAndTagPills(comicseries);
+  if (pills.length === 0) { return null; }
 
   return (
-    <div className='mt-2 flex flex-row flex-wrap gap-2'>
-      {comicseries.tags.map((tag) => (
-        tag && (
-          <Link
-            key={tag.toLowerCase()}
-            to={getInkverseUrl({ type: "tag", name: tag.toLowerCase() }) || ''}
-            className='px-3 py-1 rounded-full text-sm bg-brand-pink bg-opacity-20 transition-colors hover:bg-opacity-30 cursor-pointer dark:bg-taddy-blue dark:bg-opacity-20 dark:hover:bg-opacity-30'
-          >
-            <span>{tag.toLowerCase()}</span>
-          </Link>
-        )
-      ))}
+    <div className='flex flex-row flex-wrap justify-center gap-2'>
+      {pills.map((pill) => {
+        const link = pill.kind === 'tag' ? getInkverseUrl({ type: "tag", name: pill.value.toLowerCase() }) : undefined;
+        return link
+          ? (
+            <Link key={pill.label} to={link} className={`${pillClassName} transition-colors hover:bg-brand-pink/30 dark:hover:bg-taddy-blue/30`}>
+              {pill.label}
+            </Link>
+          )
+          : <span key={pill.label} className={pillClassName}>{pill.label}</span>;
+      })}
     </div>
   );
 }
 
-const Counts = ({ comicseries, pageType, likeCount, commentCount }: { comicseries: ComicSeries, pageType: ComicSeriesPageType, likeCount?: number, commentCount?: number }) => {
-  if (pageType !== 'comicseries-screen') return null;
+const Counts = ({ likeCount, commentCount }: { likeCount?: number, commentCount?: number }) => {
   if (!likeCount && !commentCount) return null;
 
   return (
-    <div className='mt-2 sm:mr-0 mr-4 flex flex-row gap-3'>
+    <div className='mt-4 flex flex-row justify-center items-center gap-4'>
       {!!likeCount && likeCount > 0 && (
         <div className='flex items-center gap-1'>
-          <MdFavorite className='text-rose-500' size={16} />
-          <span className='text-sm font-semibold'>{formatCompactNumber(likeCount)}</span>
+          <MdFavorite className='text-rose-500' size={18} />
+          <span className='font-semibold'>{formatCompactNumber(likeCount)}</span>
         </div>
       )}
       {!!commentCount && commentCount > 0 && (
         <div className='flex items-center gap-1'>
-          <BsFillChatFill className='text-inkverse-black dark:text-white' size={13} />
-          <span className='text-sm font-semibold'>{formatCompactNumber(commentCount)}</span>
+          <BsFillChatFill className='text-inkverse-black dark:text-white' size={15} />
+          <span className='font-semibold'>{formatCompactNumber(commentCount)}</span>
         </div>
       )}
     </div>
   );
 }
-
-const Creators = ({ comicseries, pageType }: { comicseries: ComicSeries, pageType: ComicSeriesPageType }) => {
-  if (!comicseries.creators || comicseries.creators.length === 0) {
-    return <></>;
-  }
-
-  const creators = comicseries.creators.filter((creator) => creator !== null);
-  
-  return (
-    <div className='mt-2 flex flex-row gap-2'>
-      {creators.map((creator) => {
-        const link = getInkverseUrl({ type: "creator", shortUrl: creator.shortUrl });
-        if (!link) { return <></> }
-        return (
-          <Link 
-            key={creator.uuid}
-            to={link} 
-            className='flex items-center' 
-          >
-          <img 
-            src={getAvatarImageUrl({ avatarImageAsString: creator.avatarImageAsString })} 
-            alt={creator.name || undefined} 
-            className='h-8 aspect-1 rounded-sm object-contain object-center mr-2' 
-          />
-          <p className='font-semibold'>{creator.name}</p>
-          </Link>
-        );
-      })}
-    </div> 
-  );
-}
-
-interface ComicSeriesActionButtonsProps {
-  userComicData?: {
-    isSubscribed?: boolean;
-    isRecommended?: boolean;
-    hasNotificationEnabled?: boolean;
-  } | null;
-  isSubscriptionLoading?: boolean;
-  isNotificationLoading?: boolean;
-  isUserDataLoading?: boolean;
-  onAddToProfile: () => void;
-  onGetNotifications: () => void;
-}
-
-export function ComicSeriesActionButtons({
-  userComicData,
-  isSubscriptionLoading,
-  isNotificationLoading,
-  isUserDataLoading,
-  onAddToProfile,
-  onGetNotifications,
-}: ComicSeriesActionButtonsProps) {
-  return (
-    <div className="flex flex-col sm:flex-row mt-6">
-      <div className="flex items-start">
-        <AddToProfileButton
-          isSubscribed={userComicData?.isSubscribed || false}
-          isLoading={isSubscriptionLoading || isUserDataLoading || false}
-          onPress={onAddToProfile}
-          selectedText='SAVED'
-          unselectedText='SAVE'
-        />
-        <NotificationButton
-          isReceivingNotifications={userComicData?.hasNotificationEnabled || false}
-          isLoading={isNotificationLoading || isUserDataLoading || false}
-          onPress={onGetNotifications}
-        />
-      </div>
-    </div>
-  );
-} 

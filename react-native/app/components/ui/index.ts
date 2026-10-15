@@ -13,6 +13,8 @@ import { ThemedActivityIndicator } from "./ThemedActivityIndicator"
 import { ThemedRefreshControl } from "./ThemedRefreshControl"
 import { DropdownMenu } from "./DropdownMenu"
 import { FadeInView } from "./FadeInView"
+import { useLayout } from "./Layout"
+import { ExpandableText } from "./ExpandableText"
 
 export {
     Logo,
@@ -31,4 +33,6 @@ export {
     ThemedRefreshControl,
     DropdownMenu,
     FadeInView,
+    useLayout,
+    ExpandableText,
 }
