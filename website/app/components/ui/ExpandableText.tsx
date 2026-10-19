@@ -6,7 +6,7 @@ interface ExpandableTextProps {
   className?: string;
 }
 
-// Clamps long text to numberOfLines and ends it with an inline "… more" that expands it
+// Clamps long text to numberOfLines and ends it with an inline "… more" that expands it, and a "Show less" that collapses it again (on the last line if it fits, otherwise below)
 export function ExpandableText({ text, numberOfLines, className }: ExpandableTextProps) {
   const textRef = useRef<HTMLParagraphElement>(null);
   const [isTruncated, setIsTruncated] = useState(false);
@@ -25,16 +25,23 @@ export function ExpandableText({ text, numberOfLines, className }: ExpandableTex
 
   const isClamped = !isExpanded;
   const expand = () => setIsExpanded(true);
+  const collapse = () => setIsExpanded(false);
 
   return (
-    <div className="relative">
+    <div className={`relative ${className ?? ''}`}>
       <p
         ref={textRef}
-        className={`whitespace-pre-line ${isClamped && isTruncated ? 'cursor-pointer' : ''} ${className ?? ''}`}
+        className={`whitespace-pre-line ${isClamped && isTruncated ? 'cursor-pointer' : 'flow-root'}`}
         style={isClamped ? { display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: numberOfLines, overflow: 'hidden' } : undefined}
         onClick={isClamped && isTruncated ? expand : undefined}
       >
         {text}
+        {/* Floated after the text, so it sits on the last line when it fits and wraps below when it doesn't */}
+        {isExpanded && isTruncated && (
+          <button onClick={collapse} className="float-right ml-3 font-bold">
+            Show less
+          </button>
+        )}
       </p>
       {isClamped && isTruncated && (
         <button

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleProp, StyleSheet, TextLayoutEventData, TextStyle, View, NativeSyntheticEvent } from 'react-native';
+import { LayoutChangeEvent, StyleProp, StyleSheet, TextLayoutEventData, TextStyle, View, NativeSyntheticEvent } from 'react-native';
 
 import { ThemedText, ThemedTextFontFamilyMap } from './ThemedText';
 
@@ -10,14 +10,20 @@ interface ExpandableTextProps {
 }
 
 const MORE_LABEL = 'more';
+const LESS_LABEL = 'Show less';
 // Characters trimmed off the last visible line to make room for "… more"
 const ELLIPSIS_ROOM = 8;
+// Minimum gap between the end of the text and "Show less" when they share a line
+const LESS_GAP = 12;
 
-// Cuts long text after numberOfLines and ends it with an inline "… more" that expands it
+// Cuts long text after numberOfLines and ends it with an inline "… more" that expands it, and a "Show less" that collapses it again (on the last line if it fits, otherwise below)
 export function ExpandableText({ text, numberOfLines, style }: ExpandableTextProps) {
   const [truncatedText, setTruncatedText] = useState<string | null>(null);
   const [isMeasured, setIsMeasured] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [containerWidth, setContainerWidth] = useState(0);
+  const [lastLineWidth, setLastLineWidth] = useState<number | null>(null);
+  const [lessWidth, setLessWidth] = useState(0);
 
   const handleTextLayout = (event: NativeSyntheticEvent<TextLayoutEventData>) => {
     const { lines } = event.nativeEvent;
@@ -32,10 +38,17 @@ export function ExpandableText({ text, numberOfLines, style }: ExpandableTextPro
     setIsMeasured(true);
   };
 
+  const handleExpandedTextLayout = (event: NativeSyntheticEvent<TextLayoutEventData>) => {
+    const { lines } = event.nativeEvent;
+    setLastLineWidth(lines[lines.length - 1]?.width ?? null);
+  };
+
   const showTruncated = !isExpanded && truncatedText !== null;
+  const lessFitsOnLastLine = lastLineWidth !== null && lessWidth > 0
+    && lastLineWidth + LESS_GAP + lessWidth <= containerWidth;
 
   return (
-    <View>
+    <View onLayout={(event: LayoutChangeEvent) => setContainerWidth(event.nativeEvent.layout.width)}>
       {/* Hidden copy of the full text, used to find where the lines break */}
       {!isExpanded && (
         <ThemedText
@@ -52,6 +65,18 @@ export function ExpandableText({ text, numberOfLines, style }: ExpandableTextPro
           {truncatedText}…{' '}
           <ThemedText style={[style, styles.more]}>{MORE_LABEL}</ThemedText>
         </ThemedText>
+      ) : isExpanded && truncatedText !== null ? (
+        <>
+          {/* When "Show less" drops below, its own margin spaces the block, so the text's bottom margin is dropped */}
+          <ThemedText style={[style, !lessFitsOnLastLine && styles.noMarginBottom]} onTextLayout={handleExpandedTextLayout}>{text}</ThemedText>
+          <ThemedText
+            style={[style, styles.more, lessFitsOnLastLine ? styles.lessInline : styles.lessBelow]}
+            onLayout={(event: LayoutChangeEvent) => setLessWidth(event.nativeEvent.layout.width)}
+            onPress={() => setIsExpanded(false)}
+          >
+            {LESS_LABEL}
+          </ThemedText>
+        </>
       ) : (
         <ThemedText style={style} numberOfLines={isExpanded || isMeasured ? undefined : numberOfLines}>
           {text}
@@ -70,5 +95,17 @@ const styles = StyleSheet.create({
   },
   more: {
     fontFamily: ThemedTextFontFamilyMap.bold,
+  },
+  lessInline: {
+    position: 'absolute',
+    right: 0,
+    bottom: 0,
+  },
+  noMarginBottom: {
+    marginBottom: 0,
+  },
+  lessBelow: {
+    alignSelf: 'flex-end',
+    marginTop: 4,
   },
 });
