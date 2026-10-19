@@ -15,6 +15,7 @@ export default [
     route("creators/:shortUrl", "routes/creator.tsx"),
     route("lists/:id", "routes/list.tsx"),
     route("tagged/:tag", "routes/tag.tsx"),
+    route("genre/:genre", "routes/genre.tsx"),
     route("search/:term/:types?", "routes/search.tsx"),
     route("api/settings", "routes/api.settings.ts"),
     route("canny-login", "routes/canny-login.tsx"),

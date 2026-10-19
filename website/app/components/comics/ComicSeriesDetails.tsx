@@ -3,9 +3,9 @@ import { Link } from "react-router";
 import { MdFavorite } from 'react-icons/md';
 import { BsFillChatFill } from 'react-icons/bs';
 
-import type { ComicSeries } from '@inkverse/shared-client/graphql/operations';
+import type { ComicSeries, Genre } from '@inkverse/shared-client/graphql/operations';
 import { getInkverseUrl, formatCompactNumber } from '@inkverse/public/utils';
-import { getPrettyGenre } from '@inkverse/public/genres';
+import { getPrettyGenre, getGenreSlug } from '@inkverse/public/genres';
 import { getBannerImageUrl, getCoverImageUrl, getThumbnailImageUrl } from '@inkverse/public/comicseries';
 import { getGenreAndTagPills } from '@inkverse/shared-client/utils/genre-tag-pills';
 import { ExpandableText } from '../ui/ExpandableText';
@@ -247,7 +247,7 @@ const Genre = ({ comicseries, pageType }: { comicseries: ComicSeries, pageType: 
 
 const pillClassName = 'px-3.5 py-2 rounded-full text-[15px] bg-brand-pink/20 dark:bg-taddy-blue/20';
 
-// Genres and tags share one group of lowercase pills. The website has no genre page, so only tags link.
+// Genres and tags share one group of lowercase pills. Each links to its comics list page.
 const GenreAndTagPills = ({ comicseries }: { comicseries: ComicSeries }) => {
   const pills = getGenreAndTagPills(comicseries);
   if (pills.length === 0) { return null; }
@@ -255,7 +255,9 @@ const GenreAndTagPills = ({ comicseries }: { comicseries: ComicSeries }) => {
   return (
     <div className='flex flex-row flex-wrap justify-center gap-2'>
       {pills.map((pill) => {
-        const link = pill.kind === 'tag' ? getInkverseUrl({ type: "tag", name: pill.value.toLowerCase() }) : undefined;
+        const link = pill.kind === 'tag'
+          ? getInkverseUrl({ type: "tag", name: pill.value.toLowerCase() })
+          : getInkverseUrl({ type: "genre", name: getGenreSlug(pill.value as Genre) });
         return link
           ? (
             <Link key={pill.label} to={link} className={`${pillClassName} transition-colors hover:bg-brand-pink/30 dark:hover:bg-taddy-blue/30`}>
