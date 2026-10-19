@@ -36,7 +36,7 @@ export function ComicsListScreen() {
   const { isLoading, isLoadingMore, comics, hasMore } = state;
 
   const title = pageType === 'tag' 
-    ? `Comics tagged ${value.toLowerCase()}`
+    ? `Comics with ${value.toLowerCase()}`
     : `${value.replace('COMICSERIES_', '').replace(/_/g, ' ').toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')} Comics`;
 
   // Function to fetch comics
