@@ -4,6 +4,7 @@ import type { StorageFunctions } from '@inkverse/shared-client/dispatch/utils';
 import { syncStorageGet, syncStorageSet, syncStorageDelete } from '../storage/sync';
 import { User } from '@inkverse/shared-client/graphql/operations';
 import { dispatchRefreshAccessToken, dispatchRefreshRefreshToken } from '@inkverse/shared-client/dispatch/authentication';
+import { USER_DETAILS_VERSION } from '@inkverse/shared-client/dispatch/profile';
 import config from '@/config';
 import { isTokenExpired } from './utils';
 import { analytics, AnalyticsEvent } from '../analytics';
@@ -76,8 +77,9 @@ export async function getValidToken(): Promise<string | null> {
  * Save user details
  */
 export async function saveUserDetails(user: any): Promise<void> {
-  await asyncSetObject(USER_DETAILS_KEY, user);
-  syncStorageSet(USER_DETAILS_KEY, user);
+  const versionedUser = { ...user, detailsVersion: USER_DETAILS_VERSION };
+  await asyncSetObject(USER_DETAILS_KEY, versionedUser);
+  syncStorageSet(USER_DETAILS_KEY, versionedUser);
 }
 
 /**

@@ -3,6 +3,7 @@ import { localStorageSet, localStorageGet, localStorageSetObject, localStorageGe
 import type { StorageFunctions } from '@inkverse/shared-client/dispatch/utils';
 import type { User } from '@inkverse/shared-client/graphql/operations';
 import { dispatchRefreshAccessToken, dispatchRefreshRefreshToken } from '@inkverse/shared-client/dispatch/authentication';
+import { USER_DETAILS_VERSION } from '@inkverse/shared-client/dispatch/profile';
 import { isTokenExpired } from './utils';
 
 // Key constants
@@ -56,7 +57,7 @@ export async function getAccessToken(): Promise<string | null> {
  * Save user details to localStorage
  */
 export function saveUserDetails(user: User): void {
-  localStorageSetObject(USER_DETAILS_KEY, user);
+  localStorageSetObject(USER_DETAILS_KEY, { ...user, detailsVersion: USER_DETAILS_VERSION });
 }
 
 /**

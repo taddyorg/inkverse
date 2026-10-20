@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { AppState, type AppStateStatus } from 'react-native';
-import { refreshAccessToken, refreshRefreshToken, clearUserData, getRefreshToken } from '@/lib/auth/user';
+import { refreshAccessToken, refreshRefreshToken, clearUserData, getRefreshToken, getAsyncUserDetails, mobileStorageFunctions } from '@/lib/auth/user';
+import { getAndSaveMeDetails, hasOutdatedUserDetails } from '@inkverse/shared-client/dispatch/profile';
 import { fetchAllHostingProviderTokens } from '@inkverse/shared-client/dispatch/hosting-provider';
 import { saveHostingProviderRefreshToken, refreshHostingProviderAccessToken } from '@/lib/auth/hosting-provider';
 import { getUserApolloClient } from '@/lib/apollo';
@@ -121,6 +122,11 @@ export function AuthRefreshProvider({ children }: AuthRefreshProviderProps) {
 
         lastRefreshTimeRef.current = Date.now();
         console.log('✅ Initial token refresh completed');
+
+        // Stored user details are missing fields added since they were saved, re-fetch them once
+        if (hasOutdatedUserDetails(await getAsyncUserDetails())) {
+          await getAndSaveMeDetails({ userClient, storageFunctions: mobileStorageFunctions });
+        }
       } catch (error) {
         console.error('❌ Initial token refresh failed:', error);
       }

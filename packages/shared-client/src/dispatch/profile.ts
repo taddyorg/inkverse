@@ -51,6 +51,13 @@ export type ProfileAction =
   | { type: ProfileActionType.GET_PROFILE_ERROR; payload: string }
   | { type: ProfileActionType.LOGOUT_PROFILE };
 
+// Bump when the userDetails fragment gains a field, so stored details are re-fetched once (1: creator)
+export const USER_DETAILS_VERSION = 1;
+
+export function hasOutdatedUserDetails(user: (Partial<User> & { detailsVersion?: number }) | null | undefined): boolean {
+  return !!user && (user.detailsVersion ?? 0) < USER_DETAILS_VERSION;
+}
+
 export interface GetMeDetailsParams {
   userClient: ApolloClient;
   storageFunctions: StorageFunctions;

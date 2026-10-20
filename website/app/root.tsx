@@ -23,7 +23,7 @@ import fontsStylesheet from "./fonts/fonts.css?url";
 import { fontPreloads } from "./fonts/preloads";
 import { getPublicApolloClient, getUserApolloClient } from "@/lib/apollo/client.client";
 import { Navbar } from './components/ui';
-import { refreshAccessToken, refreshRefreshToken, webStorageFunctions } from '@/lib/auth/user';
+import { refreshAccessToken, refreshRefreshToken, webStorageFunctions, getUserDetails } from '@/lib/auth/user';
 import { isAuthenticated } from '@/lib/auth/user';
 
 import 'react-notion-x/src/styles.css'
@@ -32,7 +32,7 @@ import 'katex/dist/katex.min.css'
 import { fetchAllHostingProviderTokens } from "@inkverse/shared-client/dispatch/hosting-provider";
 import { saveHostingProviderRefreshToken, refreshHostingProviderAccessToken } from "@/lib/auth/hosting-provider";
 import { getRefreshToken } from "@/lib/auth/cookie";
-import { getAndSaveMeDetails } from "@inkverse/shared-client/dispatch/profile";
+import { getAndSaveMeDetails, hasOutdatedUserDetails } from "@inkverse/shared-client/dispatch/profile";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://ink0.inkverse.co" },
@@ -86,6 +86,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
             refreshRefreshToken(),
             fetchAllHostingProviderTokens({ userClient, saveHostingProviderRefreshToken, refreshHostingProviderAccessToken })
           ]);
+
+          // Stored user details are missing fields added since they were saved, re-fetch them once
+          if (hasOutdatedUserDetails(getUserDetails())) {
+            await getAndSaveMeDetails({ userClient, storageFunctions: webStorageFunctions });
+          }
 
         } else if (hasRefreshToken && !hasRefreshTokenExpired) {
             // Has valid refresh token, but client-side is not authenticated, get access token and user details
