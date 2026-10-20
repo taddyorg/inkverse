@@ -1,6 +1,6 @@
 import { isNumber } from 'lodash-es';
 
-import { validateAndTrimUuid } from './error.js';
+import { validateAndTrimUuid, AuthenticationError, UserInputError } from './error.js';
 import type { GraphQLContext } from '../middleware/auth.js';
 
 import type { 
@@ -12,6 +12,8 @@ import { SeriesStatus, TaddyType } from '@inkverse/shared-server/graphql/types';
 
 import { ComicSeries, Creator } from '@inkverse/shared-server/models/index';
 import { sendSlackNotification } from '@inkverse/shared-server/messaging/slack';
+import { purgeCacheOnCdn } from '@inkverse/shared-server/cache/index';
+import { MAX_TAGLINE_LENGTH, TAGLINE_REGEX, TAGLINE_INVALID_MESSAGE, normalizeTagline } from '@inkverse/public/comicseries';
 
 import type { ComicSeriesModel } from '@inkverse/shared-server/database/types';
 
@@ -29,6 +31,9 @@ const ComicSeriesDefinitions = `
 
     " The description for a comic series "
     description: String
+
+    " A short 1-3 word descriptor of the comic, curated by Inkverse or the creator (e.g. 'Sci-Fi • Action') "
+    tagline: String
 
     " The unique url ending for a comic series "
     shortUrl: String
@@ -116,6 +121,15 @@ const ComicSeriesMutationsDefinitions = `
     " The type of report to send "
     reportType: ReportType!
   ): Boolean
+
+  " Set the tagline for a comic series (creators of the series or admins only) "
+  updateComicSeriesTagline(
+    " The uuid of the comic series "
+    seriesUuid: ID!
+
+    " The new tagline. Pass null or an empty string to clear it "
+    tagline: String
+  ): ComicSeries
 `
 
 const ComicSeriesQueriesDefinitions = `
@@ -155,6 +169,37 @@ const ComicSeriesMutations: MutationResolvers = {
     });
 
     return true;
+  },
+
+  async updateComicSeriesTagline(root, { seriesUuid, tagline }, context: GraphQLContext): Promise<ComicSeriesModel | null> {
+    if (!context.user) {
+      throw new AuthenticationError('You must be logged in to edit a tagline');
+    }
+
+    const trimmedUuid = validateAndTrimUuid(seriesUuid, 'seriesUuid');
+    const trimmedTagline = normalizeTagline(tagline ?? '') || null;
+
+    if (trimmedTagline && trimmedTagline.length > MAX_TAGLINE_LENGTH) {
+      throw new UserInputError(`Tagline cannot exceed ${MAX_TAGLINE_LENGTH} characters`);
+    }
+
+    if (trimmedTagline && !TAGLINE_REGEX.test(trimmedTagline)) {
+      throw new UserInputError(TAGLINE_INVALID_MESSAGE);
+    }
+
+    const canEdit = await ComicSeries.canUserEditComicSeries(context.user, trimmedUuid);
+    if (!canEdit) {
+      throw new UserInputError('Comic not found or you do not have permission to edit it');
+    }
+
+    const comicseries = await ComicSeries.updateComicSeriesTagline(trimmedUuid, trimmedTagline);
+    if (!comicseries) {
+      throw new UserInputError('Comic not found or you do not have permission to edit it');
+    }
+
+    purgeCacheOnCdn({ type: 'comicseries', id: comicseries.uuid, shortUrl: comicseries.shortUrl });
+
+    return comicseries;
   },
 };
 

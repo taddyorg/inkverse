@@ -46,6 +46,7 @@ export type ComicSeriesModel = {
   seriesLayout: ComicSeriesLayoutType | null;
   hostingProviderUuid: string | null;
   scopesForExclusiveContent: string[] | null;
+  tagline: string | null;
 }
 
 export type ComicIssueModel = {

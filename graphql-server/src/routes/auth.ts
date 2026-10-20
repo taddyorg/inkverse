@@ -38,11 +38,13 @@ const REFRESH_TOKEN_COOKIE_OPTIONS = {
   path: '/'
 };
 
-type SafeUser = Pick<UserModel, 'id' | 'isEmailVerified' | 'username'>;
+// creator matches the userDetails fragment shape, so clients can show creator-only UI right after login
+type SafeUser = Pick<UserModel, 'id' | 'isEmailVerified' | 'username'> & { creator: { uuid: string } | null };
 const userModelToSafeUser = (user: UserModel): SafeUser => ({
   id: user.id,
   isEmailVerified: user.isEmailVerified,
-  username: user.username
+  username: user.username,
+  creator: user.creatorUuid ? { uuid: user.creatorUuid } : null,
 });
 
 router.use(cookieParser());

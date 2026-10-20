@@ -16,6 +16,7 @@ import { formatCompactNumber } from '@inkverse/public/utils';
 import { useThemeColor } from '@/constants/Colors';
 import { SPACING } from '@/constants/Spacing';
 import { Ionicons } from '@expo/vector-icons';
+import { ComicSeriesTagline } from './ComicSeriesTagline';
 
 type ComicSeriesPageType = 
   | 'comicseries-screen'
@@ -212,18 +213,23 @@ export function ComicSeriesDetails({ comicseries, pageType, isHeaderVisible, onH
               priority="high"
             />
           </Pressable>
-          {((likeCount ?? 0) > 0 || (commentCount ?? 0) > 0) && (
-            <View style={styles.statsRow}>
-              {(likeCount ?? 0) > 0 && (
-                <View style={styles.statItem}>
-                  <Ionicons name="heart" size={18} color="#f43f5e" />
-                  <ThemedText style={styles.statText}>{formatCompactNumber(likeCount ?? 0)}</ThemedText>
-                </View>
-              )}
-              {(commentCount ?? 0) > 0 && (
-                <View style={styles.statItem}>
-                  <Ionicons name="chatbubble" size={16} color={textColor} />
-                  <ThemedText style={styles.statText}>{formatCompactNumber(commentCount ?? 0)}</ThemedText>
+          {(!!comicseries.tagline || (likeCount ?? 0) > 0 || (commentCount ?? 0) > 0) && (
+            <View style={styles.taglineRow}>
+              <ComicSeriesTagline comicseries={comicseries} />
+              {((likeCount ?? 0) > 0 || (commentCount ?? 0) > 0) && (
+                <View style={styles.statsRow}>
+                  {(likeCount ?? 0) > 0 && (
+                    <View style={styles.statItem}>
+                      <Ionicons name="heart" size={18} color="#f43f5e" />
+                      <ThemedText style={styles.statText}>{formatCompactNumber(likeCount ?? 0)}</ThemedText>
+                    </View>
+                  )}
+                  {(commentCount ?? 0) > 0 && (
+                    <View style={styles.statItem}>
+                      <Ionicons name="chatbubble" size={16} color={textColor} />
+                      <ThemedText style={styles.statText}>{formatCompactNumber(commentCount ?? 0)}</ThemedText>
+                    </View>
+                  )}
                 </View>
               )}
             </View>
@@ -274,6 +280,14 @@ const styles = StyleSheet.create({
   },
   infoContainer: {
     marginHorizontal: 16,
+  },
+  taglineRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: SPACING.md,
+    marginHorizontal: 16,
+    marginTop: SPACING.md,
   },
   genreInfoContainer: {
     flexDirection: 'row',
@@ -400,9 +414,8 @@ const styles = StyleSheet.create({
   },
   statsRow: {
     flexDirection: 'row',
-    justifyContent: 'center',
     alignItems: 'center',
-    marginTop: SPACING.md,
+    flexShrink: 0,
     gap: SPACING.md,
   },
   statItem: {

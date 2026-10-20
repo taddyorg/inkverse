@@ -23,6 +23,7 @@ import { ComicsListScreen } from './comicslist';
 import { TrendingScreen } from './trending';
 import { BlogScreen } from './blog';
 import { ReportsScreen } from './reports';
+import { EditTaglineScreen } from './edit-tagline';
 import { CommentsScreen } from './comments';
 import { EditProfileScreen } from './profile-edit/index';
 import { EditUsernameScreen } from './profile-edit/edit-username';
@@ -87,6 +88,7 @@ import {
   TRENDING_SCREEN,
   BLOG_SCREEN,
   REPORTS_SCREEN,
+  EDIT_TAGLINE_SCREEN,
   COMMENTS_SCREEN,
   MAIN_SCREEN,
   SIGNUP_SCREEN,
@@ -657,6 +659,11 @@ function App() {
                     <Stack.Screen
                       name={REPORTS_SCREEN}
                       component={ReportsScreen}
+                      options={modalScreenOptions}
+                    />
+                    <Stack.Screen
+                      name={EDIT_TAGLINE_SCREEN}
+                      component={EditTaglineScreen}
                       options={modalScreenOptions}
                     />
                     <Stack.Screen

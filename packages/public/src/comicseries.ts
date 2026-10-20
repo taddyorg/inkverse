@@ -76,3 +76,19 @@ export const getThumbnailImageUrl = ({ thumbnailImageAsString }: GetThumbnailIma
     return undefined;
   }
 };
+
+// A tagline is a short 1-3 word descriptor of a comic (e.g. "Romance • Comedy")
+export const MAX_TAGLINE_LENGTH = 40;
+
+// One or more words of letters, each separated by a single space or " • "
+export const TAGLINE_REGEX = /^\p{L}+(?:(?: • | )\p{L}+)*$/u;
+export const TAGLINE_INVALID_MESSAGE = 'Tagline can only contain letters, spaces and •';
+
+// NFC so "é" typed as e + combining accent counts as a letter; collapse whitespace; space out bullets
+export function normalizeTagline(tagline: string): string {
+  return tagline.normalize('NFC').replace(/\s+/g, ' ').replace(/ ?• ?/g, ' • ').trim();
+}
+
+export function isValidTagline(tagline: string): boolean {
+  return TAGLINE_REGEX.test(normalizeTagline(tagline));
+}

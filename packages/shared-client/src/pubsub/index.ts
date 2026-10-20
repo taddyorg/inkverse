@@ -27,6 +27,7 @@ export type PubSubEvents = {
   // Comic subscription events
   COMIC_SUBSCRIBED: { seriesUuid: string; userId: string };
   COMIC_UNSUBSCRIBED: { seriesUuid: string; userId: string };
+  COMIC_TAGLINE_UPDATED: { seriesUuid: string; tagline: string | null };
 
   // User profile events
   USER_PROFILE_UPDATED: { userId: string; };
@@ -39,6 +40,7 @@ export const EventNames = {
   HOSTING_PROVIDER_CONNECTED: 'HOSTING_PROVIDER_CONNECTED',
   COMIC_SUBSCRIBED: 'COMIC_SUBSCRIBED',
   COMIC_UNSUBSCRIBED: 'COMIC_UNSUBSCRIBED',
+  COMIC_TAGLINE_UPDATED: 'COMIC_TAGLINE_UPDATED',
   USER_PROFILE_UPDATED: 'USER_PROFILE_UPDATED',
 } as const;
 

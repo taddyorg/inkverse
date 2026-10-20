@@ -7,7 +7,7 @@ import { Image } from 'expo-image';
 import { Screen, HeaderBackButton, ThemedText, ThemedActivityIndicator, ThemedButton } from '@/app/components/ui';
 import { RootStackParamList, CLAIM_CREATOR_SCREEN, SIGNUP_SCREEN, PROFILE_SCREEN } from '@/constants/Navigation';
 import { getPublicApolloClient, getUserApolloClient } from '@/lib/apollo';
-import { isAuthenticated, getAccessToken, getUserDetails } from '@/lib/auth/user';
+import { isAuthenticated, getAccessToken, getUserDetails, mobileStorageFunctions } from '@/lib/auth/user';
 import { openURL } from '@/lib/utils';
 import { Colors } from '@/constants/Colors';
 import config from '@/config';
@@ -21,6 +21,8 @@ import {
   initiateClaim,
   ClaimCreatorActionType,
 } from '@inkverse/shared-client/dispatch/claim-creator';
+import { getAndSaveMeDetails } from '@inkverse/shared-client/dispatch/profile';
+import { CreatorClaimStatus } from '@inkverse/shared-client/graphql/operations';
 import {
   GetClaimCreatorPage,
 } from '@inkverse/shared-client/graphql/operations';
@@ -32,6 +34,14 @@ import type {
 export type ClaimCreatorScreenParams = {
   uuid: string;
 };
+
+// A newly approved claim sets the user's creator on the server. Re-fetch the user details
+// right away so they carry creator.uuid (used to show creator-only UI like Edit Your Tagline).
+function refreshUserDetailsIfClaimApproved(status: string | null) {
+  if (status === CreatorClaimStatus.APPROVED) {
+    getAndSaveMeDetails({ userClient: getUserApolloClient(), storageFunctions: mobileStorageFunctions });
+  }
+}
 
 export function ClaimCreatorScreen() {
   const route = useRoute<NativeStackScreenProps<RootStackParamList, typeof CLAIM_CREATOR_SCREEN>['route']>();
@@ -99,7 +109,7 @@ export function ClaimCreatorScreen() {
       fetchClaimStatus(
         { userClient, creatorUuid: creator.uuid, userId: currentUser?.id ? String(currentUser.id) : undefined },
         dispatch,
-      );
+      ).then(refreshUserDetailsIfClaimApproved);
     } else {
       dispatch({ type: ClaimCreatorActionType.FETCH_STATUS_SUCCESS, payload: null });
     }

@@ -2,6 +2,7 @@ fragment comicSeriesDetails on ComicSeries {
     uuid
     name
     description
+    tagline
     datePublished
     hash
     issuesHash

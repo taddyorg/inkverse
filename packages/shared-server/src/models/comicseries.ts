@@ -10,13 +10,14 @@ import { arrayToObject } from "@inkverse/public/utils";
 
 import { database, type ComicIssueModel, type ComicSeriesModel } from "../database/index.js";
 import { TaddyType } from "../graphql/types.js";
-import { safeStringValue, safeObjWithVariantKeys, safeArrayProperties, prettyEncodeTitle, convertTextToBoolean, convertToCamelCase } from "../utils/common.js";
-import { UUIDLookup } from "./index.js";
+import { safeStringValue, safeObjWithVariantKeys, safeArrayProperties, prettyEncodeTitle, convertTextToBoolean, convertToCamelCase, isAdminUserId } from "../utils/common.js";
+import { UUIDLookup, CreatorContent } from "./index.js";
 import { setSimpleCache } from "../utils/simplecache.js";
 import { getSimpleCache } from "../utils/simplecache.js";
 
 
-type ComicSeriesInput = Omit<ComicSeriesModel, 'id' | 'uuid' | 'createdAt' | 'updatedAt'>;
+// tagline is curated on Inkverse (by creators or admins), so Taddy webhooks never write it
+type ComicSeriesInput = Omit<ComicSeriesModel, 'id' | 'uuid' | 'createdAt' | 'updatedAt' | 'tagline'>;
 
 function getSeriesDetails(data: Record<string, any>, shortUrl: string): ComicSeriesInput {
   const name = safeStringValue(get(data, 'name', null));
@@ -235,6 +236,26 @@ export class ComicSeries {
       await trx.rollback();
       throw e;
     }
+  }
+
+  // Admins can edit any series; creators can edit series they are credited on
+  static async canUserEditComicSeries(user: { id: string | number, creatorUuid?: string | null }, seriesUuid: string): Promise<boolean> {
+    if (isAdminUserId(user.id)) { return true }
+    if (!user.creatorUuid) { return false }
+    const creatorContent = await CreatorContent.getCreatorContent(user.creatorUuid, seriesUuid);
+    return !!creatorContent;
+  }
+
+  static async updateComicSeriesTagline(uuid: string, tagline: string | null): Promise<ComicSeriesModel | null> {
+    const [comicseries] = await database("comicseries")
+      .where({ uuid })
+      .update({
+        updatedAt: new Date(),
+        tagline,
+      })
+      .returning("*");
+
+    return comicseries ?? null;
   }
 
   static async deleteComicSeries(data: Record<string, any>): Promise<{ uuid: string, issueUuids: string[], storyUuids: string[], shortUrl: string } | null> {

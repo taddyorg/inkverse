@@ -8,6 +8,8 @@ import { isTokenExpired } from './utils';
 // Key constants
 const ACCESS_TOKEN_KEY = 'inkverse-access-token';
 const USER_DETAILS_KEY = 'inkverse-user-details';
+// Set by hand in devtools. Only shows admin UI; the server still checks ADMIN_USER_IDS
+const IS_ADMIN_KEY = 'inkverse-is-admin';
 
 /**
  * Save the access token to localStorage
@@ -62,6 +64,13 @@ export function saveUserDetails(user: User): void {
  */
 export function getUserDetails(): Partial<User> | null {
   return localStorageGetObject(USER_DETAILS_KEY);
+}
+
+/**
+ * Check whether this browser is flagged as an admin's (visual only)
+ */
+export function isAdminDevice(): boolean {
+  return localStorageGet(IS_ADMIN_KEY) === 'true';
 }
 
 /**

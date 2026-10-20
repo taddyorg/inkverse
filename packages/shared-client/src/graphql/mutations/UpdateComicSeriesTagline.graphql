@@ -1,0 +1,6 @@
+mutation UpdateComicSeriesTagline($seriesUuid: ID!, $tagline: String) {
+  updateComicSeriesTagline(seriesUuid: $seriesUuid, tagline: $tagline) {
+    uuid
+    tagline
+  }
+}

@@ -167,6 +167,8 @@ export type ComicSeries = {
   sssUrl?: Maybe<Scalars['String']['output']>;
   /**  The status of the comic series  */
   status?: Maybe<SeriesStatus>;
+  /**  A short 1-3 word descriptor of the comic, curated by Inkverse or the creator (e.g. 'Sci-Fi • Action')  */
+  tagline?: Maybe<Scalars['String']['output']>;
   /**  Tags for the comic series  */
   tags?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   /**  Stringified JSON details for the thumbnail art. Convert to JSON to use.  */
@@ -1012,6 +1014,8 @@ export type Mutation = {
   unlikeComment?: Maybe<UserComment>;
   /** Unsubscribe from a comic series */
   unsubscribeFromSeries: UserComicSeries;
+  /**  Set the tagline for a comic series (creators of the series or admins only)  */
+  updateComicSeriesTagline?: Maybe<ComicSeries>;
   /** Update user email */
   updateUserEmail?: Maybe<User>;
   /** Update user profile (username and age) */
@@ -1135,6 +1139,12 @@ export type MutationUnlikeCommentArgs = {
 
 export type MutationUnsubscribeFromSeriesArgs = {
   seriesUuid: Scalars['ID']['input'];
+};
+
+
+export type MutationUpdateComicSeriesTaglineArgs = {
+  seriesUuid: Scalars['ID']['input'];
+  tagline?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -1906,6 +1916,7 @@ export type ComicSeriesResolvers<ContextType = any, ParentType extends Resolvers
   sssOwnerPublicEmail?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   sssUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['SeriesStatus']>, ParentType, ContextType>;
+  tagline?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   tags?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   thumbnailImageAsString?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   uuid?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -2071,6 +2082,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   unlikeComicIssue?: Resolver<ResolversTypes['UserComicSeries'], ParentType, ContextType, RequireFields<MutationUnlikeComicIssueArgs, 'issueUuid' | 'seriesUuid'>>;
   unlikeComment?: Resolver<Maybe<ResolversTypes['UserComment']>, ParentType, ContextType, RequireFields<MutationUnlikeCommentArgs, 'commentUuid' | 'issueUuid'>>;
   unsubscribeFromSeries?: Resolver<ResolversTypes['UserComicSeries'], ParentType, ContextType, RequireFields<MutationUnsubscribeFromSeriesArgs, 'seriesUuid'>>;
+  updateComicSeriesTagline?: Resolver<Maybe<ResolversTypes['ComicSeries']>, ParentType, ContextType, RequireFields<MutationUpdateComicSeriesTaglineArgs, 'seriesUuid'>>;
   updateUserEmail?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationUpdateUserEmailArgs, 'email'>>;
   updateUserProfile?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, Partial<MutationUpdateUserProfileArgs>>;
 }>;

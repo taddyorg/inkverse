@@ -5,7 +5,7 @@ import { loadClaimCreator, type ClaimCreatorLoaderData } from '@/lib/loader/clai
 import { getMetaTags } from '@/lib/seo';
 import { inkverseWebsiteUrl } from '@inkverse/public/utils';
 import { getAvatarImageUrl } from '@inkverse/public/creator';
-import { getUserDetails, getAccessToken, isAuthenticated } from '@/lib/auth/user';
+import { getUserDetails, getAccessToken, isAuthenticated, webStorageFunctions } from '@/lib/auth/user';
 import {
   claimCreatorReducer,
   claimCreatorInitialState,
@@ -13,6 +13,8 @@ import {
   initiateClaim,
   ClaimCreatorActionType,
 } from '@inkverse/shared-client/dispatch/claim-creator';
+import { getAndSaveMeDetails } from '@inkverse/shared-client/dispatch/profile';
+import { CreatorClaimStatus } from '@inkverse/shared-client/graphql/operations';
 import { getUserApolloClient } from '@/lib/apollo/client.client';
 import { SignupModal } from '../components/profile/SignupModal';
 import { NotFound } from '../components/ui';
@@ -36,6 +38,14 @@ export const loader = async (args: LoaderFunctionArgs) => {
   return await loadClaimCreator(args);
 };
 
+// A newly approved claim sets the user's creator on the server. Re-fetch the user details
+// right away so they carry creator.uuid (used to show creator-only UI like Edit Tagline).
+function refreshUserDetailsIfClaimApproved(status: string | null) {
+  if (status === CreatorClaimStatus.APPROVED) {
+    getAndSaveMeDetails({ userClient: getUserApolloClient(), storageFunctions: webStorageFunctions });
+  }
+}
+
 export default function ClaimCreator() {
   const { creator, errorParam, hostingProviderName, loaderError } = useLoaderData<typeof loader>() as ClaimCreatorLoaderData;
   const [isSignupOpen, setIsSignupOpen] = useState(false);
@@ -57,7 +67,7 @@ export default function ClaimCreator() {
       fetchClaimStatus(
         { userClient: client, creatorUuid: creator.uuid, userId: currentUser?.id ? String(currentUser.id) : undefined },
         dispatch,
-      );
+      ).then(refreshUserDetailsIfClaimApproved);
       return;
     }
 
@@ -76,7 +86,7 @@ export default function ClaimCreator() {
         fetchClaimStatus(
           { userClient: client, creatorUuid: creator.uuid, userId: currentUser?.id ? String(currentUser.id) : undefined },
           dispatch,
-        );
+        ).then(refreshUserDetailsIfClaimApproved);
       }
     }, 100);
 

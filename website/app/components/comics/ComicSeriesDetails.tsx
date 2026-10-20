@@ -9,6 +9,7 @@ import { getPrettyGenre, getGenreSlug } from '@inkverse/public/genres';
 import { getBannerImageUrl, getCoverImageUrl, getThumbnailImageUrl } from '@inkverse/public/comicseries';
 import { getGenreAndTagPills } from '@inkverse/shared-client/utils/genre-tag-pills';
 import { ExpandableText } from '../ui/ExpandableText';
+import { ComicSeriesTagline } from './ComicSeriesTagline';
 
 export type ComicSeriesPageType =
   | 'comicseries-screen'
@@ -150,7 +151,11 @@ export function ComicSeriesDetails(props: ComicSeriesDetailsProps){
     <div>
       <h1 className="sr-only">{comicseries.name}</h1>
       <CoverArt comicseries={comicseries} pageType={pageType} />
-      <Counts likeCount={likeCount} commentCount={commentCount} />
+      {/* empty:hidden collapses the row when there is no tagline, edit icon or counts */}
+      <div className="mx-4 mt-3 flex items-center justify-center gap-4 empty:hidden">
+        <ComicSeriesTagline comicseries={comicseries} />
+        <Counts likeCount={likeCount} commentCount={commentCount} />
+      </div>
       {actions}
       <div className="mx-4">
         {!!description && (
@@ -274,7 +279,7 @@ const Counts = ({ likeCount, commentCount }: { likeCount?: number, commentCount?
   if (!likeCount && !commentCount) return null;
 
   return (
-    <div className='mt-4 flex flex-row justify-center items-center gap-4'>
+    <div className='flex shrink-0 items-center gap-4'>
       {!!likeCount && likeCount > 0 && (
         <div className='flex items-center gap-1'>
           <MdFavorite className='text-rose-500' size={18} />
