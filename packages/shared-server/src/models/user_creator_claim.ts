@@ -1,5 +1,5 @@
 import { database } from "../database/index.js";
-import { type UserCreatorClaimModel } from '@inkverse/shared-server/database/types';
+import { type UserCreatorClaimModel } from '../database/types.js';
 import { CreatorClaimStatus } from '../graphql/types.js';
 import { generateRandomString } from "../utils/crypto.js";
 import { currentDate } from "../utils/date.js";

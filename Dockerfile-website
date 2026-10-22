@@ -1,7 +1,7 @@
 # Inkverse website (React Router 7 + Vite, SSR) in a Yarn Classic workspaces monorepo.
 # Build context is the MONOREPO ROOT so @inkverse/public and @inkverse/shared-client resolve.
 # Copilot: copilot/website/manifest.yml builds this with context = repo root, port 3000.
-FROM node:24.17-slim AS build
+FROM node:24.22-slim AS build
 WORKDIR /app
 RUN corepack enable
 
@@ -26,7 +26,7 @@ WORKDIR /app/website
 RUN yarn build
 
 # --- runtime image ---
-FROM node:24.17-slim AS runtime
+FROM node:24.22-slim AS runtime
 WORKDIR /app/website
 ENV NODE_ENV=production
 ENV PORT=3000

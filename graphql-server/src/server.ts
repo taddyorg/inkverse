@@ -87,7 +87,6 @@ async function startServer() {
     }),
   );
 
-  // setupFirebase();
   // setUpLogger();
   // setUpClient();
 

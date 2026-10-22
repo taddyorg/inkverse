@@ -26,7 +26,8 @@
     "@graphql-codegen/typescript-document-nodes": "4.0.16",
     "@graphql-codegen/typescript-operations": "4.6.1",
     "@graphql-codegen/typescript-resolvers": "4.5.1",
-    "concurrently": "^9.1.2",
+    "concurrently": "^9.2.5",
+    "tsx": "^4.19.4",
     "typescript": "^5.7.2"
   },
   "scripts": {

@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import knexStringcase from 'knex-stringcase';
+import type { Knex } from 'knex';
 
 // Get the directory name of the current module
 const __filename = fileURLToPath(import.meta.url);
@@ -10,6 +11,9 @@ const envPath = path.resolve(__dirname, '..', '..', '.env');
 dotenv.config({ path: envPath });
 
 const connectionString = `postgres://${process.env.DATABASE_USERNAME}:${process.env.DATABASE_PASSWORD}@${process.env.DATABASE_ENDPOINT}:${process.env.DATABASE_PORT || '5432'}/${process.env.DATABASE_NAME || 'inkverse'}`;
+
+// Annotated with knex's own types so the exported config type stays portable
+const stringcaseOptions: Required<Pick<Knex.Config, 'wrapIdentifier' | 'postProcessResponse'>> = knexStringcase();
 
 // Define the type and create the configuration object in one go
 const config = {
@@ -27,7 +31,7 @@ const config = {
     directory: path.resolve(__dirname, 'migrations'),
     tableName: 'migrations',
   },
-  ...knexStringcase.default(),
+  ...stringcaseOptions,
 } as const;
 
 export default config;

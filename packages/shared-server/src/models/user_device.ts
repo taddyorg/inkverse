@@ -4,7 +4,7 @@
 
 import { Expo } from "expo-server-sdk";
 import { database } from "../database/index.js";
-import type { UserDeviceModel } from '@inkverse/shared-server/database/types';
+import type { UserDeviceModel } from '../database/types.js';
 
 export class UserDevice {
   /**

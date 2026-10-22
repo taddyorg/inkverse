@@ -4,7 +4,7 @@
  */
 
 import { database } from "../database/index.js";
-import type { UserModel } from '@inkverse/shared-server/database/types';
+import type { UserModel } from '../database/types.js';
 import { type UserAgeRange } from "@inkverse/public/graphql/types";
 import { generateRandomString } from "../utils/crypto.js";
 import { currentDate } from "../utils/date.js";
