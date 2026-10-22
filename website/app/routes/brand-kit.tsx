@@ -68,7 +68,7 @@ const BRAND_ASSETS: BrandAsset[] = [
   },
 ];
 
-const INTRO_COPY = "Yay! You've added your comic to Inkverse! Follow these steps to let your readers where to read your comic.";
+const INTRO_COPY = "Yay! You've added your comic to Inkverse! Follow these steps to let your readers know your comic is on Inkverse!";
 
 const SOCIAL_PLATFORMS: { name: string; type: LinkType }[] = [
   { name: 'Instagram', type: LinkType.INSTAGRAM },
