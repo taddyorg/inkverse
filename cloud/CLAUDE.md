@@ -9,6 +9,8 @@ The `/cloud` directory contains Inkverse's Cloudflare Workers-based edge computi
 Currently implemented workers:
 - **ink-sitemaps**: Edge delivery worker for sitemap files
 
+Not a worker any more: `/.well-known/*` (security.txt, apple-app-site-association, assetlinks.json) is served as static files by the website (`website/assets/.well-known/`, see `website/server.js`). The former `ink-well-known` worker was removed.
+
 ## Key Files and Directories
 
 - `/cloud`

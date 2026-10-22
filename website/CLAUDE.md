@@ -30,6 +30,13 @@ The website component is a React-based web client with server-side rendering (SS
   - `lib/loader/`: Route data loaders for server-side rendering of every route
   - `lib/action/`: Action handlers
 
+- **Production Server**:
+  - `server.js`: Express server used by `yarn start` (and the Docker image). It mirrors `react-router-serve` and additionally serves `assets/.well-known/` at `/.well-known/*`, setting `Content-Type: application/json` on the extensionless `apple-app-site-association` file.
+
+- **Static Assets**:
+  - `assets/`: Vite `publicDir`, copied verbatim into `build/client/` (robots.txt, sitemap.xml, favicons)
+  - `assets/.well-known/`: `security.txt`, `apple-app-site-association` (iOS Universal Links / Associated Domains) and `assetlinks.json` (Android App Links). Only the built server (`yarn start`) serves these; `yarn dev` (Vite) does not serve dotfile paths.
+
 - **Configuration**:
   - `config.ts`: Environment configuration
   - `vite.config.ts`: Vite configuration
@@ -48,7 +55,7 @@ yarn dev
 # Build for production OR for type checking
 yarn build
 
-# Start production server
+# Start production server (runs server.js against the build/ output)
 yarn start
 ```
 

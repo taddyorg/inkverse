@@ -40,6 +40,8 @@ graph TD
   /ink-sitemaps           # Sitemap edge delivery worker
 ```
 
+Static edge content that never changes between deploys does not need a worker. `/.well-known/*` (security.txt, Apple app-site-association, Android assetlinks.json) lives in `website/assets/.well-known/` and is served by the website's `server.js`.
+
 ### Structure of an edge worker
 
 ```

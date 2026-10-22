@@ -1,0 +1,14 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "4AF4P2U4ZF.art.bamcomics.taddy",
+        "paths": ["*"]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": ["4AF4P2U4ZF.art.bamcomics.taddy"]
+  }
+}
