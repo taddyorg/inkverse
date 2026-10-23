@@ -8,6 +8,7 @@
  *
  * Defaults to worker/input/comicseries-taglines.csv. A relative path may be
  * taken from the repo root or from worker/.
+ * The header row must include `uuid` and `tagline`, otherwise nothing is read.
  * Rows whose tagline matches the database are skipped. An empty cell clears
  * the tagline. If any row fails tagline validation, nothing is written.
  */
@@ -26,6 +27,8 @@ type CsvRow = { uuid?: string; tagline?: string };
 type CurrentRow = Pick<ComicSeriesModel, 'uuid' | 'name' | 'shortUrl' | 'tagline'>;
 type Change = { current: CurrentRow; next: string | null };
 
+const REQUIRED_COLUMNS = ['uuid', 'tagline'];
+
 function validateTagline(tagline: string | null): string | null {
   if (tagline === null) { return null; }
   if (tagline.length > MAX_TAGLINE_LENGTH) { return `Tagline cannot exceed ${MAX_TAGLINE_LENGTH} characters`; }
@@ -40,7 +43,19 @@ async function run() {
     process.exit(1);
   }
 
-  const rows: CsvRow[] = parse(fs.readFileSync(inputPath), { columns: true, bom: true, trim: true, skip_empty_lines: true });
+  // A missing tagline column would read every cell as empty and clear every tagline
+  let headers: string[] = [];
+  const rows: CsvRow[] = parse(fs.readFileSync(inputPath), {
+    columns: (header: string[]) => (headers = header),
+    bom: true,
+    trim: true,
+    skip_empty_lines: true,
+  });
+  const missingColumns = REQUIRED_COLUMNS.filter((column) => !headers.includes(column));
+  if (missingColumns.length > 0) {
+    console.error(`CSV is missing required column(s): ${missingColumns.join(', ')}. Found: ${headers.join(', ') || '(no header row)'}\nUsage: yarn workspace worker import-taglines [input.csv]`);
+    process.exit(1);
+  }
   console.log(`Read ${rows.length} rows from ${inputPath}`);
 
   const csvUuids = rows.map((row) => row.uuid).filter((uuid): uuid is string => !!uuid);
@@ -93,15 +108,23 @@ async function run() {
     process.exit(1);
   }
 
-  console.log(`\n${changes.length} tagline(s) to update:`);
+  const logChange = ({ current, next }: Change) =>
+    console.log(`  ${current.name ?? current.uuid} (${current.uuid}): "${current.tagline ?? ''}" -> "${next ?? ''}"`);
+  const updates = changes.filter((change) => change.next !== null);
+  const clears = changes.filter((change) => change.next === null);
+
+  console.log(`\n${updates.length} tagline(s) to update:`);
+  updates.forEach(logChange);
+  console.log(`\n${clears.length} tagline(s) to clear:`);
+  clears.forEach(logChange);
+
   let updated = 0;
   let cleared = 0;
 
   for (const { current, next } of changes) {
-    console.log(`  ${current.name ?? current.uuid} (${current.uuid}): "${current.tagline ?? ''}" -> "${next ?? ''}"`);
     const result = await ComicSeries.updateComicSeriesTagline(current.uuid, next);
     if (!result) {
-      console.error(`    update failed, no row returned`);
+      console.error(`  ${current.name ?? current.uuid} (${current.uuid}): update failed, no row returned`);
       continue;
     }
     await purgeCacheOnCdn({ type: 'comicseries', id: current.uuid, shortUrl: current.shortUrl });
