@@ -23,9 +23,9 @@ import { COMICS_LIST_SCREEN, RootStackParamList } from '@/constants/Navigation';
 // ];
 
 const POPULAR_TAGS = [
-  'enemies to lovers', 'friends to lovers', 'slow burn', 'found family',
-  'revenge', 'arranged marriage', 'childhood friends',
-  'love triangle', 'strong female lead', 'antihero', 'royal',
+  'enemies to lovers', 'friends to lovers', 'slow burn', 'love triangle', 'arranged marriage', 'childhood friends', 'found family',
+  'female lead', 'antihero', 'royal', 'school', 'queer', 'revenge',
+  'magic', 'psychological', 'monsters', 'demons', 'god', 'aliens',
 ];
 
 // Popular webtoon categories
@@ -217,7 +217,7 @@ export function SearchScreen() {
       
       case 'tags_section':
         return (
-          <Section title="Popular Tropes">
+          <Section title="Popular Tags">
             <View style={styles.tagsContainer}>
               {POPULAR_TAGS.map((tag) => (
                 <SelectableItem 
