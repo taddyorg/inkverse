@@ -1,3 +1,4 @@
+import pluralize from 'pluralize';
 import type { GraphQLContext } from '../middleware/auth.js';
 import { SEARCH_QUERY, taddyGraphqlRequest } from '@inkverse/shared-server/taddy/index';
 import { ComicSeries } from '@inkverse/shared-server/models/index';
@@ -67,7 +68,7 @@ const SearchQueries: QueryResolvers = {
       return { searchId: `${term}-${page}-past-max-page`, comicSeries: [], creators: [], responseDetails: [] };
     }
 
-    const variables = { term, page, limitPerPage, filterForTypes, filterForTags, filterForGenres };
+    const variables = { term, page, limitPerPage, filterForTypes, filterForTags: filterForTags ? getTagVariants(filterForTags) : null, filterForGenres };
     const query = SEARCH_QUERY;
 
     try {
@@ -78,6 +79,29 @@ const SearchQueries: QueryResolvers = {
     }
   }
 };
+
+const MAX_TAG_VARIANTS = 10;
+
+// Taddy matches tags exactly, so also search the singular and plural of each tag (ghost <-> ghosts)
+function getTagVariants(tags: (string | null | undefined)[]): string[] {
+  const variants = new Set<string>();
+
+  for (const tag of tags) {
+    const trimmedTag = tag?.trim();
+    if (!trimmedTag) { continue; }
+
+    // Only inflect the last word of a multi-word tag (demon hunter -> demon hunters)
+    const lastWordIndex = trimmedTag.lastIndexOf(' ') + 1;
+    const prefix = trimmedTag.slice(0, lastWordIndex);
+    const lastWord = trimmedTag.slice(lastWordIndex);
+
+    variants.add(trimmedTag);
+    variants.add(prefix + pluralize.singular(lastWord));
+    variants.add(prefix + pluralize.plural(lastWord));
+  }
+
+  return [...variants].slice(0, MAX_TAG_VARIANTS);
+}
 
 const SearchResolvers = {
   SearchResults: {
