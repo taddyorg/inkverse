@@ -10,6 +10,7 @@ export default [
     route("about-us", "routes/about-us.tsx"),
     route("our-roadmap", "routes/our-roadmap.tsx"),
     route("terms-of-service/:slug?", "routes/terms-of-service.tsx"),
+    route("support/:slug?", "routes/support.tsx"),
     route("comics/:shortUrl", "routes/comicseries.tsx"),
     route("comics/:shortUrl/:episodeId", "routes/comicissue.tsx"),
     route("creators/:shortUrl", "routes/creator.tsx"),

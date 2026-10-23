@@ -57,7 +57,8 @@ function extractReservedRouteSegments(): string[] {
       "/reset",
       "/logout",
       "/hosting-provider",
-      "/profile"
+      "/profile",
+      "/support",
   ];
 }
 

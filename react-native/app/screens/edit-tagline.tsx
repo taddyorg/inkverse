@@ -4,10 +4,11 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { Screen, ScreenHeader, ThemedView, ThemedText, HeaderBackButton, ThemedButton } from '../components/ui';
-import { RootStackParamList, EDIT_TAGLINE_SCREEN } from '@/constants/Navigation';
+import { RootStackParamList, EDIT_TAGLINE_SCREEN, BLOG_SCREEN } from '@/constants/Navigation';
 import { getUserApolloClient } from '@/lib/apollo';
 import { taglineReducer, taglineInitialState, submitComicSeriesTagline } from '@inkverse/shared-client/dispatch/tagline';
 import { MAX_TAGLINE_LENGTH, TAGLINE_INVALID_MESSAGE, isValidTagline, normalizeTagline } from '@inkverse/public/comicseries';
+import { NotionPage } from '@inkverse/public/notion';
 import { useThemeColor } from '@/constants/Colors';
 import { SPACING } from '@/constants/Spacing';
 
@@ -54,7 +55,13 @@ export function EditTaglineScreen() {
           Edit Your Tagline
         </ThemedText>
         <ThemedText style={styles.helperText}>
-          What makes your comic stand out in its genre? Your tagline appears next to your cover to help readers discover your comic. Keep it short and specific, e.g. "Ghosts • Slow Burn".
+          What makes your comic stand out in its genre? Your tagline appears next to your cover to help readers discover your comic. Keep it short and specific, e.g. "Ghosts • Slow Burn". See{' '}
+          <ThemedText
+            style={styles.linkText}
+            onPress={() => navigation.navigate(BLOG_SCREEN, { url: `https://inkverse.co${NotionPage.WRITING_A_GREAT_TAGLINE.path}` })}
+          >
+            tips for writing a great tagline
+          </ThemedText>.
         </ThemedText>
 
         <TextInput
@@ -110,6 +117,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: SPACING.sm,
     marginBottom: SPACING.lg,
+  },
+  linkText: {
+    fontSize: 14,
+    color: '#FF5E85', // brand-pink color
   },
   input: {
     borderWidth: 1,

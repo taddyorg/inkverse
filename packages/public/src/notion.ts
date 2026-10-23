@@ -2,6 +2,7 @@ export const NotionPage = {
   HOME: { id: "ef477dc32ff041c8a7313cd57351c3f7", path: "/" },
   SUPPORT: { id: "dd3f50c0a2f94216bca3d35f71ccd3e8", path: "/support" },
   ADD_YOUR_COMIC_TO_INKVERSE: { id: "33d6efdfef2849ca95784f9953506643", path: "/support/add-your-comic-to-inkverse" },
+  WRITING_A_GREAT_TAGLINE: { id: "402332bebe3f80be805bd79c312fe20e", path: "/support/writing-a-great-tagline-for-your-comic" },
   BLOG: { id: "fc0e58aacbb04e74b7172977be60e72e", path: "/blog" },
   BEST_VAMPIRE_WEBTOONS: { id: "8cbd0fd824bd4dafbc93a2741c61e0b3", path: "/blog/best-vampire-webtoons" },
   BEST_ROMANCE_WEBTOONS: { id: "59ad2f983ac1454f832db7756da4a5ef", path: "/blog/best-romance-webtoons-to-read" },
@@ -43,6 +44,9 @@ export const additionalInfoForNotionId: { [key: string]: BlogPost } = {
     priority: '0.8',
   },
   [NotionPage.ADD_YOUR_COMIC_TO_INKVERSE.path]: {
+    priority: '0.8',
+  },
+  [NotionPage.WRITING_A_GREAT_TAGLINE.path]: {
     priority: '0.8',
   },
   [NotionPage.ABOUT_US.path]: {
