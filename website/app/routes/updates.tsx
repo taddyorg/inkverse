@@ -4,6 +4,8 @@ import { NotionWrapper } from "../components/ui/NotionWrapper";
 import { loadDocumentation } from "@/lib/loader/documentation.server";
 import { getDocumentMeta } from "@/lib/meta/documentation";
 
+export const handle = { hideNavbar: true };
+
 export const loader = async (args: LoaderFunctionArgs) => {
   if (args.params.slug === "our-roadmap") {
     throw redirect("/our-roadmap", 301);

@@ -71,6 +71,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   const matches = useMatches();
   const currentRouteData = matches[matches.length - 1]?.data;
+  // Notion pages render their own breadcrumb header instead of the Navbar
+  const hideNavbar = matches.some((match) => (match.handle as { hideNavbar?: boolean } | undefined)?.hideNavbar);
   
   // Refresh access and refresh tokens on app start
   useEffect(() => {
@@ -196,12 +198,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         <GoogleOAuthProvider clientId={config.GOOGLE_CLIENT_ID}>
-          <Navbar 
-            theme={theme}
-            zoomMode={zoomMode}
-            onThemeChange={handleThemeChange} 
-            onZoomModeChange={handleZoomModeChange}
-          />
+          {!hideNavbar && (
+            <Navbar
+              theme={theme}
+              zoomMode={zoomMode}
+              onThemeChange={handleThemeChange}
+              onZoomModeChange={handleZoomModeChange}
+            />
+          )}
           {children}
         </GoogleOAuthProvider>
         <ScrollRestoration />
