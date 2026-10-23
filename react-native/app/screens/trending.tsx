@@ -76,7 +76,7 @@ function TrendingScreenContent({ metric, period, title, setPeriod }: { metric: s
       <View style={{ width: itemWidth }}>
         <ComicSeriesDetails
           comicseries={item}
-          pageType='grid-item-with-genres'
+          pageType='grid-item-with-tagline'
         />
       </View>
     );

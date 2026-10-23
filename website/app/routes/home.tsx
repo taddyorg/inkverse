@@ -252,7 +252,7 @@ const RecentlyUpdatedWebtoons = ({ comicSeries }: { comicSeries: ComicSeries[] |
             >
               <ComicSeriesDetails
                 comicseries={series}
-                pageType={'cover'}
+                pageType={'cover-with-tagline'}
               />
             </div>
           ))}
@@ -275,7 +275,7 @@ const RecentlyAddedWebtoons = ({ comicSeries }: { comicSeries: ComicSeries[] | n
             >
               <ComicSeriesDetails
                 comicseries={series}
-                pageType={'cover'}
+                pageType={'cover-with-tagline'}
               />
             </div>
           ))}

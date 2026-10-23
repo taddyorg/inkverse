@@ -1632,11 +1632,11 @@ export type CommentDetailsFragment = { __typename?: 'Comment', uuid: string, tex
 
 export type CreatorDetailsFragment = { __typename?: 'Creator', uuid: string, name?: string | null, shortUrl?: string | null, bio?: string | null, avatarImageAsString?: string | null, links?: Array<{ __typename?: 'LinkDetails', url?: string | null, type?: LinkType | null } | null> | null };
 
-export type ListDetailsFragment = { __typename?: 'List', id: string, name?: string | null, description?: string | null, bannerImageUrl?: string | null, type: ListType, privacyType: PrivacyType, userId: string, comicSeries?: Array<{ __typename?: 'ComicSeries', description?: string | null, uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null } | null> | null };
+export type ListDetailsFragment = { __typename?: 'List', id: string, name?: string | null, description?: string | null, bannerImageUrl?: string | null, type: ListType, privacyType: PrivacyType, userId: string, comicSeries?: Array<{ __typename?: 'ComicSeries', description?: string | null, uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null, tagline?: string | null } | null> | null };
 
 export type MiniComicIssueDetailsFragment = { __typename?: 'ComicIssue', uuid: string, seriesUuid: string, name?: string | null, position?: number | null, thumbnailImageAsString?: string | null, datePublished?: number | null, scopesForExclusiveContent?: Array<string | null> | null, dateExclusiveContentAvailable?: number | null };
 
-export type MiniComicSeriesDetailsFragment = { __typename?: 'ComicSeries', uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null };
+export type MiniComicSeriesDetailsFragment = { __typename?: 'ComicSeries', uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null, tagline?: string | null };
 
 export type MiniCreatorDetailsFragment = { __typename?: 'Creator', uuid: string, name?: string | null, shortUrl?: string | null, avatarImageAsString?: string | null, user?: { __typename?: 'User', id: string, username?: string | null } | null };
 
@@ -1852,7 +1852,7 @@ export type GetClaimCreatorPageQueryVariables = Exact<{
 }>;
 
 
-export type GetClaimCreatorPageQuery = { __typename?: 'Query', getCreator?: { __typename?: 'Creator', uuid: string, name?: string | null, shortUrl?: string | null, bio?: string | null, avatarImageAsString?: string | null, comics?: Array<{ __typename?: 'ComicSeries', hostingProviderUuid?: string | null, uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null } | null> | null, links?: Array<{ __typename?: 'LinkDetails', url?: string | null, type?: LinkType | null } | null> | null } | null };
+export type GetClaimCreatorPageQuery = { __typename?: 'Query', getCreator?: { __typename?: 'Creator', uuid: string, name?: string | null, shortUrl?: string | null, bio?: string | null, avatarImageAsString?: string | null, comics?: Array<{ __typename?: 'ComicSeries', hostingProviderUuid?: string | null, uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null, tagline?: string | null } | null> | null, links?: Array<{ __typename?: 'LinkDetails', url?: string | null, type?: LinkType | null } | null> | null } | null };
 
 export type GetComicIssueDynamicQueryVariables = Exact<{
   issueUuid: Scalars['ID']['input'];
@@ -1879,12 +1879,12 @@ export type GetComicIssueQuery = { __typename?: 'Query', getComicIssue?: { __typ
 export type GetComicsFromBlueskyCreatorsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetComicsFromBlueskyCreatorsQuery = { __typename?: 'Query', getComicsFromBlueskyCreators?: Array<{ __typename?: 'ComicSeries', uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null } | null> | null };
+export type GetComicsFromBlueskyCreatorsQuery = { __typename?: 'Query', getComicsFromBlueskyCreators?: Array<{ __typename?: 'ComicSeries', uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null, tagline?: string | null } | null> | null };
 
 export type GetComicsFromPatreonCreatorsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetComicsFromPatreonCreatorsQuery = { __typename?: 'Query', getComicsFromPatreonCreators?: Array<{ __typename?: 'ComicSeries', uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null } | null> | null };
+export type GetComicsFromPatreonCreatorsQuery = { __typename?: 'Query', getComicsFromPatreonCreators?: Array<{ __typename?: 'ComicSeries', uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null, tagline?: string | null } | null> | null };
 
 export type GetComicSeriesQueryVariables = Exact<{
   uuid: Scalars['ID']['input'];
@@ -1912,7 +1912,7 @@ export type GetCreatorQueryVariables = Exact<{
 }>;
 
 
-export type GetCreatorQuery = { __typename?: 'Query', getCreator?: { __typename?: 'Creator', uuid: string, name?: string | null, shortUrl?: string | null, bio?: string | null, avatarImageAsString?: string | null, comics?: Array<{ __typename?: 'ComicSeries', uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null } | null> | null, links?: Array<{ __typename?: 'LinkDetails', url?: string | null, type?: LinkType | null } | null> | null } | null };
+export type GetCreatorQuery = { __typename?: 'Query', getCreator?: { __typename?: 'Creator', uuid: string, name?: string | null, shortUrl?: string | null, bio?: string | null, avatarImageAsString?: string | null, comics?: Array<{ __typename?: 'ComicSeries', uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null, tagline?: string | null } | null> | null, links?: Array<{ __typename?: 'LinkDetails', url?: string | null, type?: LinkType | null } | null> | null } | null };
 
 export type GetCreatorClaimStatusQueryVariables = Exact<{
   creatorUuid: Scalars['ID']['input'];
@@ -1933,7 +1933,7 @@ export type GetListQueryVariables = Exact<{
 }>;
 
 
-export type GetListQuery = { __typename?: 'Query', getList?: { __typename?: 'List', id: string, name?: string | null, description?: string | null, bannerImageUrl?: string | null, type: ListType, privacyType: PrivacyType, userId: string, comicSeries?: Array<{ __typename?: 'ComicSeries', description?: string | null, uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null } | null> | null } | null };
+export type GetListQuery = { __typename?: 'Query', getList?: { __typename?: 'List', id: string, name?: string | null, description?: string | null, bannerImageUrl?: string | null, type: ListType, privacyType: PrivacyType, userId: string, comicSeries?: Array<{ __typename?: 'ComicSeries', description?: string | null, uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null, tagline?: string | null } | null> | null } | null };
 
 export type GetMeDetailsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1946,7 +1946,7 @@ export type GetMiniComicSeriesQueryVariables = Exact<{
 }>;
 
 
-export type GetMiniComicSeriesQuery = { __typename?: 'Query', getComicSeries?: { __typename?: 'ComicSeries', uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null } | null };
+export type GetMiniComicSeriesQuery = { __typename?: 'Query', getComicSeries?: { __typename?: 'ComicSeries', uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null, tagline?: string | null } | null };
 
 export type GetMiniCreatorQueryVariables = Exact<{
   uuid?: InputMaybe<Scalars['ID']['input']>;
@@ -1975,7 +1975,7 @@ export type GetProfileByUserIdQueryVariables = Exact<{
 }>;
 
 
-export type GetProfileByUserIdQuery = { __typename?: 'Query', getUserById?: { __typename?: 'User', id: string, username?: string | null, creator?: { __typename?: 'Creator', uuid: string, name?: string | null, shortUrl?: string | null, bio?: string | null, avatarImageAsString?: string | null, comics?: Array<{ __typename?: 'ComicSeries', uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null } | null> | null, links?: Array<{ __typename?: 'LinkDetails', url?: string | null, type?: LinkType | null } | null> | null } | null } | null, getUserSubscribedComics?: { __typename?: 'ProfileComicSeries', userId: string, comicSeries?: Array<{ __typename?: 'ComicSeries', uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null } | null> | null } | null };
+export type GetProfileByUserIdQuery = { __typename?: 'Query', getUserById?: { __typename?: 'User', id: string, username?: string | null, creator?: { __typename?: 'Creator', uuid: string, name?: string | null, shortUrl?: string | null, bio?: string | null, avatarImageAsString?: string | null, comics?: Array<{ __typename?: 'ComicSeries', uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null, tagline?: string | null } | null> | null, links?: Array<{ __typename?: 'LinkDetails', url?: string | null, type?: LinkType | null } | null> | null } | null } | null, getUserSubscribedComics?: { __typename?: 'ProfileComicSeries', userId: string, comicSeries?: Array<{ __typename?: 'ComicSeries', uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null, tagline?: string | null } | null> | null } | null };
 
 export type GetRepliesForCommentQueryVariables = Exact<{
   targetUuid: Scalars['ID']['input'];
@@ -1996,7 +1996,7 @@ export type GetTrendingComicSeriesQueryVariables = Exact<{
 }>;
 
 
-export type GetTrendingComicSeriesQuery = { __typename?: 'Query', getTrendingComicSeries?: { __typename?: 'HomeScreenComicSeries', id?: string | null, comicSeries?: Array<{ __typename?: 'ComicSeries', uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null } | null> | null } | null };
+export type GetTrendingComicSeriesQuery = { __typename?: 'Query', getTrendingComicSeries?: { __typename?: 'HomeScreenComicSeries', id?: string | null, comicSeries?: Array<{ __typename?: 'ComicSeries', uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null, tagline?: string | null } | null> | null } | null };
 
 export type GetUserByUsernameQueryVariables = Exact<{
   username: Scalars['String']['input'];
@@ -2023,7 +2023,7 @@ export type GetUserCommentsQuery = { __typename?: 'Query', getUserComments?: { _
 export type HomeScreenQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type HomeScreenQuery = { __typename?: 'Query', getFeaturedComicSeries?: { __typename?: 'HomeScreenComicSeries', id?: string | null, comicSeries?: Array<{ __typename?: 'ComicSeries', uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null } | null> | null } | null, getCuratedLists?: { __typename?: 'HomeScreenCuratedList', id?: string | null, lists?: Array<{ __typename?: 'List', id: string, name?: string | null, description?: string | null, bannerImageUrl?: string | null, type: ListType, privacyType: PrivacyType } | null> | null } | null, getRecentlyAddedComicSeries?: { __typename?: 'HomeScreenComicSeries', id?: string | null, comicSeries?: Array<{ __typename?: 'ComicSeries', uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null } | null> | null } | null, getRecentlyUpdatedComicSeries?: { __typename?: 'HomeScreenComicSeries', id?: string | null, comicSeries?: Array<{ __typename?: 'ComicSeries', uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null } | null> | null } | null };
+export type HomeScreenQuery = { __typename?: 'Query', getFeaturedComicSeries?: { __typename?: 'HomeScreenComicSeries', id?: string | null, comicSeries?: Array<{ __typename?: 'ComicSeries', uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null, tagline?: string | null } | null> | null } | null, getCuratedLists?: { __typename?: 'HomeScreenCuratedList', id?: string | null, lists?: Array<{ __typename?: 'List', id: string, name?: string | null, description?: string | null, bannerImageUrl?: string | null, type: ListType, privacyType: PrivacyType } | null> | null } | null, getRecentlyAddedComicSeries?: { __typename?: 'HomeScreenComicSeries', id?: string | null, comicSeries?: Array<{ __typename?: 'ComicSeries', uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null, tagline?: string | null } | null> | null } | null, getRecentlyUpdatedComicSeries?: { __typename?: 'HomeScreenComicSeries', id?: string | null, comicSeries?: Array<{ __typename?: 'ComicSeries', uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null, tagline?: string | null } | null> | null } | null };
 
 export type SearchQueryVariables = Exact<{
   term?: InputMaybe<Scalars['String']['input']>;
@@ -2035,7 +2035,7 @@ export type SearchQueryVariables = Exact<{
 }>;
 
 
-export type SearchQuery = { __typename?: 'Query', search?: { __typename?: 'SearchResults', searchId: string, comicSeries?: Array<{ __typename?: 'ComicSeries', uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null } | null> | null } | null };
+export type SearchQuery = { __typename?: 'Query', search?: { __typename?: 'SearchResults', searchId: string, comicSeries?: Array<{ __typename?: 'ComicSeries', uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null, tagline?: string | null } | null> | null } | null };
 
 export const MiniComicIssueDetails = gql`
     fragment miniComicIssueDetails on ComicIssue {
@@ -2145,6 +2145,7 @@ export const MiniComicSeriesDetails = gql`
   genre0
   genre1
   genre2
+  tagline
 }
     `;
 export const ListDetails = gql`

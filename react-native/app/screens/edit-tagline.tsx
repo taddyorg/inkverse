@@ -54,13 +54,13 @@ export function EditTaglineScreen() {
           Edit Your Tagline
         </ThemedText>
         <ThemedText style={styles.helperText}>
-          In 1 to 3 words, what is this comic? It shows under the cover, e.g. "Romance • Comedy".
+          What makes your comic stand out in its genre? Your tagline appears next to your cover to help readers discover your comic. Keep it short and specific, e.g. "Ghosts • Slow Burn".
         </ThemedText>
 
         <TextInput
           value={tagline}
           onChangeText={setTagline}
-          placeholder="Romance • Comedy"
+          placeholder="Ghosts • Slow Burn"
           placeholderTextColor={textColor + '80'}
           maxLength={MAX_TAGLINE_LENGTH}
           autoFocus={true}

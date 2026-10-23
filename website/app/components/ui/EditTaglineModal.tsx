@@ -97,7 +97,7 @@ export function EditTaglineModal({ isOpen, onClose, seriesUuid, currentTagline }
           Edit Your Tagline
         </h2>
         <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-          In 1 to 3 words, what is this comic? It shows under the cover, e.g. "Romance • Comedy".
+          What makes your comic stand out in its genre? Your tagline appears next to your cover to help readers discover your comic. Keep it short and specific, e.g. "Ghosts • Slow Burn".
         </p>
 
         <form onSubmit={handleSubmit}>
@@ -107,7 +107,7 @@ export function EditTaglineModal({ isOpen, onClose, seriesUuid, currentTagline }
             value={tagline}
             onChange={(e) => setTagline(e.target.value)}
             maxLength={MAX_TAGLINE_LENGTH}
-            placeholder="Romance • Comedy"
+            placeholder="Ghosts • Slow Burn"
             className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-base focus:outline-none focus:ring-2 focus:ring-brand-pink dark:focus:ring-taddy-blue"
           />
           <p className="mt-1 text-xs text-right text-muted-foreground">

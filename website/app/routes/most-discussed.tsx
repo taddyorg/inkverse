@@ -106,7 +106,7 @@ export function TrendingComicsPage({ title, basePath }: { title: string; basePat
             <div key={series.uuid} className="flex flex-col">
               <ComicSeriesDetails
                 comicseries={series}
-                pageType={'grid-item-with-genres'}
+                pageType={'grid-item-with-tagline'}
               />
             </div>
           ))}

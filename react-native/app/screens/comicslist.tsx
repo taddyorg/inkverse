@@ -98,7 +98,7 @@ export function ComicsListScreen() {
       <View style={{ width: itemWidth }}>
         <ComicSeriesDetails 
           comicseries={item}
-          pageType='grid-item'
+          pageType='grid-item-with-tagline'
         />
       </View>
     );

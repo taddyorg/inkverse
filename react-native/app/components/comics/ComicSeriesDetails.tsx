@@ -23,11 +23,12 @@ type ComicSeriesPageType =
   | 'featured-banner'
   | 'most-popular'
   | 'cover'
+  | 'cover-with-tagline'
   | 'search'
   | 'list-item'
   | 'list-item-no-link'
   | 'grid-item'
-  | 'grid-item-with-genres';
+  | 'grid-item-with-tagline';
 
 interface ComicSeriesDetailsProps {
   comicseries: ComicSeries | null | undefined;
@@ -89,7 +90,9 @@ export function ComicSeriesDetails({ comicseries, pageType, isHeaderVisible, onH
           />
           <View style={styles.popularContent}>
             <ThemedText style={styles.popularTitle}>{comicseries.name}</ThemedText>
-            <ThemedText style={styles.genreTextAlt}>{formatGenres(comicseries)}</ThemedText>
+            {!!comicseries.tagline && (
+              <ThemedText style={styles.genreTextAlt}>{comicseries.tagline}</ThemedText>
+            )}
           </View>
         </TouchableOpacity>
       );
@@ -119,6 +122,23 @@ export function ComicSeriesDetails({ comicseries, pageType, isHeaderVisible, onH
         </TouchableOpacity>
       );
 
+    case 'cover-with-tagline':
+      return (
+        <TouchableOpacity onPress={handlePressForNavigation}>
+          <Image
+            source={getCoverImageUrl({ coverImageAsString: comicseries.coverImageAsString })}
+            style={styles.coverImage}
+            contentFit="contain"
+            recyclingKey={comicseries.uuid}
+          />
+          {!!comicseries.tagline && (
+            <ThemedText style={styles.coverTagline} numberOfLines={2}>
+              {comicseries.tagline}
+            </ThemedText>
+          )}
+        </TouchableOpacity>
+      );
+
     case 'list-item':
       return (
         <PressableOpacity style={styles.comicSeriesItem} onPress={handlePressForNavigation}>
@@ -132,9 +152,11 @@ export function ComicSeriesDetails({ comicseries, pageType, isHeaderVisible, onH
               />
               <View style={styles.comicSeriesContent}>
                 <ThemedText size="subtitle" style={styles.comicSeriesTitle}>{comicseries.name}</ThemedText>
-                <ThemedText style={styles.genreTextAlt2}>
-                  {formatGenres(comicseries)}
-                </ThemedText>
+                {!!comicseries.tagline && (
+                  <ThemedText style={styles.genreTextAlt2}>
+                    {comicseries.tagline}
+                  </ThemedText>
+                )}
                 {comicseries.description && (
                   <ThemedText style={styles.comicSeriesDescription} numberOfLines={4}>
                     {comicseries.description}
@@ -175,7 +197,7 @@ export function ComicSeriesDetails({ comicseries, pageType, isHeaderVisible, onH
         </PressableOpacity>
       );
 
-    case 'grid-item-with-genres':
+    case 'grid-item-with-tagline':
       return (
         <PressableOpacity style={styles.gridItemContainer} onPress={handlePressForNavigation}>
           <Image
@@ -185,9 +207,11 @@ export function ComicSeriesDetails({ comicseries, pageType, isHeaderVisible, onH
             recyclingKey={comicseries.uuid}
             priority={imagePriority || 'normal'}
           />
-          <ThemedText size="subtitle" style={styles.gridItemGenreText} numberOfLines={2}>
-            {formatGenres(comicseries)}
-          </ThemedText>
+          {!!comicseries.tagline && (
+            <ThemedText size="subtitle" style={styles.gridItemTaglineText} numberOfLines={2}>
+              {comicseries.tagline}
+            </ThemedText>
+          )}
         </PressableOpacity>
       );
 
@@ -265,6 +289,14 @@ const styles = StyleSheet.create({
     height: 220,
     aspectRatio: 4 / 6,
     borderRadius: 6,
+  },
+  // Same width as coverImage, so a long tagline wraps instead of widening the card
+  coverTagline: {
+    width: 220 * 4 / 6,
+    marginTop: 6,
+    fontSize: 14,
+    fontFamily: ThemedTextFontFamilyMap.semiBold,
+    textAlign: 'center',
   },
   coverImageFullWidth: {
     width: '100%',
@@ -407,7 +439,7 @@ const styles = StyleSheet.create({
     aspectRatio: 2/3,
     borderRadius: 12,
   },
-  gridItemGenreText: {
+  gridItemTaglineText: {
     fontSize: 15,
     marginTop: 8,
     textAlign: 'center',

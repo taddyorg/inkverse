@@ -16,7 +16,8 @@ export type ComicSeriesPageType =
   | 'featured-banner'
   | 'most-popular'
   | 'cover'
-  | 'grid-item-with-genres'
+  | 'cover-with-tagline'
+  | 'grid-item-with-tagline'
   | 'search'
   | 'list-item'
   | 'list-item-no-link';
@@ -45,7 +46,7 @@ export function ComicSeriesDetails(props: ComicSeriesDetailsProps){
           <CoverArt comicseries={comicseries} pageType={pageType} />
           <div className="flex flex-col px-2">
             <Name comicseries={comicseries} pageType={pageType} />
-            <Genre comicseries={comicseries} pageType={pageType} />
+            <Tagline comicseries={comicseries} pageType={pageType} />
           </div>
         </Link>
       );
@@ -73,14 +74,26 @@ export function ComicSeriesDetails(props: ComicSeriesDetailsProps){
       );
   }
 
-  else if (pageType === 'grid-item-with-genres') {
+  else if (pageType === 'cover-with-tagline') {
+    const link = getInkverseUrl({ type: "comicseries", shortUrl: comicseries.shortUrl });
+    if (!link) { return <></>; }
+
+    return (
+      <Link to={link} className="flex flex-col w-40">
+        <CoverArt comicseries={comicseries} pageType={pageType} />
+        <Tagline comicseries={comicseries} pageType={pageType} />
+      </Link>
+    );
+  }
+
+  else if (pageType === 'grid-item-with-tagline') {
     const link = getInkverseUrl({ type: "comicseries", shortUrl: comicseries.shortUrl });
     if (!link) { return <></>; }
 
     return (
       <Link to={link} className="flex flex-col">
         <CoverArt comicseries={comicseries} pageType={pageType} />
-        <p className="mt-2 text-base text-center opacity-80 font-semibold">{formatGenresString({ comicseries })}</p>
+        <Tagline comicseries={comicseries} pageType={pageType} />
       </Link>
     );
   }
@@ -116,7 +129,7 @@ export function ComicSeriesDetails(props: ComicSeriesDetailsProps){
             <CoverArt comicseries={comicseries} pageType={pageType} />
             <div className="flex-1">
               <Name comicseries={comicseries} pageType={pageType}/>
-              <Genre comicseries={comicseries} pageType={pageType}/>
+              <Tagline comicseries={comicseries} pageType={pageType}/>
               <p className='mt-3'>{comicseries?.description}</p>
             </div>
           </div>
@@ -196,6 +209,7 @@ const CoverArt = ({ comicseries, pageType }: { comicseries: ComicSeries, pageTyp
         />
     );
     case 'cover':
+    case 'cover-with-tagline':
       return (
         <img
           src={getCoverImageUrl({ coverImageAsString: comicseries.coverImageAsString }) || undefined}
@@ -203,7 +217,7 @@ const CoverArt = ({ comicseries, pageType }: { comicseries: ComicSeries, pageTyp
           className="h-60 aspect-4/6 rounded-md object-contain object-center mr-2"
         />
     );
-    case 'grid-item-with-genres':
+    case 'grid-item-with-tagline':
       return (
         <img
           src={getCoverImageUrl({ coverImageAsString: comicseries.coverImageAsString }) || undefined}
@@ -247,6 +261,27 @@ const Genre = ({ comicseries, pageType }: { comicseries: ComicSeries, pageType: 
 
   return (
     <p className='mt-2 font-semibold'>{formatGenresString({ comicseries })}</p>
+  );
+}
+
+// No tagline shows nothing; genres are too broad to tell comics apart on the home screen
+const Tagline = ({ comicseries, pageType }: { comicseries: ComicSeries, pageType: ComicSeriesPageType }) => {
+  if (!comicseries.tagline) { return null; }
+
+  if (pageType === 'cover-with-tagline') {
+    return (
+      <p className='mt-2 text-sm font-semibold text-center line-clamp-2'>{comicseries.tagline}</p>
+    );
+  }
+
+  if (pageType === 'grid-item-with-tagline') {
+    return (
+      <p className='mt-2 text-base text-center opacity-80 font-semibold line-clamp-2'>{comicseries.tagline}</p>
+    );
+  }
+
+  return (
+    <p className='mt-2 font-semibold'>{comicseries.tagline}</p>
   );
 }
 
