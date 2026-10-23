@@ -4,7 +4,7 @@ import { ComicSeries } from '@inkverse/shared-server/models/index';
 
 import type { QueryResolvers, QuerySearchArgs } from '@inkverse/shared-server/graphql/types';
 import { arrayToObject } from '@inkverse/public/utils';
-import { MAX_SEARCH_PAGE, MAX_SEARCH_LIMIT_PER_PAGE } from '@inkverse/public/search';
+import { MAX_SEARCH_PAGE, MAX_SEARCH_LIMIT_PER_PAGE, MAX_SEARCH_TERM_WORDS } from '@inkverse/public/search';
 import type { ComicSeriesModel } from '@inkverse/shared-server/database/types';
 
 const SearchDefinitions = `
@@ -53,7 +53,10 @@ search(
 
 const SearchQueries: QueryResolvers = {
   async search(root: any, args: QuerySearchArgs, context: GraphQLContext) {
-    const { term = '', filterForTypes = ["COMICSERIES"], filterForTags = null, filterForGenres = null } = args;
+    const { filterForTypes = ["COMICSERIES"], filterForTags = null, filterForGenres = null } = args;
+
+    // Taddy rejects terms with more than 8 words, so search the first 8
+    const term = (args.term ?? '').trim().split(/\s+/).slice(0, MAX_SEARCH_TERM_WORDS).join(' ');
 
     // Keep page and limitPerPage within what Taddy search accepts
     const page = Math.max(args.page ?? 1, 1);
