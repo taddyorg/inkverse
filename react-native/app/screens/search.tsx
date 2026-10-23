@@ -79,7 +79,7 @@ function useSearch() {
   
   // Set up the reducer for search state
   const [state, dispatch] = useReducer(searchReducer, searchInitialState);
-  const { isSearchLoading, isLoadingMore, searchResults } = state;
+  const { isSearchLoading, isLoadingMore, searchResults, hasMore } = state;
   const publicClient = getPublicApolloClient();
   
   // Reset pagination when search text changes
@@ -111,7 +111,7 @@ function useSearch() {
 
   // Handle loading more results
   const handleLoadMore = useCallback(() => {
-    if (isSearchLoading || isLoadingMore) return;
+    if (isSearchLoading || isLoadingMore || !hasMore) return;
     
     const nextPage = currentPage + 1;
     
@@ -127,7 +127,7 @@ function useSearch() {
     }, dispatch);
     
     setCurrentPage(nextPage);
-  }, [currentPage, searchText, isSearchLoading, isLoadingMore, dispatch]);
+  }, [currentPage, searchText, isSearchLoading, isLoadingMore, hasMore, dispatch]);
 
   return {
     searchText,
@@ -138,6 +138,7 @@ function useSearch() {
     isSearchLoading,
     isLoadingMore,
     searchResults,
+    hasMore,
     handleSearchTextChange,
     handleLoadMore
   };
@@ -153,6 +154,7 @@ export function SearchScreen() {
     isSearchLoading, 
     isLoadingMore, 
     searchResults, 
+    hasMore,
     handleSearchTextChange, 
     handleLoadMore 
   } = useSearch();
@@ -183,7 +185,7 @@ export function SearchScreen() {
       ];
       
       // Add "Load More" button if needed
-      if (isLoadingMore || (!isSearchLoading && searchResults.length > 0 && searchResults.length === LIMIT_PER_PAGE * currentPage)) {
+      if (isLoadingMore || (!isSearchLoading && searchResults.length > 0 && hasMore)) {
         items.push({ type: 'load_more' });
       }
       
@@ -196,7 +198,7 @@ export function SearchScreen() {
       { type: 'tags_section' },
       { type: 'genres_section' }
     ];
-  }, [showResults, searchResults, isSearchLoading, isLoadingMore, currentPage]);
+  }, [showResults, searchResults, isSearchLoading, isLoadingMore, hasMore]);
 
   // Render item for FlashList
   const renderItem = useCallback(({ item }: { item: ListItem }) => {

@@ -1,6 +1,6 @@
 import { ApolloClient } from '@apollo/client';
 import type { Dispatch } from 'react';
-import { mergeItemsWithUuid } from './utils.js';
+import { mergeItemsWithUuid, getSearchPagination } from './utils.js';
 import { type SearchQuery, type SearchQueryVariables, Search, type ComicSeries, type Genre } from "../graphql/operations.js";
 
 /* Action Type Enum */
@@ -24,6 +24,7 @@ export type SearchLoaderData = {
   isLoadingMore: boolean;
   searchResults: ComicSeries[];
   searchId: string;
+  hasMore: boolean;
   latestRequestId: number; // Track the latest request ID
 };
 
@@ -32,6 +33,7 @@ export const searchInitialState: SearchLoaderData = {
   isLoadingMore: false,
   searchResults: [],
   searchId: '',
+  hasMore: false,
   latestRequestId: 0,
 }
 
@@ -127,7 +129,7 @@ export async function searchComics(
       throw new Error("Search data not found");
     }
 
-    const parsedData = parseSearchResults(searchResult.data);
+    const parsedData = parseSearchResults(searchResult.data, page);
 
     if (dispatch) {
       // Include the request ID in the success action metadata
@@ -156,12 +158,13 @@ export async function searchComics(
   }
 }
 
-export function parseSearchResults(data: SearchQuery): SearchLoaderData {
+export function parseSearchResults(data: SearchQuery, page: number): SearchLoaderData {
   return {
     isSearchLoading: false,
     isLoadingMore: false,
     searchResults: data.search?.comicSeries?.filter(Boolean) as ComicSeries[] || [],
     searchId: data.search?.searchId || '',
+    hasMore: getSearchPagination(data, page).hasMore,
     latestRequestId: 0, // Initialize with 0
   };
 }

@@ -1538,6 +1538,19 @@ export enum ReportType {
   COMMENT_SPOILER = 'COMMENT_SPOILER'
 }
 
+/**  Totals for a search query, for one content type  */
+export type SearchResponseDetails = {
+  __typename?: 'SearchResponseDetails';
+  /**  Identifier for the search query and content type  */
+  id: Scalars['ID']['output'];
+  /**  Total number of pages of search results for this type  */
+  pagesCount?: Maybe<Scalars['Int']['output']>;
+  /**  Total number of search results for this type  */
+  totalCount?: Maybe<Scalars['Int']['output']>;
+  /**  The type of item being returned in the search results  */
+  type?: Maybe<Scalars['String']['output']>;
+};
+
 /**  A search result  */
 export type SearchResults = {
   __typename?: 'SearchResults';
@@ -1545,6 +1558,8 @@ export type SearchResults = {
   comicSeries?: Maybe<Array<Maybe<ComicSeries>>>;
   /**  A list of Creator items  */
   creators?: Maybe<Array<Maybe<Creator>>>;
+  /**  Totals for the search results, one entry per content type  */
+  responseDetails?: Maybe<Array<Maybe<SearchResponseDetails>>>;
   /**  Identifier for the search query being sent  */
   searchId: Scalars['ID']['output'];
 };
@@ -1757,6 +1772,7 @@ export type ResolversTypes = ResolversObject<{
   ProfileComicSeries: ResolverTypeWrapper<ProfileComicSeries>;
   Query: ResolverTypeWrapper<{}>;
   ReportType: ReportType;
+  SearchResponseDetails: ResolverTypeWrapper<SearchResponseDetails>;
   SearchResults: ResolverTypeWrapper<SearchResults>;
   SeriesStatus: SeriesStatus;
   SortOrder: SortOrder;
@@ -1808,6 +1824,7 @@ export type ResolversParentTypes = ResolversObject<{
   NotificationSettingStatus: NotificationSettingStatus;
   ProfileComicSeries: ProfileComicSeries;
   Query: {};
+  SearchResponseDetails: SearchResponseDetails;
   SearchResults: SearchResults;
   String: Scalars['String']['output'];
   User: User;
@@ -2188,9 +2205,18 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   search?: Resolver<Maybe<ResolversTypes['SearchResults']>, ParentType, ContextType, Partial<QuerySearchArgs>>;
 }>;
 
+export type SearchResponseDetailsResolvers<ContextType = any, ParentType extends ResolversParentTypes['SearchResponseDetails'] = ResolversParentTypes['SearchResponseDetails']> = ResolversObject<{
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  pagesCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  totalCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type SearchResultsResolvers<ContextType = any, ParentType extends ResolversParentTypes['SearchResults'] = ResolversParentTypes['SearchResults']> = ResolversObject<{
   comicSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['ComicSeries']>>>, ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<Maybe<ResolversTypes['Creator']>>>, ParentType, ContextType>;
+  responseDetails?: Resolver<Maybe<Array<Maybe<ResolversTypes['SearchResponseDetails']>>>, ParentType, ContextType>;
   searchId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -2257,6 +2283,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   NotificationSettingStatus?: NotificationSettingStatusResolvers<ContextType>;
   ProfileComicSeries?: ProfileComicSeriesResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
+  SearchResponseDetails?: SearchResponseDetailsResolvers<ContextType>;
   SearchResults?: SearchResultsResolvers<ContextType>;
   User?: UserResolvers<ContextType>;
   UserComicSeries?: UserComicSeriesResolvers<ContextType>;

@@ -4,6 +4,7 @@ import { ComicSeries } from '@inkverse/shared-server/models/index';
 
 import type { QueryResolvers, QuerySearchArgs } from '@inkverse/shared-server/graphql/types';
 import { arrayToObject } from '@inkverse/public/utils';
+import { MAX_SEARCH_PAGE, MAX_SEARCH_LIMIT_PER_PAGE } from '@inkverse/public/search';
 import type { ComicSeriesModel } from '@inkverse/shared-server/database/types';
 
 const SearchDefinitions = `
@@ -17,6 +18,24 @@ type SearchResults {
   
   " A list of Creator items "
   creators: [Creator]
+
+  " Totals for the search results, one entry per content type "
+  responseDetails: [SearchResponseDetails]
+}
+
+" Totals for a search query, for one content type "
+type SearchResponseDetails {
+  " Identifier for the search query and content type "
+  id: ID!
+
+  " The type of item being returned in the search results "
+  type: String
+
+  " Total number of search results for this type "
+  totalCount: Int
+
+  " Total number of pages of search results for this type "
+  pagesCount: Int
 }
 `
 
@@ -34,7 +53,16 @@ search(
 
 const SearchQueries: QueryResolvers = {
   async search(root: any, args: QuerySearchArgs, context: GraphQLContext) {
-    const { term = '', page = 1, limitPerPage = 25, filterForTypes = ["COMICSERIES"], filterForTags = null, filterForGenres = null } = args;
+    const { term = '', filterForTypes = ["COMICSERIES"], filterForTags = null, filterForGenres = null } = args;
+
+    // Keep page and limitPerPage within what Taddy search accepts
+    const page = Math.max(args.page ?? 1, 1);
+    const limitPerPage = Math.min(Math.max(args.limitPerPage ?? MAX_SEARCH_LIMIT_PER_PAGE, 1), MAX_SEARCH_LIMIT_PER_PAGE);
+
+    // Taddy returns an error past its last page, so return an empty page instead
+    if (page > MAX_SEARCH_PAGE) {
+      return { searchId: `${term}-${page}-past-max-page`, comicSeries: [], creators: [], responseDetails: [] };
+    }
 
     const variables = { term, page, limitPerPage, filterForTypes, filterForTags, filterForGenres };
     const query = SEARCH_QUERY;

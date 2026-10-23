@@ -1536,6 +1536,19 @@ export enum ReportType {
   COMMENT_SPOILER = 'COMMENT_SPOILER'
 }
 
+/**  Totals for a search query, for one content type  */
+export type SearchResponseDetails = {
+  __typename?: 'SearchResponseDetails';
+  /**  Identifier for the search query and content type  */
+  id: Scalars['ID']['output'];
+  /**  Total number of pages of search results for this type  */
+  pagesCount?: Maybe<Scalars['Int']['output']>;
+  /**  Total number of search results for this type  */
+  totalCount?: Maybe<Scalars['Int']['output']>;
+  /**  The type of item being returned in the search results  */
+  type?: Maybe<Scalars['String']['output']>;
+};
+
 /**  A search result  */
 export type SearchResults = {
   __typename?: 'SearchResults';
@@ -1543,6 +1556,8 @@ export type SearchResults = {
   comicSeries?: Maybe<Array<Maybe<ComicSeries>>>;
   /**  A list of Creator items  */
   creators?: Maybe<Array<Maybe<Creator>>>;
+  /**  Totals for the search results, one entry per content type  */
+  responseDetails?: Maybe<Array<Maybe<SearchResponseDetails>>>;
   /**  Identifier for the search query being sent  */
   searchId: Scalars['ID']['output'];
 };
@@ -2035,7 +2050,7 @@ export type SearchQueryVariables = Exact<{
 }>;
 
 
-export type SearchQuery = { __typename?: 'Query', search?: { __typename?: 'SearchResults', searchId: string, comicSeries?: Array<{ __typename?: 'ComicSeries', uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null, tagline?: string | null } | null> | null } | null };
+export type SearchQuery = { __typename?: 'Query', search?: { __typename?: 'SearchResults', searchId: string, comicSeries?: Array<{ __typename?: 'ComicSeries', uuid: string, name?: string | null, shortUrl?: string | null, coverImageAsString?: string | null, bannerImageAsString?: string | null, thumbnailImageAsString?: string | null, genre0?: Genre | null, genre1?: Genre | null, genre2?: Genre | null, tagline?: string | null } | null> | null, responseDetails?: Array<{ __typename?: 'SearchResponseDetails', id: string, type?: string | null, totalCount?: number | null, pagesCount?: number | null } | null> | null } | null };
 
 export const MiniComicIssueDetails = gql`
     fragment miniComicIssueDetails on ComicIssue {
@@ -2810,6 +2825,12 @@ export const Search = gql`
     searchId
     comicSeries {
       ...miniComicSeriesDetails
+    }
+    responseDetails {
+      id
+      type
+      totalCount
+      pagesCount
     }
   }
 }

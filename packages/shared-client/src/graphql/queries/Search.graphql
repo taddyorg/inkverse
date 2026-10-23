@@ -6,5 +6,11 @@ query Search($term: String, $page: Int, $limitPerPage: Int, $filterForTypes: [St
         comicSeries {
             ...miniComicSeriesDetails
         }
+        responseDetails {
+            id
+            type
+            totalCount
+            pagesCount
+        }
     }
 }

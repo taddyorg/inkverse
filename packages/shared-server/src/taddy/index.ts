@@ -46,6 +46,12 @@ const SEARCH_QUERY = gql`
       comicSeries {
         uuid
       }
+      responseDetails {
+        id
+        type
+        totalCount
+        pagesCount
+      }
     }
   }
 `

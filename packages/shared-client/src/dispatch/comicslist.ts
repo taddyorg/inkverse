@@ -1,6 +1,6 @@
 import { ApolloClient } from '@apollo/client';
 import type { Dispatch } from 'react';
-import { mergeItemsWithUuid } from './utils.js';
+import { mergeItemsWithUuid, getSearchPagination } from './utils.js';
 import { type SearchQuery, type SearchQueryVariables, type ComicSeries, type Genre, Search } from "../graphql/operations.js";
 
 /* Action Type Enum */
@@ -23,6 +23,7 @@ export type ComicsListLoaderData = {
   isLoadingMore: boolean;
   comics: ComicSeries[];
   hasMore: boolean;
+  totalCount: number;
   error?: string | null;
 };
 
@@ -31,7 +32,22 @@ export const comicsListInitialState: ComicsListLoaderData = {
   isLoadingMore: false,
   comics: [],
   hasMore: false,
+  totalCount: 0,
   error: null,
+}
+
+export const COMICS_LIST_LIMIT_PER_PAGE = 12;
+
+export type ComicsListPageType = 'tag' | 'genre';
+
+export function getComicsListFilters(pageType: ComicsListPageType, value: string): { filterForTags?: string[]; filterForGenres?: Genre[] } {
+  if (pageType === 'genre') {
+    return { filterForGenres: [value as Genre] };
+  }
+
+  // Also match the tag with all spaces removed
+  const formattedValue = value.replace(/\s+/g, '');
+  return { filterForTags: [value, formattedValue] };
 }
 
 /* Action Creators */
@@ -50,7 +66,7 @@ export async function fetchComics(
   { 
     publicClient, 
     page = 1, 
-    limitPerPage = 30, 
+    limitPerPage = 25, 
     filterForTypes = ["COMICSERIES"],
     filterForTags,
     filterForGenres,
@@ -86,7 +102,7 @@ export async function fetchComics(
       throw new Error("Search data not found");
     }
 
-    const parsedData = parseComicsListResults(searchResult.data, limitPerPage);
+    const parsedData = parseComicsListResults(searchResult.data, page);
 
     if (dispatch) {
       // Include the page in the success action metadata
@@ -113,15 +129,16 @@ export async function fetchComics(
   }
 }
 
-export function parseComicsListResults(data: SearchQuery, limitPerPage: number): ComicsListLoaderData {
+export function parseComicsListResults(data: SearchQuery, page: number): ComicsListLoaderData {
   const comics = data.search?.comicSeries?.filter(Boolean) as ComicSeries[] || [];
-  const hasMore = comics.length === limitPerPage;
+  const { hasMore, totalCount } = getSearchPagination(data, page);
   
   return {
     isLoading: false,
     isLoadingMore: false,
     comics,
     hasMore,
+    totalCount,
   };
 }
 

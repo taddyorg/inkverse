@@ -38,6 +38,9 @@ export const typePolicies = {
   SearchResults: {
     keyFields: ["searchId"]
   },
+  SearchResponseDetails: {
+    keyFields: ["id"]
+  },
   BlueskyProfile: {
     keyFields: ["did"]
   },
