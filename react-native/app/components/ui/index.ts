@@ -13,7 +13,7 @@ import { ThemedActivityIndicator } from "./ThemedActivityIndicator"
 import { ThemedRefreshControl } from "./ThemedRefreshControl"
 import { DropdownMenu } from "./DropdownMenu"
 import { FadeInView } from "./FadeInView"
-import { useLayout } from "./Layout"
+import { useLayout, useScreenPaddingX, useGridPagePaddingX, useGridColumns } from "./Layout"
 import { ExpandableText } from "./ExpandableText"
 
 export {
@@ -34,5 +34,8 @@ export {
     DropdownMenu,
     FadeInView,
     useLayout,
+    useScreenPaddingX,
+    useGridPagePaddingX,
+    useGridColumns,
     ExpandableText,
 }

@@ -6,7 +6,7 @@ import { FlashList } from '@shopify/flash-list';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { useState, useCallback, useEffect, useReducer } from 'react';
 
-import { Screen, ThemedText, PressableOpacity, ScreenHeader, ThemedActivityIndicator } from '@/app/components/ui';
+import { Screen, ThemedText, PressableOpacity, ScreenHeader, ThemedActivityIndicator, useScreenPaddingX } from '@/app/components/ui';
 import { Genre, ComicSeries } from '@inkverse/shared-client/graphql/operations';
 import { getPrettyGenre } from '@inkverse/public/genres';
 import { Colors, useThemeColor } from '@/constants/Colors';
@@ -158,6 +158,7 @@ export function SearchScreen() {
     handleSearchTextChange, 
     handleLoadMore 
   } = useSearch();
+  const paddingX = useScreenPaddingX();
 
   // Handle tag selection
   const handleTagSelect = useCallback((tag: string) => {
@@ -281,7 +282,7 @@ export function SearchScreen() {
 
   return (
     <Screen>
-      <View style={styles.container}>
+      <View style={[styles.container, { paddingHorizontal: paddingX }]}>
         <FlashList
           data={getListData()}
           renderItem={renderItem}

@@ -5,7 +5,7 @@ import { useRoute } from '@react-navigation/native';
 import { FlashList } from '@shopify/flash-list';
 
 import { RootStackParamList, LIST_SCREEN } from '@/constants/Navigation';
-import { Screen, ThemedText, HeaderShareButton, HeaderBackButton, ScreenHeader, ThemedActivityIndicator, ThemedRefreshControl, FadeInView } from '@/app/components/ui';
+import { Screen, ThemedText, HeaderShareButton, HeaderBackButton, ScreenHeader, ThemedActivityIndicator, ThemedRefreshControl, FadeInView, useLayout } from '@/app/components/ui';
 import { ListDetails } from '@/app/components/list/ListDetails';
 
 import { getPublicApolloClient } from '@/lib/apollo';
@@ -24,6 +24,8 @@ export function ListScreen() {
   const route = useRoute<NativeStackScreenProps<RootStackParamList, typeof LIST_SCREEN>['route']>();
   const { id } = route.params;
   const publicClient = getPublicApolloClient();
+  // Centered content column on wider layouts (landscape, iPad); 0 on phones
+  const { contentInsetX } = useLayout();
   
   const [listQuery, listDispatch] = useReducer(listReducer, listInitialState);
   const { isListLoading, list } = listQuery;
@@ -91,7 +93,7 @@ export function ListScreen() {
         <FlashList
           data={listData}
           renderItem={renderItem}
-          contentContainerStyle={styles.contentContainer}
+          contentContainerStyle={[styles.contentContainer, { paddingHorizontal: 16 + contentInsetX }]}
           refreshControl={
             <ThemedRefreshControl
               refreshing={isListLoading}

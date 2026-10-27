@@ -1,13 +1,25 @@
 import { useState, useCallback, useEffect, useReducer } from 'react';
-import { View, StyleSheet, Dimensions, FlatList } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { useRoute } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { FlashList } from '@shopify/flash-list';
 
-import { Screen, ThemedText, ThemedTextFontFamilyMap, PressableOpacity, ScreenHeader, HeaderBackButton, ThemedActivityIndicator, DropdownMenu, ThemedRefreshControl } from '@/app/components/ui';
+import { Screen, ThemedText, ThemedTextFontFamilyMap, PressableOpacity, ScreenHeader, HeaderBackButton, ThemedActivityIndicator, DropdownMenu, ThemedRefreshControl, useLayout, useGridColumns } from '@/app/components/ui';
 import { ComicSeriesDetails } from '@/app/components/comics/ComicSeriesDetails';
 import { getPublicApolloClient } from '@/lib/apollo';
 import { Colors } from '@/constants/Colors';
+import { MAX_CONTENT_WIDTH } from '@/constants/Layout';
+import { SPACING } from '@/constants/Spacing';
 import { ComicSeries, TrendingPeriod } from '@inkverse/shared-client/graphql/operations';
 import { loadTrendingComicSeries, trendingReducer, loadMoreTrending, trendingPeriodOptions, TrendingActionType, TRENDING_LIMIT_PER_PAGE, trendingMetricTitles, makeTrendingInitialState } from '@inkverse/shared-client/dispatch/homefeed';
+
+// Floating back button (24 icon + 2 * 8 padding)
+const HEADER_BUTTON_SIZE = 40;
+const TITLE_MARGIN_TOP = 16;
+// On wider layouts (landscape, iPad), the back button hugs the screen edge beside the title,
+// like the comic screen, instead of sitting above it
+const getBackButtonSideOffset = (isWide: boolean, contentInsetX: number) =>
+  isWide ? SPACING.xl : contentInsetX + 16;
 
 export interface TrendingScreenParams {
   metric: 'LIKED' | 'DISCUSSED';
@@ -18,6 +30,15 @@ function TrendingScreenContent({ metric, period, title, setPeriod }: { metric: s
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [state, dispatch] = useReducer(trendingReducer, makeTrendingInitialState({ metric, period }));
+  // Centered grid on wider layouts: 2 columns on phone portrait, 4 on phone landscape and
+  // iPad portrait, 5 on iPad landscape
+  const { contentWidth, contentInsetX, isSm } = useLayout(MAX_CONTENT_WIDTH.grid);
+  const numColumns = useGridColumns();
+  // On wider layouts the back button hugs the screen edge, so pull the grid and title in past it
+  const listPaddingX = isSm
+    ? Math.max(16 + contentInsetX, getBackButtonSideOffset(true, contentInsetX) + HEADER_BUTTON_SIZE + SPACING.md)
+    : 16 + contentInsetX;
+  const itemWidth = (contentWidth - 2 * (listPaddingX - contentInsetX)) / numColumns;
 
   useEffect(() => {
     let cancelled = false;
@@ -67,11 +88,6 @@ function TrendingScreenContent({ metric, period, title, setPeriod }: { metric: s
   }, [isLoading, state]);
 
   const renderGridItem = useCallback(({ item }: { item: ComicSeries }) => {
-    const numColumns = 2;
-    const screenWidth = Dimensions.get('window').width;
-    const availableWidth = screenWidth - 32;
-    const itemWidth = (availableWidth - (numColumns - 1)) / numColumns;
-
     return (
       <View style={{ width: itemWidth }}>
         <ComicSeriesDetails
@@ -80,7 +96,7 @@ function TrendingScreenContent({ metric, period, title, setPeriod }: { metric: s
         />
       </View>
     );
-  }, []);
+  }, [itemWidth]);
 
   const renderHeader = useCallback(() => {
     return (
@@ -132,12 +148,12 @@ function TrendingScreenContent({ metric, period, title, setPeriod }: { metric: s
 
   return (
     <View style={styles.container}>
-      <FlatList
+      <FlashList
         data={state.comicSeries}
         renderItem={renderGridItem}
-        numColumns={2}
+        numColumns={numColumns}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[styles.listContent, { paddingHorizontal: listPaddingX }]}
         ListHeaderComponent={renderHeader}
         ListFooterComponent={renderFooter}
         ListEmptyComponent={
@@ -165,14 +181,21 @@ export function TrendingScreen() {
   const route = useRoute();
   const { metric } = route.params as TrendingScreenParams;
   const [period, setPeriod] = useState<TrendingPeriod>(TrendingPeriod.WEEK);
+  // Phone portrait: the button lines up with the grid, above the title
+  const { contentInsetX, isSm } = useLayout(MAX_CONTENT_WIDTH.grid);
+  const insets = useSafeAreaInsets();
+  // On wider layouts the button sits level with the title (no extra header padding), so nothing moves down
+  const backButtonStyle = isSm
+    ? { top: insets.top + TITLE_MARGIN_TOP, left: getBackButtonSideOffset(true, contentInsetX) }
+    : { left: getBackButtonSideOffset(false, contentInsetX) };
 
   const title = trendingMetricTitles[metric] || 'Trending Comics';
 
   return (
     <Screen>
       <View style={styles.headerContainer}>
-        <ScreenHeader />
-        <HeaderBackButton />
+        <ScreenHeader additionalTopPadding={isSm ? 0 : undefined} />
+        <HeaderBackButton style={backButtonStyle} />
       </View>
       <TrendingScreenContent key={`${metric}-${period}`} metric={metric} period={period} title={title} setPeriod={setPeriod} />
     </Screen>
@@ -190,7 +213,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   title: {
-    marginTop: 16,
+    marginTop: TITLE_MARGIN_TOP,
     marginBottom: 8,
   },
   listContent: {

@@ -1,12 +1,16 @@
 import * as React from 'react';
-import { View, StyleSheet, Dimensions, FlatList } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useState, useCallback, useEffect, useReducer } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { FlashList } from '@shopify/flash-list';
 
-import { Screen, ThemedText, PressableOpacity, ScreenHeader, HeaderBackButton, ThemedActivityIndicator } from '@/app/components/ui';
+import { Screen, ThemedText, PressableOpacity, ScreenHeader, HeaderBackButton, ThemedActivityIndicator, useLayout, useGridColumns } from '@/app/components/ui';
 import { ComicSeries, Genre } from '@inkverse/shared-client/graphql/operations';
 import { Colors } from '@/constants/Colors';
+import { MAX_CONTENT_WIDTH } from '@/constants/Layout';
+import { SPACING } from '@/constants/Spacing';
 import { ComicSeriesDetails } from '@/app/components/comics/ComicSeriesDetails';
 import { getPublicApolloClient } from '@/lib/apollo';
 import { comicsListReducer, comicsListInitialState, fetchComics } from '@inkverse/shared-client/dispatch/comicslist';
@@ -23,12 +27,35 @@ export interface ComicsListScreenParams {
 
 const LIMIT_PER_PAGE = 12; // Items per page for grid view
 
+// Floating back button (24 icon + 2 * 8 padding)
+const HEADER_BUTTON_SIZE = 40;
+const TITLE_MARGIN_TOP = 16;
+// On wider layouts (landscape, iPad), the back button hugs the screen edge beside the title,
+// like the comic screen, instead of sitting above it
+const getBackButtonSideOffset = (isWide: boolean, contentInsetX: number) =>
+  isWide ? SPACING.xl : contentInsetX + 16;
+
 export function ComicsListScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute();
   const { pageType, value } = route.params as ComicsListScreenParams;
   const publicClient = getPublicApolloClient();
-  
+  // Centered grid on wider layouts: 2 columns on phone portrait, 4 on phone landscape and
+  // iPad portrait, 5 on iPad landscape
+  const { contentWidth, contentInsetX, isSm } = useLayout(MAX_CONTENT_WIDTH.grid);
+  const numColumns = useGridColumns();
+  // On wider layouts the back button hugs the screen edge, so pull the grid and title in past it
+  const listPaddingX = isSm
+    ? Math.max(16 + contentInsetX, getBackButtonSideOffset(true, contentInsetX) + HEADER_BUTTON_SIZE + SPACING.md)
+    : 16 + contentInsetX;
+  const itemWidth = (contentWidth - 2 * (listPaddingX - contentInsetX)) / numColumns;
+  const insets = useSafeAreaInsets();
+  // Phone portrait: the button lines up with the grid, above the title. On wider layouts it sits
+  // level with the title (no extra header padding), so nothing moves down
+  const backButtonStyle = isSm
+    ? { top: insets.top + TITLE_MARGIN_TOP, left: getBackButtonSideOffset(true, contentInsetX) }
+    : { left: getBackButtonSideOffset(false, contentInsetX) };
+
   const [currentPage, setCurrentPage] = useState(1);
   
   // Set up the reducer for comics list state
@@ -89,11 +116,6 @@ export function ComicsListScreen() {
 
   // Render grid item
   const renderGridItem = useCallback(({ item }: { item: ComicSeries }) => {
-    const numColumns = 3;
-    const screenWidth = Dimensions.get('window').width;
-    const availableWidth = screenWidth - 32; // Account for padding
-    const itemWidth = (availableWidth - (numColumns - 1)) / numColumns; // 16px gap between items
-    
     return (
       <View style={{ width: itemWidth }}>
         <ComicSeriesDetails 
@@ -102,13 +124,11 @@ export function ComicsListScreen() {
         />
       </View>
     );
-  }, [handleComicPress]);
+  }, [itemWidth]);
 
   // Render header component
   const renderHeader = useCallback(() => (
-    <View style={styles.headerContainer}>
-      <ScreenHeader />
-      <HeaderBackButton />
+    <View style={styles.listHeader}>
       <ThemedText size='title' style={styles.title}>
         {title}
       </ThemedText>
@@ -144,39 +164,39 @@ export function ComicsListScreen() {
   }, [isLoadingMore, isLoading, comics.length, hasMore, handleLoadMore]);
 
   // Main render
-  if (isLoading && currentPage === 1) {
-    return (
-      <Screen>
+  return (
+    <Screen>
+      <View style={styles.headerContainer}>
+        <ScreenHeader additionalTopPadding={isSm ? 0 : undefined} />
+        <HeaderBackButton style={backButtonStyle} />
+      </View>
+      {isLoading && currentPage === 1 ? (
         <View style={styles.loadingContainer}>
           <ThemedActivityIndicator />
         </View>
-      </Screen>
-    );
-  }
-
-  return (
-    <Screen>
-      <View style={styles.container}>
-        <FlatList
-          data={comics}
-          renderItem={renderGridItem}
-          numColumns={3}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.listContent}
-          ListHeaderComponent={renderHeader}
-          ListFooterComponent={renderFooter}
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <ThemedText style={styles.emptyText}>
-                No comics found.
-              </ThemedText>
-            </View>
-          }
-          onEndReached={handleLoadMore}
-          onEndReachedThreshold={0.5}
-          keyExtractor={(item) => item.uuid}
-        />
-      </View>
+      ) : (
+        <View style={styles.container}>
+          <FlashList
+            data={comics}
+            renderItem={renderGridItem}
+            numColumns={numColumns}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={[styles.listContent, { paddingHorizontal: listPaddingX }]}
+            ListHeaderComponent={renderHeader}
+            ListFooterComponent={renderFooter}
+            ListEmptyComponent={
+              <View style={styles.emptyContainer}>
+                <ThemedText style={styles.emptyText}>
+                  No comics found.
+                </ThemedText>
+              </View>
+            }
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.5}
+            keyExtractor={(item) => item.uuid}
+          />
+        </View>
+      )}
     </Screen>
   );
 }
@@ -186,10 +206,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerContainer: {
+    paddingHorizontal: 16,
+  },
+  listHeader: {
     marginBottom: 16,
   },
   title: {
-    marginTop: 16,
+    marginTop: TITLE_MARGIN_TOP,
     marginBottom: 4,
   },
   subtitle: {

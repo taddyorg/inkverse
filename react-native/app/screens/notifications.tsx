@@ -4,10 +4,12 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { FlashList } from '@shopify/flash-list';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Screen, ThemedView, ThemedText, HeaderBackButton, ThemedRefreshControl, ThemedActivityIndicator } from '../components/ui';
+import { Screen, ScreenHeader, ThemedView, ThemedText, HeaderBackButton, ThemedRefreshControl, ThemedActivityIndicator, useLayout } from '../components/ui';
 import { PressableOpacity } from '../components/ui/PressableOpacity';
 import { Colors } from '@/constants/Colors';
+import { SPACING } from '@/constants/Spacing';
 import { getUserApolloClient } from '@/lib/apollo';
 import { COMICISSUE_SCREEN, COMMENTS_SCREEN, RootStackParamList } from '@/constants/Navigation';
 import {
@@ -29,10 +31,30 @@ type ListItem =
   | { type: 'header'; bucket: string }
   | { type: 'item'; item: NotificationFeedItem };
 
+// Floating back button (24 icon + 2 * 8 padding)
+const HEADER_BUTTON_SIZE = 40;
+const TITLE_MARGIN_TOP = 16;
+// On wider layouts (landscape, iPad), the back button hugs the screen edge beside the title,
+// like the most liked / discussed screen, instead of sitting above it
+const getBackButtonSideOffset = (isWide: boolean, contentInsetX: number) =>
+  isWide ? SPACING.xl : contentInsetX + 16;
+
 export function NotificationsScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const colorScheme = useColorScheme() ?? 'light';
   const [state, dispatch] = useReducer(notificationsReducer, notificationsInitialState);
+  // Centered content column on wider layouts (landscape, iPad); 0 on phones
+  const { contentInsetX, isSm } = useLayout();
+  const insets = useSafeAreaInsets();
+  // On wider layouts the back button hugs the screen edge, so pull the list and title in past it
+  const listPaddingX = isSm
+    ? Math.max(16 + contentInsetX, getBackButtonSideOffset(true, contentInsetX) + HEADER_BUTTON_SIZE + SPACING.md)
+    : 16 + contentInsetX;
+  // Phone portrait: the button lines up with the list, above the title. On wider layouts it sits
+  // level with the title (no extra header padding), so nothing moves down
+  const backButtonStyle = isSm
+    ? { top: insets.top + TITLE_MARGIN_TOP, left: getBackButtonSideOffset(true, contentInsetX) }
+    : { left: getBackButtonSideOffset(false, contentInsetX) };
 
   const userClient = getUserApolloClient();
 
@@ -157,6 +179,14 @@ export function NotificationsScreen() {
     );
   }, [colorScheme, handleItemPress]);
 
+  const renderHeader = useCallback(() => (
+    <View style={styles.listHeader}>
+      <ThemedText size="title" style={styles.title}>
+        Notifications
+      </ThemedText>
+    </View>
+  ), []);
+
   const renderEmptyState = useCallback(() => {
     if (state.isLoading || state.hasMore) return null;
     return (
@@ -183,12 +213,10 @@ export function NotificationsScreen() {
 
   return (
     <Screen>
-      <View>
-        <HeaderBackButton />
+      <View style={styles.headerContainer}>
+        <ScreenHeader additionalTopPadding={isSm ? 0 : undefined} />
+        <HeaderBackButton style={backButtonStyle} />
       </View>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText size="title">Notifications</ThemedText>
-      </ThemedView>
       <ThemedView style={styles.container}>
         {state.isLoading && state.sections.length === 0 ? (
           <ThemedActivityIndicator style={styles.loadingIndicator} />
@@ -203,6 +231,9 @@ export function NotificationsScreen() {
               return listItem.item.id;
             }}
             getItemType={(listItem) => listItem.type}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={[styles.listContent, { paddingHorizontal: listPaddingX }]}
+            ListHeaderComponent={renderHeader}
             refreshControl={
               <ThemedRefreshControl refreshing={state.isLoading} onRefresh={handleRefresh} />
             }
@@ -219,14 +250,21 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  titleContainer: {
+  headerContainer: {
     paddingHorizontal: 16,
-    paddingTop: 90,
-    paddingBottom: 12,
+  },
+  listHeader: {
+    marginBottom: 8,
+  },
+  title: {
+    marginTop: TITLE_MARGIN_TOP,
+    marginBottom: 8,
+  },
+  listContent: {
+    paddingBottom: 24,
   },
   sectionHeader: {
-    paddingHorizontal: 16,
-    paddingTop: 28,
+    paddingTop: SPACING.lg,
     paddingBottom: 8,
   },
   sectionHeaderText: {
@@ -238,7 +276,6 @@ const styles = StyleSheet.create({
   },
   notificationItem: {
     flexDirection: 'row',
-    paddingHorizontal: 16,
     paddingVertical: 14,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },

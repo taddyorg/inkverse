@@ -1,5 +1,5 @@
-import React, { memo, useState, useRef, useReducer } from 'react';
-import { StyleSheet, Platform, Appearance, useColorScheme, Switch, View, Animated } from 'react-native';
+import React, { memo, useState, useRef, useReducer, useMemo } from 'react';
+import { StyleSheet, Platform, Appearance, useColorScheme, Switch, View, Animated, StyleProp, ViewStyle } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { useNavigation } from '@react-navigation/native';
@@ -7,9 +7,11 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { FlashList } from '@shopify/flash-list';
 import { Image } from 'expo-image';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { PressableOpacity, Screen, ScreenHeader, ThemedView, ThemedText, ThemedIcon, HeaderBackButton, ThemedTextFontFamilyMap } from '../components/ui';
+import { PressableOpacity, Screen, ScreenHeader, ThemedView, ThemedText, ThemedIcon, HeaderBackButton, ThemedTextFontFamilyMap, useLayout } from '../components/ui';
 import { Colors } from '@/constants/Colors';
+import { SPACING } from '@/constants/Spacing';
 import { openURL, openEmail } from '@/lib/utils';
 import { showShareSheet } from '@/lib/share-sheet';
 import { getUserDetails } from '@/lib/auth/user';
@@ -33,6 +35,14 @@ type SettingItem = {
   onPress: () => void;
 };
 
+// Floating back button (24 icon + 2 * 8 padding)
+const HEADER_BUTTON_SIZE = 40;
+// On wider layouts (landscape, iPad) the back button sits level with the first row,
+// centered on it (16 padding + 31 switch + 16 padding)
+const FIRST_ROW_BUTTON_TOP = 12;
+// Space above the list on wider layouts, below the safe area
+const TOP_PADDING = SPACING.xl;
+
 // No longer need the SettingSection type or FlashListItem type with headers
 export function SettingsScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -42,7 +52,19 @@ export function SettingsScreen() {
   const checkmarkOpacity = useRef(new Animated.Value(0)).current;
   const analytics = useAnalytics();
   const [settingsState, settingsDispatch] = useReducer(settingsReducer, settingsInitialState);
-  
+  // Centered content column on wider layouts (landscape, iPad); 0 on phones
+  const { contentInsetX, isSm } = useLayout();
+  const insets = useSafeAreaInsets();
+  // Same layout as the comics list screen: on wider layouts the back button hugs the screen
+  // edge beside the list, so pull the list in past it. On phone portrait it sits above the list
+  const listPaddingX = isSm
+    ? Math.max(16 + contentInsetX, SPACING.xl + HEADER_BUTTON_SIZE + SPACING.md)
+    : 16 + contentInsetX;
+  const backButtonStyle = useMemo<StyleProp<ViewStyle>>(() => (isSm
+    ? { top: insets.top + TOP_PADDING + FIRST_ROW_BUTTON_TOP, left: SPACING.xl }
+    : { left: 16 + contentInsetX }
+  ), [isSm, insets.top, contentInsetX]);
+
   // Section 1: Main settings handlers
   const updateProfilePressed = () => {
     navigation.navigate(EDIT_PROFILE_SCREEN);
@@ -268,9 +290,10 @@ export function SettingsScreen() {
     );
   };
 
+  // On wider layouts the back button sits beside the first row, so no extra header padding
   const renderScreenHeader = () => {
     return (
-      <ScreenHeader />
+      <ScreenHeader additionalTopPadding={isSm ? TOP_PADDING : undefined} />
     )
   };
 
@@ -366,14 +389,14 @@ export function SettingsScreen() {
   };
 
   return (
-    <SettingsScreenWrapper>
+    <SettingsScreenWrapper backButtonStyle={backButtonStyle}>
       <ThemedView style={styles.contentContainer}>
         <FlashList
           data={allSettingsItems}
           renderItem={renderSettingItem}
           showsVerticalScrollIndicator={false}
           ListFooterComponent={renderCombinedFooterSection}
-          contentContainerStyle={styles.flashListContent}
+          contentContainerStyle={[styles.flashListContent, { paddingHorizontal: listPaddingX }]}
           keyExtractor={(item) => item.id}
         />
       </ThemedView>
@@ -381,12 +404,12 @@ export function SettingsScreen() {
   );
 }
 
-const SettingsScreenWrapper = memo(({ children }: { children: React.ReactNode }) => {
+const SettingsScreenWrapper = memo(({ children, backButtonStyle }: { children: React.ReactNode; backButtonStyle: StyleProp<ViewStyle> }) => {
   return (
     <Screen>
       <>
         <View>
-          <HeaderBackButton />
+          <HeaderBackButton style={backButtonStyle} />
         </View>
         {children}
       </>

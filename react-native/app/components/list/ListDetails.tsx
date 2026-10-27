@@ -1,12 +1,13 @@
 import React, { useCallback } from 'react';
-import { StyleSheet, View, TouchableOpacity, Dimensions } from 'react-native';
+import { StyleSheet, View, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Image } from 'expo-image';
 import { FlashList } from '@shopify/flash-list';
 
-import { ThemedText, ThemedView, ThemedTextFontFamilyMap } from '../ui/index';
+import { ThemedText, ThemedView, ThemedTextFontFamilyMap, useLayout } from '../ui/index';
 import { LIST_SCREEN, RootStackParamList } from '@/constants/Navigation';
+import { MAX_CONTENT_WIDTH } from '@/constants/Layout';
 import type { List } from '@inkverse/shared-client/graphql/operations';
 import { ComicSeriesDetails } from '../comics/ComicSeriesDetails';
 
@@ -22,6 +23,7 @@ interface ListDetailsProps {
 
 export function ListDetails({ list, pageType, imagePriority }: ListDetailsProps) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { isSm } = useLayout();
 
   if (pageType === 'featured-list') {
     return (
@@ -45,7 +47,7 @@ export function ListDetails({ list, pageType, imagePriority }: ListDetailsProps)
         <View style={styles.bannerContainer}>
           <Image
             source={{ uri: list.bannerImageUrl ?? '' }}
-            style={styles.bannerFullWidth}
+            style={[styles.bannerFullWidth, isSm && styles.bannerWide]}
             contentFit="cover"
             recyclingKey={list.id}
             priority="high"
@@ -100,6 +102,11 @@ const styles = StyleSheet.create({
     aspectRatio: 16 / 9,
     borderRadius: 8,
     overflow: 'hidden',
+  },
+  // Smaller 16:9 banner on wider layouts (landscape, iPad)
+  bannerWide: {
+    width: MAX_CONTENT_WIDTH.banner,
+    height: MAX_CONTENT_WIDTH.banner * 9 / 16,
   },
   curatedListItem: {
     width: 340,
