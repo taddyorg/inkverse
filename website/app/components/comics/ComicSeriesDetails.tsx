@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { Link } from "react-router";
 import { MdFavorite } from 'react-icons/md';
@@ -9,6 +10,7 @@ import { getPrettyGenre, getGenreSlug } from '@inkverse/public/genres';
 import { getBannerImageUrl, getCoverImageUrl, getThumbnailImageUrl } from '@inkverse/public/comicseries';
 import { getGenreAndTagPills } from '@inkverse/shared-client/utils/genre-tag-pills';
 import { ExpandableText } from '../ui/ExpandableText';
+import { ZoomableImage } from '../ui/ZoomableImage';
 import { ComicSeriesTagline } from './ComicSeriesTagline';
 
 export type ComicSeriesPageType =
@@ -34,6 +36,7 @@ type ComicSeriesDetailsProps = {
 
 export function ComicSeriesDetails(props: ComicSeriesDetailsProps){
   const { comicseries, pageType, likeCount, commentCount, actions } = props;
+  const [isCoverOpen, setIsCoverOpen] = useState(false);
 
   if (!comicseries) { return <></>; }
 
@@ -161,7 +164,22 @@ export function ComicSeriesDetails(props: ComicSeriesDetailsProps){
   return (
     <div>
       <h1 className="sr-only">{comicseries.name}</h1>
-      <CoverArt comicseries={comicseries} pageType={pageType} />
+      <button
+        type="button"
+        onClick={() => setIsCoverOpen(true)}
+        className="block mx-auto mt-4 sm:mt-0 rounded-lg cursor-zoom-in"
+        aria-label={`${comicseries.name} cover art, open full screen`}
+      >
+        <CoverArt comicseries={comicseries} pageType={pageType} />
+      </button>
+      {/* Opens the large cover, showing the already-loaded medium cover while it loads */}
+      <ZoomableImage
+        isOpen={isCoverOpen}
+        onClose={() => setIsCoverOpen(false)}
+        source={getCoverImageUrl({ coverImageAsString: comicseries.coverImageAsString, variant: 'large' })}
+        placeholder={getCoverImageUrl({ coverImageAsString: comicseries.coverImageAsString })}
+        alt={`${comicseries.name} cover art`}
+      />
       {/* empty:hidden collapses the row when there is no tagline, edit icon or counts */}
       <div className="mx-4 mt-3 flex items-center justify-center gap-4 empty:hidden">
         <ComicSeriesTagline comicseries={comicseries} />
@@ -247,7 +265,7 @@ const CoverArt = ({ comicseries, pageType }: { comicseries: ComicSeries, pageTyp
         <img
           src={getCoverImageUrl({ coverImageAsString: comicseries.coverImageAsString }) || undefined}
           alt={`${comicseries.name} comic cover art`}
-          className="block mx-auto mt-4 h-[min(50vh,360px)] aspect-4/6 rounded-lg object-cover sm:mt-0 sm:h-[360px]"
+          className="block h-[min(50vh,360px)] aspect-4/6 rounded-lg object-cover sm:h-[360px]"
         />
       );
   }

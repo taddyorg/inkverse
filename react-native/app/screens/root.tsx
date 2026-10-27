@@ -25,6 +25,7 @@ import { BlogScreen } from './blog';
 import { ReportsScreen } from './reports';
 import { EditTaglineScreen } from './edit-tagline';
 import { CommentsScreen } from './comments';
+import { ZoomableImageViewerScreen } from './zoomable-image-viewer';
 import { EditProfileScreen } from './profile-edit/index';
 import { EditUsernameScreen } from './profile-edit/edit-username';
 import { EditAgeScreen } from './profile-edit/edit-age';
@@ -109,6 +110,7 @@ import {
   EDIT_BLUESKY_SCREEN,
   NOTIFICATIONS_SCREEN,
   NOTIFICATION_SETTINGS_SCREEN,
+  ZOOMABLE_IMAGE_VIEWER_SCREEN,
   RootStackParamList,
 } from '../../constants/Navigation';
 
@@ -568,6 +570,14 @@ function App() {
     }),
   }
 
+  // Transparent so swiping the image away fades through to the screen underneath.
+  // The viewer handles its own swipe to dismiss, so the native gesture is off.
+  const zoomableImageViewerScreenOptions = {
+    presentation: 'transparentModal' as const,
+    animation: 'fade' as const,
+    gestureEnabled: false,
+  }
+
   // Create the signup stack navigator
   const SignupStack = createNativeStackNavigator();
   
@@ -670,6 +680,11 @@ function App() {
                       name={COMMENTS_SCREEN}
                       component={CommentsScreen}
                       options={modalScreenOptions}
+                    />
+                    <Stack.Screen
+                      name={ZOOMABLE_IMAGE_VIEWER_SCREEN}
+                      component={ZoomableImageViewerScreen}
+                      options={zoomableImageViewerScreenOptions}
                     />
                     <Stack.Screen 
                       name={WRAPPED_COMICSERIES_SCREEN} 

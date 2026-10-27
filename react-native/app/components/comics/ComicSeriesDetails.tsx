@@ -7,7 +7,7 @@ import { RootStackParamList } from '@/constants/Navigation';
 
 import { ThemedText, ThemedTextFontFamilyMap, ThemedView, PressableOpacity, ExpandableText, useLayout } from '../ui';
 
-import { COMICS_LIST_SCREEN, COMICSERIES_SCREEN } from '@/constants/Navigation';
+import { COMICS_LIST_SCREEN, COMICSERIES_SCREEN, ZOOMABLE_IMAGE_VIEWER_SCREEN } from '@/constants/Navigation';
 import { ComicSeries, Genre } from '@inkverse/shared-client/graphql/operations';
 import { getBannerImageUrl, getCoverImageUrl, getThumbnailImageUrl } from '@inkverse/public/comicseries';
 import { getPrettyGenre } from '@inkverse/public/genres';
@@ -33,8 +33,6 @@ type ComicSeriesPageType =
 interface ComicSeriesDetailsProps {
   comicseries: ComicSeries | null | undefined;
   pageType: ComicSeriesPageType;
-  isHeaderVisible?: boolean;
-  onHeaderVisibilityChange?: (isVisible: boolean) => void;
   imagePriority?: 'high' | 'normal' | 'low';
   likeCount?: number;
   commentCount?: number;
@@ -47,7 +45,7 @@ type Pill = {
   onPress: () => void;
 };
 
-export function ComicSeriesDetails({ comicseries, pageType, isHeaderVisible, onHeaderVisibilityChange, imagePriority, likeCount, commentCount, actions }: ComicSeriesDetailsProps) {
+export function ComicSeriesDetails({ comicseries, pageType, imagePriority, likeCount, commentCount, actions }: ComicSeriesDetailsProps) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const tagColor = useThemeColor({}, 'tag');
   const textColor = useThemeColor({}, 'text');
@@ -63,9 +61,15 @@ export function ComicSeriesDetails({ comicseries, pageType, isHeaderVisible, onH
     });
   };
 
-  const handlePressForShowAndHideHeader = () => {
-    const newVisibility = !isHeaderVisible;
-    onHeaderVisibilityChange?.(newVisibility);
+  // Open the large cover full screen, showing the already-cached medium cover while it loads
+  const handlePressForCoverArt = () => {
+    const imageUrl = getCoverImageUrl({ coverImageAsString: comicseries.coverImageAsString, variant: 'large' });
+    if (!imageUrl) return;
+    navigation.navigate(ZOOMABLE_IMAGE_VIEWER_SCREEN, {
+      imageUrl,
+      placeholderUrl: getCoverImageUrl({ coverImageAsString: comicseries.coverImageAsString }),
+      accessibilityLabel: comicseries.name ? `${comicseries.name} cover art` : 'Cover art',
+    });
   };
 
   const formatGenres = (comicseries: ComicSeries) => {
@@ -226,12 +230,12 @@ export function ComicSeriesDetails({ comicseries, pageType, isHeaderVisible, onH
       return (
         <ThemedView style={styles.container}>
           <Pressable
-            onPress={handlePressForShowAndHideHeader}
-            disabled={isSm}
+            onPress={handlePressForCoverArt}
             style={isSm && styles.coverCentered}
             accessible
             accessibilityRole="header"
             accessibilityLabel={comicseries.name ?? undefined}
+            accessibilityHint="Opens the cover art full screen"
           >
             <Image
               source={getCoverImageUrl({ coverImageAsString: comicseries.coverImageAsString })}

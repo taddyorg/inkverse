@@ -32,6 +32,7 @@ import { EditBlueskyScreenParams } from "@/app/screens/profile-edit/edit-bluesky
 import { SignupNotificationsScreenParams } from "@/app/screens/signup/signup-notifications";
 import { TrendingScreenParams } from "@/app/screens/trending";
 import { CommentsScreenParams } from "@/app/screens/comments";
+import { ZoomableImageViewerScreenParams } from "@/app/screens/zoomable-image-viewer";
 
 export const HOME_TAB = "HomeTab";
 export const SEARCH_TAB = "SearchTab";
@@ -81,6 +82,7 @@ export const WRAPPED_TRENDING_LIKED_SCREEN = "WrappedTrendingLikedScreen";
 export const WRAPPED_TRENDING_DISCUSSED_SCREEN = "WrappedTrendingDiscussedScreen";
 export const NOTIFICATIONS_SCREEN = "NotificationsScreen";
 export const NOTIFICATION_SETTINGS_SCREEN = "NotificationSettingsScreen";
+export const ZOOMABLE_IMAGE_VIEWER_SCREEN = "ZoomableImageViewerScreen";
 
 export type RootStackParamList = {
   [HOME_TAB]: undefined;
@@ -131,6 +133,7 @@ export type RootStackParamList = {
   [WRAPPED_TRENDING_DISCUSSED_SCREEN]: undefined;
   [NOTIFICATIONS_SCREEN]: undefined;
   [NOTIFICATION_SETTINGS_SCREEN]: undefined;
+  [ZOOMABLE_IMAGE_VIEWER_SCREEN]: ZoomableImageViewerScreenParams;
 };
 
 interface ResetNavigationToContentScreenParams {

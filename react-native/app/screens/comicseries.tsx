@@ -79,7 +79,6 @@ export function ComicSeriesScreen() {
   
   const [comicSeriesState, dispatch] = useReducer(comicSeriesReducer, comicSeriesInitialState);
   const [refreshing, setRefreshing] = useState(false);
-  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const { contentInsetX, isSm } = useLayout();
   const insets = useSafeAreaInsets();
   // On wider layouts the buttons hug the screen edges, so pull the content in past them
@@ -195,8 +194,6 @@ export function ComicSeriesScreen() {
             <ComicSeriesDetails
               comicseries={item.data}
               pageType='comicseries-screen'
-              isHeaderVisible={isHeaderVisible}
-              onHeaderVisibilityChange={setIsHeaderVisible}
               likeCount={likeCount}
               commentCount={commentCount}
               actions={
@@ -255,7 +252,7 @@ export function ComicSeriesScreen() {
       default:
         return null;
     }
-  }, [comicseries, issues, userComicData, isUserDataLoading, isSubscriptionLoading, isNotificationLoading, isHeaderVisible, setIsHeaderVisible, handleAddToProfile, handleGetNotifications, handleNavigateToIssue, issueLikeLoadingMap, handleLikeIssue, isSm, likeCount, commentCount, firstIssue, actionColor, actionTextColor]);
+  }, [comicseries, issues, userComicData, isUserDataLoading, isSubscriptionLoading, isNotificationLoading, handleAddToProfile, handleGetNotifications, handleNavigateToIssue, issueLikeLoadingMap, handleLikeIssue, isSm, likeCount, commentCount, firstIssue, actionColor, actionTextColor]);
 
   const keyExtractor = useCallback((item: ListItem) => {
     switch (item.type) {
@@ -279,7 +276,7 @@ export function ComicSeriesScreen() {
 
   if (isComicSeriesLoading || !comicseries) {
     return (
-      <ComicSeriesScreenWrapper isHeaderVisible={isHeaderVisible} comicseries={comicseries || null}>
+      <ComicSeriesScreenWrapper comicseries={comicseries || null}>
         <View style={styles.loadingContainer}>
           <ThemedActivityIndicator />
         </View>
@@ -288,7 +285,7 @@ export function ComicSeriesScreen() {
   }
 
   return (
-    <ComicSeriesScreenWrapper isHeaderVisible={isHeaderVisible} comicseries={comicseries || null}>
+    <ComicSeriesScreenWrapper comicseries={comicseries || null}>
       <FadeInView>
         <FlashList
           data={getListData()}
@@ -296,12 +293,6 @@ export function ComicSeriesScreen() {
           keyExtractor={keyExtractor}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal: listInsetX, paddingBottom: insets.bottom + SPACING.lg }}
-          onScroll={(event) => {
-            const yOffset = event.nativeEvent.contentOffset.y;
-            if (yOffset <= 0) {
-              setIsHeaderVisible(true);
-            }
-          }}
           refreshControl={
             <ThemedRefreshControl
               refreshing={refreshing}
@@ -316,24 +307,20 @@ export function ComicSeriesScreen() {
 
 interface ComicSeriesScreenWrapperProps {
   children: React.ReactNode;
-  isHeaderVisible: boolean;
   comicseries: ComicSeries | null;
 }
 
-const ComicSeriesScreenWrapper = ({ children, isHeaderVisible, comicseries }: ComicSeriesScreenWrapperProps) => {
+const ComicSeriesScreenWrapper = ({ children, comicseries }: ComicSeriesScreenWrapperProps) => {
   const { contentInsetX, isSm } = useLayout();
   const top = getHeaderButtonsTop(isSm);
   const sideOffset = getHeaderButtonsSideOffset(isSm, contentInsetX);
 
-  // On wider layouts the cover isn't behind the buttons, so keep them visible
   return (
     <Screen style={styles.container}>
-      {(isHeaderVisible || isSm) && (
-        <View>
-          <HeaderBackButton style={{ top, left: sideOffset }} />
-          <HeaderShareButton type="comicseries" item={comicseries} style={{ top, right: sideOffset }} />
-        </View>
-      )}
+      <View>
+        <HeaderBackButton style={{ top, left: sideOffset }} />
+        <HeaderShareButton type="comicseries" item={comicseries} style={{ top, right: sideOffset }} />
+      </View>
       {children}
     </Screen>
   );

@@ -16,6 +16,7 @@ import { FadeInView } from "./FadeInView"
 import { useLayout, useScreenPaddingX, useGridPagePaddingX, useGridColumns } from "./Layout"
 import { ExpandableText } from "./ExpandableText"
 import { FormColumn } from "./FormColumn"
+import { ZoomableImage } from "./ZoomableImage"
 
 export {
     Logo,
@@ -40,4 +41,5 @@ export {
     useGridColumns,
     ExpandableText,
     FormColumn,
+    ZoomableImage,
 }
