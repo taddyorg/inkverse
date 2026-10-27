@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { StyleSheet, TouchableOpacity, View, Pressable } from 'react-native';
+import { StyleSheet, TouchableOpacity, View, Pressable, useWindowDimensions } from 'react-native';
 import { Image } from 'expo-image';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -51,7 +51,9 @@ export function ComicSeriesDetails({ comicseries, pageType, isHeaderVisible, onH
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const tagColor = useThemeColor({}, 'tag');
   const textColor = useThemeColor({}, 'text');
-  const { contentWidth, isSm } = useLayout();
+  const { contentWidth, isSm, isTablet } = useLayout();
+  const { width, height } = useWindowDimensions();
+  const isLandscape = width > height;
 
   if (!comicseries) return null;
 
@@ -99,7 +101,7 @@ export function ComicSeriesDetails({ comicseries, pageType, isHeaderVisible, onH
 
     case 'featured-banner':
       return (
-        <TouchableOpacity onPress={handlePressForNavigation} style={styles.featuredContainer}>
+        <TouchableOpacity onPress={handlePressForNavigation} style={[styles.featuredContainer, isLandscape && styles.featuredContainerLandscape]}>
           <Image
             source={getBannerImageUrl({ bannerImageAsString: comicseries.bannerImageAsString, variant: "large" })}
             style={styles.featuredImage}
@@ -123,16 +125,17 @@ export function ComicSeriesDetails({ comicseries, pageType, isHeaderVisible, onH
       );
 
     case 'cover-with-tagline':
+      // Wider layouts (landscape) use a bigger cover and tagline, tablets bigger still
       return (
         <TouchableOpacity onPress={handlePressForNavigation}>
           <Image
             source={getCoverImageUrl({ coverImageAsString: comicseries.coverImageAsString })}
-            style={styles.coverImage}
+            style={[styles.coverImage, isSm && styles.coverImageWide, isTablet && styles.coverImageTablet]}
             contentFit="contain"
             recyclingKey={comicseries.uuid}
           />
           {!!comicseries.tagline && (
-            <ThemedText style={styles.coverTagline} numberOfLines={2}>
+            <ThemedText style={[styles.coverTagline, isSm && styles.coverTaglineWide, isTablet && styles.coverTaglineTablet]} numberOfLines={2}>
               {comicseries.tagline}
             </ThemedText>
           )}
@@ -286,17 +289,31 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   coverImage: {
-    height: 220,
+    height: 240,
     aspectRatio: 4 / 6,
     borderRadius: 6,
   },
   // Same width as coverImage, so a long tagline wraps instead of widening the card
   coverTagline: {
-    width: 220 * 4 / 6,
+    width: 240 * 4 / 6,
     marginTop: 6,
-    fontSize: 14,
+    fontSize: 16,
     fontFamily: ThemedTextFontFamilyMap.semiBold,
     textAlign: 'center',
+  },
+  coverImageWide: {
+    height: 280,
+  },
+  coverTaglineWide: {
+    width: 280 * 4 / 6,
+    fontSize: 17,
+  },
+  coverImageTablet: {
+    height: 360,
+  },
+  coverTaglineTablet: {
+    width: 360 * 4 / 6,
+    fontSize: 18,
   },
   coverImageFullWidth: {
     width: '100%',
@@ -372,12 +389,17 @@ const styles = StyleSheet.create({
     // backgroundColor: Colors.light.tint + '20', // Using light tint with opacity
     // borderColor: Colors.light.tint + '40',
   },
+  // Portrait (phone and iPad) shows the banner full width
   featuredContainer: {
     width: '100%',
     aspectRatio: 16 / 9,
-    maxHeight: 470,
     borderRadius: 12,
     overflow: 'hidden',
+  },
+  // Landscape caps the height like the website; the 16:9 ratio then narrows the banner, so center it
+  featuredContainerLandscape: {
+    maxHeight: 470,
+    alignSelf: 'center',
   },
   featuredImage: {
     width: '100%',

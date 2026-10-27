@@ -203,7 +203,7 @@ const CuratedLists = ({ lists }: { lists: List[] | null | undefined }) => {
             const url = getInkverseUrl({ type: "list", id: list.id, name: list.name })
             if (!url) return null;
             return (
-              <Link key={list.id} to={url} className="flex-none w-[80vw] md:w-[60vw]">
+              <Link key={list.id} to={url} className="flex-none w-[85%] md:w-[57%]">
                 <img
                   className="w-full rounded-lg object-cover object-center"
                   src={list.bannerImageUrl || undefined}

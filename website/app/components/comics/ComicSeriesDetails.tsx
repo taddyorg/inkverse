@@ -79,7 +79,7 @@ export function ComicSeriesDetails(props: ComicSeriesDetailsProps){
     if (!link) { return <></>; }
 
     return (
-      <Link to={link} className="flex flex-col w-40">
+      <Link to={link} className="flex flex-col w-44 sm:w-[180px]">
         <CoverArt comicseries={comicseries} pageType={pageType} />
         <Tagline comicseries={comicseries} pageType={pageType} />
       </Link>
@@ -209,12 +209,19 @@ const CoverArt = ({ comicseries, pageType }: { comicseries: ComicSeries, pageTyp
         />
     );
     case 'cover':
-    case 'cover-with-tagline':
       return (
         <img
           src={getCoverImageUrl({ coverImageAsString: comicseries.coverImageAsString }) || undefined}
           alt={`${comicseries.name} comic cover art`}
           className="h-60 aspect-4/6 rounded-md object-contain object-center mr-2"
+        />
+    );
+    case 'cover-with-tagline':
+      return (
+        <img
+          src={getCoverImageUrl({ coverImageAsString: comicseries.coverImageAsString }) || undefined}
+          alt={`${comicseries.name} comic cover art`}
+          className="h-[264px] sm:h-[270px] aspect-4/6 rounded-md object-contain object-center mr-2"
         />
     );
     case 'grid-item-with-tagline':

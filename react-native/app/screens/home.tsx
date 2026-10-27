@@ -1,10 +1,10 @@
 import { useReducer, useState, useCallback, useEffect, useRef } from 'react';
-import { StyleSheet, TouchableOpacity, View, FlatList, ListRenderItem } from 'react-native';
+import { StyleSheet, TouchableOpacity, View, FlatList, ListRenderItem, useWindowDimensions } from 'react-native';
 import { useNavigation, useScrollToTop } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { FlashList, FlashListRef } from '@shopify/flash-list';
 
-import { Screen, ThemedText, ThemedActivityIndicator, ThemedTextFontFamilyMap, PressableOpacity, ThemedRefreshControl, DropdownMenu, FadeInView } from '@/app/components/ui';
+import { Screen, ThemedText, ThemedActivityIndicator, ThemedTextFontFamilyMap, PressableOpacity, ThemedRefreshControl, DropdownMenu, FadeInView, useLayout, useScreenPaddingX } from '@/app/components/ui';
 import { ComicSeriesDetails } from '@/app/components/comics/ComicSeriesDetails';
 import { ListDetails } from '@/app/components/list/ListDetails';
 import { Header } from '@/app/components/home/Header';
@@ -30,6 +30,7 @@ export function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const flashListRef = useRef<FlashListRef<SectionType>>(null);
   const publicClient = getPublicApolloClient();
+  const paddingX = useScreenPaddingX();
   
   useScrollToTop(flashListRef);
 
@@ -106,7 +107,7 @@ export function HomeScreen() {
           data={sections()}
           renderItem={renderItem}
           keyExtractor={keyExtractor}
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={{ ...styles.scrollContent, paddingHorizontal: paddingX }}
           showsVerticalScrollIndicator={false}
           refreshControl={
             <ThemedRefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -139,6 +140,9 @@ const MostTrendingComics = () => {
   const [comicSeries, setComicSeries] = useState<ComicSeries[] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const publicClient = getPublicApolloClient();
+  const { isSm } = useLayout();
+  // Wider layouts (landscape, iPad) match web desktop: 2 columns, all returned comics (up to 6)
+  const visibleCount = isSm ? 6 : 3;
 
   useEffect(() => {
     let cancelled = false;
@@ -154,16 +158,6 @@ const MostTrendingComics = () => {
     return () => { cancelled = true; };
   }, [metric, period]);
 
-  const renderItem: ListRenderItem<ComicSeries> = useCallback(({ item, index }) => (
-    <ComicSeriesDetails
-      comicseries={item}
-      pageType='most-popular'
-      imagePriority={index === 0 ? 'normal' : 'low'}
-    />
-  ), []);
-
-  const keyExtractor = useCallback((item: ComicSeries) => item.uuid, []);
-
   return (
     <View style={styles.section}>
       <View style={styles.trendingTitleRow}>
@@ -178,13 +172,17 @@ const MostTrendingComics = () => {
         </View>
       ) : (
         <>
-          <FlatList
-            data={(comicSeries ?? []).slice(0, 3)}
-            renderItem={renderItem}
-            keyExtractor={keyExtractor}
-            showsVerticalScrollIndicator={false}
-            scrollEnabled={false}
-          />
+          <View style={isSm && styles.trendingRow}>
+            {(comicSeries ?? []).slice(0, visibleCount).map((item, index) => (
+              <View key={item.uuid} style={isSm && styles.trendingItem}>
+                <ComicSeriesDetails
+                  comicseries={item}
+                  pageType='most-popular'
+                  imagePriority={index === 0 ? 'normal' : 'low'}
+                />
+              </View>
+            ))}
+          </View>
           <PressableOpacity
             style={styles.seeAllBottom}
             onPress={() => navigation.navigate(TRENDING_SCREEN, { metric })}
@@ -198,13 +196,21 @@ const MostTrendingComics = () => {
 };
 
 const CuratedLists = ({ lists }: { lists: List[] | null | undefined }) => {
+  const { width } = useWindowDimensions();
+  const { isSm } = useLayout();
+  const paddingX = useScreenPaddingX();
+  // Matches the website: 85% of the row on phones (portrait), 57% on wider layouts (landscape, iPad)
+  const itemWidth = (width - 2 * paddingX) * (isSm ? 0.57 : 0.85);
+
   const renderItem: ListRenderItem<List> = useCallback(({ item, index }) => (
-    <ListDetails 
-      list={item} 
-      pageType='featured-list'
-      imagePriority={index === 0 ? 'normal' : 'low'}
-    />
-  ), []);
+    <View style={[styles.curatedListItem, { width: itemWidth }]}>
+      <ListDetails
+        list={item}
+        pageType='featured-list'
+        imagePriority={index === 0 ? 'normal' : 'low'}
+      />
+    </View>
+  ), [itemWidth]);
 
   const keyExtractor = (item: List) => item.id;
 
@@ -344,6 +350,9 @@ const styles = StyleSheet.create({
   horizontalComicItem: {
     marginRight: 12,
   },
+  curatedListItem: {
+    marginRight: 16,
+  },
   footer: {
     marginTop: 24,
     paddingTop: 24,
@@ -399,6 +408,14 @@ const styles = StyleSheet.create({
   },
   newsListContent: {
     paddingRight: 16,
+  },
+  trendingRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  trendingItem: {
+    width: '48%',
   },
   trendingLoadingContainer: {
     paddingVertical: 40,

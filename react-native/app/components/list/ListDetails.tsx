@@ -108,10 +108,10 @@ const styles = StyleSheet.create({
     width: MAX_CONTENT_WIDTH.banner,
     height: MAX_CONTENT_WIDTH.banner * 9 / 16,
   },
+  // Fills the width the home screen gives it
   curatedListItem: {
-    width: 340,
+    width: '100%',
     aspectRatio: 16 / 9,
-    marginRight: 16,
     borderRadius: 12,
     overflow: 'hidden',
   },

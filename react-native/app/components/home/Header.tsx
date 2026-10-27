@@ -1,10 +1,13 @@
 import React from "react"
 import { Logo } from "../ui/Logo"
+import { useLayout } from "../ui/Layout"
 import { Platform, StyleSheet, View } from "react-native"
 
 export const Header = () => {
+  const { isSm } = useLayout();
+
   return (
-    <View style={[styles.container]}>
+    <View style={[styles.container, isSm && styles.containerWide]}>
       <View style={styles.sideContainer} />
       <View style={styles.logoContainer}>
         <Logo />
@@ -29,6 +32,10 @@ const styles = StyleSheet.create({
         paddingTop: 10,
       },
     }),
+  },
+  // No notch/Dynamic Island at the top in landscape or on iPad
+  containerWide: {
+    paddingTop: 0,
   },
   logoContainer: {
     width: '60%',
