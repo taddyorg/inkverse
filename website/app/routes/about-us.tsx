@@ -53,7 +53,7 @@ const FEATURES: Feature[] = [
   },
   {
     title: 'Fast Pass',
-    body: 'An upcoming feature that lets you earn money from your comics. Creators keep 85% of your earnings and we will be transparent about how much they earn and how much we charge in fees (most comic platforms are not transparent on this!)',
+    body: 'An upcoming feature that lets you earn money from your comics. Creators keep 88% of your earnings and we will be transparent about how much they earn and how much we charge in fees (most comic platforms are not transparent on this!)',
     accent: {
       heading: 'text-action-green',
       card: 'border-action-green/60',

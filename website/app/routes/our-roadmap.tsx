@@ -101,37 +101,15 @@ const DROPS: Drop[] = [
   },
   {
     drop: 4,
-    title: 'Character Sheets / Fan Art',
+    title: 'Creator Analytics',
     status: 'upcoming',
     bullets: [
-      'Creators can add character sheets to their comic',
-      'Creators can showcase fan art',
-      'Creators can post any new art they are working on',
+      'Track views, lists, likes and comments over time',
+      'Track where your readers come from (search, homepage, lists etc.)',
     ],
   },
   {
     drop: 5,
-    title: 'Recommendations',
-    status: 'upcoming',
-    bullets: [
-      'Ability to recommend a comic',
-      'Bring back your old recommendations',
-    ],
-  },
-  {
-    drop: 6,
-    title: 'New Discovery / Home Screen',
-    status: 'upcoming',
-    bullets: [
-      'Have better ways to discover comics. Some ideas include:',
-      'Indie focused home feed algorithm',
-      'New Search Screen',
-      'Filters on Home Screen catered to tags or genres',
-      'Push notifications to remind you to come back to a comic you started reading',
-    ],
-  },
-  {
-    drop: 7,
     title: 'FastPass / Ads to unlock content',
     status: 'upcoming',
     bullets: [

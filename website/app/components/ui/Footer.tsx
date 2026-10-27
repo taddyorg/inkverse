@@ -4,7 +4,7 @@ const footerNavigation = {
   company: [
     { name: 'Blog', href: '/blog', type: 'internal' },
     { name: 'About Us', href: '/about-us', type: 'internal' },
-    { name: 'Open Source', href: '/open-source', type: 'internal' },
+    // { name: 'Open Source', href: '/open-source', type: 'internal' },
     { name: 'Our Roadmap', href: '/our-roadmap', type: 'internal' },
     { name: 'Terms of Service', href: '/terms-of-service', type: 'internal',  },
     { name: 'Brand Assets for Creators', href: '/brand-kit', type: 'internal', additionalStyling: 'pb-2'},
