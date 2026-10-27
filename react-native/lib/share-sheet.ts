@@ -1,4 +1,4 @@
-import { Share, Platform } from 'react-native';
+import { Share } from 'react-native';
 import { getInkverseUrl, InkverseUrlType } from '@inkverse/public/utils';
 
 export type ShareItem = {
@@ -67,18 +67,13 @@ export async function showShareSheet({ type, item, parentItem }: ShareItem) {
     const message = getMessage({ type, item, parentItem });
     const title = getTitle({ type, item, parentItem });
     const urlPath = getUrl({ type, item, parentItem });
-    const fullUrl = `https://inkverse.co${urlPath}`;
 
-    const options = Platform.OS === 'ios' 
-      ? {
-          message: message,
-          url: fullUrl,
-          title: title,
-        } 
-      : {
-          message: `${message}\n\n${fullUrl}`,
-          title: title,
-        };
+    // Keep the link inside the message on both platforms. On iOS, passing `url`
+    // separately makes the "Copy" action copy only the text and drop the link.
+    const options = {
+      message: urlPath ? `${message}\n\nhttps://inkverse.co${urlPath}` : message,
+      title: title,
+    };
 
     const result = await Share.share(options);
     
