@@ -38,7 +38,7 @@ export const DropdownMenu = <T extends string>({ options, selected, onSelect, ic
           </ThemedText>
         </View>
       </PressableOpacity>
-      <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
+      <Modal visible={open} transparent animationType="fade" supportedOrientations={['portrait', 'landscape']} onRequestClose={() => setOpen(false)}>
         <Pressable style={styles.dropdownBackdrop} onPress={() => setOpen(false)}>
           <View
             style={[

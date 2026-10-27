@@ -450,6 +450,7 @@ export function CommentItem({
         visible={showMenu}
         transparent
         animationType="fade"
+        supportedOrientations={['portrait', 'landscape']}
         onRequestClose={() => setShowMenu(false)}
       >
         <Pressable style={[styles.menuBackdrop, { backgroundColor: menuBackdropColor }]} onPress={() => setShowMenu(false)}>

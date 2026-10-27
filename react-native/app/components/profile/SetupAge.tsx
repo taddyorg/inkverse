@@ -131,6 +131,7 @@ export function SetupAge({
         visible={showYearPicker}
         animationType="slide"
         transparent={true}
+        supportedOrientations={['portrait', 'landscape']}
         onRequestClose={() => setShowYearPicker(false)}
       >
         <View style={styles.modalOverlay}>
