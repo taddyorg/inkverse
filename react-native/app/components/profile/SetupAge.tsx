@@ -8,7 +8,7 @@ import {
   SafeAreaView 
 } from 'react-native';
 import { UserAgeRange } from '@inkverse/shared-client/graphql/operations';
-import { ThemedText, ThemedButton, PressableOpacity } from '@/app/components/ui';
+import { ThemedText, ThemedButton, PressableOpacity, FormColumn } from '@/app/components/ui';
 import { Colors, useThemeColor } from '@/constants/Colors';
 import { SPACING } from '@/constants/Spacing';
 import { UserDetailsState } from '@inkverse/shared-client/dispatch/user-details';
@@ -78,7 +78,7 @@ export function SetupAge({
   const yearOptions = Array.from({ length: 18 }, (_, i) => currentYear - 17 + i);
 
   return (
-    <View style={styles.container}>
+    <FormColumn>
       <ThemedText style={styles.label} size='title'>
         How old are you?
       </ThemedText>
@@ -204,14 +204,11 @@ export function SetupAge({
           </ThemedText>
         </View>
       )}
-    </View>
+    </FormColumn>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    width: '100%',
-  },
   label: {
     textAlign: 'center',
     marginBottom: 40,

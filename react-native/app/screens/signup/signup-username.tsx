@@ -1,5 +1,5 @@
 import { useState, useReducer, useRef } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { 
@@ -7,7 +7,7 @@ import {
   userDetailsInitialState,
   UserDetailsActionType 
 } from '@inkverse/shared-client/dispatch/user-details';
-import { Screen, ThemedView, ThemedText, PressableOpacity } from '@/app/components/ui';
+import { Screen, ThemedText, PressableOpacity, FormColumn } from '@/app/components/ui';
 import { SetupUsername } from '@/app/components/profile/SetupUsername';
 import { SIGNUP_AGE_SCREEN, RootStackParamList } from '@/constants/Navigation';
 import { getUserApolloClient } from '@/lib/apollo';
@@ -53,8 +53,7 @@ export function SignupUsernameScreen() {
 
   return (
     <Screen>
-      <View style={styles.container}>
-        <ThemedView style={{flex: 1, width: '100%' }}>
+      <FormColumn scroll scrollContentStyle={styles.container}>
           <ThemedText size="title" style={styles.title}>
             Complete your profile
           </ThemedText>
@@ -65,17 +64,13 @@ export function SignupUsernameScreen() {
             onSubmit={handleSubmit}
             mode="setup"
           />
-        </ThemedView>
-      </View>
+      </FormColumn>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
     padding: 16,
   },
   title: {

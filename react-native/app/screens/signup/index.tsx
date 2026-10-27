@@ -19,7 +19,8 @@ import {
   AuthActionType
 } from '@inkverse/shared-client/dispatch/authentication';
 
-import { ThemedView, ThemedText, PressableOpacity } from '@/app/components/ui';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ThemedText, PressableOpacity, FormColumn } from '@/app/components/ui';
 import { Colors, useThemeColor } from '@/constants/Colors';
 import { SPACING } from '@/constants/Spacing';
 import { SvgXml } from 'react-native-svg';
@@ -51,6 +52,7 @@ export function SignupScreen() {
     'background'
   );
   const textColor = useThemeColor({}, 'text');
+  const insets = useSafeAreaInsets();
   const errorColor = useThemeColor(
     { light: '#dc2626', dark: '#ef4444' },
     'text'
@@ -188,6 +190,14 @@ export function SignupScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor }]}>
+      {/* Close button, kept at the screen edge outside the capped column (and clear of the notch in landscape) */}
+      <PressableOpacity 
+        onPress={() => navigation.goBack()}
+        style={[styles.closeButton, { right: insets.right + SPACING.sm + SPACING.xs }]}
+      >
+        <MaterialCommunityIcons name="close" size={28} color={textColor} />
+      </PressableOpacity>
+
       <ScrollView 
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[
@@ -195,19 +205,9 @@ export function SignupScreen() {
         ]}
         keyboardShouldPersistTaps="handled"
       >
-        <ThemedView style={styles.content}>
-          {/* Close button */}
-          <PressableOpacity 
-            onPress={() => navigation.goBack()}
-            style={styles.closeButton}
-          >
-            <MaterialCommunityIcons name="close" size={28} color={textColor} />
-          </PressableOpacity>
-
-          <View style={{ flex: 1 }}>
-            {/* Center box with title and buttons */}
-            <View style={styles.centeredContentWrapper}>
-              <View style={styles.centeredContent}>
+        <FormColumn style={styles.content}>
+          {/* Center box with title and buttons, in the normal flow so it scrolls in landscape */}
+          <View style={styles.centeredContent}>
                 <View style={styles.titleContainer}>
                   <ThemedText size="title" style={styles.title}>
                     Sign Up / Log In to Inkverse
@@ -289,21 +289,19 @@ export function SignupScreen() {
                     </View>
                   </PressableOpacity>
                 </View>
-              </View>
-            </View>
-            
-            {/* Error container positioned at the bottom */}
-            <View style={styles.errorContainerWrapper}>
-              {authState.error && (
-                <View style={[styles.errorContainer, { backgroundColor: errorColor + '20' }]}>
-                  <ThemedText style={[styles.errorText, { color: errorColor }]}>
-                    {authState.error}
-                  </ThemedText>
-                </View>
-              )}
-            </View>
           </View>
-        </ThemedView>
+            
+          {/* Error container below the buttons */}
+          <View style={styles.errorContainerWrapper}>
+            {authState.error && (
+              <View style={[styles.errorContainer, { backgroundColor: errorColor + '20' }]}>
+                <ThemedText style={[styles.errorText, { color: errorColor }]}>
+                  {authState.error}
+                </ThemedText>
+              </View>
+            )}
+          </View>
+        </FormColumn>
       </ScrollView>
     </View>
   );
@@ -321,9 +319,6 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingTop: SPACING.xxl + SPACING.xl,
-    alignSelf: 'center',
-    width: '100%',
-    justifyContent: 'space-between',
     paddingBottom: SPACING.xl,
   },
   closeButton: {
@@ -382,25 +377,17 @@ const styles = StyleSheet.create({
     fontSize: 17,
     textAlignVertical: 'center',
   },
-  centeredContentWrapper: {
-    position: 'absolute',
-    top: -40,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   centeredContent: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     width: '100%',
+    // Sits the title and buttons a little above center
+    paddingBottom: 40,
   },
   errorContainerWrapper: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: SPACING.xl * 2,
     alignItems: 'center',
+    marginTop: SPACING.md,
+    marginBottom: SPACING.xl,
   },
 });

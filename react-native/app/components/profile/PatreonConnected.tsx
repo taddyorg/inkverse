@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { ComicSeries } from '@inkverse/shared-client/graphql/operations';
 import { ComicSeriesDetails } from '../comics/ComicSeriesDetails';
@@ -8,6 +8,7 @@ import { ThemedText } from '../ui/ThemedText';
 import { HeaderBackButton } from '../ui/HeaderBackButton';
 import { SPACING } from '@/constants/Spacing';
 import { ThemedButton } from '../ui/ThemedButton';
+import { FormColumn } from '../ui/FormColumn';
 
 interface PatreonConnectedProps {
   loading: boolean;
@@ -29,7 +30,7 @@ function ComicsFound({ comicSeries, onContinue }: ComicsFoundProps) {
       <ThemedText style={[styles.foundText]}>
         We found {comicSeries?.length} comic{comicSeries?.length === 1 ? '' : 's'} from creators you support on Patreon.
       </ThemedText>
-      <ScrollView style={styles.comicsList} showsVerticalScrollIndicator={false}>
+      <View style={styles.comicsList}>
         {comicSeries?.map((series) => {
           return (
             <View key={series.uuid} style={styles.comicItem}>
@@ -37,7 +38,7 @@ function ComicsFound({ comicSeries, onContinue }: ComicsFoundProps) {
             </View>
           );
         })}
-      </ScrollView>
+      </View>
       <ThemedButton
         style={styles.continueButton}
         onPress={onContinue}
@@ -66,44 +67,49 @@ export function PatreonConnected({ loading, error, comicSeries, onContinue, onSk
     'text'
   );
   return (
-    <View style={styles.container}>
+    <>
       <HeaderBackButton onPress={onBackToUnconnected} />
-      <View style={styles.iconContainer}>
-        <Ionicons name="checkmark-circle" size={80} color="#10B981" />
-      </View>
-      
-      <ThemedText style={[styles.title]} size="title">Patreon Connected!</ThemedText>
-      
-      {loading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="small" color={buttonColor} />
-          <ThemedText style={[{ color: textColor }]}>Finding creators you support...</ThemedText>
+      <FormColumn scroll scrollContentStyle={styles.scrollContent} style={styles.container}>
+        <View style={styles.iconContainer}>
+          <Ionicons name="checkmark-circle" size={80} color="#10B981" />
         </View>
-      ) : error ? (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{error}</Text>
-        </View>
-      ) : comicSeries && comicSeries.length > 0 ? (
-        <ComicsFound comicSeries={comicSeries} onContinue={onContinue} />
-      ) : (
-        <NoComicsFound />
-      )}
-      <TouchableOpacity
-        onPress={onSkip}
-        style={styles.skipButton}
-        activeOpacity={0.7}
-      >
-        <ThemedText style={styles.skipButtonText}>
-          {comicSeries && comicSeries.length > 0 ? 'Skip' : 'Continue'}
-        </ThemedText>
-      </TouchableOpacity>
-    </View>
+      
+        <ThemedText style={[styles.title]} size="title">Patreon Connected!</ThemedText>
+      
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="small" color={buttonColor} />
+            <ThemedText style={[{ color: textColor }]}>Finding creators you support...</ThemedText>
+          </View>
+        ) : error ? (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>{error}</Text>
+          </View>
+        ) : comicSeries && comicSeries.length > 0 ? (
+          <ComicsFound comicSeries={comicSeries} onContinue={onContinue} />
+        ) : (
+          <NoComicsFound />
+        )}
+        <TouchableOpacity
+          onPress={onSkip}
+          style={styles.skipButton}
+          activeOpacity={0.7}
+        >
+          <ThemedText style={styles.skipButtonText}>
+            {comicSeries && comicSeries.length > 0 ? 'Skip' : 'Continue'}
+          </ThemedText>
+        </TouchableOpacity>
+      </FormColumn>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
+  scrollContent: {
+    flexGrow: 1,
+  },
   container: {
-    flex: 1,
+    flexGrow: 1,
     alignItems: 'center',
     padding: SPACING.lg,
   },
@@ -137,7 +143,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   comicsList: {
-    flex: 1,
+    flexGrow: 1,
     width: '100%',
     marginBottom: SPACING.md,
   },

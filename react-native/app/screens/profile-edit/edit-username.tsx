@@ -1,8 +1,7 @@
 import React, { useReducer, useRef, useState } from 'react';
-import { View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { EDIT_USERNAME_SCREEN, RootStackParamList } from '@/constants/Navigation';
-import { HeaderBackButton, ThemedView } from '@/app/components/ui';
+import { HeaderBackButton, ThemedView, FormColumn } from '@/app/components/ui';
 import { SetupUsername } from '@/app/components/profile/SetupUsername';
 import { getUserApolloClient } from '@/lib/apollo';
 import { userDetailsReducer, userDetailsInitialState, updateUsername } from '@inkverse/shared-client/dispatch/user-details';
@@ -52,7 +51,7 @@ export function EditUsernameScreen() {
   return (
     <ThemedView style={{ flex: 1 }}>
       <HeaderBackButton />
-      <View style={{ marginTop: 80, paddingHorizontal: 20 }}>      
+      <FormColumn scroll scrollContentStyle={{ paddingTop: 80, paddingHorizontal: 20 }}>
         <SetupUsername
           username={username}
           setUsername={setUsername}
@@ -62,7 +61,7 @@ export function EditUsernameScreen() {
           currentUsername={passedInUsername}
           onCancel={handleCancel}
         />
-      </View>
+      </FormColumn>
     </ThemedView>
   );
 }

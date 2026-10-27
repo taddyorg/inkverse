@@ -7,6 +7,7 @@ import {
   ScrollView,
   StyleSheet,
   AppState,
+  useWindowDimensions,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -19,7 +20,7 @@ import {
   AuthActionType
 } from '@inkverse/shared-client/dispatch/authentication';
 import config from '@/config';
-import { ThemedView, ThemedText, ThemedButton, PressableOpacity, HeaderBackButton } from '@/app/components/ui';
+import { ThemedText, ThemedButton, PressableOpacity, HeaderBackButton, FormColumn } from '@/app/components/ui';
 import { Colors, useThemeColor } from '@/constants/Colors';
 import { SPACING } from '@/constants/Spacing';
 import { SIGNUP_RESET_SCREEN, RootStackParamList } from '@/constants/Navigation';
@@ -62,6 +63,9 @@ export function SignupEmailScreen() {
   );
 
   const textColor = useThemeColor({}, 'text');
+  // Short windows (phone landscape) drop the extra gap above the title, so the input and button fit above the keyboard
+  const { height: windowHeight } = useWindowDimensions();
+  const isShortWindow = windowHeight < 500;
   const errorColor = useThemeColor(
     { light: '#dc2626', dark: '#ef4444' },
     'text'
@@ -136,6 +140,7 @@ export function SignupEmailScreen() {
           {hasReturnedToApp && (
             <HeaderBackButton />
           )}
+          <FormColumn>
           <ThemedText size="title" style={styles.centerTitle}>
             {email ? `We have sent an email to ${email}` : 'We have sent an email to you'}
           </ThemedText>
@@ -159,6 +164,7 @@ export function SignupEmailScreen() {
               />
             </>
           )}
+          </FormColumn>
         </View>
       )}
 
@@ -168,7 +174,7 @@ export function SignupEmailScreen() {
             contentContainerStyle={styles.scrollContent}
             keyboardShouldPersistTaps="handled"
           >
-            <ThemedView style={styles.content}>
+            <FormColumn style={styles.content}>
               {/* Back button */}
               <PressableOpacity
                 onPress={() => navigation.goBack()}
@@ -189,7 +195,7 @@ export function SignupEmailScreen() {
                 <MaterialCommunityIcons name="close" size={28} color={textColor} />
               </PressableOpacity> */}
 
-              <ThemedText size="title" style={styles.title}>
+              <ThemedText size="title" style={[styles.title, isShortWindow && styles.titleShortWindow]}>
                 Enter your email
               </ThemedText>
 
@@ -231,7 +237,7 @@ export function SignupEmailScreen() {
                   </ThemedText>
                 </View>
               )}
-            </ThemedView>
+            </FormColumn>
 
           </ScrollView>
         )}
@@ -262,9 +268,6 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingTop: SPACING.xxl + SPACING.xl,
-    alignSelf: 'center',
-    width: '100%',
-    maxWidth: 400,
   },
   backButton: {
     position: 'absolute',
@@ -283,6 +286,9 @@ const styles = StyleSheet.create({
     marginTop: SPACING.xxl + SPACING.xl,
     marginBottom: SPACING.xl,
     fontSize: 24,
+  },
+  titleShortWindow: {
+    marginTop: SPACING.md,
   },
   centerTitle: {
     textAlign: 'center',

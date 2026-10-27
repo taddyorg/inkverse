@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useReducer } from 'react';
 import { StyleSheet, SectionList, Switch, View, useColorScheme, Platform } from 'react-native';
 
-import { Screen, ThemedView, ThemedText, HeaderBackButton, ThemedActivityIndicator } from '../components/ui';
+import { Screen, ThemedView, ThemedText, HeaderBackButton, ThemedActivityIndicator, useLayout } from '../components/ui';
 import { Colors } from '@/constants/Colors';
 import { getUserApolloClient } from '@/lib/apollo';
 import {
@@ -38,6 +38,8 @@ type Section = {
 
 export function NotificationSettingsScreen() {
   const colorScheme = useColorScheme() ?? 'light';
+  // Centered content column on wider layouts (landscape, iPad); 0 on phones
+  const { contentInsetX } = useLayout();
   const [state, dispatch] = useReducer(notificationSettingsReducer, notificationSettingsInitialState);
   const { settings, isCreator, isLoading } = state;
 
@@ -115,23 +117,32 @@ export function NotificationSettingsScreen() {
     );
   }, []);
 
+  // Title scrolls with the list, so it doesn't take up fixed height in landscape
+  const title = (
+    <ThemedView style={styles.titleContainer}>
+      <ThemedText size="title">Notification Preferences</ThemedText>
+    </ThemedView>
+  );
+
   return (
     <Screen>
       <View>
         <HeaderBackButton />
       </View>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText size="title">Notification Preferences</ThemedText>
-      </ThemedView>
       <ThemedView style={styles.container}>
         {isLoading ? (
-          <ThemedActivityIndicator style={styles.loadingIndicator} />
+          <View style={{ paddingHorizontal: contentInsetX }}>
+            {title}
+            <ThemedActivityIndicator style={styles.loadingIndicator} />
+          </View>
         ) : (
           <SectionList
             sections={buildSections()}
             renderItem={renderItem}
             renderSectionHeader={renderSectionHeader}
             keyExtractor={(item) => item.eventType}
+            ListHeaderComponent={title}
+            contentContainerStyle={{ paddingHorizontal: contentInsetX }}
             showsVerticalScrollIndicator={false}
             stickySectionHeadersEnabled={false}
           />

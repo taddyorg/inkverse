@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { StyleSheet, View, TextInput } from 'react-native';
-import { ThemedText, ThemedButton } from '@/app/components/ui';
+import { ThemedText, ThemedButton, FormColumn } from '@/app/components/ui';
 import { Colors, useThemeColor } from '@/constants/Colors';
 import { UserDetailsState } from '@inkverse/shared-client/dispatch/user-details';
 import { SPACING } from '@/constants/Spacing';
@@ -75,7 +75,7 @@ export function SetupEmail({
   const hasChanges = mode === 'edit' ? email.trim() !== currentEmail : true;
 
   return (
-    <View>
+    <FormColumn>
       <ThemedText size="subtitle" style={styles.label}>
         {mode === 'setup' ? 'Enter your email' : 'Update your email'}
       </ThemedText>
@@ -127,7 +127,7 @@ export function SetupEmail({
           </ThemedText>
         </View>
       )}
-    </View>
+    </FormColumn>
   );
 }
 

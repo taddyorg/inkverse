@@ -3,7 +3,7 @@ import { StyleSheet, View, TextInput } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { Screen, ScreenHeader, ThemedView, ThemedText, HeaderBackButton, ThemedButton } from '../components/ui';
+import { Screen, ScreenHeader, ThemedText, HeaderBackButton, ThemedButton, FormColumn } from '../components/ui';
 import { RootStackParamList, EDIT_TAGLINE_SCREEN, BLOG_SCREEN } from '@/constants/Navigation';
 import { getUserApolloClient } from '@/lib/apollo';
 import { taglineReducer, taglineInitialState, submitComicSeriesTagline } from '@inkverse/shared-client/dispatch/tagline';
@@ -50,7 +50,7 @@ export function EditTaglineScreen() {
         <HeaderBackButton onPress={() => navigation.goBack()} />
       </View>
       <ScreenHeader />
-      <ThemedView style={styles.container}>
+      <FormColumn scroll scrollContentStyle={styles.container}>
         <ThemedText size="subtitle" style={styles.headerTitle}>
           Edit Your Tagline
         </ThemedText>
@@ -96,14 +96,13 @@ export function EditTaglineScreen() {
             disabled={isSaveDisabled}
           />
         </View>
-      </ThemedView>
+      </FormColumn>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     padding: SPACING.md,
   },
   headerTitle: {

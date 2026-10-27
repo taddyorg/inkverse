@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, TextInput, ActivityIndicator, Image } from 'react-native';
 import { type UserDetailsState } from '@inkverse/shared-client/dispatch/user-details';
-import { ThemedText, PressableOpacity, ThemedTextFontFamilyMap } from '@/app/components/ui';
+import { ThemedText, PressableOpacity, ThemedTextFontFamilyMap, FormColumn } from '@/app/components/ui';
 import { Colors, useThemeColor } from '@/constants/Colors';
 import { SPACING } from '@/constants/Spacing';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -48,7 +48,7 @@ export function SetupBluesky({
 
   if (currentStep === 'bluesky') {
     return (
-      <View style={styles.container}>
+      <FormColumn scroll scrollContentStyle={styles.scrollContent} style={styles.container}>
         <View style={styles.header}>
           <ThemedText size="title" style={styles.title}>
             Connect with Bluesky
@@ -114,7 +114,7 @@ export function SetupBluesky({
             </PressableOpacity>
           )}
         </View>
-      </View>
+      </FormColumn>
     );
   }
 
@@ -122,7 +122,7 @@ export function SetupBluesky({
     const profile = userDetailsState.blueskyProfile;
     
     return (
-      <View style={styles.container}>
+      <FormColumn scroll scrollContentStyle={styles.scrollContent} style={styles.container}>
         <View style={styles.header}>
           <ThemedText size="title" style={styles.title}>
             Confirm Your Bluesky Account
@@ -203,7 +203,7 @@ export function SetupBluesky({
             </ThemedText>
           </View>
         )}
-      </View>
+      </FormColumn>
     );
   }
 
@@ -211,10 +211,11 @@ export function SetupBluesky({
 }
 
 const styles = StyleSheet.create({
+  scrollContent: {
+    paddingTop: 80,
+  },
   container: {
-    flex: 1,
     padding: SPACING.lg,
-    marginTop: 80,
   },
   header: {
     alignItems: 'center',

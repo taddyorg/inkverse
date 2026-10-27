@@ -1,6 +1,5 @@
 import React, { useReducer, useRef, useState } from 'react';
-import { View } from 'react-native';
-import { HeaderBackButton, ThemedView } from '@/app/components/ui';
+import { HeaderBackButton, ThemedView, FormColumn } from '@/app/components/ui';
 import { SetupAge } from '@/app/components/profile/SetupAge';
 import { getUserApolloClient } from '@/lib/apollo';
 import { userDetailsReducer, userDetailsInitialState, updateAgeRange } from '@inkverse/shared-client/dispatch/user-details';
@@ -60,7 +59,7 @@ export function EditAgeScreen() {
   return (
     <ThemedView style={{ flex: 1 }}>
       <HeaderBackButton />
-      <View style={{ marginTop: 80, paddingHorizontal: 20 }}>
+      <FormColumn scroll scrollContentStyle={{ paddingTop: 80, paddingHorizontal: 20 }}>
         <SetupAge
           ageRange={ageRange}
           setAgeRange={setAgeRange}
@@ -73,7 +72,7 @@ export function EditAgeScreen() {
           currentBirthYear={passedInBirthYear}
           onCancel={handleCancel}
         />
-      </View>
+      </FormColumn>
     </ThemedView>
   );
 }

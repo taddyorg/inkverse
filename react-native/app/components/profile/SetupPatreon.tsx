@@ -4,6 +4,7 @@ import { Colors } from '@/constants/Colors';
 import Svg, { Path } from 'react-native-svg';
 import { ThemedText } from '../ui/ThemedText';
 import { HeaderBackButton } from '../ui/HeaderBackButton';
+import { FormColumn } from '../ui/FormColumn';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@/constants/Navigation';
@@ -22,6 +23,7 @@ export function SetupPatreon({ currentStep, onConnect, onSkip, onBack, onContinu
   return (
     <View style={styles.container}>
       <HeaderBackButton />
+      <FormColumn scroll>
       <View style={styles.contentContainer}>
         <ThemedText style={[styles.title]} size="title">
           Connect your Patreon
@@ -62,6 +64,7 @@ export function SetupPatreon({ currentStep, onConnect, onSkip, onBack, onContinu
           </TouchableOpacity>
         } */}
       </View>
+      </FormColumn>
     </View>
   );
 }

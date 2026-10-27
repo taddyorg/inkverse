@@ -1,11 +1,11 @@
 import React, { useState, useReducer, useEffect, useMemo } from 'react';
-import { StyleSheet, View, Alert } from 'react-native';
+import { StyleSheet, View, Alert, useWindowDimensions } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@/constants/Navigation';
 import DropDownPicker from 'react-native-dropdown-picker';
 
-import { Screen, ScreenHeader, ThemedView, ThemedText, HeaderBackButton, ThemedButton } from '../components/ui';
+import { Screen, ScreenHeader, ThemedText, HeaderBackButton, ThemedButton, FormColumn } from '../components/ui';
 import { ReportType } from '@inkverse/shared-client/graphql/operations';
 import { getUserApolloClient } from '@/lib/apollo';
 import { reportReducer, reportInitialState, submitReportComicSeries, submitReportComment } from '@inkverse/shared-client/dispatch/reports';
@@ -68,6 +68,9 @@ export function ReportsScreen() {
   const commentUuid = route.params && 'commentUuid' in route.params ? route.params.commentUuid : undefined;
   const [selectedReportType, setSelectedReportType] = useState<ReportType | null>(null);
   const [open, setOpen] = useState(false);
+  // Keep the open dropdown on screen in short windows (phone landscape)
+  const { height: windowHeight } = useWindowDimensions();
+  const dropdownMaxHeight = Math.min(300, windowHeight - 160);
   const [reportState, dispatch] = useReducer(reportReducer, reportInitialState);
 
   const items = useMemo(() => {
@@ -119,7 +122,7 @@ export function ReportsScreen() {
         <HeaderBackButton onPress={() => navigation.goBack()} />
       </View>
       <ScreenHeader />
-      <ThemedView style={styles.container}>
+      <FormColumn style={styles.container}>
         {/* Dropdown Selection using react-native-dropdown-picker */}
         <ThemedText size="subtitle" style={styles.headerTitle}>
           {type === 'comment'
@@ -133,7 +136,7 @@ export function ReportsScreen() {
             items={items}
             setOpen={setOpen}
             setValue={setSelectedReportType}
-            maxHeight={300}
+            maxHeight={dropdownMaxHeight}
             placeholder="Select a reason"
             style={styles.dropdownButton}
             textStyle={styles.dropdownButtonText}
@@ -173,7 +176,7 @@ export function ReportsScreen() {
             disabled={!selectedReportType || reportState.isSubmitting}
           />
         </View>
-      </ThemedView>
+      </FormColumn>
     </Screen>
   );
 }

@@ -15,6 +15,7 @@ import { DropdownMenu } from "./DropdownMenu"
 import { FadeInView } from "./FadeInView"
 import { useLayout, useScreenPaddingX, useGridPagePaddingX, useGridColumns } from "./Layout"
 import { ExpandableText } from "./ExpandableText"
+import { FormColumn } from "./FormColumn"
 
 export {
     Logo,
@@ -38,4 +39,5 @@ export {
     useGridPagePaddingX,
     useGridColumns,
     ExpandableText,
+    FormColumn,
 }

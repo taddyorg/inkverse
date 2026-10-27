@@ -5,6 +5,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useRoute, useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { RootStackParamList, BLOG_SCREEN } from '@/constants/Navigation';
 import { HeaderBackButton, ThemedActivityIndicator, PressableOpacity } from '@/app/components/ui';
@@ -21,6 +22,7 @@ export function BlogScreen() {
   const { url } = route.params;
   const [canGoBack, setCanGoBack] = useState(false);
   const webViewRef = useRef<WebView>(null);
+  const insets = useSafeAreaInsets();
 
   // Handle hardware back button
   useFocusEffect(
@@ -52,7 +54,7 @@ export function BlogScreen() {
     <View style={[styles.container]}>
       <View style={styles.header}>
         {canGoBack && <HeaderBackButton onPress={handleBackPress} />}
-        <View style={styles.closeButtonPosition}>
+        <View style={[styles.closeButtonPosition, { right: Math.max(16, insets.right + 8) }]}>
           <PressableOpacity style={styles.closeButtonVisual} onPress={handleClosePress}>
             <Ionicons name="close" size={24} color="black" />
           </PressableOpacity>

@@ -1,8 +1,7 @@
 import React, { useReducer, useRef, useState } from 'react';
-import { View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { EDIT_EMAIL_SCREEN, RootStackParamList } from '@/constants/Navigation';
-import { HeaderBackButton, ThemedView } from '@/app/components/ui';
+import { HeaderBackButton, ThemedView, FormColumn } from '@/app/components/ui';
 import { SetupEmail } from '@/app/components/profile/SetupEmail';
 import { getUserApolloClient } from '@/lib/apollo';
 import { userDetailsReducer, userDetailsInitialState, updateUserEmail } from '@inkverse/shared-client/dispatch/user-details';
@@ -52,7 +51,7 @@ export function EditEmailScreen() {
   return (
     <ThemedView style={{ flex: 1 }}>
       <HeaderBackButton />
-      <View style={{ marginTop: 80, paddingHorizontal: 20 }}>
+      <FormColumn scroll scrollContentStyle={{ paddingTop: 80, paddingHorizontal: 20 }}>
         <SetupEmail
           email={email}
           setEmail={setEmail}
@@ -62,7 +61,7 @@ export function EditEmailScreen() {
           currentEmail={passedInEmail}
           onCancel={handleCancel}
         />
-      </View>
+      </FormColumn>
     </ThemedView>
   );
 }

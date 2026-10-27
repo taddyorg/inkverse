@@ -7,6 +7,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 
 import { Screen, ScreenHeader, HeaderBackButton, ThemedText, ThemedTextFontFamilyMap, ThemedActivityIndicator, PressableOpacity, DropdownMenu } from '@/app/components/ui';
+import { MAX_CONTENT_WIDTH } from '@/constants/Layout';
 import { Colors, useThemeColor } from '@/constants/Colors';
 import { RootStackParamList, SIGNUP_SCREEN, MAIN_SCREEN, HOME_TAB, PROFILE_SCREEN } from '@/constants/Navigation';
 import { getPublicApolloClient, getUserApolloClient } from '@/lib/apollo';
@@ -209,7 +210,7 @@ export function CommentsScreen() {
         {/* Header */}
         <View>
           <HeaderBackButton onPress={() => navigation.goBack()} />
-          <View style={{ position: 'absolute', top: 40, right: 16, zIndex: 1 }}>
+          <View style={{ position: 'absolute', top: 40, right: Math.max(16, insets.right + 8), zIndex: 1 }}>
             <DropdownMenu
               options={sortOptions}
               selected={sortBy}
@@ -312,6 +313,7 @@ export function CommentsScreen() {
 
         {/* Bottom input bar */}
         <KeyboardStickyView offset={{ closed: 0, opened: insets.bottom }} style={[styles.inputBarContainer, { paddingBottom: Math.max(insets.bottom, 8) }]}>
+          <View style={styles.readerColumn}>
           {/* Reply indicator */}
           {replyTo && (
             <View style={styles.replyIndicator}>
@@ -372,6 +374,7 @@ export function CommentsScreen() {
               <Ionicons name="send" size={18} color="white" />
             </PressableOpacity>
           </View>
+          </View>
         </KeyboardStickyView>
       </View>
     </Screen>
@@ -396,11 +399,20 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingTop: 8,
     paddingBottom: 16,
+    paddingHorizontal: 12,
+  },
+  // Comments and the input bar share a centered reading column on wider layouts (landscape, iPad)
+  readerColumn: {
+    width: '100%',
+    maxWidth: MAX_CONTENT_WIDTH.reader,
+    alignSelf: 'center',
   },
   commentsContainer: {
     marginTop: 16,
     borderRadius: 16,
-    marginHorizontal: 12,
+    width: '100%',
+    maxWidth: MAX_CONTENT_WIDTH.reader,
+    alignSelf: 'center',
     overflow: 'hidden',
   },
   loadingContainer: {

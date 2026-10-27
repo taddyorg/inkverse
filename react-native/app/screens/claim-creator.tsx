@@ -4,7 +4,7 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import { NativeStackScreenProps, NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Image } from 'expo-image';
 
-import { Screen, HeaderBackButton, ThemedText, ThemedActivityIndicator, ThemedButton } from '@/app/components/ui';
+import { Screen, HeaderBackButton, ThemedText, ThemedActivityIndicator, ThemedButton, FormColumn } from '@/app/components/ui';
 import { RootStackParamList, CLAIM_CREATOR_SCREEN, SIGNUP_SCREEN, PROFILE_SCREEN } from '@/constants/Navigation';
 import { getPublicApolloClient, getUserApolloClient } from '@/lib/apollo';
 import { isAuthenticated, getAccessToken, getUserDetails, mobileStorageFunctions } from '@/lib/auth/user';
@@ -177,7 +177,7 @@ export function ClaimCreatorScreen() {
       <View style={styles.header}>
         <HeaderBackButton />
       </View>
-      <View style={styles.content}>
+      <FormColumn scroll scrollContentStyle={styles.content}>
         {/* Initial state - show creator info and benefits */}
         {!effectiveStatus && (
           <View style={styles.centerContainer}>
@@ -273,7 +273,7 @@ export function ClaimCreatorScreen() {
             />
           </View>
         )}
-      </View>
+      </FormColumn>
     </Screen>
   );
 }
@@ -298,8 +298,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   content: {
-    flex: 1,
     paddingHorizontal: 24,
+    paddingBottom: 24,
   },
   centerContainer: {
     alignItems: 'center',

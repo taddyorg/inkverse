@@ -18,6 +18,8 @@ import { getUserApolloClient } from '@/lib/apollo';
 import { fetchAllHostingProviderTokens } from '@inkverse/shared-client/dispatch/hosting-provider';
 import { saveHostingProviderRefreshToken, refreshHostingProviderAccessToken } from '@/lib/auth/hosting-provider';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { MAX_CONTENT_WIDTH } from '@/constants/Layout';
 
 export interface SignupResetScreenParams {
   token?: string;
@@ -35,6 +37,7 @@ export function SignupResetScreen() {
   );
 
   const textColor = useThemeColor({}, 'text');
+  const insets = useSafeAreaInsets();
 
   const onTokenSuccessfullyReceived = async () => {
     const user = await getUserDetails();
@@ -90,7 +93,7 @@ export function SignupResetScreen() {
           {/* Close button */}
           <PressableOpacity 
             onPress={() => navigation.goBack()}
-            style={styles.closeButton}>
+            style={[styles.closeButton, { right: insets.right + 16 }]}>
             <MaterialCommunityIcons name="close" size={28} color={textColor} />
           </PressableOpacity>
           <ThemedView style={[styles.card, { backgroundColor }]}>
@@ -134,7 +137,7 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: 12,
     padding: 24,
-    maxWidth: 400,
+    maxWidth: MAX_CONTENT_WIDTH.form,
     width: '100%',
   },
   title: {

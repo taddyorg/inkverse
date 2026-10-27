@@ -3,7 +3,7 @@ import { View, ScrollView, TouchableOpacity, ActivityIndicator, StyleSheet } fro
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList, EDIT_USERNAME_SCREEN, EDIT_AGE_SCREEN, EDIT_EMAIL_SCREEN, EDIT_PATREON_SCREEN, EDIT_BLUESKY_SCREEN } from '@/constants/Navigation';
-import { HeaderBackButton, ThemedRefreshControl, ThemedText, ThemedView } from '@/app/components/ui';
+import { HeaderBackButton, ThemedRefreshControl, ThemedText, ThemedView, useLayout } from '@/app/components/ui';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useThemeColor, Colors } from '@/constants/Colors';
 import { prettyAgeRange } from '@inkverse/public/user';
@@ -41,6 +41,8 @@ export function EditProfileScreen() {
   const [isPatreonConnected, setIsPatreonConnected] = useState(false);
   const [isBlueskyConnected, setIsBlueskyConnected] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  // Same centered column as the settings screen on wider layouts (landscape, iPad); 0 on phones
+  const { contentInsetX } = useLayout();
 
   const checkConnections = async () => {
     try {
@@ -236,7 +238,7 @@ export function EditProfileScreen() {
           />
         }
       >
-        <View style={styles.section}>
+        <View style={[styles.section, { marginHorizontal: SPACING.lg + contentInsetX }]}>
           {profileProperties.map((property, index) => renderProperty(property, index))}
         </View>
       </ScrollView>
@@ -250,13 +252,12 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-    paddingTop: 80,
   },
   scrollContent: {
+    paddingTop: 80,
     paddingBottom: SPACING.xl,
   },
   section: {
-    marginHorizontal: SPACING.lg,
     marginTop: SPACING.lg,
   },
   propertyRow: {

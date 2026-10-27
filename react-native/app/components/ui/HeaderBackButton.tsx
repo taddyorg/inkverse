@@ -3,13 +3,16 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@/constants/Navigation';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PressableOpacity } from './PressableOpacity';
 
 export function HeaderBackButton({ onPress, backButtonVisualStyle, style }: { onPress?: () => void; backButtonVisualStyle?: StyleProp<ViewStyle>; style?: StyleProp<ViewStyle> }) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const insets = useSafeAreaInsets();
 
+  // Clear the notch in landscape; screens that pass their own `left` still override this
   return (
-    <View style={[styles.backButtonPosition, style]}>
+    <View style={[styles.backButtonPosition, { left: Math.max(16, insets.left + 8) }, style]}>
       <PressableOpacity
         style={[styles.backButtonVisual, backButtonVisualStyle]}
         onPress={onPress || (() => navigation.goBack())}>
@@ -23,7 +26,6 @@ const styles = StyleSheet.create({
   backButtonPosition: {
     position: 'absolute',
     top: 40,
-    left: 16,
     zIndex: 1,
   },
   backButtonVisual: {

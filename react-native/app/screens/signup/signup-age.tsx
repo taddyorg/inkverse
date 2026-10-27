@@ -1,10 +1,10 @@
 import { useState, useReducer } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { UserAgeRange } from '@inkverse/public/graphql/types';
 import { updateAgeRange, UserDetailsActionType, userDetailsInitialState, userDetailsReducer } from '@inkverse/shared-client/dispatch/user-details';
-import { Screen, ThemedView, HeaderBackButton } from '@/app/components/ui';
+import { Screen, ThemedView, HeaderBackButton, FormColumn } from '@/app/components/ui';
 import { SetupAge } from '@/app/components/profile/SetupAge';
 import { useThemeColor } from '@/constants/Colors';
 import { SIGNUP_NOTIFICATIONS_SCREEN, RootStackParamList } from '@/constants/Navigation';
@@ -53,8 +53,8 @@ export function SignupAgeScreen() {
 
   return (
     <Screen>
-      <View style={styles.container}>
-        <HeaderBackButton />
+      <HeaderBackButton />
+      <FormColumn scroll scrollContentStyle={styles.container}>
         <ThemedView style={[styles.card, { backgroundColor }]}>
           <SetupAge
             ageRange={ageRange}
@@ -66,15 +66,13 @@ export function SignupAgeScreen() {
             mode="setup"
           />
         </ThemedView>
-      </View>
+      </FormColumn>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    alignItems: 'center',
     justifyContent: 'center',
     padding: 16,
   },

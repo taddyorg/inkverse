@@ -1,9 +1,9 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, ActivityIndicator } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import type { ComicSeries } from '@inkverse/shared-client/graphql/operations';
 import { ComicSeriesDetails } from '../comics/ComicSeriesDetails';
-import { ThemedText, PressableOpacity, ThemedButton } from '@/app/components/ui';
+import { ThemedText, PressableOpacity, ThemedButton, FormColumn } from '@/app/components/ui';
 import { useThemeColor } from '@/constants/Colors';
 import { SPACING } from '@/constants/Spacing';
 
@@ -28,10 +28,7 @@ function ComicsFound({ comicSeries, onContinue }: ComicsFoundProps) {
       <ThemedText style={styles.foundText}>
         We found {comicSeries?.length} comic{comicSeries?.length === 1 ? '' : 's'} you follow on Bluesky.
       </ThemedText>
-      <ScrollView 
-        style={styles.comicsList}
-        showsVerticalScrollIndicator={false}
-      >
+      <View style={styles.comicsList}>
         {comicSeries?.map((series) => (
           <View key={series.uuid} style={styles.comicItem}>
             <ComicSeriesDetails 
@@ -40,7 +37,7 @@ function ComicsFound({ comicSeries, onContinue }: ComicsFoundProps) {
             />
           </View>
         ))}
-      </ScrollView>
+      </View>
       <ThemedButton
         onPress={onContinue}
         buttonText="Add these comics to your profile"
@@ -75,7 +72,7 @@ export function BlueskyConnected({
   const buttonTextColor = useThemeColor({}, 'buttonText');
 
   return (
-    <View style={styles.container}>
+    <FormColumn scroll scrollContentStyle={styles.scrollContent} style={styles.container}>
       <View style={styles.header}>
         <View style={styles.iconContainer}>
           <Ionicons name="checkmark-circle" size={80} color="#10B981" />
@@ -115,13 +112,16 @@ export function BlueskyConnected({
           </ThemedText>
         </PressableOpacity>
       </View>
-    </View>
+    </FormColumn>
   );
 }
 
 const styles = StyleSheet.create({
+  scrollContent: {
+    flexGrow: 1,
+  },
   container: {
-    flex: 1,
+    flexGrow: 1,
     padding: SPACING.lg,
   },
   header: {
@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   content: {
-    flex: 1,
+    flexGrow: 1,
   },
   loadingContainer: {
     alignItems: 'center',
@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
     marginTop: SPACING.xl,
   },
   comicsList: {
-    flex: 1,
+    flexGrow: 1,
     marginBottom: SPACING.lg,
   },
   comicItem: {

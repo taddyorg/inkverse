@@ -5,7 +5,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Notifications } from '@/lib/notifications';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
-import { Screen, ThemedView, ThemedText, PressableOpacity, HeaderBackButton, ThemedActivityIndicator, ThemedTextFontFamilyMap } from '@/app/components/ui';
+import { Screen, ThemedView, ThemedText, PressableOpacity, HeaderBackButton, ThemedActivityIndicator, ThemedTextFontFamilyMap, FormColumn } from '@/app/components/ui';
 import { useThemeColor } from '@/constants/Colors';
 import { SPACING } from '@/constants/Spacing';
 import { SIGNUP_PATREON_SCREEN, RootStackParamList } from '@/constants/Navigation';
@@ -84,7 +84,7 @@ export function SignupNotificationsScreen() {
 
   return (
     <Screen>
-      <View style={styles.container}>
+      <FormColumn scroll scrollContentStyle={styles.container}>
         <ThemedView style={[styles.card, { backgroundColor }]}>
           <View style={styles.content}>
             {/* Icon */}
@@ -158,15 +158,13 @@ export function SignupNotificationsScreen() {
 
           </View>
         </ThemedView>
-      </View>
+      </FormColumn>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    alignItems: 'center',
     justifyContent: 'center',
     padding: SPACING.md,
   },

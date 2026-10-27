@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { StyleSheet, View, TextInput } from 'react-native';
 import { validateUsername } from '@inkverse/public/user';
-import { ThemedText, ThemedButton } from '@/app/components/ui';
+import { ThemedText, ThemedButton, FormColumn } from '@/app/components/ui';
 import { Colors, useThemeColor } from '@/constants/Colors';
 import { UserDetailsState } from '@inkverse/shared-client/dispatch/user-details';
 import { SPACING } from '@/constants/Spacing';
@@ -75,7 +75,7 @@ export function SetupUsername({
   const hasChanges = mode === 'edit' ? username.trim() !== currentUsername : true;
 
   return (
-    <View>
+    <FormColumn>
       <ThemedText size="subtitle" style={styles.label}>
         Choose a username
       </ThemedText>
@@ -126,7 +126,7 @@ export function SetupUsername({
           </ThemedText>
         </View>
       )}
-    </View>
+    </FormColumn>
   );
 }
 
