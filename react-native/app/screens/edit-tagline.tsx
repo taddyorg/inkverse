@@ -55,12 +55,12 @@ export function EditTaglineScreen() {
           Edit Your Tagline
         </ThemedText>
         <ThemedText style={styles.helperText}>
-          What makes your comic stand out in its genre? Your tagline appears next to your cover to help readers discover your comic. Keep it short and specific, e.g. "Ghosts • Slow Burn". See{' '}
+          Your tagline appears next to your cover to help readers discover your comic. Keep it short and specific, e.g. "Ghosts • Slow Burn". {' '}
           <ThemedText
             style={styles.linkText}
             onPress={() => navigation.navigate(BLOG_SCREEN, { url: `https://inkverse.co${NotionPage.WRITING_A_GREAT_TAGLINE.path}` })}
           >
-            tips for writing a great tagline
+            See more details
           </ThemedText>.
         </ThemedText>
 

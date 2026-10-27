@@ -98,7 +98,7 @@ export function EditTaglineModal({ isOpen, onClose, seriesUuid, currentTagline }
           Edit Your Tagline
         </h2>
         <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-          What makes your comic stand out in its genre? Your tagline appears next to your cover to help readers discover your comic. Keep it short and specific, e.g. "Ghosts • Slow Burn". See <a href={NotionPage.WRITING_A_GREAT_TAGLINE.path} className="text-brand-pink dark:text-taddy-blue" target="_blank" rel="noopener noreferrer">tips for writing a great tagline</a>.
+          Your tagline appears next to your cover to help readers discover your comic. Keep it short and specific, e.g. "Ghosts • Slow Burn". <a href={NotionPage.WRITING_A_GREAT_TAGLINE.path} className="text-brand-pink dark:text-taddy-blue" target="_blank" rel="noopener noreferrer">See more details</a>.
         </p>
 
         <form onSubmit={handleSubmit}>
