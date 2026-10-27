@@ -17,8 +17,15 @@ const pagesObject = arrayToObject(pages, 'path') as Record<string, any>;
 
 export async function getNotionPageById(id: string) {
   const page = pagesObject[id];
-  if (!page) {
-    throw new Error(`Notion page not found for id: ${id}`);
+  if (!page) { return null; }
+
+  try {
+    return await notion.getPage(page.id);
+  } catch (error) {
+    // notion-client throws this when Notion returns no page block (unpublished or deleted page)
+    if (error instanceof Error && error.message.startsWith('Notion page not found')) {
+      return null;
+    }
+    throw error;
   }
-  return await notion.getPage(page.id);
 }

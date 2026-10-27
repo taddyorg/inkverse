@@ -22,6 +22,8 @@ getDocumentation(
 const DocsQueries = {
   async getDocumentation(root: any, { id }: { id: string }, context: any) {
     const data = await getNotionPageById(id);
+    if (!data) { return null; }
+
     return {
       id,
       text: JSON.stringify(data),

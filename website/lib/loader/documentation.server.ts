@@ -30,6 +30,6 @@ export async function loadDocumentation({ params, request, context }: LoaderFunc
 
   } catch (error) {
     handleLoaderError(error, 'Documentation');
-    return { documentation: null };
+    throw new Response("Error fetching data", { status: 500 });
   }
 }
