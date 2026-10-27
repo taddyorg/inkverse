@@ -18,6 +18,7 @@ export const NotionPage = {
   APP_UPDATES_NEW_APP_LAUNCHED: { id: "1b9332bebe3f80cd8437e457f71ebbf0", path: "/updates/new-app-launched" },
   OUR_ROADMAP: { id: "1bc332bebe3f80ec8bc2d14b3ff5ceec", path: "/our-roadmap" },
   APP_UPDATES_INKVERSE2DOT0: { id: "230332bebe3f8055bd1ac78b311867f5", path: "/updates/inkverse-2dot0" },
+  APP_UPDATES_IPAD_AND_ANDROID_TABLET: { id: "405332bebe3f801f9fbcf3267c05f981", path: "/updates/ipad-and-android-tablet-support" },
   BRAND_KIT: { id: "a900cc4737e045c7aec5312df1ce741a", path: "/brand-kit" },
   ABOUT_US: { id: "334d2f916f2948d5b9e470dc0473527b", path: "/about-us" },
   OPEN_SOURCE: { id: "12b332bebe3f80f9a197eb8e60525e72", path: "/open-source" },
@@ -183,6 +184,15 @@ export const additionalInfoForNotionId: { [key: string]: BlogPost } = {
     priority: '0.8',
     title: "Inkverse 2.0 has been launched!",
     description: "We're excited to announce that the new Inkverse app has been launched!",
+    author: {
+      name: 'Daniel Mathews',
+      url: 'https://dmathewwws.com',
+    }
+  },
+  [NotionPage.APP_UPDATES_IPAD_AND_ANDROID_TABLET.path]: {
+    priority: '0.8',
+    title: "iPad and Android Tablet support",
+    description: "Inkverse now works great on iPad and Android tablets, in both portrait and landscape mode.",
     author: {
       name: 'Daniel Mathews',
       url: 'https://dmathewwws.com',

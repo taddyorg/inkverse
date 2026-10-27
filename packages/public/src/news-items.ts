@@ -7,20 +7,24 @@ export interface NewsItem {
 // Define inkverseNewsItems with example data
 export const inkverseNewsItems: NewsItem[] = [
   {
-    title: "Inkverse Sponsored Art Challenge! Runs from August 1st to 31st 🥳",
-    url: 'https://inkverse.co/discord-art-challenge-2026',
-  },
-  {
-    title: 'Likes and Comments now live! 🎉',
-    url: 'https://inkverse.co/updates/likes-and-comments-now-available',
+    title: 'Inkverse now supports iPads and Android Tablets',
+    url: 'https://inkverse.co/updates/ipad-and-android-tablet-support',
   },
   {
     title: 'Check out our upcoming Roadmap 🚗🚗🚗',
     url: 'https://inkverse.co/our-roadmap',
   },
   {
-    title: 'No pop-ups. No nagging you for coins. Learn more about Inkverse →',
+    title: 'No pop-ups. No nagging you for more coins. Learn more about Inkverse →',
     url: 'https://inkverse.co/about-us',
+  },
+  {
+    title: "Inkverse Sponsored Art Challenge! Runs from August 1st to 31st 🥳",
+    url: 'https://inkverse.co/discord-art-challenge-2026',
+  },
+  {
+    title: 'Likes and Comments now live! 🎉',
+    url: 'https://inkverse.co/updates/likes-and-comments-now-available',
   },
   {
     title: 'Introducing Inkverse 2.0 🎉',
