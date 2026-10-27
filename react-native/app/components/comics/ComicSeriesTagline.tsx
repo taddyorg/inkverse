@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Ionicons } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
 
 import { ThemedText, ThemedTextFontFamilyMap, ThemedIcon, PressableOpacity } from '../ui';
 import { RootStackParamList, EDIT_TAGLINE_SCREEN } from '@/constants/Navigation';
@@ -77,7 +77,7 @@ export function ComicSeriesTagline({ comicseries }: ComicSeriesTaglineProps) {
           accessibilityLabel="Edit tagline"
         >
           <ThemedIcon>
-            <Ionicons name="create-outline" size={18} />
+            <MaterialIcons name="edit" size={16} />
           </ThemedIcon>
         </PressableOpacity>
       )}
