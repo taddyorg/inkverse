@@ -102,15 +102,13 @@ export function ComicSeriesDetails(props: ComicSeriesDetailsProps){
     const link = getInkverseUrl({ type: "comicseries", shortUrl: comicseries.shortUrl });
     if (!link) { return <></>; }
     return (
-      <Link to={link} className="flex flex-row p-6" onClick={() => {
+      <Link to={link} className="flex flex-row items-center p-6" onClick={() => {
         window.dispatchEvent(new Event('closeSearchBox'));
       }}>
         <CoverArt comicseries={comicseries} pageType={pageType} />
-        <div className="w-2/3 pl-4">
+        <div className="flex-1 min-w-0 pl-4">
           <Name comicseries={comicseries} pageType={pageType}/>
-          <div className='flex flex-row justify-between'>
-            <Genre comicseries={comicseries} pageType={pageType}/>
-          </div>
+          <Tagline comicseries={comicseries} pageType={pageType}/>
         </div>
       </Link>
     );
@@ -147,7 +145,7 @@ export function ComicSeriesDetails(props: ComicSeriesDetailsProps){
             <CoverArt comicseries={comicseries} pageType={pageType} />
             <div className="flex-1">
               <Name comicseries={comicseries} pageType={pageType}/>
-              <Genre comicseries={comicseries} pageType={pageType}/>
+              <Tagline comicseries={comicseries} pageType={pageType}/>
               <p className='mt-3'>{comicseries?.description}</p>
             </div>
           </div>
@@ -185,7 +183,8 @@ const Name = ({ comicseries, pageType }: { comicseries: ComicSeries, pageType: C
     case 'list-item':
     case 'list-item-no-link':
       return <h2 className="font-bold text-xl">{comicseries.name}</h2>;
-    default:
+    case 'search':
+      return <h2 className="font-bold text-lg leading-snug line-clamp-2">{comicseries.name}</h2>;    default:
       return <h2 className="mt-4 sm:mt-0 font-bold text-xl">{comicseries.name}</h2>;
   }
 }
@@ -278,6 +277,12 @@ const Tagline = ({ comicseries, pageType }: { comicseries: ComicSeries, pageType
   if (pageType === 'cover-with-tagline') {
     return (
       <p className='mt-2 text-sm font-semibold text-center line-clamp-2'>{comicseries.tagline}</p>
+    );
+  }
+
+  if (pageType === 'search') {
+    return (
+      <p className='mt-1 font-semibold opacity-80 line-clamp-1'>{comicseries.tagline}</p>
     );
   }
 
