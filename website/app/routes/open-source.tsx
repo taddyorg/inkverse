@@ -12,57 +12,34 @@ const SSS_DOCS_URL = `${GITHUB_REPO_URL}/blob/main/docs/sss-exclusive-content.md
 
 const INTRO_COPY = "Inkverse is an open-source webtoons platform. You can read the code, contribute a feature, or fork the whole thing and make your own comic app.";
 
-interface Accent {
-  heading: string;
-  card: string;
-  shadow: string;
+interface CodebaseProject {
+  title: string;
+  body: string;
+  url: string;
 }
 
-const ACCENTS: Accent[] = [
-  {
-    heading: 'text-brand-pink',
-    card: 'border-brand-pink/60',
-    shadow: 'shadow-[6px_6px_0_0_theme(colors.brand-pink)]',
-  },
-  {
-    heading: 'text-brand-purple',
-    card: 'border-brand-purple/60',
-    shadow: 'shadow-[6px_6px_0_0_theme(colors.brand-purple)]',
-  },
-  {
-    heading: 'text-taddy-blue',
-    card: 'border-taddy-blue/60',
-    shadow: 'shadow-[6px_6px_0_0_theme(colors.taddy-blue)]',
-  },
-  {
-    heading: 'text-action-green',
-    card: 'border-action-green/60',
-    shadow: 'shadow-[6px_6px_0_0_theme(colors.action-green)]',
-  },
-];
-
-const CODEBASE = [
-  {
+const CODEBASE: Record<'website' | 'mobile' | 'graphql' | 'worker', CodebaseProject> = {
+  website: {
     title: 'Website',
     body: 'A React app.',
     url: `${GITHUB_REPO_URL}/tree/main/website`,
   },
-  {
+  mobile: {
     title: 'Mobile Apps',
     body: 'A React Native app (Expo) for iOS and Android.',
     url: `${GITHUB_REPO_URL}/tree/main/react-native`,
   },
-  {
+  graphql: {
     title: 'GraphQL API',
     body: 'The main server for Inkverse (a GraphQL API).',
     url: `${GITHUB_REPO_URL}/tree/main/graphql-server`,
   },
-  {
+  worker: {
     title: 'Worker',
     body: 'For background jobs and useful scripts. We use queues for event-driven workflows, ex) sending an email in the background.',
     url: `${GITHUB_REPO_URL}/tree/main/worker`,
   },
-];
+};
 
 const FAQS = [
   {
@@ -88,7 +65,7 @@ const FAQS = [
     question: 'How does Inkverse make money? How would your comic app make money?',
     answer: [
       "Right now, Inkverse does not make money. However, we plan to by building our own version of FastPass and adding support for Ads to unlock content.",
-      "FastPass: On many comic platforms, you can unlock the latest episodes with coins (FastPass), however, creators have to give up their IP rights and be exclusive to the platform to get access to FastPass. Our goal is to make FastPass for indie creators, where creators keep all their IP rights, creators keep 85%+ of all revenue, and hosting providers and comic apps split the remaining revenue (credit card and additional fees are transparent).",
+      "FastPass: On many comic platforms, you can unlock the latest episodes with coins (FastPass), however, creators have to give up their IP rights and be exclusive to the platform to get access to FastPass. Our goal is to make FastPass for indie creators, where creators keep all their IP rights, creators keep 88% of all revenue, and hosting providers and comic apps split the remaining revenue (credit card and additional fees are transparent).",
       "Ads: Instead of using coins, a creator can choose to allow readers to unlock exclusive episodes by watching an ad. Hosting providers and comic apps will take a rev-share on ad revenue."
     ],
   },
@@ -151,42 +128,26 @@ function Hero() {
   );
 }
 
-function Codebase() {
-  return (
-    <section className="px-4 py-8">
-      <div className="mx-auto max-w-4xl">
-        <SectionHeading
-          eyebrow="The Codebase"
-          accent="text-brand-pink"
-        />
-        <div className="grid gap-8 sm:grid-cols-2">
-          {CODEBASE.map((project, index) => {
-            const accent = ACCENTS[index % ACCENTS.length];
-            return (
-              <a
-                key={project.title}
-                href={project.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`group rounded-2xl border-2 bg-white/60 dark:bg-white p-6 ${accent.card} ${accent.shadow}`}
-              >
-                <h3 className={`text-xl font-extrabold ${accent.heading}`}>
-                  {project.title}
-                  <span aria-hidden="true" className="ml-2 inline-block transition-transform group-hover:translate-x-1">→</span>
-                </h3>
-                <p className="mt-3 leading-relaxed text-inkverse-black/80">{project.body}</p>
-              </a>
-            );
-          })}
-        </div>
-      </div>
-    </section>
-  );
-}
+function DiagramNode({ label, small, project }: { label?: string; small?: boolean; project?: CodebaseProject }) {
+  if (project) {
+    return (
+      <a
+        href={project.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="group block w-full sm:w-72 rounded-xl border border-inkverse-black/10 dark:border-white/10 bg-white dark:bg-white/10 px-6 py-4 text-center text-inkverse-black dark:text-white shadow-sm transition-colors hover:border-brand-purple/60 dark:hover:border-brand-purple/60"
+      >
+        <span className="font-bold">
+          {project.title}
+          <span aria-hidden="true" className="ml-2 inline-block transition-transform group-hover:translate-x-1">→</span>
+        </span>
+        <span className="mt-1 block text-sm leading-snug text-inkverse-black/70 dark:text-white/70">{project.body}</span>
+      </a>
+    );
+  }
 
-function DiagramNode({ label, small }: { label: string; small?: boolean }) {
   return (
-    <div className={`rounded-xl border border-inkverse-black/10 dark:border-white/10 bg-white dark:bg-white/10 text-center font-bold text-inkverse-black dark:text-white shadow-sm ${small ? 'px-4 py-2 text-sm' : 'px-6 py-4'}`}>
+    <div className={`rounded-xl border border-inkverse-black/10 dark:border-white/10 bg-white dark:bg-white/10 text-center font-bold text-inkverse-black dark:text-white shadow-sm ${small ? 'px-4 py-2 text-sm' : 'w-full sm:w-72 px-6 py-4'}`}>
       {label}
     </div>
   );
@@ -214,23 +175,22 @@ function Architecture() {
     <section className="px-4 py-8">
       <div className="mx-auto max-w-4xl">
         <SectionHeading eyebrow="Architecture" accent="text-brand-purple" />
-        <div
-          role="img"
-          aria-label="Diagram of the Inkverse architecture: the Website and Mobile Apps talk to the GraphQL API and Worker scripts, which use queues and store data in Postgres and Redis"
-          className="rounded-2xl border-2 border-brand-purple/60 bg-white/60 dark:bg-white/5 p-4 sm:p-8 shadow-[6px_6px_0_0_theme(colors.brand-purple)]"
-        >
+        <p className="sr-only">
+          Diagram of the Inkverse architecture: the Website and Mobile Apps talk to the GraphQL API and Worker scripts, which use queues and store data in Postgres and Redis.
+        </p>
+        <div className="rounded-2xl border-2 border-brand-purple/60 bg-white/60 dark:bg-white/5 p-4 sm:p-8 shadow-[6px_6px_0_0_theme(colors.brand-purple)]">
           <DiagramTier label="Frontend">
             <div className="flex flex-wrap justify-center gap-4 sm:gap-8">
-              <DiagramNode label="Website" />
-              <DiagramNode label="Mobile Apps" />
+              <DiagramNode project={CODEBASE.website} />
+              <DiagramNode project={CODEBASE.mobile} />
             </div>
           </DiagramTier>
           <DiagramArrow />
           <DiagramTier label="Backend">
             <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
-              <DiagramNode label="GraphQL API" />
+              <DiagramNode project={CODEBASE.graphql} />
               <div className="flex items-center justify-center gap-2 sm:gap-4">
-                <DiagramNode label="Worker scripts" />
+                <DiagramNode project={CODEBASE.worker} />
                 <span aria-hidden="true" className="text-xl text-inkverse-black/50 dark:text-white/50">⇄</span>
                 <div>
                   <p className="mb-1 text-center text-[0.65rem] font-extrabold uppercase tracking-[0.18em] text-inkverse-black/60 dark:text-white/60">Queues</p>
@@ -309,6 +269,20 @@ function ToolsWeUse() {
         <SectionHeading eyebrow="Tools We Use" accent="text-action-green" />
         <div className="space-y-8">
           <a
+            href={SSS_DOCS_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group block rounded-2xl border-2 border-action-green/60 bg-white/60 dark:bg-white p-6 shadow-[6px_6px_0_0_theme(colors.action-green)]"
+          >
+            <h3 className="text-xl font-extrabold text-action-green">
+              The comicseries open-standard
+              <span aria-hidden="true" className="ml-2 inline-block transition-transform group-hover:translate-x-1">→</span>
+            </h3>
+            <p className="mt-3 leading-relaxed text-inkverse-black/80">
+              All the comics on Inkverse are self-hosted and use the comicseries open-standard format (SSS). As long as a comic uses that exact format, it can be displayed on Inkverse.
+            </p>
+          </a>
+          <a
             href={TADDY_API_URL}
             target="_blank"
             rel="noopener noreferrer"
@@ -323,20 +297,6 @@ function ToolsWeUse() {
               <li>To get a list of all comics that use the SSS open-standard.</li>
               <li>To get a webhook notification whenever a new comic or new episode is released.</li>
             </ul>
-          </a>
-          <a
-            href={SSS_DOCS_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group block rounded-2xl border-2 border-action-green/60 bg-white/60 dark:bg-white p-6 shadow-[6px_6px_0_0_theme(colors.action-green)]"
-          >
-            <h3 className="text-xl font-extrabold text-action-green">
-              The comicseries open-standard
-              <span aria-hidden="true" className="ml-2 inline-block transition-transform group-hover:translate-x-1">→</span>
-            </h3>
-            <p className="mt-3 leading-relaxed text-inkverse-black/80">
-              All the comics on Inkverse are self-hosted and use the comicseries open-standard format (SSS). As long as a comic uses that exact format, it can be displayed on Inkverse.
-            </p>
           </a>
         </div>
       </div>
@@ -385,7 +345,6 @@ export default function OpenSource() {
     <div className="min-h-screen text-inkverse-black dark:text-white">
       <main>
         <Hero />
-        <Codebase />
         <Architecture />
         <Contributing />
         <ToolsWeUse />
