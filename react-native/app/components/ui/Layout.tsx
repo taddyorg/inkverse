@@ -10,7 +10,6 @@ export type Layout = {
   isSm: boolean;
   isMd: boolean;
   isLg: boolean;
-  isLandscape: boolean;
   isTablet: boolean;
 };
 
@@ -40,7 +39,6 @@ export function useLayout(maxContentWidth?: number): Layout {
     isSm: safeWidth >= BREAKPOINTS.sm,
     isMd: safeWidth >= BREAKPOINTS.md,
     isLg: safeWidth >= BREAKPOINTS.lg,
-    isLandscape: width > height,
     isTablet,
   };
 }

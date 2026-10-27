@@ -38,13 +38,13 @@ export function CreatorDetails({ creator, pageType }: CreatorDetailsProps) {
 
   return (
     <div className="px-4 py-6 mt-2 sm:px-6 lg:px-8 rounded-md">
-      <div className="flex flex-col sm:flex-row ">
+      <div className="flex flex-col items-center">
         {creator.avatarImageAsString &&
           <Avatar creator={creator} pageType={pageType} />
         }
-        <div className="sm:w-2/3 sm:pl-4 text-center sm:text-left mb-4 sm:mb-4">
+        <div className="text-center mb-4">
           <Name creator={creator} pageType={pageType}/>
-          <p className='mt-2'>{creator.bio}</p>
+          <p className='mt-2 max-w-xl mx-auto'>{creator.bio}</p>
         </div>
       </div>
       {creator.links && 
@@ -62,26 +62,26 @@ type CreatorComponentProps = {
 const Name = ({ creator, pageType }: CreatorComponentProps) => {
   switch (pageType) {
     case 'creator-screen':
-      return <h1 className="mt-4 sm:mt-0 font-bold text-xl">{creator.name}</h1>;
+      return <h1 className="mt-4 font-bold text-xl">{creator.name}</h1>;
     case 'profile-screen':
       return (
-        <h1 className="mt-4 sm:mt-0 font-bold text-xl flex items-center gap-1.5 justify-center sm:justify-start">
+        <h1 className="mt-4 font-bold text-xl flex items-center gap-1.5 justify-center">
           {creator.name}
           <FaCheckCircle className="text-brand-pink dark:text-taddy-blue shrink-0" size={16} />
         </h1>
       );
     default:
-      return <h2 className="mt-4 sm:mt-0 font-bold text-xl">{creator.name}</h2>;
+      return <h2 className="mt-4 font-bold text-xl">{creator.name}</h2>;
   }
 }
 
 const Avatar = ({ creator, pageType }: CreatorComponentProps) => {
   return (
-    <div className='flex flex-col items-center sm:items-start'>
+    <div className='flex flex-col items-center'>
       <img
         src={getAvatarImageUrl({ avatarImageAsString: creator.avatarImageAsString })}
         alt={`${creator.name} avatar`}
-        className="h-40 w-40 rounded-full object-cover object-center mb-4 sm:mb-0 sm:mr-2"
+        className="h-40 w-40 rounded-full object-cover object-center mb-4"
       />
     </div>
   );

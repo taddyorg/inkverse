@@ -5,7 +5,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Image } from 'expo-image';
 import { FlashList } from '@shopify/flash-list';
 
-import { ThemedText, ThemedView } from '../ui';
+import { ThemedText, ThemedView, useGridColumns } from '../ui';
 
 import { COMICSERIES_SCREEN, RootStackParamList } from '@/constants/Navigation';
 import { getCoverImageUrl } from '@inkverse/public/comicseries';
@@ -17,6 +17,7 @@ interface CreatorComicsProps {
 
 export function CreatorComics({ comicseries }: CreatorComicsProps) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const numColumns = useGridColumns();
 
   if (!comicseries || comicseries.length === 0) {
     return null;
@@ -48,8 +49,9 @@ export function CreatorComics({ comicseries }: CreatorComicsProps) {
         data={comicseries}
         keyExtractor={(item) => item.uuid}
         renderItem={renderComicItem}
-        numColumns={2}
+        numColumns={numColumns}
         showsHorizontalScrollIndicator={false}
+        showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
       />
     </ThemedView>

@@ -1,9 +1,9 @@
 import React from 'react';
-import { View, StyleSheet, Dimensions, TouchableOpacity, useColorScheme } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 
-import { ThemedText } from '../ui';
+import { ThemedText, useLayout } from '../ui';
 import { getAvatarImageUrl } from '@inkverse/public/creator';
 import { type Creator } from '@inkverse/shared-client/graphql/operations';
 import { CREATOR_SCREEN, PROFILE_SCREEN } from '@/constants/Navigation';
@@ -12,6 +12,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@/constants/Navigation';
 import { CreatorLinks } from './CreatorLinks';
 import { Colors } from '@/constants/Colors';
+import { MAX_CONTENT_WIDTH } from '@/constants/Layout';
 
 type CreatorPageType =
   | 'creator-screen'
@@ -23,10 +24,14 @@ export interface CreatorDetailsProps {
   pageType: CreatorPageType;
 }
 
-const { width } = Dimensions.get('window');
+// Matches the website's h-40 avatar
+const MAX_AVATAR_SIZE = 160;
 
 export function CreatorDetails({ creator, pageType }: CreatorDetailsProps) {
   const colorScheme = useColorScheme() ?? 'light';
+  // 30% of the page column on phones, capped so it doesn't grow on landscape and iPad
+  const { contentWidth } = useLayout(MAX_CONTENT_WIDTH.page);
+  const avatarSize = Math.min(contentWidth * 0.3, MAX_AVATAR_SIZE);
 
   if (!creator) { return null; }
 
@@ -67,7 +72,7 @@ export function CreatorDetails({ creator, pageType }: CreatorDetailsProps) {
       <View style={styles.container}>
         <Image
           source={{ uri: avatarUrl }}
-          style={styles.avatar}
+          style={[styles.avatar, { width: avatarSize, height: avatarSize, borderRadius: avatarSize / 2 }]}
           contentFit="cover"
           recyclingKey={creator.uuid}
         />
@@ -101,9 +106,6 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   avatar: {
-    width: width * 0.3,
-    height: width * 0.3,
-    borderRadius: (width * 0.3) / 2,
     marginBottom: 12,
   },
   infoContainer: {

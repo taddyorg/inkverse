@@ -220,7 +220,8 @@ export function ComicSeriesDetails({ comicseries, pageType, isHeaderVisible, onH
 
     case 'comicseries-screen':
       // No visible title: the cover art always includes it, so screen readers get it from the cover.
-      // Wider layouts keep the same single column, with a fixed-size cover centered on top.
+      // Wider layouts keep the same single column, with a fixed-size cover centered on top
+      // (smaller on a phone in landscape, bigger on tablets).
       const description = comicseries.description?.trim();
       return (
         <ThemedView style={styles.container}>
@@ -234,7 +235,7 @@ export function ComicSeriesDetails({ comicseries, pageType, isHeaderVisible, onH
           >
             <Image
               source={getCoverImageUrl({ coverImageAsString: comicseries.coverImageAsString })}
-              style={isSm ? styles.coverImageCentered : [styles.coverImageFullWidth, { height: contentWidth * 6 / 4 }]}
+              style={isSm ? [styles.coverImageCentered, isTablet && styles.coverImageCenteredTablet] : [styles.coverImageFullWidth, { height: contentWidth * 6 / 4 }]}
               contentFit="cover"
               recyclingKey={comicseries.uuid}
               priority="high"
@@ -322,10 +323,14 @@ const styles = StyleSheet.create({
   coverCentered: {
     alignSelf: 'center',
   },
+  // Phone in landscape: short window, so a smaller cover
   coverImageCentered: {
-    height: 360,
+    height: 300,
     aspectRatio: 4 / 6,
     borderRadius: 8,
+  },
+  coverImageCenteredTablet: {
+    height: 440,
   },
   infoContainer: {
     marginHorizontal: 16,

@@ -37,16 +37,16 @@ type ListItem =
 // Floating back / share buttons
 const HEADER_BUTTON_SIZE = 40;
 const INITIAL_VISIBLE_ISSUES = 5;
-const getHeaderButtonsTop = (isLandscape: boolean) => isLandscape ? 16 : 40;
-// In landscape, hug the screen edges rather than the content column. The side safe-area
-// inset is for the Dynamic Island, which sits mid-height, so a button this close to the
-// top only needs to clear the rounded display corner.
-const getHeaderButtonsSideOffset = (isLandscape: boolean, contentInsetX: number) =>
-  isLandscape ? SPACING.xl : contentInsetX + 16;
-// In landscape the centered cover sits between the buttons, so it can start level with them
-const getHeaderPaddingTop = (isLandscape: boolean) => isLandscape
-  ? getHeaderButtonsTop(isLandscape)
-  : getHeaderButtonsTop(isLandscape) + HEADER_BUTTON_SIZE + 16;
+const getHeaderButtonsTop = (isWide: boolean) => isWide ? 16 : 40;
+// On wider layouts (landscape, iPad), hug the screen edges rather than the content column.
+// The side safe-area inset is for the Dynamic Island, which sits mid-height, so a button
+// this close to the top only needs to clear the rounded display corner.
+const getHeaderButtonsSideOffset = (isWide: boolean, contentInsetX: number) =>
+  isWide ? SPACING.xl : contentInsetX + 16;
+// On wider layouts the centered cover sits between the buttons, so it starts just below their top edge
+const getHeaderPaddingTop = (isWide: boolean) => isWide
+  ? getHeaderButtonsTop(isWide) + SPACING.md
+  : getHeaderButtonsTop(isWide) + HEADER_BUTTON_SIZE + 16;
 
 export function ComicSeriesScreen() {
   const route = useRoute<NativeStackScreenProps<RootStackParamList, typeof COMICSERIES_SCREEN>['route']>();
@@ -80,10 +80,10 @@ export function ComicSeriesScreen() {
   const [comicSeriesState, dispatch] = useReducer(comicSeriesReducer, comicSeriesInitialState);
   const [refreshing, setRefreshing] = useState(false);
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
-  const { contentInsetX, isSm, isLandscape } = useLayout();
+  const { contentInsetX, isSm } = useLayout();
   const insets = useSafeAreaInsets();
-  // In landscape the buttons hug the screen edges, so pull the content in past them
-  const listInsetX = isLandscape
+  // On wider layouts the buttons hug the screen edges, so pull the content in past them
+  const listInsetX = isSm
     ? Math.max(contentInsetX, getHeaderButtonsSideOffset(true, contentInsetX) + HEADER_BUTTON_SIZE + SPACING.md)
     : contentInsetX;
   const actionColor = useThemeColor({}, 'action');
@@ -191,7 +191,7 @@ export function ComicSeriesScreen() {
       case 'header':
         // On wider layouts, leave room above the header for the floating buttons
         return (
-          <View style={isSm && { paddingTop: getHeaderPaddingTop(isLandscape) }}>
+          <View style={isSm && { paddingTop: getHeaderPaddingTop(isSm) }}>
             <ComicSeriesDetails
               comicseries={item.data}
               pageType='comicseries-screen'
@@ -255,7 +255,7 @@ export function ComicSeriesScreen() {
       default:
         return null;
     }
-  }, [comicseries, issues, userComicData, isUserDataLoading, isSubscriptionLoading, isNotificationLoading, isHeaderVisible, setIsHeaderVisible, handleAddToProfile, handleGetNotifications, handleNavigateToIssue, issueLikeLoadingMap, handleLikeIssue, isSm, isLandscape, likeCount, commentCount, firstIssue, actionColor, actionTextColor]);
+  }, [comicseries, issues, userComicData, isUserDataLoading, isSubscriptionLoading, isNotificationLoading, isHeaderVisible, setIsHeaderVisible, handleAddToProfile, handleGetNotifications, handleNavigateToIssue, issueLikeLoadingMap, handleLikeIssue, isSm, likeCount, commentCount, firstIssue, actionColor, actionTextColor]);
 
   const keyExtractor = useCallback((item: ListItem) => {
     switch (item.type) {
@@ -321,9 +321,9 @@ interface ComicSeriesScreenWrapperProps {
 }
 
 const ComicSeriesScreenWrapper = ({ children, isHeaderVisible, comicseries }: ComicSeriesScreenWrapperProps) => {
-  const { contentInsetX, isSm, isLandscape } = useLayout();
-  const top = getHeaderButtonsTop(isLandscape);
-  const sideOffset = getHeaderButtonsSideOffset(isLandscape, contentInsetX);
+  const { contentInsetX, isSm } = useLayout();
+  const top = getHeaderButtonsTop(isSm);
+  const sideOffset = getHeaderButtonsSideOffset(isSm, contentInsetX);
 
   // On wider layouts the cover isn't behind the buttons, so keep them visible
   return (

@@ -1,9 +1,10 @@
 import { useCallback, useMemo, useEffect, useReducer, useState } from 'react';
-import { StyleSheet, Image, View, Dimensions, SectionList, FlatList } from 'react-native';
+import { StyleSheet, Image, View, SectionList, useWindowDimensions } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { FlashList } from '@shopify/flash-list';
 
-import { Screen, ThemedView, ThemedText, ThemedButton, ThemedActivityIndicator, HeaderBackButton, ThemedRefreshControl, FadeInView } from '@/app/components/ui';
+import { Screen, ThemedView, ThemedText, ThemedButton, ThemedActivityIndicator, HeaderBackButton, ThemedRefreshControl, FadeInView, useLayout, useGridColumns, useGridPagePaddingX } from '@/app/components/ui';
 import { HeaderSettingsButton } from '@/app/components/profile/HeaderSettingsButton';
 import { PROFILE_SCREEN, RootStackParamList, SETTINGS_SCREEN, SIGNUP_SCREEN, NOTIFICATIONS_SCREEN } from '@/constants/Navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -14,6 +15,7 @@ import { getPublicApolloClient, getUserApolloClient } from '@/lib/apollo';
 import { ComicSeriesDetails } from '../components/comics/ComicSeriesDetails';
 import { CreatorDetails } from '../components/creator/CreatorDetails';
 import { on, off, EventNames } from '@inkverse/shared-client/pubsub';
+import { SPACING } from '@/constants/Spacing';
 
 type SectionData = {
   title: string;
@@ -35,17 +37,6 @@ export type ProfileScreenParams = {
   userId?: string;
 };
 
-// Calculate number of columns based on screen width
-const getNumColumns = () => {
-  const screenWidth = Dimensions.get('window').width;
-  // Account for padding: 20px on each side
-  const availableWidth = screenWidth - 40;
-  // Each item needs at least 150px width
-  const minItemWidth = 150;
-  const numColumns = Math.floor(availableWidth / minItemWidth);
-  return Math.max(1, Math.min(numColumns, 3)); // Between 1 and 3 columns
-};
-
 export function ProfileScreen() {
   const route = useRoute<NativeStackScreenProps<RootStackParamList, typeof PROFILE_SCREEN>['route']>();
   const { userId } = route?.params || {};
@@ -55,6 +46,15 @@ export function ProfileScreen() {
 
   // Set up reducer for profile data
   const [state, dispatch] = useReducer(profileReducer, profileInitialState);
+  // Centered column on wider layouts (landscape, iPad)
+  const { width, height } = useWindowDimensions();
+  const { contentInsetX, isSm, isTablet } = useLayout();
+  const gridPagePaddingX = useGridPagePaddingX();
+  // iPad landscape matches the creator screen's margins (less the sections' own 20px padding)
+  const listPaddingX = isTablet && width > height ? gridPagePaddingX - 20 : contentInsetX;
+  const numColumns = useGridColumns();
+  // Account for the grid's 20px padding on each side
+  const itemWidth = (width - 2 * listPaddingX - 40) / numColumns;
   const { user, subscribedComics, creator, isLoading, error } = state;
   
   // Pull to refresh state
@@ -264,13 +264,26 @@ export function ProfileScreen() {
     navigation.navigate(NOTIFICATIONS_SCREEN);
   }, [navigation]);
 
+  const renderComicItem = useCallback(({ item }: { item: ComicSeries }) => {
+    return (
+      <View style={{ width: itemWidth }}>
+        <ComicSeriesDetails
+          comicseries={item}
+          pageType='grid-item'
+        />
+      </View>
+    );
+  }, [itemWidth]);
+
   const renderSectionItem = useCallback(({ item }: { item: ProfileSectionItem }) => {
     switch (item.type) {
       case 'header':
         return (
-          <ThemedView style={[styles.headerContainer, { marginTop: item.includeBackButton ? 24 : 0 }]}>
-            {item.includeBackButton && <HeaderBackButton style={{ top: 20 }} />}
-            <HeaderSettingsButton onSettingsPress={handleSettingsPress} onNotificationsPress={handleNotificationsPress}/>
+          // Span the full screen width (cancelling the list's column padding) so on wider
+          // layouts the buttons hug the screen corners, like the creator screen
+          <ThemedView style={[styles.headerContainer, { marginTop: item.includeBackButton ? 24 : 0, marginHorizontal: -listPaddingX }]}>
+            {item.includeBackButton && <HeaderBackButton style={{ top: 20, left: isSm ? SPACING.xl : 16 }} />}
+            <HeaderSettingsButton onSettingsPress={handleSettingsPress} onNotificationsPress={handleNotificationsPress} containerStyle={{ right: isSm ? SPACING.xl : 20 }}/>
           </ThemedView>
         );
       
@@ -328,10 +341,10 @@ export function ProfileScreen() {
       case 'creator-comics-grid':
         return (
           <View style={styles.sectionContainer}>
-            <FlatList
+            <FlashList
               data={item.comics}
               renderItem={renderComicItem}
-              numColumns={getNumColumns()}
+              numColumns={numColumns}
               keyExtractor={(comic) => comic.uuid.toString()}
               showsVerticalScrollIndicator={false}
               scrollEnabled={false}
@@ -360,10 +373,10 @@ export function ProfileScreen() {
         
         return (
           <View style={styles.sectionContainer}>
-            <FlatList
+            <FlashList
               data={comics}
               renderItem={renderComicItem}
-              numColumns={getNumColumns()}
+              numColumns={numColumns}
               keyExtractor={(comic) => comic.uuid.toString()}
               showsVerticalScrollIndicator={false}
               scrollEnabled={false}
@@ -375,23 +388,7 @@ export function ProfileScreen() {
       default:
         return null;
     }
-  }, [handleSettingsPress, handleNotificationsPress, navigation, creator]);
-
-  const renderComicItem = useCallback(({ item }: { item: ComicSeries }) => {
-    const numColumns = getNumColumns();
-    const screenWidth = Dimensions.get('window').width;
-    const availableWidth = screenWidth - 40; // Account for 20px padding on each side
-    const itemWidth = (availableWidth - (numColumns - 1)) / numColumns; // 16px gap between items
-        
-    return (
-      <View style={{ width: itemWidth }}> 
-        <ComicSeriesDetails
-          comicseries={item}
-          pageType='grid-item'
-        />
-      </View>
-    );
-  }, []);
+  }, [handleSettingsPress, handleNotificationsPress, navigation, creator, renderComicItem, numColumns, listPaddingX, isSm]);
 
   const renderSectionHeader = useCallback(({ section }: { section: SectionData }) => {
     if (!section.title) return null;
@@ -412,6 +409,7 @@ export function ProfileScreen() {
           sections={sectionData}
           renderItem={renderSectionItem}
           renderSectionHeader={renderSectionHeader}
+          showsVerticalScrollIndicator={false}
           keyExtractor={(item, index) => {
           // Each item type appears only once, so we can use a combination
           // of the item type and any unique property it has
@@ -434,7 +432,7 @@ export function ProfileScreen() {
               return `item-${index}`;
           }
         }}
-          contentContainerStyle={styles.screenPadding}
+          contentContainerStyle={[styles.screenPadding, { paddingHorizontal: listPaddingX }]}
           stickySectionHeadersEnabled={false}
           refreshControl={
             <ThemedRefreshControl
