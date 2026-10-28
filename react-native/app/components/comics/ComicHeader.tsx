@@ -9,6 +9,57 @@ import { ThemedText, PressableOpacity } from '../ui';
 import { showShareSheet } from '@/lib/share-sheet';
 
 const HEADER_HEIGHT = 128;
+// The header sits 8px above the screen, so this is the band the reader sees
+export const COMIC_HEADER_CONTENT_HEIGHT = HEADER_HEIGHT - 8;
+export const COMIC_HEADER_PADDING_BOTTOM = 16;
+
+interface ComicHeaderBarProps {
+  comicseries: { name?: string | null } | null | undefined;
+  comicissue: { name?: string | null } | null | undefined;
+  onBack?: () => void;
+  onShare?: () => void;
+}
+
+// The header's row: back button, series and episode titles, share button. Also mirrored by the
+// ReadNextEpisodeSheet so the pull-to-open sheet hands off to this header seamlessly.
+export function ComicHeaderBar({ comicseries, comicissue, onBack, onShare }: ComicHeaderBarProps) {
+  return (
+    <View style={styles.container}>
+      <PressableOpacity
+        style={styles.backButton}
+        disabled={!onBack}
+        onPress={onBack}>
+        <Ionicons name="arrow-back" size={24} color="white" />
+      </PressableOpacity>
+      <View style={styles.center}>
+        {comicseries &&
+          <ThemedText
+            style={styles.comicTitle}
+            ellipsizeMode="tail"
+            numberOfLines={1}
+          >
+            {comicseries.name}
+          </ThemedText>
+        }
+        {comicissue &&
+          <ThemedText
+            style={styles.episodeTitle}
+            ellipsizeMode='tail'
+            numberOfLines={1}
+          >
+            {comicissue.name}
+          </ThemedText>
+        }
+      </View>
+      <PressableOpacity
+        style={styles.shareButton}
+        disabled={!onShare}
+        onPress={onShare}>
+        <Ionicons name="share-outline" size={24} color="white" />
+      </PressableOpacity>
+    </View>
+  );
+}
 
 interface ComicHeaderProps {
   headerPosition: Animated.AnimatedInterpolation<string | number>;
@@ -21,38 +72,12 @@ export function ComicHeader({ headerPosition, comicseries, comicissue }: ComicHe
   
   return (
     <Animated.View style={[styles.header, { transform: [{ translateY: headerPosition }] }]}>
-      <View style={styles.container}>
-        <PressableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="white" />
-        </PressableOpacity>
-        <View style={styles.center}>
-          {comicseries && 
-            <ThemedText 
-              style={styles.comicTitle} 
-              ellipsizeMode="tail"
-              numberOfLines={1}
-            >
-              {comicseries.name}
-            </ThemedText>
-          }
-          {comicissue && 
-            <ThemedText 
-              style={styles.episodeTitle} 
-              ellipsizeMode='tail'
-              numberOfLines={1}
-            >
-              {comicissue.name}
-            </ThemedText>
-          }
-        </View>
-        <PressableOpacity
-          style={styles.shareButton}
-          onPress={() => { showShareSheet({ type: 'comicissue', item: comicissue, parentItem: comicseries }); }}> 
-          <Ionicons name="share-outline" size={24} color="white" />
-        </PressableOpacity>
-      </View>
+      <ComicHeaderBar
+        comicseries={comicseries}
+        comicissue={comicissue}
+        onBack={() => navigation.goBack()}
+        onShare={() => { showShareSheet({ type: 'comicissue', item: comicissue, parentItem: comicseries }); }}
+      />
     </Animated.View>
   );
 }
@@ -67,7 +92,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     height: HEADER_HEIGHT,
     width: '100%',
-    paddingBottom: 16,
+    paddingBottom: COMIC_HEADER_PADDING_BOTTOM,
     backgroundColor: '#000000',
     zIndex: 10,
   },

@@ -170,6 +170,12 @@ export async function loadComicIssueUrl(
   }
 }
 
+// Shared by loadComicIssue and readCachedComicIssue so both use the same Apollo cache entry
+const comicIssueQuery = (issueUuid: string, seriesUuid: string) => ({
+  query: GetComicIssue,
+  variables: { issueUuid, seriesUuid },
+});
+
 export async function loadComicIssue(
   { publicClient, issueUuid, seriesUuid, forceRefresh = false }: GetComicIssueProps,
   dispatch?: Dispatch<ComicIssueAction>
@@ -178,11 +184,7 @@ export async function loadComicIssue(
 
   try {
     const comicIssueResult = await publicClient.query<GetComicIssueQuery, GetComicIssueQueryVariables>({
-      query: GetComicIssue,
-      variables: { 
-        issueUuid,
-        seriesUuid,
-      },
+      ...comicIssueQuery(issueUuid, seriesUuid),
       ...(!!forceRefresh && { fetchPolicy: 'network-only' })
     });
 
@@ -211,6 +213,19 @@ export async function loadComicIssue(
         payload: errorMessage 
       });
     }
+    return null;
+  }
+}
+
+/* Read a comic issue that is already in the Apollo cache (e.g. prefetched with loadComicIssue) */
+export function readCachedComicIssue(
+  { publicClient, issueUuid, seriesUuid }: Omit<GetComicIssueProps, 'forceRefresh'>
+): Partial<ComicIssueLoaderData> | null {
+  try {
+    const data = publicClient.readQuery<GetComicIssueQuery, GetComicIssueQueryVariables>(comicIssueQuery(issueUuid, seriesUuid));
+    return data?.getComicIssue ? parseLoaderComicIssue(data) : null;
+  } catch (error) {
+    // A partial cache entry can throw; treat it as a miss
     return null;
   }
 }

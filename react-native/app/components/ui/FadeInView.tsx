@@ -5,12 +5,15 @@ type FadeInViewProps = {
   children: React.ReactNode;
   style?: StyleProp<ViewStyle>;
   duration?: number;
+  // false renders at full opacity straight away (read once, at mount)
+  fadeIn?: boolean;
 };
 
-export function FadeInView({ children, style, duration = 300 }: FadeInViewProps) {
-  const opacity = useRef(new Animated.Value(0)).current;
+export function FadeInView({ children, style, duration = 300, fadeIn = true }: FadeInViewProps) {
+  const opacity = useRef(new Animated.Value(fadeIn ? 0 : 1)).current;
 
   useEffect(() => {
+    if (!fadeIn) { return; }
     Animated.timing(opacity, {
       toValue: 1,
       duration,

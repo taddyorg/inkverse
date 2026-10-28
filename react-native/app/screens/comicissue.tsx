@@ -15,7 +15,8 @@ import { GridOfComicIssues } from '../components/comics/GridOfComicIssues';
 import { ComicHeader, HEADER_HEIGHT } from '../components/comics/ComicHeader';
 import { ComicFooter, FOOTER_HEIGHT } from '../components/comics/ComicFooter';
 import { CreatorForIssue } from '../components/creator/CreatorForIssue';
-import { ReadNextEpisode } from '../components/comics/ReadNextEpisode';
+import { ReadNextEpisode, useReadNextEpisodePull, READ_NEXT_PULL_SPACER_HEIGHT, type SheetContent } from '../components/comics/ReadNextEpisode';
+import { ReadNextEpisodeSheet } from '../components/comics/ReadNextEpisodeSheet';
 import { LikeButton } from '../components/comics/LikeButton';
 import { CommentsSection } from '../components/comics/CommentsSection';
 import { Screen, ScrollIndicator, ThemedActivityIndicator, ThemedRefreshControl, ThemedText, ThemedButton, PressableOpacity, ThemedTextFontFamilyMap, FadeInView } from '@/app/components/ui';
@@ -30,6 +31,7 @@ import {
   likeComicIssue,
   unlikeComicIssue,
   superLikeAllEpisodes,
+  readCachedComicIssue,
   ComicIssueActionType,
 } from '@inkverse/shared-client/dispatch/comicissue';
 import type { Comment } from '@inkverse/shared-client/dispatch/comments';
@@ -55,6 +57,11 @@ interface ListItem {
 export type ComicIssueScreenParams = {
   issueUuid: string;
   seriesUuid: string;
+  // 'none' when opened through the ReadNextEpisode peek sheet, which has already covered the screen
+  transition?: 'none';
+  // What that sheet was showing, so this screen can keep covering itself with the same titles and page
+  // until its own first page is on screen
+  cover?: SheetContent;
 };
 
 const PRELOAD_BATCH_SIZE = 5;
@@ -65,6 +72,13 @@ const HEADER_OPEN_POSITION = 0;
 const HEADER_CLOSED_POSITION = -HEADER_HEIGHT;
 const FOOTER_OPEN_POSITION = 0;
 const FOOTER_CLOSED_POSITION = FOOTER_HEIGHT;
+
+// Starts from the cached issue when there is one (the ReadNextEpisode card prefetches its target), so a
+// screen pushed without a transition has content on its first frame instead of a spinner
+const seedComicIssueState = ({ issueUuid, seriesUuid }: { issueUuid: string; seriesUuid: string }) => ({
+  ...comicIssueInitialState,
+  ...readCachedComicIssue({ publicClient: getPublicApolloClient(), issueUuid, seriesUuid }),
+});
 
 const preloadImagesInBatch = async (imageUrls: string[]) => {
   if (imageUrls.length === 0) return;
@@ -134,7 +148,27 @@ export function ComicIssueScreen() {
     }).start();
   }, []);
   
-  const [state, dispatch] = useReducer(comicIssueReducer, comicIssueInitialState);
+  const [state, dispatch] = useReducer(comicIssueReducer, { issueUuid, seriesUuid }, seedComicIssueState);
+  // Opened through the peek sheet: the sheet already shows this screen's header and first page, so the
+  // content must not fade in underneath it
+  const [skipFadeIn, setSkipFadeIn] = useState(route.params.transition === 'none');
+  // Pushed from under another screen's sheet: start with our own sheet expanded over the same content, so
+  // the empty first frames (FlashList lays out before it renders, images decode asynchronously) stay
+  // covered. Falls back to the seeded issue when the pushing screen sent no cover. Patreon-exclusive pages
+  // need a content token, so like the peek sheet they get no page image.
+  const [initialCover] = useState<SheetContent | null>(() => {
+    if (route.params.transition !== 'none') { return null; }
+    if (route.params.cover) { return route.params.cover; }
+    const isExclusive = !!state.comicissue?.scopesForExclusiveContent?.includes('patreon');
+    const story = isExclusive ? undefined : state.comicissue?.stories?.[0];
+    const pageImageUrl = story?.storyImageAsString ? getStoryImageUrl({ storyImageAsString: story.storyImageAsString }) : null;
+    return {
+      seriesName: state.comicseries?.name,
+      episodeName: state.comicissue?.name,
+      pageImageUrl: pageImageUrl ?? undefined,
+      pageAspectRatio: story?.width && story?.height ? story.width / story.height : undefined,
+    };
+  });
   const {
     isComicIssueLoading,
     comicissue,
@@ -275,8 +309,10 @@ export function ComicIssueScreen() {
     }
   }, [issueUuid, comicissue?.uuid]);
 
-  // Handle navigation to a different issue
-  const handleNavigateToIssue = useCallback((newIssueUuid: string, newSeriesUuid: string) => {
+  // Handle navigation to a different issue. Navigating to this same screen updates its params in place,
+  // so the UI state is reset here. `keepChrome` leaves the header and footer open (the peek sheet's
+  // mirrored header hands off to the real one).
+  const handleNavigateToIssue = useCallback((newIssueUuid: string, newSeriesUuid: string, options?: { keepChrome?: boolean }) => {
     navigation.navigate(COMICISSUE_SCREEN, {
       issueUuid: newIssueUuid,
       seriesUuid: newSeriesUuid,
@@ -285,12 +321,63 @@ export function ComicIssueScreen() {
     // Reset all UI state properly
     setScrollPosition(0);
     setContentHeight(0); // Reset content height to prevent incorrect scroll indicator
-    isHeaderOpen.current = false;
-    isFooterOpen.current = false;
-    setIsHeaderVisible(false);
-    headerTranslateY.setValue(HEADER_CLOSED_POSITION);
-    footerTranslateY.setValue(FOOTER_CLOSED_POSITION);
+    const keepChrome = !!options?.keepChrome;
+    isHeaderOpen.current = keepChrome;
+    isFooterOpen.current = keepChrome;
+    setIsHeaderVisible(keepChrome);
+    setSkipFadeIn(keepChrome);
+    headerTranslateY.setValue(keepChrome ? HEADER_OPEN_POSITION : HEADER_CLOSED_POSITION);
+    footerTranslateY.setValue(keepChrome ? FOOTER_OPEN_POSITION : FOOTER_CLOSED_POSITION);
   }, [navigation]);
+
+  // A transition-less open applies to this push only; restore the normal animation for going back. Not in
+  // a plain mount effect: react-native-screens reads the screen's animation when the push transition
+  // actually runs, so clearing it that early can turn the instant push into the default slide of a screen
+  // that already looks like the sheet. Wait for the push to finish (transitionEnd), with a timer as backup.
+  useEffect(() => {
+    if (route.params.transition !== 'none') { return; }
+    let cleared = false;
+    const clear = () => {
+      if (cleared) { return; }
+      cleared = true;
+      navigation.setParams({ transition: undefined, cover: undefined });
+    };
+    const unsubscribe = navigation.addListener('transitionEnd', (event) => {
+      if (!event.data.closing) { clear(); }
+    });
+    const timer = setTimeout(clear, 1000);
+    return () => {
+      unsubscribe();
+      clearTimeout(timer);
+    };
+  }, []);
+
+  // Once the issue has rendered, later remounts of the content fade in as usual
+  useEffect(() => {
+    if (!comicissue?.uuid) { return; }
+    const frame = requestAnimationFrame(() => setSkipFadeIn(false));
+    return () => cancelAnimationFrame(frame);
+  }, [comicissue?.uuid]);
+
+  // Pulling past the next-episode card at the end of the list opens the next episode through the peek
+  // sheet, which expands into this screen before the issue is swapped underneath it
+  const nextIssue = comicissue?.nextIssue;
+  const hasNextIssue = !!(nextIssue?.uuid && nextIssue?.seriesUuid);
+  const bottomSpacerHeight = hasNextIssue ? READ_NEXT_PULL_SPACER_HEIGHT : 0;
+  const handleOpenNextEpisode = useCallback((newIssueUuid: string, newSeriesUuid: string) => {
+    handleNavigateToIssue(newIssueUuid, newSeriesUuid, { keepChrome: true });
+  }, [handleNavigateToIssue]);
+  const nextEpisodePull = useReadNextEpisodePull({
+    enabled: hasNextIssue,
+    listRef: flatListRef,
+    target: nextIssue,
+    seriesName: comicseries?.name,
+    onNavigate: handleOpenNextEpisode,
+    initialCover,
+  });
+  // The sheet covering this screen drops once the first page is on screen (see renderItem), or straight
+  // away when the issue renders without pages (Patreon gates, sign-up, access check)
+  const firstStoryUuid = comicissue?.stories?.[0]?.uuid;
 
   // Handle like/unlike
   const handleLikePress = useCallback(async () => {
@@ -363,14 +450,18 @@ export function ComicIssueScreen() {
 
   const renderItem = useCallback(({ item }: { item: ListItem }) => {
     switch (item.type) {
-      case 'story':
+      case 'story': {
+        const isFirstPage = !!firstStoryUuid && item.data?.uuid === firstStoryUuid;
         return (
           <StoryImage
             story={item.data}
             screenDetails={screenDetails}
             contentToken={contentToken}
+            onDisplay={isFirstPage ? nextEpisodePull.onContentReady : undefined}
+            cachePolicy={isFirstPage ? 'memory-disk' : undefined}
           />
         );
+      }
       case 'like':
         return (
           <LikeButton
@@ -413,6 +504,9 @@ export function ComicIssueScreen() {
             <ReadNextEpisode
               comicissue={item.data.comicissue}
               handleNavigateToIssue={handleNavigateToIssue}
+              pullProgress={nextEpisodePull.progress}
+              onOpen={nextEpisodePull.open}
+              onVisible={nextEpisodePull.onCardVisible}
               isAuthenticated={isAuthenticated}
               isSuperLikeLoading={isSuperLikeLoading}
               onSuperLike={handleSuperLikePress}
@@ -458,7 +552,7 @@ export function ComicIssueScreen() {
       default:
         return null;
     }
-  }, [screenDetails, contentToken, handleNavigateToIssue, navigation, exclusiveListItemStyle, isLiked, displayLikeCount, isLikeLoading, handleLikePress, isAuthenticated, isSuperLikeLoading, handleSuperLikePress, hasLikedAllEpisodes, comicseries?.creators]);
+  }, [screenDetails, contentToken, handleNavigateToIssue, navigation, exclusiveListItemStyle, isLiked, displayLikeCount, isLikeLoading, handleLikePress, isAuthenticated, isSuperLikeLoading, handleSuperLikePress, hasLikedAllEpisodes, comicseries?.creators, nextEpisodePull.progress, nextEpisodePull.open, nextEpisodePull.onCardVisible, nextEpisodePull.onContentReady, firstStoryUuid]);
 
   const listData = useMemo(() => {
     if (!comicissue || !comicseries) return [];
@@ -576,8 +670,9 @@ export function ComicIssueScreen() {
     setScrollPosition(y);
     setContentHeight(contentSize.height);
     
-    // Calculate how close to bottom we are (create a small threshold)
-    const isAtBottom = y + layoutMeasurement.height >= contentSize.height - 20;
+    // Calculate how close to bottom we are (create a small threshold). The hidden spacer below the
+    // next-episode card doesn't count, so the bottom is reached when the card is in view.
+    const isAtBottom = y + layoutMeasurement.height >= contentSize.height - bottomSpacerHeight - 20;
     
     // Show header and footer when at top
     if (y <= 0 && (!isHeaderOpen.current || !isFooterOpen.current)) {
@@ -594,7 +689,9 @@ export function ComicIssueScreen() {
       animateHeaderPosition(HEADER_OPEN_POSITION);
       animateFooterPosition(FOOTER_OPEN_POSITION);
     }
-  }, [animateHeaderPosition, animateFooterPosition]);
+
+    nextEpisodePull.onScroll(event);
+  }, [animateHeaderPosition, animateFooterPosition, bottomSpacerHeight, nextEpisodePull.onScroll]);
 
   // Handle scroll to position from scroll indicator
   const handleScrollTo = useCallback((position: number) => {
@@ -614,25 +711,31 @@ export function ComicIssueScreen() {
     );
   }, [renderItem, handleTap]);
 
-  if (isComicIssueLoading) {
-    return (
-      <Screen style={styles.loadingContainer}>
-        <ThemedActivityIndicator />
-      </Screen>
-    );
-  }
+  // Loading an issue dispatches a loading state even on a cache hit, so only show the spinner when the
+  // rendered issue is not the one requested. The peek sheet stays mounted in both states so it can keep
+  // covering the screen while the next issue loads underneath it.
+  const showSpinner = !comicissue || !comicseries || (isComicIssueLoading && comicissue.uuid !== issueUuid);
 
-  if (!comicissue || !comicseries) {
+  // No first page to wait for (gated or empty issue): let the covering sheet go once this has rendered
+  const hasStoryItems = listData.some((item) => item.type === 'story');
+  useEffect(() => {
+    if (showSpinner || hasStoryItems) { return; }
+    const frame = requestAnimationFrame(nextEpisodePull.onContentReady);
+    return () => cancelAnimationFrame(frame);
+  }, [showSpinner, hasStoryItems, nextEpisodePull.onContentReady]);
+
+  if (showSpinner) {
     return (
       <Screen style={styles.loadingContainer}>
         <ThemedActivityIndicator />
+        <ReadNextEpisodeSheet {...nextEpisodePull.sheetProps} />
       </Screen>
     );
   }
 
   return (
     <Screen style={styles.container}>
-      <FadeInView>
+      <FadeInView fadeIn={!skipFadeIn}>
         <ComicHeader
           headerPosition={headerTranslateY}
           comicseries={comicseries}
@@ -645,6 +748,9 @@ export function ComicIssueScreen() {
           keyExtractor={(item) => item.key}
           showsVerticalScrollIndicator={false}
           onScroll={handleScroll}
+          onScrollBeginDrag={nextEpisodePull.onScrollBeginDrag}
+          onScrollEndDrag={nextEpisodePull.onScrollEndDrag}
+          onMomentumScrollEnd={nextEpisodePull.onMomentumScrollEnd}
           scrollEventThrottle={16}
           renderScrollComponent={KeyboardAwareScrollView as any}
           // estimatedListSize={{
@@ -674,7 +780,7 @@ export function ComicIssueScreen() {
         />
         <ScrollIndicator
           scrollPosition={scrollPosition}
-          contentHeight={contentHeight}
+          contentHeight={contentHeight - bottomSpacerHeight}
           screenHeight={screenDetails.height}
           headerHeight={HEADER_HEIGHT}
           footerHeight={FOOTER_HEIGHT}
@@ -682,6 +788,7 @@ export function ComicIssueScreen() {
           isVisible={isHeaderVisible}
         />
       </FadeInView>
+      <ReadNextEpisodeSheet {...nextEpisodePull.sheetProps} />
     </Screen>
   );
 }

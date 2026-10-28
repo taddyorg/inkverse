@@ -1,8 +1,8 @@
-import { useReducer, useState, useCallback, useEffect } from 'react';
+import { useReducer, useState, useCallback, useEffect, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { FlashList } from '@shopify/flash-list';
+import { FlashList, FlashListRef } from '@shopify/flash-list';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 
@@ -19,7 +19,8 @@ import { ComicIssue, ComicSeries } from '@inkverse/shared-client/graphql/operati
 import { loadComicSeries, loadComicSeriesDynamic, loadUserComicData, subscribeToSeries, unsubscribeFromSeries, enableNotificationsForSeries, disableNotificationsForSeries, comicSeriesReducer, comicSeriesInitialState, likeComicIssueInSeries, unlikeComicIssueInSeries } from '@inkverse/shared-client/dispatch/comicseries';
 import { RootStackParamList, COMICSERIES_SCREEN, COMICISSUE_SCREEN, SIGNUP_SCREEN } from '@/constants/Navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { ReadNextEpisode } from '../components/comics/ReadNextEpisode';
+import { ReadNextEpisode, useReadNextEpisodePull, type SheetContent } from '../components/comics/ReadNextEpisode';
+import { ReadNextEpisodeSheet } from '../components/comics/ReadNextEpisodeSheet';
 import { useAnalytics } from '@/lib/analytics';
 import { SPACING } from '@/constants/Spacing';
 import { useThemeColor } from '@/constants/Colors';
@@ -184,6 +185,23 @@ export function ComicSeriesScreen() {
   }, [isLoggedIn, userClient, currentUser?.id, comicseries?.uuid, userComicData?.likedComicIssueUuids, navigation]);
 
   const firstIssue = issues?.[0];
+  // The read-the-first-episode card only appears on longer series
+  const showsReadFirstEpisode = !!firstIssue && !!issues && issues.length > 3;
+
+  // Pulling past the card at the end of the list opens the first episode through the peek sheet, which
+  // expands into the episode screen; the screen is then pushed without its own transition and keeps
+  // covering itself with the same sheet content until its first page is on screen
+  const listRef = useRef<FlashListRef<ListItem>>(null);
+  const handleOpenFirstEpisode = useCallback((issueUuid: string, seriesUuid: string, cover: SheetContent) => {
+    navigation.navigate(COMICISSUE_SCREEN, { issueUuid, seriesUuid, transition: 'none', cover });
+  }, [navigation]);
+  const readFirstEpisodePull = useReadNextEpisodePull({
+    enabled: showsReadFirstEpisode,
+    listRef,
+    target: firstIssue,
+    seriesName: comicseries?.name,
+    onNavigate: handleOpenFirstEpisode,
+  });
 
   const renderItem = useCallback(({ item }: { item: ListItem }) => {
     switch (item.type) {
@@ -246,13 +264,17 @@ export function ComicSeriesScreen() {
             showEmptyState={false}
             firstTextCTA='READ THE FIRST'
             secondTextCTA='EPISODE'
+            // A tap is a regular push (like tapping an episode in the list); only the pull goes through the peek sheet
             handleNavigateToIssue={handleNavigateToIssue}
+            pullProgress={readFirstEpisodePull.progress}
+            onVisible={readFirstEpisodePull.onCardVisible}
+            accessibilityLabel="Read the first episode"
           />
         );
       default:
         return null;
     }
-  }, [comicseries, issues, userComicData, isUserDataLoading, isSubscriptionLoading, isNotificationLoading, handleAddToProfile, handleGetNotifications, handleNavigateToIssue, issueLikeLoadingMap, handleLikeIssue, isSm, likeCount, commentCount, firstIssue, actionColor, actionTextColor]);
+  }, [comicseries, issues, userComicData, isUserDataLoading, isSubscriptionLoading, isNotificationLoading, handleAddToProfile, handleGetNotifications, handleNavigateToIssue, issueLikeLoadingMap, handleLikeIssue, isSm, likeCount, commentCount, firstIssue, actionColor, actionTextColor, readFirstEpisodePull.progress, readFirstEpisodePull.onCardVisible]);
 
   const keyExtractor = useCallback((item: ListItem) => {
     switch (item.type) {
@@ -270,9 +292,9 @@ export function ComicSeriesScreen() {
       { type: 'header', data: comicseries },
       { type: 'issues', data: { comicissues: issues || [], comicseries, currentIssueUuid: issues?.[0]?.uuid } },
       { type: 'info', data: comicseries },
-      ...(issues?.length && issues.length > 3 ? [{ type: 'next-episode' as const, data: issues[0] }] : []),
+      ...(showsReadFirstEpisode ? [{ type: 'next-episode' as const, data: issues[0] }] : []),
     ];
-  }, [comicseries, issues, userComicData, isSubscriptionLoading, isNotificationLoading]);
+  }, [comicseries, issues, userComicData, isSubscriptionLoading, isNotificationLoading, showsReadFirstEpisode]);
 
   if (isComicSeriesLoading || !comicseries) {
     return (
@@ -288,11 +310,17 @@ export function ComicSeriesScreen() {
     <ComicSeriesScreenWrapper comicseries={comicseries || null}>
       <FadeInView>
         <FlashList
+          ref={listRef}
           data={getListData()}
           renderItem={renderItem}
           keyExtractor={keyExtractor}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: listInsetX, paddingBottom: insets.bottom + SPACING.lg }}
+          onScroll={readFirstEpisodePull.onScroll}
+          onScrollBeginDrag={readFirstEpisodePull.onScrollBeginDrag}
+          onScrollEndDrag={readFirstEpisodePull.onScrollEndDrag}
+          onMomentumScrollEnd={readFirstEpisodePull.onMomentumScrollEnd}
+          scrollEventThrottle={16}
+          contentContainerStyle={{ paddingHorizontal: listInsetX, paddingBottom: insets.bottom }}
           refreshControl={
             <ThemedRefreshControl
               refreshing={refreshing}
@@ -301,6 +329,7 @@ export function ComicSeriesScreen() {
           }
         />
       </FadeInView>
+      <ReadNextEpisodeSheet {...readFirstEpisodePull.sheetProps} />
     </ComicSeriesScreenWrapper>
   );
 }

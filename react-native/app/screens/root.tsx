@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Platform, useColorScheme, ColorSchemeName } from 'react-native';
 import { NavigationContainer, ParamListBase, RouteProp, LinkingOptions, NavigationContainerRef } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createNativeStackNavigator, type NativeStackNavigationOptions } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { PostHogProvider } from 'posthog-react-native'
@@ -15,7 +15,7 @@ import { HomeScreen } from './home';
 import { SearchScreen } from './search'
 import { ProfileScreen } from './profile';
 import { ComicSeriesScreen } from './comicseries';
-import { ComicIssueScreen } from './comicissue';
+import { ComicIssueScreen, type ComicIssueScreenParams } from './comicissue';
 import { CreatorScreen } from './creator';
 import { SettingsScreen } from './settings';
 import { ListScreen } from './list';
@@ -129,10 +129,12 @@ const comicSeriesScreenConfig = {
 const comicIssueScreenConfig = {
   name: COMICISSUE_SCREEN as keyof RootStackParamList,
   component: ComicIssueScreen,
-  options: {
+  // Opened through the ReadNextEpisode peek sheet, the screen appears without its own transition
+  options: ({ route }: { route: RouteProp<RootStackParamList, keyof RootStackParamList> }): NativeStackNavigationOptions => ({
     title: '',
     headerShown: false,
-  }
+    ...((route.params as ComicIssueScreenParams | undefined)?.transition === 'none' ? { animation: 'none' as const } : {}),
+  }),
 };
 
 const creatorScreenConfig = {
