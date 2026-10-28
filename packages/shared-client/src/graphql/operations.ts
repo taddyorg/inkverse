@@ -76,8 +76,6 @@ export type ComicIssue = {
   nextIssue?: Maybe<ComicIssue>;
   /**  Position of the issue in the series  */
   position?: Maybe<Scalars['Int']['output']>;
-  /**  Preview of the first 5 story image urls  */
-  previewStoryImageUrls?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   /**  Previous issue in the series  */
   previousIssue?: Maybe<ComicIssue>;
   /**  The scopes for the exclusive content - e.g. 'patreon'  */

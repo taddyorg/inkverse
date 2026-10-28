@@ -45,9 +45,6 @@ type ComicIssue {
   " Details on all the stories that make up this issue "
   stories: [ComicStory]
 
-  " Preview of the first 5 story image urls "
-  previewStoryImageUrls: [String]
-
   " Position of the issue in the series "
   position: Int
   
@@ -157,11 +154,6 @@ const ComicIssueFieldResolvers: ComicIssueResolvers = {
 
     async stories({ uuid }: ComicIssueModel, input:{}, context: GraphQLContext) {
       return await ComicStory.getComicStoriesForIssue(uuid);
-    },
-
-    async previewStoryImageUrls({ uuid }: ComicIssueModel, input:{}, context: GraphQLContext) {
-      const comicstories = await ComicStory.getComicStoriesForIssue(uuid);
-      return comicstories.map(story => story.storyImage?.base_url && story.storyImage?.story ? `${story.storyImage.base_url}${story.storyImage.story}` : null).filter(Boolean).slice(0, 5);
     },
 
     async comicSeries({ seriesUuid }: ComicIssueModel, input:{}, context: GraphQLContext) {

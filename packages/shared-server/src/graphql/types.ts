@@ -79,8 +79,6 @@ export type ComicIssue = {
   nextIssue?: Maybe<ComicIssue>;
   /**  Position of the issue in the series  */
   position?: Maybe<Scalars['Int']['output']>;
-  /**  Preview of the first 5 story image urls  */
-  previewStoryImageUrls?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   /**  Previous issue in the series  */
   previousIssue?: Maybe<ComicIssue>;
   /**  The scopes for the exclusive content - e.g. 'patreon'  */
@@ -1883,7 +1881,6 @@ export type ComicIssueResolvers<ContextType = any, ParentType extends ResolversP
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   nextIssue?: Resolver<Maybe<ResolversTypes['ComicIssue']>, ParentType, ContextType>;
   position?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  previewStoryImageUrls?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   previousIssue?: Resolver<Maybe<ResolversTypes['ComicIssue']>, ParentType, ContextType>;
   scopesForExclusiveContent?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   seriesUuid?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
