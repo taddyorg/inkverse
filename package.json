@@ -19,6 +19,9 @@
       "react-native/**"
     ]
   },
+  "resolutions": {
+    "@babel/helper-compilation-targets": "^7.29.7"
+  },
   "devDependencies": {
     "@graphql-codegen/cli": "5.0.6",
     "@graphql-codegen/introspection": "4.0.3",
