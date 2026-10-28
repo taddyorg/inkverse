@@ -253,6 +253,7 @@ function getGraphCDNVariables(type: CacheType, id?:string, ids?:string[]) {
       return { seriesUuid: ids || [id] }
     case 'recentlyAdded':
     case 'recentlyUpdated':
+    case 'user':
       return { id: [id] }
     case 'profilecomicseries':
       return { userId: ids || [id] }
