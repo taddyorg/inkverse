@@ -2,25 +2,25 @@ import type { ListModel } from "../database/index.js"
 import { ListType, PrivacyType } from "../database/index.js"
 
 export const mostPopularComicSeriesUuids = [
-  "a7046949-a79d-4471-b3e0-9c6df652b9c8",
-  "fb20203b-0e55-4e7c-a213-c0cd1e74fd0f",
-  "70587dde-bbec-41fe-9998-6d0fc25dca2b",
-  "f9e936f7-9537-4aee-8de9-d90003cc0729",
-  "dde612b2-e608-4b14-900d-37c1628e2e4a",
-  "eb075a7b-38c3-4f8c-8be3-dcc6a5230dab",
-  "e418408c-2d72-4a5b-8765-46df6b724d53",
-  "83df96f0-874e-4bb7-98c9-fc92be5aa452",
-  "01c6a940-eaa4-40f4-93cb-3033dbe08638",
-  "54beb38b-2cd2-43d6-aa1c-3f4aea7da3b5",
-  "c025ecd8-85ab-4584-90ed-deeb267987c4",
-  "8154cda8-7d18-4250-9e42-a813dd074b15",
-  "209fcb89-d2d7-4fa1-b362-4f08890b680f",
-  "72d601a1-6e98-4c69-a577-666600fea15d",
-  "71113968-45a2-4c30-b770-655b57ae0de6",
-  "bbada132-2508-47fb-937a-22fbe12708be",
-  "25660dd8-638c-4b39-aa56-43657ba94688",
-  "d241ed6c-633f-4da8-ba36-026b905b635d",
-  "ae78ecda-b05c-4fba-9b00-9211f6223907"
+  "19d1f401-003e-42db-83ef-79a535777c2c", // Strawberry Smoothie 
+  "a7046949-a79d-4471-b3e0-9c6df652b9c8", // I’ll Keep Your Secret
+  "fb20203b-0e55-4e7c-a213-c0cd1e74fd0f", // Behind Our Eclipse
+  "70587dde-bbec-41fe-9998-6d0fc25dca2b", // Foo Bun
+  "f9e936f7-9537-4aee-8de9-d90003cc0729", // Found Hope In The Demon
+  "dde612b2-e608-4b14-900d-37c1628e2e4a", // Oath Breaker
+  "83df96f0-874e-4bb7-98c9-fc92be5aa452", // Gone Gray
+  "01c6a940-eaa4-40f4-93cb-3033dbe08638", // He Wolf
+  "54beb38b-2cd2-43d6-aa1c-3f4aea7da3b5", // 10 of Swords
+  "c025ecd8-85ab-4584-90ed-deeb267987c4", // Ancient Egypt: Child of Ra
+  "8154cda8-7d18-4250-9e42-a813dd074b15", // Before An Infinity Of Stars, I Choose You…
+  "209fcb89-d2d7-4fa1-b362-4f08890b680f", // Link
+  "72d601a1-6e98-4c69-a577-666600fea15d", // Love & Hex
+  "bbada132-2508-47fb-937a-22fbe12708be", // Pirates of the Hard Nox
+  "25660dd8-638c-4b39-aa56-43657ba94688", // Rain Girl
+  "d241ed6c-633f-4da8-ba36-026b905b635d", // Secret Lies Next Door
+  "ae78ecda-b05c-4fba-9b00-9211f6223907", // The Giant of Greywater
+  "d5f325db-bb4b-4bca-960b-9e25e3c46362",  // To Burn An Olive Branch
+  "efc9db86-f392-4206-be5f-2369a5dcff01",  // Ethrelae's Curse
 ]
 
 const friendsToLoversComicSeriesUuids = [
@@ -34,6 +34,8 @@ const friendsToLoversComicSeriesUuids = [
   "c233e465-ec10-43f9-a730-b125bc1af10d", // Sleepless Nights
   "8154cda8-7d18-4250-9e42-a813dd074b15", // Before An Infinity Of Stars, I Choose You…
   "86722a58-2281-428e-b062-7818025b7a36", // Regarding Dandelions
+  "36e26cf3-d2e8-4801-94ff-19446ab6df62", // Floral
+  "c076e87d-877a-48fd-8dd8-53dccdfa97cc", // Artistry in Harmony 
 ]
 
 const enemiesToLoversComicSeriesUuids = [
@@ -49,7 +51,6 @@ const enemiesToLoversComicSeriesUuids = [
   "a047dcf9-d7dc-4c7d-ba93-2c182b2fe40c", // The Art Of Running Away
   "5d9a70f8-509b-4105-aff8-fdaab407e8be", // Moon Descendants
   "54beb38b-2cd2-43d6-aa1c-3f4aea7da3b5", // 10 of Swords
-  "ed71982c-40fc-49d8-866a-71b31d31f647" // Firewalker
 ]
 
 const femaleLeadComicSeriesUuids = [
@@ -65,13 +66,13 @@ const femaleLeadComicSeriesUuids = [
   "f19aeef3-4de9-40e8-bdac-6d7a2293483a", // E Is For Evil
   "fb20203b-0e55-4e7c-a213-c0cd1e74fd0f", // Behind Our Eclipse
   "4bdf4642-958b-4394-9891-fd2be54ef253", // They’re Both A Kilogram
-  "797f357b-652c-4cc7-a985-1c4749f78cd8" // Sleeping Magic
+  "797f357b-652c-4cc7-a985-1c4749f78cd8", // Sleeping Magic
+  "250099a6-c153-4927-bf98-fc10c929056d",  // LOSERS
 ]
 
 const isekaiComicSeriesUuids = [
   "f69f96d7-15d1-4dd8-9560-117c06f129aa", // Book Of Domination
   "3065ae8b-9128-4cd1-a0ed-52e618effffd", // The Dance
-  "0ea33c3f-582e-4280-a589-ec371486ce21", // D-Link
   "1d6bf248-a4e7-4f2b-a585-a8a747038c50", // City Of Souls
   "6f9568a2-3a7d-4d75-a021-48735eaf9116", // Eternal Reverie: 2000-year Odyssey
 ]
@@ -83,14 +84,12 @@ const spookyToonsComicSeriesUuids = [
   "ae44fcd1-329a-47fd-90e1-8e59de9ea5a1", // My Amnesia Ghost
   "2e1d5daa-9cf4-456a-88e9-20a4d442cdbb", // Shadow Skulls
   "3c06057c-82dc-49ab-837b-e488edda3919", // Max Jaw
-  "25660dd8-638c-4b39-aa56-43657ba94688",  // Rain Girl
+  "25660dd8-638c-4b39-aa56-43657ba94688", // Rain Girl
   "b5356b6d-7131-4ecb-a7d3-4780acf6c301", // Gentlemen Of Chaos
   "03a7ca4f-70b5-4d43-a9fb-d42d9b7f93b7", // My Fate Lies With You
   "abd853ed-618a-4998-bbb9-c9a24cf7d825", // Me Me Me
-  "299eaa21-9c3a-4dbe-baf6-5c733420086f", // HiLo Spirits
   "15e7f2d2-2f3d-4750-94b3-ce8c418d66be", // I’m Mortal
-  "6f59d535-159d-47f2-9ce3-75000f296448", // Team Diamant Presents : Happy Go Gothy
-  "9966e4e4-cb0d-412d-b682-ebc8a7ab3ce5", // Supercat
+  "447eacab-c6d6-46aa-b3f0-4bdfc328e536", // The Life of Eema Neema and Diabolical No Gooder
 ]
 
 const wholesomeComicSeriesUuids = [
@@ -99,10 +98,11 @@ const wholesomeComicSeriesUuids = [
   "0a2639af-c443-4579-b5fc-a3bb939c6868", // Heir’s The Catch
   "5a29d33c-af89-4957-849d-89402f20418b", // Pumpkin Matcha Latte
   "9abf57d5-d74d-4f04-8fc3-8441c12c3ef8", // Signs Point To Bobbie
-  "4737d4d7-062c-4cf0-b6c6-c336c6fc5bda", // Idiots Don’t Catch Colds
+  "4737d4d7-062c-4cf0-b6c6-c336c6fc5bda", // Idiots Don't Catch Colds
   "15e7f2d2-2f3d-4750-94b3-ce8c418d66be", // I’m Mortal
-  "72d601a1-6e98-4c69-a577-666600fea15d", // Love & Hex
-  "89164347-f0de-4556-8a64-0f6a040bdfaf" // Bubbling Over
+  "89164347-f0de-4556-8a64-0f6a040bdfaf", // Bubbling Over
+  "05779961-14c6-4d98-9aed-7f6976eda56a", // Soapy
+  "5425c97d-f892-48f2-bb2f-a225b3fd218d", // The Fall
 ]
 
 const spicyComicSeriesUuids = [
@@ -117,6 +117,7 @@ const spicyComicSeriesUuids = [
 ]
 
 const LGBTComicSeriesUuids = [
+  "f117bb67-639b-4095-99ad-4de98a936153", // GirlsLoveBites
   "5c3b4b58-09b7-4009-8112-edd6f1069ad8", // River Of Souls
   "3be54437-5b28-4ef1-8594-a47ab137a2c0", // Honey & Cigarettes
   "f508e414-bf0a-4ac5-b5a3-4eec9cce1ba5", // Stellarum
@@ -128,7 +129,14 @@ const LGBTComicSeriesUuids = [
   "d0dc2b76-5541-4316-95be-5c5944d8e90e", // The Leftover Cannibals
   "807f4864-6d9e-4ff4-8c85-f673d3db9fe4", // American Prince
   "56388dd4-c802-4dae-990f-60f86f0bc108", // Tamed Rogue
-  "3a2e6ff2-f3a1-42b4-92e1-87d9bc910eb8" // Espero: Part 1
+  "e3348491-cbab-484c-9b14-e985cbbeee4e",	// I, Mythical
+  "1ef5a931-a2dc-4e7d-bd13-bb7aedca3a99", // RESET
+  "0f8adef5-5d96-4c49-ab23-a9df0c8a5145", // The Poisoner's Piece 
+  "d9ad859c-1924-4f5f-ab6d-8937dab45931",	// Defects of the Dead
+  "3bdb4f69-9887-4c3c-b449-0cb543be0ae4", // Sublime Trilemma (GL)
+  "6d8bb7d0-0b0c-460d-9d05-908d5ea02bda", // My Advisor is a Distraction
+  "4737d4d7-062c-4cf0-b6c6-c336c6fc5bda", // Idiots Don't Catch Colds
+  "6f888cc4-cbd2-4731-bc17-faef01cc16cc", // Guiltless Mischief
 ]
 
 const monsterLoversComicSeriesUuids = [
@@ -136,11 +144,11 @@ const monsterLoversComicSeriesUuids = [
   "48e86fe7-65d5-4269-932e-6c11ed3863ad", // Netvor
   "076bd028-1b7a-4738-9ff9-b84513a2f7bf", // How To Be Human
   "01c6a940-eaa4-40f4-93cb-3033dbe08638", // He Wolf
-  "00901700-67d4-40ef-b92a-3db444fcb4eb", // 1 And A Half
   "807f4864-6d9e-4ff4-8c85-f673d3db9fe4", // American Prince
   "ca3d7b03-d701-4ac5-aed1-a128062cf593", // Pirates And Monsters
   "115fd066-a99c-44e5-9878-13cfca1e58c0", // Scary Cute
-  "bbada132-2508-47fb-937a-22fbe12708be" // Pirates of the Hard Nox
+  "bbada132-2508-47fb-937a-22fbe12708be", // Pirates of the Hard Nox
+  "6a26e7ae-f633-46e9-8915-7624e32eafbd", // Cosmic Tavern
 ]
 
 const featuredComicSeriesUuidsSet = new Set([
