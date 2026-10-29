@@ -489,18 +489,24 @@ export function useReadNextEpisodePull({ enabled, listRef, target, seriesName, o
     commitOpen();
   }, [commitOpen]);
 
-  // Warm Apollo with the target episode (so it opens without a spinner) and grab its first page for the sheet
+  // Warm Apollo with the target episode (so it opens without a spinner), prefetch its first two pages and
+  // use the first one for the sheet
   const onCardVisible = useCallback(() => {
     if (!targetUuid || !targetSeriesUuid || prefetchedFor.current === targetUuid) { return; }
     prefetchedFor.current = targetUuid;
     loadComicIssue({ publicClient: getPublicApolloClient(), issueUuid: targetUuid, seriesUuid: targetSeriesUuid })
       .then((data) => {
         if (prefetchedFor.current !== targetUuid || targetIsExclusive) { return; }
-        const story = data?.comicissue?.stories?.[0];
+        const stories = data?.comicissue?.stories ?? [];
+        const story = stories[0];
         if (!story?.storyImageAsString) { return; }
         const pageImageUrl = getStoryImageUrl({ storyImageAsString: story.storyImageAsString });
         if (!pageImageUrl) { return; }
-        Image.prefetch(pageImageUrl);
+        const secondStory = stories[1];
+        const secondPageImageUrl = secondStory?.storyImageAsString
+          ? getStoryImageUrl({ storyImageAsString: secondStory.storyImageAsString })
+          : undefined;
+        Image.prefetch(secondPageImageUrl ? [pageImageUrl, secondPageImageUrl] : pageImageUrl);
         setPreview({
           forUuid: targetUuid,
           pageImageUrl,
