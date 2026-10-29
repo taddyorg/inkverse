@@ -5,13 +5,16 @@ interface ImageWithLoaderProps {
   className?: string;
   placeholderClassName?: string;
   priority?: 'high' | 'low' | 'auto';
+  // Called once the image has loaded (or was already complete at mount)
+  onLoad?: () => void;
 }
 
 export const ImageWithLoader: React.FC<ImageWithLoaderProps> = ({
   src,
   className,
   placeholderClassName = 'flex w-full aspect-1 justify-center items-center',
-  priority = 'auto'
+  priority = 'auto',
+  onLoad,
 }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const imageRef = useRef<HTMLImageElement>(null);
@@ -19,11 +22,13 @@ export const ImageWithLoader: React.FC<ImageWithLoaderProps> = ({
   useEffect(() => {
     if (imageRef.current?.complete) {
       setIsLoaded(true);
+      onLoad?.();
     }
   }, []);
 
   const onLoaded = () => {
     setIsLoaded(true);
+    onLoad?.();
   };
 
   return (

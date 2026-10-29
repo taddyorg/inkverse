@@ -1,12 +1,13 @@
-import { useLoaderData } from "react-router";
+import { useLoaderData, useOutletContext } from "react-router";
 import type { LoaderFunctionArgs, MetaFunction } from "react-router";
 import { Link } from 'react-router-dom';
-import { MdChevronLeft } from 'react-icons/md';
-import { useCallback, useEffect, useReducer, useState } from 'react';
+import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import { jwtDecode } from "jwt-decode";
 
 import { ImageWithLoader, NotFound } from "../components/ui";
 import { ReadNextEpisode } from "../components/comics/ReadNextEpisode";
+import { AllEpisodesLink, ComicIssuePageFrame } from "../components/comics/ComicIssuePageFrame";
+import { useReadNextEpisodePull, type ReadNextSheetController } from "../components/comics/readNextEpisodePull";
 
 import { getMetaTags } from "@/lib/seo";
 import { loadComicIssue } from "@/lib/loader/comicissue.server";
@@ -57,16 +58,11 @@ export default function ComicIssue() {
 }
 
 function ComicIssueContent({ initialData }: { initialData: Partial<ComicIssueLoaderData> & { loaderError?: boolean } }) {
-  if (initialData.loaderError) {
-    return <NotFound message="Something went wrong" subtitle="Please try again later." />;
-  }
-
-  if (!initialData?.comicissue) {
-    return <NotFound message="Episode not found" />;
-  }
-
   const [state, dispatch] = useReducer(comicIssueReducer, initialData);
   const [initialComments, setInitialComments] = useState<CommentDetailsFragment[] | null>(null);
+  // The read-next-episode peek sheet, owned by the comics layout route
+  const sheetController = useOutletContext<ReadNextSheetController | undefined>();
+  const pageRef = useRef<HTMLDivElement>(null);
 
   const {
     comicissue,
@@ -98,6 +94,26 @@ function ComicIssueContent({ initialData }: { initialData: Partial<ComicIssueLoa
   const connectedProviders = getConnectedHostingProviderUuids();
   const isConnectedToHostingProvider = comicseries?.hostingProviderUuid && connectedProviders.includes(comicseries.hostingProviderUuid);
   const isAuthenticated = !!getUserDetails();
+  const isGated = !!isPatreonExclusive && (!isAuthenticated || !isConnectedToHostingProvider || !!isCheckingAccess || !hasAccessToIssue);
+
+  // Pulling past the next-episode card at the end of the page opens the next episode through the peek
+  // sheet, which expands over this page before the next one loads underneath it
+  const nextIssue = comicissue?.nextIssue;
+  const nextEpisodePull = useReadNextEpisodePull({
+    enabled: !isGated && !!nextIssue?.uuid && !!comicseries,
+    target: nextIssue,
+    comicseries,
+    pageRef,
+  });
+
+  // Opened through the peek sheet: the sheet drops once the first page is on screen (see the first
+  // ImageWithLoader's onLoad), or straight away when the page renders without pages (gates, errors)
+  const showsFirstPage = !initialData.loaderError && !isGated && !!comicissue?.stories?.[0]?.storyImageAsString;
+  useEffect(() => {
+    if (showsFirstPage || !sheetController) { return; }
+    const frame = requestAnimationFrame(sheetController.contentReady);
+    return () => cancelAnimationFrame(frame);
+  }, [showsFirstPage, sheetController]);
 
   // Like state
   const isLiked = userComicData?.likedComicIssueUuids?.includes(comicissue?.uuid || '') ?? false;
@@ -206,18 +222,17 @@ function ComicIssueContent({ initialData }: { initialData: Partial<ComicIssueLoa
     loadUserData();
   }, [isAuthenticated, comicseries?.uuid]);
 
+  if (initialData.loaderError) {
+    return <NotFound message="Something went wrong" subtitle="Please try again later." />;
+  }
+
+  if (!initialData?.comicissue) {
+    return <NotFound message="Episode not found" />;
+  }
+
   if (isPatreonExclusive && (!isAuthenticated || !isConnectedToHostingProvider)) {
     return (
-      <div className={`mx-auto sm:p-6 lg:p-8 zoomed-in:max-w-3xl max-w-xl`}>      
-        <div className='flex flex-col py-4 sm:py-0'>
-          <div className="flex items-center mb-2">
-            {comicSeriesLink && (
-              <Link to={comicSeriesLink} className="flex flex-row mr-2">
-                <MdChevronLeft size={24} />
-                <p className="font-semibold">All Episodes</p>
-              </Link>
-            )}
-          </div>
+      <ComicIssuePageFrame comicSeriesLink={comicSeriesLink} variant="gate">
           <div className="flex items-center justify-center h-96">
             {!isAuthenticated
               ? <SignupButton />
@@ -226,24 +241,14 @@ function ComicIssueContent({ initialData }: { initialData: Partial<ComicIssueLoa
                 : <></>
             }
           </div>
-        </div>
-      </div>
+      </ComicIssuePageFrame>
     );
   }
 
 
   if (isPatreonExclusive && isCheckingAccess) {
     return (
-      <div className={`mx-auto sm:p-6 lg:p-8 zoomed-in:max-w-3xl max-w-xl`}>      
-        <div className='flex flex-col py-4 sm:py-0'>
-          <div className="flex items-center mb-2">
-            {comicSeriesLink && (
-              <Link to={comicSeriesLink} className="flex flex-row mr-2">
-                <MdChevronLeft size={24} />
-                <p className="font-semibold">All Episodes</p>
-              </Link>
-            )}
-          </div>
+      <ComicIssuePageFrame comicSeriesLink={comicSeriesLink} variant="gate">
           <div className="flex items-center justify-center h-96">
             <div className="text-center">
               <svg className="animate-spin h-5 w-5 ml-2 mr-1" viewBox="0 0 24 24">
@@ -255,43 +260,23 @@ function ComicIssueContent({ initialData }: { initialData: Partial<ComicIssueLoa
             </svg>
             </div>
           </div>
-        </div>
-      </div>
+      </ComicIssuePageFrame>
     );
   }
 
 
   if (isPatreonExclusive && !isCheckingAccess && !hasAccessToIssue) {
     return (
-      <div className={`mx-auto sm:p-6 lg:p-8 zoomed-in:max-w-3xl max-w-xl`}>      
-        <div className='flex flex-col py-4 sm:py-0'>
-          <div className="flex items-center mb-2">
-            {comicSeriesLink && (
-              <Link to={comicSeriesLink} className="flex flex-row mr-2">
-                <MdChevronLeft size={24} />
-                <p className="font-semibold">All Episodes</p>
-              </Link>
-            )}
-          </div>
+      <ComicIssuePageFrame comicSeriesLink={comicSeriesLink} variant="gate">
           <YouNeedToBeAPatreonBacker creators={comicseries?.creators?.filter(Boolean) as Creator[] | undefined} creatorLinks={creatorLinks} />
-        </div>
-      </div>  
+      </ComicIssuePageFrame>
     );
   }
 
   const creatorName = comicseries?.creators?.[0]?.name;
 
   return (
-    <div className={`mx-auto sm:p-6 lg:p-8 zoomed-in:max-w-3xl max-w-xl`}>      
-      <div className='flex flex-col py-4 sm:py-2'>
-        <div className="flex items-center mb-2">
-          {comicSeriesLink && (
-            <Link to={comicSeriesLink} className="flex flex-row mr-2">
-              <MdChevronLeft size={24} />
-              <p className="font-semibold">All Episodes</p>
-            </Link>
-          )}
-        </div>
+    <ComicIssuePageFrame ref={pageRef} comicSeriesLink={comicSeriesLink}>
         {isPatreonExclusive &&
           <div className="flex items-center justify-center mt-4">
             <div className="text-center">
@@ -309,6 +294,7 @@ function ComicIssueContent({ initialData }: { initialData: Partial<ComicIssueLoa
               className="w-full select-none pointer-events-none"
               src={storyImageUrl}
               priority={index < 2 ? 'high' : 'auto'}
+              onLoad={index === 0 ? sheetController?.contentReady : undefined}
             />
           )
         })}
@@ -332,6 +318,12 @@ function ComicIssueContent({ initialData }: { initialData: Partial<ComicIssueLoa
           )}
         </div>
         <div className="px-4 sm:px-0">
+          {comicSeriesLink && (
+            // CommentsSection's my-6 spaces it from above; mb-2 + the avatar row's mt-4 match that below
+            <div className="flex items-center mb-2">
+              <AllEpisodesLink to={comicSeriesLink} />
+            </div>
+          )}
           <CreatorsForIssue
             comicissue={comicissue}
             creators={comicseries?.creators?.map((creator) => creator as Creator) ?? []}/>
@@ -343,14 +335,15 @@ function ComicIssueContent({ initialData }: { initialData: Partial<ComicIssueLoa
           <ReadNextEpisode
             comicissue={comicissue?.nextIssue}
             comicseries={comicseries}
+            pull={nextEpisodePull}
+            openOnClick
             isAuthenticated={isAuthenticated}
             isSuperLikeLoading={isSuperLikeLoading ?? false}
             onSuperLike={handleSuperLikePress}
             hasLikedAllEpisodes={hasLikedAllEpisodes}
           />
         </div>
-      </div>
-    </div>
+    </ComicIssuePageFrame>
   );
 }
 

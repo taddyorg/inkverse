@@ -1,4 +1,4 @@
-import { type RouteConfig, index, route } from "@react-router/dev/routes";
+import { type RouteConfig, index, layout, route } from "@react-router/dev/routes";
 
 export default [
     index("routes/home.tsx"),
@@ -11,8 +11,12 @@ export default [
     route("our-roadmap", "routes/our-roadmap.tsx"),
     route("terms-of-service/:slug?", "routes/terms-of-service.tsx"),
     route("support/:slug?", "routes/support.tsx"),
-    route("comics/:shortUrl", "routes/comicseries.tsx"),
-    route("comics/:shortUrl/:episodeId", "routes/comicissue.tsx"),
+    // Pathless layout that outlives series -> episode and episode -> episode navigations, so the
+    // read-next-episode peek sheet can keep covering the screen while the next page loads
+    layout("routes/comics-layout.tsx", [
+        route("comics/:shortUrl", "routes/comicseries.tsx"),
+        route("comics/:shortUrl/:episodeId", "routes/comicissue.tsx"),
+    ]),
     route("creators/:shortUrl", "routes/creator.tsx"),
     route("lists/:id", "routes/list.tsx"),
     route("tagged/:tag", "routes/tag.tsx"),

@@ -16,3 +16,65 @@ body {
 .light {
   @apply bg-paper-pink text-inkverse-black;
 }
+
+/* Pull-to-open next episode (ReadNextEpisode + ReadNextEpisodeSheet). Per-frame values arrive as CSS
+   variables written on the page container and on the sheet: --rne-o (how far the page and sheet have risen, px), --rne-p (0-1 fill
+   progress), --rne-a (armed spring, overshoots), --rne-open (0-1 sheet expansion). Every use has a
+   fallback so the server-rendered markup is at rest. */
+.rne-card {
+  transform: scale(calc(1 + 0.015 * var(--rne-p, 0)));
+  transform-origin: 50% 50%;
+}
+
+.rne-fill {
+  clip-path: inset(calc((1 - var(--rne-p, 0)) * 100%) 0 0 0);
+}
+
+.rne-play {
+  transform: scale(calc(1 + 0.1071 * var(--rne-a, 0)));
+}
+
+.rne-play-arrow {
+  transform: rotate(calc(90deg * var(--rne-p, 0)));
+}
+
+.rne-sheet {
+  --rne-peek-header: 76px;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  will-change: transform;
+  transform: translateY(calc((100% - var(--rne-o, 0) * 1px) * (1 - var(--rne-open, 0))));
+  border-top-left-radius: calc(26px * (1 - var(--rne-open, 0)));
+  border-top-right-radius: calc(26px * (1 - var(--rne-open, 0)));
+  box-shadow: 0 -10px 30px rgba(62, 59, 77, 0.14);
+  transition: opacity 150ms ease-out;
+}
+
+.rne-sheet-header {
+  position: relative;
+  overflow: hidden;
+  height: calc(var(--rne-peek-header) * (1 - var(--rne-open, 0)) + var(--rne-full-header, 120px) * var(--rne-open, 0));
+}
+
+.rne-sheet-peek {
+  position: absolute;
+  inset: 0;
+  opacity: calc(1 - var(--rne-open, 0));
+}
+
+.rne-sheet-full {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  opacity: var(--rne-open, 0);
+}
+
+.rne-hint-keep {
+  opacity: calc(1 - var(--rne-a, 0));
+}
+
+.rne-hint-release {
+  opacity: var(--rne-a, 0);
+}

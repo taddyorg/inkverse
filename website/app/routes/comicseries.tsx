@@ -1,12 +1,13 @@
 import type { LoaderFunctionArgs, MetaFunction } from 'react-router-dom';
 import { Link, useLoaderData } from 'react-router';
-import { useReducer, useEffect } from 'react';
+import { useReducer, useEffect, useRef } from 'react';
 import { MdPlayArrow } from 'react-icons/md';
 
 import { ComicSeriesDetails } from '../components/comics/ComicSeriesDetails';
 import { ComicIssuesList } from '../components/comics/ComicIssuesList';
 import { ComicSeriesInfo } from '../components/comics/ComicSeriesInfo';
 import { ReadNextEpisode } from '../components/comics/ReadNextEpisode';
+import { useReadNextEpisodePull } from '../components/comics/readNextEpisodePull';
 import { AddToProfileButton, NotificationButton } from '../components/comics/ComicActionButtons';
 import { NotFound } from '../components/ui/NotFound';
 
@@ -57,6 +58,7 @@ export default function ComicSeries() {
 
 function ComicSeriesContent({ initialData }: { initialData: Partial<ComicSeriesLoaderData> & { loaderError?: boolean } }) {
   const [comicSeriesState, dispatch] = useReducer(comicSeriesReducer, initialData);
+  const pageRef = useRef<HTMLDivElement>(null);
   
   const {
     comicseries,
@@ -154,6 +156,17 @@ function ComicSeriesContent({ initialData }: { initialData: Partial<ComicSeriesL
     }
   };
 
+  // The read-the-first-episode card only appears on longer series. Pulling past it opens the first
+  // episode through the peek sheet; tapping it is a regular link.
+  const firstIssueForPull = issues?.[0];
+  const showsReadFirstEpisode = !!comicseries && !!firstIssueForPull && (issues?.length ?? 0) > 3;
+  const readFirstEpisodePull = useReadNextEpisodePull({
+    enabled: showsReadFirstEpisode,
+    target: firstIssueForPull,
+    comicseries,
+    pageRef,
+  });
+
   const handleLikeIssue = async (issueUuid: string) => {
     const currentUser = getUserDetails();
     if (!currentUser || !currentUser.id) {
@@ -202,7 +215,7 @@ function ComicSeriesContent({ initialData }: { initialData: Partial<ComicSeriesL
 
   return (
     <>
-      <div className="max-w-3xl mx-auto sm:py-6 lg:py-8">
+      <div ref={pageRef} className="max-w-3xl mx-auto sm:py-6 lg:py-8">
         <ComicSeriesDetails
           comicseries={comicseries}
           pageType={'comicseries-screen'}
@@ -247,13 +260,14 @@ function ComicSeriesContent({ initialData }: { initialData: Partial<ComicSeriesL
         {comicseries && (
           <ComicSeriesInfo comicseries={comicseries} />
         )}
-        {comicseries && issues?.[0] && issues?.length > 3 && (
+        {showsReadFirstEpisode && (
           <div className="px-4 pt-6 pb-8">
             <ReadNextEpisode 
-              comicissue={issues[0]}
+              comicissue={firstIssueForPull}
               comicseries={comicseries}
               firstTextCTA="READ THE FIRST"
               secondTextCTA="EPISODE"
+              pull={readFirstEpisodePull}
             />
           </div>
         )}
