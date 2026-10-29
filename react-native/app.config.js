@@ -13,7 +13,7 @@ export default {
     jsEngine: "hermes",
     ios: {
       bundleIdentifier: "art.bamcomics.taddy",
-      buildNumber: "1",
+      buildNumber: "2",
       supportsTablet: true,
       infoPlist: {
         LSApplicationQueriesSchemes: [
@@ -43,7 +43,7 @@ export default {
     },
     android: {
       package: "com.bamtoons",
-      versionCode: 106,
+      versionCode: 108,
       minSdkVersion: 35,
       adaptiveIcon: {
         foregroundImage: "./assets/icons/adaptive-icon.png",
